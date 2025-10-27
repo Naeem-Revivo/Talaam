@@ -1,0 +1,22 @@
+{
+  "cards": [
+    {
+      "id": 1,
+      "title": "Learn Smarter",
+      "description": "Built on science-backed techniques like active recall, spaced repetition, and deliberate practice.",
+      "iconSrc": "/src/assets/svg/herocardimg1.svg"
+    },
+    {
+      "id": 2,
+      "title": "Track Progress",
+      "description": "Monitor your learning journey with detailed analytics and personalized insights.",
+      "iconSrc": "/src/assets/svg/herocardimg2.svg"
+    },
+    {
+      "id": 3,
+      "title": "Achieve Goals",
+      "description": "Set and reach your academic targets with proven study methods and expert guidance.",
+      "iconSrc": "/src/assets/svg/herocardimg3.svg"
+    }
+  ]
+}
