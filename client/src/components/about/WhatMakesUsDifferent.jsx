@@ -1,11 +1,14 @@
 import React from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const WhatMakesUsDifferent = () => {
+  const { t } = useLanguage();
+  
   const features = [
-    "We focus on evidence-based learning strategies",
-    "Built specifically for the Saudi student experience",
-    "Designed to help you study smarter, not longer",
-    "We don't just give you content — we train you to learn"
+    t('about.whatMakesUsDifferent.features.feature1'),
+    t('about.whatMakesUsDifferent.features.feature2'),
+    t('about.whatMakesUsDifferent.features.feature3'),
+    t('about.whatMakesUsDifferent.features.feature4')
   ];
 
   return (
@@ -13,7 +16,7 @@ const WhatMakesUsDifferent = () => {
       <div className="max-w-7xl pt-5 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-center gap-4 md:gap-6 lg:gap-8">
           <h2 className="font-archivo font-bold text-[28px] md:text-[40px] lg:text-[60px] leading-[110%] md:leading-[100%] lg:leading-[62.4px] tracking-[0] align-middle text-oxford-blue text-center px-4">
-            What Makes Us Different
+            {t('about.whatMakesUsDifferent.title')}
           </h2>
           <div className="w-full lg:w-auto lg:pr-48">
             <ul className="space-y-4 md:space-y-6 lg:space-y-8 text-left px-4 md:px-10 laptop:px-0">

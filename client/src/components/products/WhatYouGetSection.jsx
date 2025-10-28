@@ -1,7 +1,10 @@
 import React from "react";
 import { computer } from "../../assets/svg";
+import { useLanguage } from "../../context/LanguageContext";
 
 const WhatYouGetSection = () => {
+  const { t, language } = useLanguage();
+  
   const features = [
     {
       icon: (
@@ -19,9 +22,8 @@ const WhatYouGetSection = () => {
           />
         </svg>
       ),
-      title: "1,000+ High-Yield Practice Questions",
-      description:
-        "Practice with exam-focused questions designed to sharpen your skills and boost confidence.",
+      title: t('products.whatYouGet.features.practiceQuestions.title'),
+      description: t('products.whatYouGet.features.practiceQuestions.description'),
     },
     {
       icon: (
@@ -39,9 +41,8 @@ const WhatYouGetSection = () => {
           />
         </svg>
       ),
-      title: "Performance Tracking",
-      description:
-        "Monitor your progress with smart analytics that highlight strengths and areas to improve.",
+      title: t('products.whatYouGet.features.performanceTracking.title'),
+      description: t('products.whatYouGet.features.performanceTracking.description'),
     },
     {
       icon: (
@@ -59,9 +60,8 @@ const WhatYouGetSection = () => {
           />
         </svg>
       ),
-      title: "Study Plan Tools",
-      description:
-        "Stay organized with personalized study plans tailored to your exam timeline.",
+      title: t('products.whatYouGet.features.studyPlanTools.title'),
+      description: t('products.whatYouGet.features.studyPlanTools.description'),
     },
     {
       icon: (
@@ -85,9 +85,8 @@ const WhatYouGetSection = () => {
           />
         </svg>
       ),
-      title: "Explanations That Teach",
-      description:
-        "Learn faster with detailed explanations that clarify concepts, not just provide answers.",
+      title: t('products.whatYouGet.features.explanations.title'),
+      description: t('products.whatYouGet.features.explanations.description'),
     },
     {
       icon: (
@@ -105,9 +104,8 @@ const WhatYouGetSection = () => {
           />
         </svg>
       ),
-      title: "Science-Backed Methods",
-      description:
-        "Built with proven learning strategies like active recall and spaced repetition.",
+      title: t('products.whatYouGet.features.scienceBacked.title'),
+      description: t('products.whatYouGet.features.scienceBacked.description'),
     },
   ];
 
@@ -115,10 +113,10 @@ const WhatYouGetSection = () => {
     <section className="py-12 md:py-24 h-auto laptop:h-[813px] tablet:h-[1300px] bg-light-gradient">
       {/* Light blue border frame */}
       <div className="absolute inset-0  rounded-lg m-4 "></div>
-       <div className="flex flex-col items-start justify-center pl-5 laptop:pl-[98px] tablet:pl-[60px] pr-5 ">
+       <div className={`flex flex-col items-start justify-center ${language === 'ar' ? 'pr-5 laptop:pr-[90px] tablet:pr-[60px] pl-5' : 'pl-5 laptop:pl-[98px] tablet:pl-[60px] pr-5'}`}>
       {/* Desktop Heading */}
       <h2 className="hidden md:block font-archivo font-bold text-[36px] md:text-[60px] leading-[100%] tracking-[0] text-oxford-blue mb-7">
-        What You Get
+        {t('products.whatYouGet.title')}
       </h2>
       <div className="w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 laptop:gap-24 items-center w-full">
@@ -131,20 +129,20 @@ const WhatYouGetSection = () => {
             {/* CTA Content */}
             <div className="flex flex-col gap-8 md:gap-3 laptop:gap-4 items-center justify-center mt-4">
               <h3 className="font-archivo font-semibold text-[18px] md:text-[22px] leading-[100%] tracking-[0] text-oxford-blue">
-                Try It Free Today
+                {t('products.whatYouGet.tryItFree')}
               </h3>
               <p className="font-roboto font-normal text-[14px] md:text-[16px] leading-[100%] tracking-[0] text-center text-oxford-blue">
-                Start with 50 free questions and experience the difference
+                {t('products.whatYouGet.tryItFreeDesc')}
               </p>
               <button className="w-full md:w-[498px] h-[50px] md:h-[54px] bg-orange-gradient rounded-[12px] font-archivo font-semibold text-[14px] leading-[14px] tracking-[0] align-middle uppercase text-white">
-                GET STARTED FREE
+                {t('products.whatYouGet.getStartedFree')}
               </button>
             </div>
           </div>
 
           {/* Heading - Shows after image on mobile */}
           <h2 className="md:hidden font-archivo font-bold text-[36px] leading-[100%] tracking-[0] text-oxford-blue mb-7 order-2">
-            What You Get
+            {t('products.whatYouGet.title')}
           </h2>
 
           {/* What You Get Content - Shows third on mobile */}
@@ -152,14 +150,14 @@ const WhatYouGetSection = () => {
             <div className="space-y-8 md:space-y-10">
               {features.map((feature, index) => (
                 <div key={index} className="flex items-start space-x-3 md:space-x-4">
-                  <div className="flex-shrink-0 bg-red-500 p-2 md:p-3 rounded-lg">
+                  <div className="flex-shrink-0 bg-red-500  p-2 md:p-3 rounded-lg">
                     {feature.icon}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <h3 className="font-archivo font-semibold text-[18px] md:text-[22px] leading-[100%] tracking-[0] text-start text-oxford-blue">
+                    <h3 className={`font-archivo font-semibold ${language === 'ar' ? 'pr-4' : 'pr-0'} text-[18px] md:text-[22px] leading-[100%] tracking-[0] text-start text-oxford-blue`}>
                       {feature.title}
                     </h3>
-                    <p className="font-roboto font-normal text-[14px] md:text-[18px] leading-[100%] tracking-[0] align-middle text-black">
+                    <p className={`font-roboto font-normal text-[14px] ${language === 'ar' ? 'pr-4' : 'pr-0'} md:text-[18px] leading-[100%] tracking-[0] align-middle text-black`}>
                       {feature.description}
                     </p>
                   </div>

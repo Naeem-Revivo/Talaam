@@ -1,6 +1,9 @@
 import React from "react";
 import { email, whatsapp } from "../../assets/svg";
+import { useLanguage } from "../../context/LanguageContext";
+
 const ContactOptions = () => {
+  const { t } = useLanguage();
   return (
     <section className="py-10 md:py-14 lg:py-16 bg-light-gradient h-auto lg:h-[435px] flex justify-center items-center">
       <div className="flex justify-center items-center w-full px-4 md:px-6 lg:px-0">
@@ -10,8 +13,8 @@ const ContactOptions = () => {
             <div className="">
               <img src={email} alt="" className="" />
             </div>
-            <h3 className="font-archivo font-semibold text-[22px] md:text-[24px] lg:text-[26px] leading-[31.2px] tracking-[0] align-middle text-oxford-blue">Email</h3>
-            <p className="font-roboto font-semibold text-[16px] md:text-[17px] lg:text-[18px] leading-[25.6px] tracking-[0] align-middle text-oxford-blue">contact@yourdomain.com</p>
+            <h3 className="font-archivo font-semibold text-[22px] md:text-[24px] lg:text-[26px] leading-[31.2px] tracking-[0] align-middle text-oxford-blue">{t('contact.contactOptions.email')}</h3>
+            <p className="font-roboto font-semibold text-[16px] md:text-[17px] lg:text-[18px] leading-[25.6px] tracking-[0] align-middle text-oxford-blue">{t('contact.contactOptions.emailValue')}</p>
           </div>
 
           {/* WhatsApp Card */}
@@ -19,8 +22,8 @@ const ContactOptions = () => {
             <div className="">
               <img src={whatsapp} alt="" className="" />
             </div>
-            <h3 className="font-archivo font-semibold text-[22px] md:text-[24px] lg:text-[26px] leading-[31.2px] tracking-[0] align-middle text-oxford-blue">WhatsApp</h3>
-            <p className="font-roboto font-semibold text-[16px] md:text-[17px] lg:text-[18px] leading-[25.6px] tracking-[0] align-middle text-oxford-blue">+98 901 123 4567</p>
+            <h3 className="font-archivo font-semibold text-[22px] md:text-[24px] lg:text-[26px] leading-[31.2px] tracking-[0] align-middle text-oxford-blue">{t('contact.contactOptions.whatsapp')}</h3>
+            <p className="font-roboto font-semibold text-[16px] md:text-[17px] lg:text-[18px] leading-[25.6px] tracking-[0] align-middle text-oxford-blue">{t('contact.contactOptions.whatsappValue')}</p>
           </div>
         </div>
       </div>

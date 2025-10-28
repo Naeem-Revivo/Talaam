@@ -1,14 +1,17 @@
 import React from 'react';
 import { tick } from '../../assets/svg';
+import { useLanguage } from '../../context/LanguageContext';
 
 const ChooseYourPlanSection = () => {
+  const { t } = useLanguage();
+  
   const features = [
-    "Full QBank access (1,000+ questions)",
-    "Smart study plan",
-    "Science-backed methods built in",
-    "Performance tracking",
-    "Explanations that actually teach",
-    "30-day access from subscription date"
+    t('products.choosePlan.features.feature1'),
+    t('products.choosePlan.features.feature2'),
+    t('products.choosePlan.features.feature3'),
+    t('products.choosePlan.features.feature4'),
+    t('products.choosePlan.features.feature5'),
+    t('products.choosePlan.features.feature6')
   ];
 
   return (
@@ -17,7 +20,7 @@ const ChooseYourPlanSection = () => {
       <div className="flex flex-col items-center justify-center gap-10 md:gap-12 lg:gap-14 pt-5 px-5 md:px-0">
         {/* Main Title */}
         <h2 className="font-archivo text-oxford-blue font-bold text-[36px] md:text-[60px] leading-[100%] md:leading-[62.4px] align-middle tracking-[0]">
-          Choose Your Plan
+          {t('products.choosePlan.title')}
         </h2>
 
         {/* Pricing Card */}
@@ -29,10 +32,10 @@ const ChooseYourPlanSection = () => {
             {/* Price */}
             <div className="py-6 md:py-8 lg:py-10 flex flex-col items-center pt-16 md:pt-16 laptop:pt-24 lg:pt-16 justify-center gap-3 md:gap-4 lg:gap-5">
             <h3 className="font-archivo font-semibold text-[28px] md:text-[30px] leading-[100%] tracking-[0] align-middle text-center w-[306px] md:w-auto">
-              Taalam Qudurat Access
+              {t('products.choosePlan.planName')}
             </h3>
               <p className="font-archivo font-semibold text-[30px] md:text-[40px] leading-[100%] tracking-[0] align-middle text-orange-dark-2">
-                99 SAR
+                {t('products.choosePlan.price')}
               </p>
             </div>
 
@@ -51,7 +54,7 @@ const ChooseYourPlanSection = () => {
             {/* CTA Button */}
             <div className="text-center mt-1 md:my-7 lg:mt-12 px-2">
               <button className="font-archivo w-full md:w-[390px] h-[50px] bg-orange-gradient rounded-[8px] text-white font-bold text-[12px] leading-[100%] tracking-[0] align-middle uppercase">
-                SUBSCRIBE NOW
+                {t('products.choosePlan.subscribe')}
               </button>
             </div>
           </div>

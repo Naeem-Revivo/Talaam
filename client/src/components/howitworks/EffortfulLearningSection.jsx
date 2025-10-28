@@ -1,20 +1,20 @@
 import React from "react";
 import { learningcard1, learningcard2 } from "../../assets/svg";
+import { useLanguage } from "../../context/LanguageContext";
 
 const EffortfulLearningSection = () => {
+  const { t } = useLanguage();
 
   const strategies = [
     {
-      title: "Desirable Difficulty",
-      description:
-        "Making learning challenging enough to require effort, but not so difficult it causes frustration.",
+      title: t('howItWorks.effortfulLearning.strategies.desirableDifficulty.title'),
+      description: t('howItWorks.effortfulLearning.strategies.desirableDifficulty.description'),
       icon: learningcard1,
       iconColor: "bg-orange-500",
     },
     {
-      title: "Deliberate Practice",
-      description:
-        "Focused practice on specific areas of weakness with immediate feedback.",
+      title: t('howItWorks.effortfulLearning.strategies.deliberatePractice.title'),
+      description: t('howItWorks.effortfulLearning.strategies.deliberatePractice.description'),
       icon: learningcard2,
       iconColor: "bg-blue-500",
     },
@@ -26,11 +26,10 @@ const EffortfulLearningSection = () => {
         <div className="flex flex-col items-center justify-center gap-8 md:gap-12">
           <div className="text-center px-5">
             <h2 className="font-archivo font-bold text-[36px] md:text-[40px] leading-[100%] tracking-[0] text-oxford-blue mb-4 w-[352px] md:w-auto text-center">
-              Effortful Learning Works
+              {t('howItWorks.effortfulLearning.title')}
             </h2>
             <p className="font-roboto font-normal text-[16px] md:text-[20px] leading-[100%] tracking-[0] text-oxford-blue text-center">
-              Challenge yourself with strategies that make learning more
-              effective.
+              {t('howItWorks.effortfulLearning.subtitle')}
             </p>
           </div>
 

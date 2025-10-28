@@ -1,18 +1,21 @@
 import React from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const OurPhilosophySection = () => {
+  const { t } = useLanguage();
+  
   const philosophyPoints = [
     {
       id: 1,
-      text: "At Taalam, we believe in learning through action. Our approach is simple but powerful: Start a block, answer a question, read the explanation, and move on. This cycle helps you learn faster – and more importantly, retain what you've learned.",
+      text: t('products.philosophy.point1'),
     },
     {
       id: 2,
-      text: "Every question is designed to teach, not just test. We focus on the core concepts most commonly seen on the Qudurat exam, so your effort goes where it matters most.",
+      text: t('products.philosophy.point2'),
     },
     {
       id: 3,
-      text: "Our platform also uses spaced repetition algorithms to automatically revisit key concepts just before you forget them – improving retention and making sure knowledge sticks.",
+      text: t('products.philosophy.point3'),
     },
   ];
 
@@ -21,7 +24,7 @@ const OurPhilosophySection = () => {
 
       <div className="flex flex-col gap-8 md:gap-16  items-center justify-center px-5 md:px-16 laptop:px-24 w-full max-w-[352px] md:max-w-none">
         <h2 className="font-archivo font-bold text-[36px] md:text-[60px] leading-[100%] tracking-[0] text-center md:text-start">
-          Our Philosophy: Learn by Doing
+          {t('products.philosophy.title')}
         </h2>
 
         <div className="space-y-6 md:space-y-8 w-[352px] md:w-full">

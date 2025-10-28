@@ -1,0 +1,328 @@
+{
+  "navbar": {
+    "howItWorks": "How it works",
+    "products": "Products",
+    "about": "About",
+    "contact": "Contact",
+    "signUp": "SIGN UP",
+    "logIn": "LOG IN"
+  },
+  "homepage": {
+    "hero": {
+      "title": "Study Smart. ",
+      "titleHighlight": "Ace Any Exam.",
+      "subtitle": "Master Qudurat and Tahseely with science-backed techniques like active recall, spaced repetition, and deliberate practice.",
+      "getStarted": "Get Started",
+      "exploreMore": "EXPLORE MORE",
+      "cards": {
+        "learnSmarter": {
+          "title": "Learn Smarter",
+          "description": "Built on science-backed techniques recall, spaced repetition, and deliberate practice."
+        },
+        "trackProgress": {
+          "title": "Track Progress",
+          "description": "Monitor your learning journey with detailed analytics and personalized insights."
+        },
+        "achieveGoals": {
+          "title": "Achieve Goals",
+          "description": "Set and reach your academic targets with proven study methods and expert guidance."
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "How Taalam Works",
+      "subtitle": "Simple steps to exam success",
+      "step1": {
+        "number": "Step 1",
+        "title": "Make an Account",
+        "description": "That's it — just sign up."
+      },
+      "step2": {
+        "number": "Step 2",
+        "title": "Solve Questions",
+        "description": "Learn by doing questions and reading explanations."
+      }
+    },
+    "values": {
+      "title": "Our Values",
+      "subtitle": "At Taalam, our core values guide everything we do. They reflect who we are and what we stand for as a brand",
+      "evidenceBasedLearning": {
+        "title": "Evidence-Based Learning",
+        "description": "We build on active recall, spaced repetition, and deliberate practice, and are trying to incorporate more science proven strategy.",
+        "action": "Start Quiz"
+      },
+      "effortOverHacks": {
+        "title": "Effort Over Hacks",
+        "description": "There's no 'infinite knowledge glitch.' Mastery comes from work, we make that work count more per minute.",
+        "action": "Explore"
+      },
+      "learnHowToLearn": {
+        "title": "Learn How to Learn",
+        "description": "Beyond answers, we teach the science of learning so students become better learners for life.",
+        "action": "Learn more"
+      },
+      "valueFirstAlways": {
+        "title": "Value-First, Always",
+        "description": "For every decision, our intent is to create real value for students -otherwise we don't do it.",
+        "action": "Learn more"
+      }
+    },
+    "cta": {
+      "title": "Ready to study smarter?",
+      "subtitle": "Make an account and start practicing now it's free to try.",
+      "button": "START STUDYING"
+    }
+  },
+  "footer": {
+    "mission": "Empowering students to achieve their academic goals through smart learning.",
+    "company": {
+      "title": "Company",
+      "about": "About",
+      "contact": "Contact",
+      "howItWorks": "How It Works"
+    },
+    "product": {
+      "title": "Product",
+      "qudurat": "Qudurat",
+      "tahseely": "Tahseely"
+    },
+    "support": {
+      "title": "Support",
+      "helpCenter": "Help Center",
+      "privacyPolicy": "Privacy Policy"
+    },
+    "social": "Social",
+    "subscribe": {
+      "title": "Subscribe",
+      "description": "Join our community to receive updates",
+      "placeholder": "Enter your email",
+      "button": "SUBSCRIBE",
+      "consent": "By subscribing, you agree to our Privacy Policy"
+    },
+    "copyright": "© 2025 Taalam. All rights reserved."
+  },
+  "howItWorks": {
+    "hero": {
+      "title": "How Taalam ",
+      "titleHighlight": "Works",
+      "subtitle": "Discover the science behind effective learning and how Taalam helps you master exams through principles that actually work.",
+      "getStarted": "Get Started",
+      "exploreMore": "EXPLORE MORE"
+    },
+    "learningLoop": {
+      "title": "The Learning Loop",
+      "subtitle": "Understanding how your brain processes and retains information.",
+      "steps": {
+        "attention": {
+          "title": "Attention",
+          "description": "Filters sensory input and selects what enters working memory"
+        },
+        "workingMemory": {
+          "title": "Working Memory",
+          "description": "Temporarily holds and processes selected info"
+        },
+        "encoding": {
+          "title": "Encoding",
+          "description": "Transforms what is in the working memory into long-term memory"
+        },
+        "consolidation": {
+          "title": "Consolidation",
+          "description": "Reinforces and stabilizes long term memory traces over time"
+        },
+        "retrieval": {
+          "title": "Retrieval",
+          "description": "Reactivates long-term memories for use"
+        }
+      }
+    },
+    "scienceStrategies": {
+      "title": "Science-Backed Strategies",
+      "strategies": {
+        "activeRecall": {
+          "title": "Active Recall",
+          "description": "Actively retrieving information from memory rather than passively reviewing it."
+        },
+        "interleaving": {
+          "title": "Interleaving",
+          "description": "Mixing different topics or problems within a single study session."
+        }
+      }
+    },
+    "timingMatters": {
+      "title": "Why Timing Matters",
+      "subtitle": "Spaced Repetition",
+      "description1": "Reviewing information at increasing intervals over time.",
+      "description2": "The forgetting curve shows how rapidly we lose information without reinforcement. Spaced repetition strategically times reviews just as you're about to forget, strengthening memory traces and dramatically improving retention.",
+      "legend1": "Forgetting Curve",
+      "legend2": "With Spaced Repetition",
+      "learnMore": "LEARN MORE"
+    },
+    "effortfulLearning": {
+      "title": "Effortful Learning Works",
+      "subtitle": "Challenge yourself with strategies that make learning more effective.",
+      "strategies": {
+        "desirableDifficulty": {
+          "title": "Desirable Difficulty",
+          "description": "Making learning challenging enough to require effort, but not so difficult it causes frustration."
+        },
+        "deliberatePractice": {
+          "title": "Deliberate Practice",
+          "description": "Focused practice on specific areas of weakness with immediate feedback."
+        }
+      }
+    },
+    "questionBank": {
+      "title": "Why Our Question Bank Works",
+      "subtitle": "Taalam's question bank naturally incorporates all these science-backed techniques.",
+      "features": {
+        "activeRecall": "Active recall through practice questions.",
+        "desirableDifficulty": "Desirable difficulty: questions are calibrated to be \"just the right level of tricky.\"",
+        "spacedRepetition": "Spaced repetition: our algorithm spaces reviews and resurfaces questions with similar subjects at the right time.",
+        "interleaving": "Interleaving by solving questions from several topics within the same practice session.",
+        "deliberatePractice": "Deliberate practice: after every question, you get immediate feedback and a targeted explanation."
+      },
+      "conclusion": "This comprehensive approach is why we believe our product provides true value."
+    },
+    "wantToGoDeeper": {
+      "title": "Want to Go Deeper?",
+      "subtitle": "We're making a short video on how learning works, and the science behind the principles we use."
+    }
+  },
+  "products": {
+    "hero": {
+      "title1": "Master the Tahseely",
+      "title2": "Exam with",
+      "titleHighlight": "Confidence",
+      "subtitle": "Master Qudurat and Tahseely with science-backed techniques like active recall, spaced repetition, and deliberate practice.",
+      "getStarted": "Get Started",
+      "exploreMore": "EXPLORE MORE"
+    },
+    "whatYouGet": {
+      "title": "What You Get",
+      "tryItFree": "Try It Free Today",
+      "tryItFreeDesc": "Start with 50 free questions and experience the difference",
+      "getStartedFree": "GET STARTED FREE",
+      "features": {
+        "practiceQuestions": {
+          "title": "1,000+ High-Yield Practice Questions",
+          "description": "Practice with exam-focused questions designed to sharpen your skills and boost confidence."
+        },
+        "performanceTracking": {
+          "title": "Performance Tracking",
+          "description": "Monitor your progress with smart analytics that highlight strengths and areas to improve."
+        },
+        "studyPlanTools": {
+          "title": "Study Plan Tools",
+          "description": "Stay organized with personalized study plans tailored to your exam timeline."
+        },
+        "explanations": {
+          "title": "Explanations That Teach",
+          "description": "Learn faster with detailed explanations that clarify concepts, not just provide answers."
+        },
+        "scienceBacked": {
+          "title": "Science-Backed Methods",
+          "description": "Built with proven learning strategies like active recall and spaced repetition."
+        }
+      }
+    },
+    "philosophy": {
+      "title": "Our Philosophy: Learn by Doing",
+      "point1": "At Taalam, we believe in learning through action. Our approach is simple but powerful: Start a block, answer a question, read the explanation, and move on. This cycle helps you learn faster – and more importantly, retain what you've learned.",
+      "point2": "Every question is designed to teach, not just test. We focus on the core concepts most commonly seen on the Qudurat exam, so your effort goes where it matters most.",
+      "point3": "Our platform also uses spaced repetition algorithms to automatically revisit key concepts just before you forget them – improving retention and making sure knowledge sticks."
+    },
+    "choosePlan": {
+      "title": "Choose Your Plan",
+      "planName": "Taalam Qudurat Access",
+      "price": "99 SAR",
+      "features": {
+        "feature1": "Full QBank access (1,000+ questions)",
+        "feature2": "Smart study plan",
+        "feature3": "Science-backed methods built in",
+        "feature4": "Performance tracking",
+        "feature5": "Explanations that actually teach",
+        "feature6": "30-day access from subscription date"
+      },
+      "subscribe": "SUBSCRIBE NOW"
+    },
+    "howItWorks": {
+      "title": "How It Works: 2 Simple Steps",
+      "subtitle": "Simple steps to exam success",
+      "step1": {
+        "title": "Sign Up",
+        "description": "Create your account and unlock your tools."
+      },
+      "step2": {
+        "title": "Start Practicing",
+        "description": "Solve questions, learn from explanations, and track your progress."
+      }
+    }
+  },
+  "about": {
+    "hero": {
+      "title1": "About",
+      "title2": "Us",
+      "subtitle": "Learn about our curriculum and the people behind Taalam.",
+      "getStarted": "Get Started",
+      "exploreMore": "Explore More"
+    },
+    "whoWeAre": {
+      "title": "Who We Are",
+      "description": "We are a team of passionate educators, lifelong learners, and innovative technologists. Our focus is to empower students in Saudi Arabia with smarter ways to prepare for their studies. We specialize in high-stakes exams like Qudurat, where the right preparation can change futures. By blending proven learning science with modern technology, we make studying more effective and engaging. At Taalam, we believe every student deserves the opportunity to learn smarter and achieve their goals."
+    },
+    "ourMission": {
+      "title": "Our Mission",
+      "description": "At Taalam, we're on a mission to change how students learn—by turning learning into a skill rooted in science. In a world where adaptability is everything, we help students master how to learn faster, better, and with purpose."
+    },
+    "whatMakesUsDifferent": {
+      "title": "What Makes Us Different",
+      "features": {
+        "feature1": "We focus on evidence-based learning strategies",
+        "feature2": "Built specifically for the Saudi student experience",
+        "feature3": "Designed to help you study smarter, not longer",
+        "feature4": "We don't just give you content — we train you to learn"
+      }
+    },
+    "whyWeStarted": {
+      "title": "Why We Started Taalam",
+      "subtitle": "Our Story",
+      "description": "Taalam was born from a simple yet powerful observation: traditional education wasn't meeting the diverse needs of modern students. Our founders, experienced educators and technologists, witnessed countless bright minds struggling not because they lacked ability, but because they weren't learning in ways that worked for them. In 2020, during a time when education was being reimagined globally, we decided to take action. We started with a vision: to create an educational platform that truly understands each student as an individual. Through extensive research, collaboration with educators, and countless hours of development, Taalam emerged as a comprehensive solution. Today, we're proud to serve thousands of students, helping them discover their potential and achieve their academic goals. Our journey is just beginning, and we remain committed to evolving and improving to better serve the next generation of learners."
+    },
+    "joinUs": {
+      "title": "Help us grow",
+      "subtitle": "We're always looking for passionate people to join our mission. If you believe in helping students learn smarter, apply below.",
+      "formTitle": "join us",
+      "name": "Name",
+      "email": "Email",
+      "message": "Message",
+      "placeholder": "Why do you want to join us ?",
+      "button": "APPLY NOW"
+    }
+  },
+  "contact": {
+    "hero": {
+      "title1": "Get in",
+      "title2": "Touch",
+      "subtitle": "Have a question, suggestion, or need support? We'd love to hear from you."
+    },
+    "contactOptions": {
+      "email": "Email",
+      "emailValue": "contact@yourdomain.com",
+      "whatsapp": "WhatsApp",
+      "whatsappValue": "+98 901 123 4567"
+    },
+    "contactForm": {
+      "title": "Send us a Message",
+      "name": "Name",
+      "email": "Email",
+      "message": "Message",
+      "button": "SUBMIT MESSAGE",
+      "successAlert": "Thank you for your message! We will get back to you soon."
+    },
+    "followUs": {
+      "title": "Follow us",
+      "description": "An easy to use, powerful and secure solution for your business."
+    }
+  }
+}
+
