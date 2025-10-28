@@ -44,7 +44,7 @@ const Navbar = () => {
             {/* Logo Icon */}
             <Link to="/" className="flex items-center">
               <div className="flex items-center justify-center">
-                <img src={navlogo} alt="Taalam Logo" className="w-[86px] h-[43px]" />
+                <img src={navlogo} alt="Taalam Logo" className="w-[114px] h-[57px]" />
               </div>
             </Link>
 
