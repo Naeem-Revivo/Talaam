@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { fb, instagram, linkedin, youtube, logofooter } from "../assets/svg";
 import { useLanguage } from "../context/LanguageContext";
 
@@ -37,28 +38,28 @@ const Footer = () => {
               <h4 className="text-white font-archivo font-bold text-[16px] md:text-[20px] leading-[100%] tracking-[0] mb-3 md:mb-4">{t('footer.company.title')}</h4>
               <ul className="space-y-2">
                 <li>
-                  <a
-                    href="/about"
+                  <Link
+                    to="/about"
                     className="font-roboto font-normal text-[14px] md:text-[16px] leading-[100%] tracking-[0] text-white hover:text-orange-light transition"
                   >
                     {t('footer.company.about')}
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="/contact"
+                  <Link
+                    to="/contact"
                     className="font-roboto font-normal text-[14px] md:text-[16px] leading-[100%] tracking-[0] text-white hover:text-orange-light transition"
                   >
                     {t('footer.company.contact')}
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="/how-it-works"
+                  <Link
+                    to="/how-it-works"
                     className="font-roboto font-normal text-[14px] md:text-[16px] leading-[100%] tracking-[0] text-white hover:text-orange-light transition"
                   >
                     {t('footer.company.howItWorks')}
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -68,20 +69,20 @@ const Footer = () => {
               <h4 className="text-white font-archivo font-bold text-[16px] md:text-[20px] leading-[100%] tracking-[0] mb-3 md:mb-4">{t('footer.product.title')}</h4>
               <ul className="space-y-2">
                 <li>
-                  <a
-                    href="/products"
+                  <Link
+                    to="/products"
                     className="font-roboto font-normal text-[14px] md:text-[16px] leading-[100%] tracking-[0] text-white hover:text-orange-light transition"
                   >
                     {t('footer.product.qudurat')}
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="/products"
+                  <Link
+                    to="/products"
                     className="font-roboto font-normal text-[14px] md:text-[16px] leading-[100%] tracking-[0] text-white hover:text-orange-light transition"
                   >
                     {t('footer.product.tahseely')}
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
