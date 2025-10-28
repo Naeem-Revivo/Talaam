@@ -22,8 +22,9 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md w-full">
       {/* Top Bar with Social Icons */}
-      <div className="bg-oxford-blue w-full flex items-center justify-center h-[62px] px-4">
-        <div className={`${language === 'ar' ? 'gap-2 w-[95%]' : 'gap-4 w-[85%]'} items-center flex justify-end`}>
+      <div className="bg-oxford-blue w-full h-[62px]">
+        <div className="max-w-[1400px] mx-auto w-full h-full px-4 md:px-8 lg:px-12">
+          <div className="flex items-center justify-end h-full gap-4">
           {/* Facebook */}
           <img src={fb} alt="" className="" />
           {/* Instagram */}
@@ -32,12 +33,13 @@ const Navbar = () => {
           <img src={linkedin} alt="" className="" />
           {/* YouTube */}
           <img src={youtube} alt="" className="" />
+          </div>
         </div>
       </div>
 
       {/* Main Navigation Bar */}
       <div className="bg-white h-[84px]">
-        <div className={`max-w-full ${language === 'ar' ? 'px-2 laptop:px-[85px] tablet:px-8' : 'px-4 laptop:px-[87px] tablet:px-16'} pt-2`}>
+        <div className="max-w-[1400px] mx-auto w-full h-full px-4 md:px-8 lg:px-12 pt-2">
           <div className="flex justify-between items-center py-[13.5px] h-full">
             {/* Logo Icon */}
             <Link to="/" className="flex items-center">
@@ -117,7 +119,7 @@ const Navbar = () => {
       {/* Navigation Menu */}
       {isMenuOpen && (
         <div className="lg:hidden bg-white border-t border-gray-200 shadow-lg">
-          <div className="px-4 pt-4 pb-6 space-y-4">
+          <div className="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-12 pt-4 pb-6 space-y-4">
             <Link
               to="/how-it-works"
               className="block px-3 py-2 text-lg font-archivo font-medium text-oxford-blue hover:bg-gray-50 rounded-md"

@@ -22,10 +22,10 @@ const EffortfulLearningSection = () => {
 
   return (
     <section className="bg-light-gradient w-full py-10 tablet:h-[650px] laptop:h-[590px] md:flex md:items-center md:justify-center">
-      <div className="container mx-auto px-4">
+      <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 lg:px-12">
         <div className="flex flex-col items-center justify-center gap-8 md:gap-12">
           <div className="text-center px-5">
-            <h2 className="font-archivo font-bold text-[36px] md:text-[40px] leading-[100%] tracking-[0] text-oxford-blue mb-4 w-[352px] md:w-auto text-center">
+            <h2 className="font-archivo font-bold text-[28px] md:text-[40px] leading-[100%] tracking-[0] text-oxford-blue mb-4 w-full md:w-auto text-center">
               {t('howItWorks.effortfulLearning.title')}
             </h2>
             <p className="font-roboto font-normal text-[16px] md:text-[20px] leading-[100%] tracking-[0] text-oxford-blue text-center">
@@ -33,11 +33,11 @@ const EffortfulLearningSection = () => {
             </p>
           </div>
 
-          <div className="flex flex-col tablet:flex-col laptop:flex-row items-center justify-center gap-4 tablet:gap-[25px] laptop:gap-36">
+          <div className="flex flex-col tablet:flex-col laptop:flex-row items-center justify-center gap-4 tablet:gap-[25px] laptop:gap-28">
             {strategies.map((strategy, index) => (
               <div
                 key={index}
-                className="bg-white rounded-lg shadow-lg w-[352px] h-[159px] md:w-[595px] md:h-[202px] flex items-center justify-center"
+                className="bg-white rounded-lg shadow-lg w-full max-w-[352px] h-[159px] md:w-[595px] md:h-[202px] flex items-center justify-center"
               >
                 <div className="w-full p-4 md:p-6 flex items-center gap-3 md:gap-5 rounded-lg">
                   {/* Icon */}

@@ -6,11 +6,10 @@ const ValueCard = ({
   actionText,
   iconBgColor,
   icon,
-  gradientBg,
-  height = "h-[234px]"
+  gradientBg
 }) => {
   return (
-    <div className={`${gradientBg} border border-[#E0E0E1] desktop: rounded-[8px] mobile:p-4 desktop:p-6 tablet:p-5 laptop:p-6 mobile:w-full tablet:w-full laptop:w-[610px] ${height} desktop:w-[783px] shadow-md relative flex flex-col`}>
+    <div className={`${gradientBg} border border-[#E0E0E1] rounded-[8px] mobile:p-4 desktop:p-6 tablet:p-5 laptop:p-6 mobile:w-full tablet:w-full laptop:w-[610px] laptop:h-[234px] desktop:w-[783px] desktop:h-[234px] shadow-md relative flex flex-col`}>
       {/* Icon */}
       <div className="flex justify-between">
       {/* Title */}
@@ -25,7 +24,7 @@ const ValueCard = ({
 
       
       {/* Description */}
-      <p className="font-roboto mobile:h-auto desktop:h-auto tablet:h-auto laptop:h-[81px] font-normal mobile:text-[14px] mobile:leading-[140%] tablet:text-[14.5px] tablet:leading-[150%] laptop:text-[18px] desktop:text-[20px] desktop:leading-[150%] tracking-[-0.3px] text-oxford-blue mobile:w-full tablet:w-full laptop:w-[500px] mobile:pt-2 tablet:pt-3 laptop:pt-3">
+      <p className="font-roboto font-normal mobile:text-[14px] mobile:leading-[140%] tablet:text-[14.5px] tablet:leading-[150%] laptop:text-[18px] desktop:text-[20px] desktop:leading-[150%] tracking-[-0.3px] text-oxford-blue mobile:w-full tablet:w-full laptop:w-[500px] mobile:pt-2 tablet:pt-3 laptop:pt-3 flex-1">
         {description}
       </p>
       

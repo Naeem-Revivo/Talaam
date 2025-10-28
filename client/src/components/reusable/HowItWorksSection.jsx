@@ -27,7 +27,7 @@ const HowItWorksSection = ({
 }) => {
   return (
     <div className={`${backgroundColor} w-full mobile:h-auto tablet:h-auto laptop:h-[558px] mobile:py-12 tablet:py-16 laptop:py-0`}>
-      <div className="w-full mobile:h-auto tablet:h-auto laptop:h-full flex flex-col items-center justify-center mobile:gap-12 tablet:gap-16 laptop:gap-20 mobile:px-4 tablet:px-8 laptop:px-0">
+      <div className="w-full mobile:h-auto tablet:h-auto laptop:h-full flex flex-col items-center justify-center mobile:gap-12 tablet:gap-16 laptop:gap-12 mobile:px-4 tablet:px-8 laptop:px-0">
         {/* Header */}
         <div className="text-center flex flex-col items-center justify-center gap-6">
           <h2 className="font-archivo font-bold text-oxford-blue mobile:text-[32px] mobile:leading-[120%] tablet:text-[44px] tablet:leading-[110%] laptop:text-[48px] laptop:leading-[100%] tracking-[0]">

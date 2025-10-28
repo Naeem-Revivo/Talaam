@@ -6,7 +6,7 @@ const WhyWeStarted = () => {
   const { t, language } = useLanguage();
   return (
     <section className="py-10 md:py-16 lg:py-20 bg-soft-gradient h-auto lg:h-[741px]">
-      <div className="">
+      <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 lg:px-12">
         <h2 className="font-archivo text-center pb-8 md:pb-12 lg:pb-20 pt-4 md:pt-6 lg:pt-8 font-bold text-[28px] md:text-[40px] lg:text-[60px] leading-[110%] md:leading-[100%] lg:leading-[100%] tracking-[0] text-oxford-blue px-4">
           {t('about.whyWeStarted.title')}
         </h2>

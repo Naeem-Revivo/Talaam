@@ -6,8 +6,8 @@ const TimingMattersSection = () => {
   const { t, language } = useLanguage();
   return (
     <section className="bg-[#C6D8D329] w-full mobile:py-10 tablet:py-10 tablet:pb-12 h-auto tablet:h-[790px] lg:h-[590px] overflow-hidden md:overflow-visible">
-      <div className="">
-        <div className={`flex flex-col tablet:flex-col  laptop:flex-row md:items-center lg:items-center lg:justify-between px-5 ${language === 'ar' ? 'lg:pr-[100px] lg:pl-10' : 'lg:pl-[100px] lg:pr-10'}`}>
+      <div className="max-w-[1400px] mx-auto w-full">
+        <div className={`flex flex-col tablet:flex-col laptop:flex-row md:items-center lg:items-center lg:justify-between px-4 md:px-8 lg:px-12`}>
           {/* Left side - Text content */}
           <div className="flex flex-col gap-3 order-2 md:order-1 tablet:pr-12 laptop:pr-0">
             <h2 className="font-archivo font-bold text-[28px] md:text-[40px] mobile:pt-8 leading-[100%] tracking-[0] text-oxford-blue">{t('howItWorks.timingMatters.title')}</h2>
@@ -28,11 +28,11 @@ const TimingMattersSection = () => {
               <div className={`flex flex-row gap-6 text-oxford-blue items-center ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
                 <div className={`flex items-center ${language === 'ar' ? 'flex-row-reverse gap-2' : 'space-x-2'}`}>
                   <span className="w-[17px] h-[17px] bg-orange-gradient rounded-sm"></span>
-                  <span className="text-[14px] md:text-base">{t('howItWorks.timingMatters.legend1')}</span>
+                  <span className="font-roboto font-normal text-[12px] leading-[100%] tracking-[0] md:text-base">{t('howItWorks.timingMatters.legend1')}</span>
                 </div>
-                <div className={`flex items-center ${language === 'ar' ? 'flex-row-reverse gap-2' : 'space-x-2'}`}>
+                <div className={`flex items-center justify-normal ${language === 'ar' ? 'flex-row-reverse gap-2' : 'space-x-2'}`}>
                   <span className="w-[17px] h-[17px] bg-blue-gradient rounded-sm"></span>
-                  <span className="text-[14px] md:text-base">{t('howItWorks.timingMatters.legend2')}</span>
+                  <span className="font-roboto font-normal text-[12px] leading-[100%] tracking-[0] md:text-base">{t('howItWorks.timingMatters.legend2')}</span>
                 </div>
               </div>
               
@@ -48,7 +48,7 @@ const TimingMattersSection = () => {
 
           {/* Right side - Graph */}
        <div className="order-1 md:order-2 pl-0 md:pl-10 mb-6 tablet:mb-8 laptop:mb-0">
-        <div className="w-[352px] h-[275px] overflow-hidden flex-shrink-0 relative tablet:w-[500px] tablet:h-[390px] laptop:h-[466px] laptop:w-[599px] md:overflow-visible">
+        <div className="w-full max-w-[352px] h-[275px] overflow-hidden flex-shrink-0 relative tablet:w-[500px] tablet:h-[390px] laptop:h-[466px] laptop:w-[599px] md:overflow-visible">
           <img src={timinggraph} alt="" className="absolute inset-0 w-full h-full object-cover scale-125 tablet:scale-100 md:static md:w-auto md:h-auto md:object-contain" style={{ objectPosition: 'center' }} />
         </div>
        </div>

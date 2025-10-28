@@ -6,7 +6,7 @@ const ContactOptions = () => {
   const { t } = useLanguage();
   return (
     <section className="py-10 md:py-14 lg:py-16 bg-light-gradient h-auto lg:h-[435px] flex justify-center items-center">
-      <div className="flex justify-center items-center w-full px-4 md:px-6 lg:px-0">
+      <div className="max-w-[1400px] mx-auto w-full flex justify-center items-center px-4 md:px-8 lg:px-12">
         <div className="flex flex-col lg:flex-row gap-6 md:gap-8 lg:gap-[120px] w-full lg:w-auto items-center lg:items-stretch">
           {/* Email Card */}
           <div className="bg-white flex flex-col items-center justify-center gap-3 shadow-[0px_2px_14px_0px_#FF8B6740] rounded-lg w-[289px] md:w-[450px] lg:w-[600px] h-[200px] md:h-auto lg:h-[235px] p-6 md:p-7 lg:p-8 text-center">

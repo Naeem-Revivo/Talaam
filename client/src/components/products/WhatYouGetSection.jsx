@@ -111,30 +111,28 @@ const WhatYouGetSection = () => {
 
   return (
     <section className="py-12 md:py-24 h-auto laptop:h-[813px] tablet:h-[1300px] bg-light-gradient">
-      {/* Light blue border frame */}
-      <div className="absolute inset-0  rounded-lg m-4 "></div>
-       <div className={`flex flex-col items-start justify-center ${language === 'ar' ? 'pr-5 laptop:pr-[90px] tablet:pr-[60px] pl-5' : 'pl-5 laptop:pl-[98px] tablet:pl-[60px] pr-5'}`}>
-      {/* Desktop Heading */}
-      <h2 className="hidden md:block font-archivo font-bold text-[36px] md:text-[60px] leading-[100%] tracking-[0] text-oxford-blue mb-7">
-        {t('products.whatYouGet.title')}
-      </h2>
-      <div className="w-full">
+      <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 lg:px-12">
+        {/* Desktop Heading */}
+        <h2 className="hidden md:block font-archivo font-bold text-[36px] md:text-[60px] leading-[100%] tracking-[0] text-oxford-blue mb-7">
+          {t('products.whatYouGet.title')}
+        </h2>
+        <div className="w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 laptop:gap-24 items-center w-full">
           {/* Product Visual and CTA - Shows first on mobile */}
-          <div className="bg-white h-[436px] md:h-[511px] w-[352px] md:w-[587px] pt-10 px-6 pb-6 md:p-8 rounded-xl shadow-lg mx-auto md:mx-0 order-1 md:order-2 lg:order-2">
-            <div className="flex items-center justify-center">
-              <img src={computer} alt="" className="w-full h-auto" />
+          <div className="bg-white   md:w-[587px] lg:w-[587px] xl:w-[587px] h-auto min-h-[436px] md:h-[436px] laptop:h-[511px] pt-6 px-4 pb-6 sm:pt-8 sm:px-6 md:p-8 rounded-xl shadow-lg mx-auto md:mx-0 order-1 md:order-2 lg:order-2">
+            <div className="flex items-center justify-center h-[200px] sm:h-[220px] md:h-[280px] laptop:h-[280px]">
+              <img src={computer} alt="" className="w-full h-full object-contain" />
             </div>
 
             {/* CTA Content */}
-            <div className="flex flex-col gap-8 md:gap-3 laptop:gap-4 items-center justify-center mt-4">
-              <h3 className="font-archivo font-semibold text-[18px] md:text-[22px] leading-[100%] tracking-[0] text-oxford-blue">
+            <div className="flex flex-col gap-4 sm:gap-6 md:gap-3 laptop:gap-4 items-center justify-center mt-4 sm:mt-6">
+              <h3 className="font-archivo font-semibold text-[16px] sm:text-[18px] md:text-[22px] leading-[120%] tracking-[0] text-oxford-blue text-center">
                 {t('products.whatYouGet.tryItFree')}
               </h3>
-              <p className="font-roboto font-normal text-[14px] md:text-[16px] leading-[100%] tracking-[0] text-center text-oxford-blue">
+              <p className="font-roboto font-normal text-[13px] sm:text-[14px] md:text-[16px] leading-[140%] tracking-[0] text-center text-oxford-blue px-2">
                 {t('products.whatYouGet.tryItFreeDesc')}
               </p>
-              <button className="w-full md:w-[498px] h-[50px] md:h-[54px] bg-orange-gradient rounded-[12px] font-archivo font-semibold text-[14px] leading-[14px] tracking-[0] align-middle uppercase text-white">
+              <button className="w-full max-w-[280px] sm:max-w-[320px] md:w-[498px] h-[48px] sm:h-[50px] md:h-[54px] bg-orange-gradient rounded-[12px] font-archivo font-semibold text-[13px] sm:text-[14px] leading-[14px] tracking-[0] align-middle uppercase text-white hover:opacity-90 transition-opacity">
                 {t('products.whatYouGet.getStartedFree')}
               </button>
             </div>

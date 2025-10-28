@@ -22,16 +22,16 @@ const ScienceStrategiesSection = () => {
 
   return (
     <section className="bg-[#fffaef] w-full mobile:h-auto laptop:h-[590px] flex items-center justify-center mobile:py-8 laptop:py-0">
-      <div className="container mx-auto mobile:px-4 laptop:px-2">
+      <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 lg:px-12">
         <div className="mobile:flex mobile:flex-col laptop:flex laptop:flex-row items-center justify-around">
           {/* Left side - Brain Image */}
-          <div className="mobile:w-[352px] mobile:mb-6 laptop:w-auto laptop:mb-0">
+          <div className="mobile:w-full mobile:max-w-[352px] mobile:mb-6 laptop:w-auto laptop:mb-0">
             <img src={brain} alt="" className="mobile:w-full mobile:h-[275px] laptop:w-[587px] laptop:h-[388px]" />
           </div>
           
           {/* Right side - Text content */}
-          <div className="mobile:space-y-6 laptop:space-y-8 mobile:w-[352px] laptop:w-auto">
-            <h2 className="font-archivo font-bold mobile:text-[26px] text-center laptop:text-[40px] leading-[100%] tracking-[0] text-oxford-blue mobile:whitespace-nowrap">{t('howItWorks.scienceStrategies.title')}</h2>
+          <div className="mobile:space-y-6 laptop:space-y-8 mobile:w-full mobile:max-w-[352px] laptop:w-auto">
+            <h2 className="font-archivo font-bold mobile:text-[20px] text-center laptop:text-[40px] leading-[100%] tracking-[0] text-oxford-blue mobile:whitespace-nowrap">{t('howItWorks.scienceStrategies.title')}</h2>
             
             <div className="mobile:space-y-3 laptop:space-y-4">
               {strategies.map((strategy) => (

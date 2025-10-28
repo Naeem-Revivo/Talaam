@@ -22,12 +22,13 @@ const OurPhilosophySection = () => {
   return (
     <section className="h-auto md:h-[506px] bg-[#C6D8D329] flex items-center justify-center py-12 md:py-0">
 
-      <div className="flex flex-col gap-8 md:gap-16  items-center justify-center px-5 md:px-16 laptop:px-24 w-full max-w-[352px] md:max-w-none">
-        <h2 className="font-archivo font-bold text-[36px] md:text-[60px] leading-[100%] tracking-[0] text-center md:text-start">
+      <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 lg:px-12">
+        <div className="flex flex-col gap-8 md:gap-16 items-center justify-center w-full max-w-[352px] md:max-w-none">
+        <h2 className="font-archivo font-bold text-[28px] md:text-[60px] leading-[100%] tracking-[0] text-center md:text-start">
           {t('products.philosophy.title')}
         </h2>
 
-        <div className="space-y-6 md:space-y-8 w-[352px] md:w-full">
+        <div className="space-y-6 md:space-y-8 w-[352px] px-7 md:px-0 md:w-full">
           {philosophyPoints.map((point) => (
             <div key={point.id} className="flex items-start space-x-3 md:space-x-4">
               <div className="flex-shrink-0 mt-1">
@@ -39,6 +40,7 @@ const OurPhilosophySection = () => {
             </div>
           ))}
         </div>
+      </div>
       </div>
     </section>
   );

@@ -10,7 +10,7 @@ const Card = ({
   descriptionClassName = ''
 }) => {
   return (
-    <div className={`bg-white rounded-lg mobile:p-5 mobile:mx-4 flex flex-col gap-1 tablet:p-5 laptop:p-6 mobile:w-[352px] mobile:h-[270px] tablet:max-w-[350px] laptop:max-w-[430px] desktop:max-w-[513px] desktop:p-8 tablet:h-auto laptop:h-[248px] laptop:w-[400px] ${className}`}>
+    <div className={`bg-white rounded-lg mobile:p-5 flex flex-col gap-1 tablet:p-5 laptop:p-6 mobile:w-full mobile:max-w-[352px] mobile:h-[270px] tablet:max-w-[350px] laptop:max-w-[430px] desktop:max-w-[513px] desktop:p-8 tablet:h-auto laptop:h-[248px] laptop:w-[400px] ${className}`}>
       {/* Icon */}
       <div className={`mobile:w-[74px] mobile:h-[74px] tablet:w-[67px] tablet:h-[67px] laptop:w-[74px] laptop:h-[74px] flex items-center justify-center mobile:mb-3 tablet:mb-3  ${iconClassName}`}>
         <img src={iconSrc} alt={title} className=" " />
@@ -22,7 +22,7 @@ const Card = ({
       </h3>
       
       {/* Description */}
-      <p className={`text-oxford-blue mobile:text-[18px] mobile:font-normal mobile:leading-[150%] mobile:tracking-[-0.3px] mobile:font-roboto tablet:text-sm tablet:leading-relaxed tablet:font-roboto laptop:text-sm desktop:text-base desktop:leading-relaxed font-roboto ${descriptionClassName}`}>
+      <p className={`text-oxford-blue mobile:text-[16px] mobile:font-normal mobile:leading-[25.6px] mobile:tracking-[0px] mobile:font-roboto tablet:text-sm tablet:leading-relaxed tablet:font-roboto laptop:text-sm desktop:text-base desktop:leading-relaxed font-roboto ${descriptionClassName}`}>
         {description}
       </p>
     </div>

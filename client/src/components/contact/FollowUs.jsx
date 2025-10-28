@@ -6,7 +6,7 @@ const FollowUs = () => {
   const { t } = useLanguage();
   return (
     <section className="h-auto py-10 md:py-14 lg:h-[380px] bg-soft-blue-green flex items-center justify-center">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-4">
+      <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 lg:px-12 text-center pt-4">
         <h2 className="font-archivo font-bold text-[32px] md:text-[45px] lg:text-[60px] leading-[100%] tracking-[0] text-oxford-blue mb-4 md:mb-5">
           {t('contact.followUs.title')}
         </h2>

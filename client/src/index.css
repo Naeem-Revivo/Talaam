@@ -6,6 +6,38 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  /* Consistent content container for all laptop/desktop screens */
+  .content-container {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Responsive padding matching navbar exactly */
+  .section-padding {
+    @apply px-4 md:px-8 lg:px-12;
+  }
+  
+  /* Container that aligns with navbar on all breakpoints */
+  @media (min-width: 768px) {
+    .content-container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .content-container {
+      padding-left: 3rem;
+      padding-right: 3rem;
+    }
+  }
+}
+
 * {
   margin: 0;
   padding: 0;

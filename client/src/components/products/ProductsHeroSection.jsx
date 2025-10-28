@@ -6,7 +6,7 @@ const ProductsHeroSection = () => {
   const { t, language } = useLanguage();
   return (
     <div className="max-w-full font-archivo h-[603px] md:h-auto lg:h-[603px] bg-soft-orange-fade">
-      <div className="max-w-full md:h-auto lg:h-[648px] flex flex-col md:flex-col lg:flex-row py-8 px-4 md:py-12 md:px-8 lg:px-[90px] lg:justify-around">
+      <div className="max-w-[1400px] mx-auto w-full md:h-auto lg:h-[648px] flex flex-col md:flex-col lg:flex-row py-8 px-4 md:py-12 md:px-8 lg:px-12 lg:justify-around">
         {/* Text content */}
         <div className={`w-full md:w-full lg:w-[656px] flex flex-col gap-0 md:gap-6 lg:gap-3 pt-0 md:pt-0 lg:pt-8 items-start md:items-center lg:items-start ${language === 'ar' ? 'md:text-center lg:text-right' : 'text-left md:text-center lg:text-left'} order-1 md:order-1 lg:order-1`}>
           <h1 className="leading-[0] md:leading-tight lg:leading-tight font-archivo mb-2 md:mb-2 lg:mb-2">

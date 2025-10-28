@@ -8,8 +8,8 @@ const HeroSection = () => {
   const isArabic = language === 'ar';
   
   return (
-    <div className={`max-w-full font-archivo bg-soft-orange-fade ${isArabic ? 'px-10' : ''}`}>
-      <div className="max-w-full flex flex-col md:flex-col lg:flex-row pt-8 pb-4 px-4 md:py-12 md:px-8 lg:px-[6px] lg:justify-around lg:min-h-[603px]">
+    <div className={`max-w-full font-archivo bg-soft-orange-fade`}>
+      <div className="max-w-[1400px] mx-auto w-full flex flex-col md:flex-col lg:flex-row pt-8 pb-4 px-4 md:py-12 md:px-8 lg:px-12 lg:justify-around lg:min-h-[603px]">
         {/* Text content */}
         <div className={`w-full md:w-full lg:w-[507px] flex flex-col gap-0 md:gap-6 lg:gap-1 pt-0 md:pt-0 lg:pt-20 lg:pl-3 items-start md:items-center lg:items-start ${isArabic ? 'md:text-center lg:text-right' : 'text-left md:text-center lg:text-left'} order-1 md:order-1 lg:order-1`}>
           <h1 className="leading-tight font-archivo mb-2 md:mb-2 lg:mb-2 text-oxford-blue">
@@ -41,7 +41,7 @@ const HeroSection = () => {
           <img
             src={logoimg}
             alt=""
-            className="w-[382px] h-[231px] tablet:w-[650px] md:h-[403px] lg:w-[670px] lg:h-[403px] rounded-[12px]"
+            className="w-full max-w-[382px] h-[231px] tablet:w-[650px] md:h-[403px] lg:w-[670px] lg:h-[403px] rounded-[12px]"
           />
         </div>
       </div>

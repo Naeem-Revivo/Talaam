@@ -6,7 +6,7 @@ const HeroSection = () => {
   const { t, language } = useLanguage();
   return (
     <div className="max-w-full font-archivo bg-soft-orange-fade">
-      <div className="max-w-full flex flex-col md:flex-col lg:flex-row pt-8 pb-4 px-4 md:py-12 md:px-8 lg:px-[70px] laptop:pl-20 lg:justify-around lg:min-h-[603px]">
+      <div className="max-w-[1400px] mx-auto w-full flex flex-col md:flex-col lg:flex-row pt-8 pb-4 px-4 md:py-12 md:px-8 lg:px-12 lg:justify-around lg:min-h-[603px]">
         {/* Text content */}
         <div className={`w-full md:w-full lg:w-[656px] flex flex-col gap-0 md:gap-6 lg:gap-3 pt-0 md:pt-0 lg:pt-40 items-start md:items-center lg:items-start ${language === 'ar' ? 'md:text-center lg:text-right' : 'text-left md:text-center lg:text-left'} order-1 md:order-1 lg:order-1`}>
           <h1 className="leading-tight font-archivo mb-2 md:mb-2 lg:mb-2 flex items-start gap-2 md:flex md:items-center md:gap-2 lg:block text-oxford-blue">

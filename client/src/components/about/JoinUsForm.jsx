@@ -24,7 +24,7 @@ const JoinUsForm = () => {
 
   return (
     <section className="py-10 md:py-16 lg:py-20 h-auto lg:h-[1130px] bg-soft-blue-green">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-12">
         <div className="text-center mb-8 md:mb-12 lg:mb-16 flex flex-col gap-3 md:gap-4 lg:gap-6 pt-4 md:pt-6 lg:pt-8 pb-4 md:pb-6 lg:pb-10">
           <h2 className="font-archivo font-bold text-[28px] md:text-[38px] lg:text-[50px] leading-[110%] md:leading-[100%] lg:leading-[100%] tracking-[0] text-oxford-blue px-4">
             {t('about.joinUs.title')}

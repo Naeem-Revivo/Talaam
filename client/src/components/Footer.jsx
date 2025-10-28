@@ -15,7 +15,8 @@ const Footer = () => {
   return (
     <footer className="bg-[#0A2342] text-white">
       <div className="flex flex-col justify-between min-h-[483px] py-5 md:py-10 laptop:pt-14">
-        <div className="flex flex-col lg:flex-row items-start justify-between px-4 md:px-16 lg:px-[100px] pt-5 md:pt-10 gap-8 lg:gap-0">
+        <div className="max-w-[1400px] mx-auto w-full">
+          <div className="flex flex-col lg:flex-row items-start justify-between px-4 md:px-8 lg:px-12 pt-5 md:pt-10 gap-8 lg:gap-0">
           {/* Logo and Mission Statement */}
           <div className="flex flex-col pb-6 md:pb-8 lg:pb-0">
             <img
@@ -201,10 +202,11 @@ const Footer = () => {
               </div>
             </div>
           </div>
+          </div>
         </div>
 
         {/* Copyright */}
-        <div className="border-t border-[#333333] pt-6 md:pt-8 mt-6 md:mt-8 px-4">
+        <div className="max-w-[1400px] mx-auto w-full border-t border-[#333333] pt-6 md:pt-8 mt-6 md:mt-8 px-4">
           <p className="font-roboto font-normal text-[12px] md:text-[16px] leading-[100%] tracking-[0] text-white text-center pt-3">
             {t('footer.copyright')}
           </p>

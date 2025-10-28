@@ -26,7 +26,7 @@ const ContactForm = () => {
 
   return (
     <section className="bg-[#C6D8D329] h-auto py-10 md:py-16 lg:h-[1006px] flex items-center justify-center">
-      <div className="flex items-center justify-center w-full px-4 md:px-6 lg:px-0">
+      <div className="max-w-[1400px] mx-auto w-full flex items-center justify-center px-4 md:px-8 lg:px-12">
         <div className="bg-white w-full md:w-[600px] lg:w-[684px] h-auto lg:h-[706px] rounded-lg shadow-lg p-6 md:p-7 lg:p-8 flex flex-col items-center justify-center gap-6 md:gap-8 lg:gap-10">
           <h2 className="font-archivo font-bold text-[24px] md:text-[28px] lg:text-[30px] leading-[100%] tracking-[0] align-middle text-oxford-blue text-center">
             {t('contact.contactForm.title')}

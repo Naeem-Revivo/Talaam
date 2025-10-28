@@ -34,6 +34,29 @@ export default {
         'tablet': '640px',
         'laptop': '1024px',
         'desktop': '1920px',
+        // Standard Tailwind breakpoints
+        'sm': '640px',
+        'md': '768px',
+        'lg': '1024px',
+        'xl': '1280px',
+        '2xl': '1536px',
+      },
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: '1rem',
+          sm: '2rem',
+          lg: '4rem',
+          xl: '5rem',
+          '2xl': '6rem',
+        },
+        screens: {
+          sm: '640px',
+          md: '768px',
+          lg: '1024px',
+          xl: '1280px',
+          '2xl': '1400px', // Max width that works well on 1366px, 1440px, and 1920px
+        },
       },
     },
   },

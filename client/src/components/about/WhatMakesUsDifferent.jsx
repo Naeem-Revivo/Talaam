@@ -13,7 +13,7 @@ const WhatMakesUsDifferent = () => {
 
   return (
     <section className="py-10 md:py-16 lg:py-20 bg-light-gradient h-auto lg:h-[497px]">
-      <div className="max-w-7xl pt-5 mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1400px] pt-5 mx-auto px-4 md:px-8 lg:px-12">
         <div className="flex flex-col items-center justify-center gap-4 md:gap-6 lg:gap-8">
           <h2 className="font-archivo font-bold text-[28px] md:text-[40px] lg:text-[60px] leading-[110%] md:leading-[100%] lg:leading-[62.4px] tracking-[0] align-middle text-oxford-blue text-center px-4">
             {t('about.whatMakesUsDifferent.title')}
