@@ -24,7 +24,7 @@ const OurPhilosophySection = () => {
 
       <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 lg:px-12">
         <div className="flex flex-col gap-8 md:gap-16 items-center justify-center w-full max-w-[352px] md:max-w-none">
-        <h2 className="font-archivo font-bold text-[28px] md:text-[60px] leading-[100%] tracking-[0] text-center md:text-start">
+        <h2 className="font-archivo font-bold text-[33px] md:text-[60px] leading-[100%] tracking-[0] text-center md:text-start">
           {t('products.philosophy.title')}
         </h2>
 
@@ -34,7 +34,7 @@ const OurPhilosophySection = () => {
               <div className="flex-shrink-0 mt-1">
                 <span className="block w-3 h-3 bg-[#E43F21] rounded-full"></span>
               </div>
-              <p className="font-roboto font-normal text-[14px] md:text-[18px] leading-[21px] md:leading-[100%] tracking-[0] text-black">
+              <p className="font-roboto font-normal text-[16px] md:text-[18px] leading-[21px] md:leading-[100%] tracking-[0] text-black">
                 {point.text}
               </p>
             </div>

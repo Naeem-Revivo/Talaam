@@ -113,7 +113,7 @@ const WhatYouGetSection = () => {
     <section className="py-12 md:py-24 h-auto laptop:h-[813px] tablet:h-[1300px] bg-light-gradient">
       <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 lg:px-12">
         {/* Desktop Heading */}
-        <h2 className="hidden md:block font-archivo font-bold text-[36px] md:text-[60px] leading-[100%] tracking-[0] text-oxford-blue mb-7">
+        <h2 className="hidden md:block font-archivo font-bold text-[30px] md:text-[60px] leading-[100%] tracking-[0] text-oxford-blue mb-7">
           {t('products.whatYouGet.title')}
         </h2>
         <div className="w-full">
@@ -139,7 +139,7 @@ const WhatYouGetSection = () => {
           </div>
 
           {/* Heading - Shows after image on mobile */}
-          <h2 className="md:hidden font-archivo font-bold text-[36px] leading-[100%] tracking-[0] text-oxford-blue mb-7 order-2">
+          <h2 className="md:hidden font-archivo font-bold text-[30px] leading-[100%] tracking-[0] text-oxford-blue mb-7 order-2">
             {t('products.whatYouGet.title')}
           </h2>
 
@@ -155,7 +155,7 @@ const WhatYouGetSection = () => {
                     <h3 className={`font-archivo font-semibold ${language === 'ar' ? 'pr-4' : 'pr-0'} text-[18px] md:text-[22px] leading-[100%] tracking-[0] text-start text-oxford-blue`}>
                       {feature.title}
                     </h3>
-                    <p className={`font-roboto font-normal text-[14px] ${language === 'ar' ? 'pr-4' : 'pr-0'} md:text-[18px] leading-[100%] tracking-[0] align-middle text-black`}>
+                    <p className={`font-roboto font-normal text-[15px] ${language === 'ar' ? 'pr-4' : 'pr-0'} md:text-[18px] leading-[100%] tracking-[0] align-middle text-black`}>
                       {feature.description}
                     </p>
                   </div>

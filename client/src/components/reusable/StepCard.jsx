@@ -26,7 +26,7 @@ const StepCard = ({
         {icon}
       </div>
       
-      <div className="flex flex-col gap-1 md:gap-2 lg:gap-2 flex-1 min-w-0">
+      <div className="flex flex-col gap-2 md:gap-2 lg:gap-2 flex-1 min-w-0">
         <div className={`font-archivo font-semibold tracking-[0] ${stepText}
           text-[24px] leading-[100%]
           md:text-[22px] md:leading-[100%]
@@ -40,7 +40,7 @@ const StepCard = ({
           {title}
         </h3>
         <p className="font-roboto font-normal tracking-[0] text-oxford-blue
-          text-[17px] leading-[100%]
+          text-[15px] leading-[100%]
           md:text-[17px] md:leading-[100%]
           lg:text-[17px] lg:leading-[100%]">
           {description}

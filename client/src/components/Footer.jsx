@@ -14,7 +14,7 @@ const Footer = () => {
 
   return (
     <footer className="bg-[#0A2342] text-white">
-      <div className="flex flex-col justify-between min-h-[483px] py-5 md:py-10 laptop:pt-14">
+      <div className="flex flex-col justify-between min-h-[483px] mr-3 py-5 md:py-10 laptop:pt-14">
         <div className="max-w-[1400px] mx-auto w-full">
           <div className="flex flex-col lg:flex-row items-start justify-between px-4 md:px-8 lg:px-12 pt-5 md:pt-10 gap-8 lg:gap-0">
           {/* Logo and Mission Statement */}
@@ -156,11 +156,11 @@ const Footer = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t('footer.subscribe.placeholder')}
-                    className="flex-1 px-4 py-2 rounded-lg text-gray-900 text-[14px] md:text-[16px] leading-[100%] tracking-[0] outline-none"
+                    className="flex-1 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-gray-900 text-[12px] sm:text-[14px] md:text-[16px] leading-[100%] tracking-[0] outline-none"
                   />
                   <button
                     type="submit"
-                    className="bg-gradient-to-r from-orange-dark to-orange-light text-white px-6 py-2 rounded-lg uppercase text-sm font-semibold whitespace-nowrap hover:opacity-90 transition"
+                    className="bg-gradient-to-r from-orange-dark to-orange-light text-white px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg uppercase text-xs sm:text-sm font-semibold whitespace-nowrap hover:opacity-90 transition shrink-0"
                   >
                     {t('footer.subscribe.button')}
                   </button>
