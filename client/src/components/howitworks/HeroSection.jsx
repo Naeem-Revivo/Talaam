@@ -41,7 +41,7 @@ const HeroSection = () => {
           <img
             src={logoimg}
             alt=""
-            className="w-full max-w-[382px] h-[231px] tablet:w-[650px] md:h-[403px] lg:w-[670px] lg:h-[403px] rounded-[12px]"
+            className=" w-[382px] h-[231px] tablet:w-[650px] md:h-[403px] lg:w-[670px] lg:h-[403px] rounded-[12px]"
           />
         </div>
       </div>
