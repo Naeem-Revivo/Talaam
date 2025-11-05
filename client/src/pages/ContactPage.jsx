@@ -1,10 +1,8 @@
 import React from 'react';
-import { 
-  HeroSection, 
-  ContactOptions,
-  ContactForm, 
-  FollowUs
-} from '../components/contact';
+import HeroSection from '../components/contact/HeroSection';
+import ContactOptions from '../components/contact/ContactOptions';
+import ContactForm from '../components/contact/ContactForm';
+import FollowUs from '../components/contact/FollowUs';
 
 const ContactPage = () => {
   return (

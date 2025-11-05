@@ -95,14 +95,20 @@ const Navbar = () => {
               </button>
 
               {/* SIGN UP Button - Desktop only */}
-              <button className="hidden lg:block bg-gradient-to-r from-orange-dark to-orange-light w-[105px] h-[40px] text-white py-2 rounded-md text-xs md:text-sm font-medium">
+              <Link 
+                to="/signupfree"
+                className="hidden lg:flex bg-gradient-to-r from-orange-dark to-orange-light w-[105px] h-[40px] text-white  py-2.5 rounded-md text-xs md:text-sm font-medium text-center items-center justify-center"
+              >
                 {t('navbar.signUp')}
-              </button>
+              </Link>
 
               {/* Log In Button */}
-              <button className="bg-gradient-to-r from-blue-dark to-blue-light w-[90px] md:w-[105px] h-[40px] text-white py-2 rounded-md text-xs md:text-sm font-medium">
+              <Link 
+                to="/login"
+                className="bg-gradient-to-r from-blue-dark to-moonstone-blue w-[90px] md:w-[105px] h-[40px] text-white py-2 rounded-md text-xs md:text-sm font-medium text-center flex items-center justify-center"
+              >
                 {t('navbar.logIn')}
-              </button>
+              </Link>
 
               {/* Hamburger Menu button */}
               <button
@@ -166,10 +172,14 @@ const Navbar = () => {
 
             {/* Buttons in Mobile Menu */}
             <div className="flex flex-col space-y-2 px-3">
-              <button className="bg-gradient-to-r from-orange-dark to-orange-light text-white px-4 py-2 rounded-md text-sm font-medium">
+              <Link 
+                to="/signupfree"
+                className="bg-gradient-to-r from-orange-dark to-orange-light text-white px-4 py-2 rounded-md text-sm font-medium text-center"
+                onClick={toggleMenu}
+              >
                 {t('navbar.signUp')}
-              </button>
-              <button className="bg-gradient-to-r from-blue-dark to-blue-light text-white px-4 py-2 rounded-md text-sm font-medium">
+              </Link>
+              <button className="bg-gradient-to-r from-blue-dark to-moonstone-blue text-white px-4 py-2 rounded-md text-sm font-medium">
                 {t('navbar.logIn')}
               </button>
             </div>

@@ -323,6 +323,135 @@
       "title": "تابعنا",
       "description": "حل سهل الاستخدام، قوي وآمن لعملك."
     }
+  },
+  "signUpFree": {
+    "title": "سجل مجاناً",
+    "description": "أنشئ حساباً للوصول إلى آلاف الأسئلة وإطلاق إمكاناتك.",
+    "buttonText": "سجل مجاناً",
+    "agreement": {
+      "text": "من خلال المتابعة، أنت توافق على",
+      "terms": "الشروط",
+      "and": "و",
+      "privacy": "الخصوصية"
+    },
+    "loginPrompt": {
+      "text": "هل لديك حساب بالفعل؟",
+      "link": "تسجيل الدخول"
+    }
+  },
+  "createAccount": {
+    "title": "إنشاء حساب",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "أدخل بريدك الإلكتروني",
+    "password": "كلمة المرور",
+    "passwordPlaceholder": "أدخل كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "confirmPasswordPlaceholder": "أكد كلمة المرور",
+    "passwordRequirements": {
+      "8chars": "8+ أحرف",
+      "1uppercase": "1 حرف كبير",
+      "1special": "1 رمز خاص",
+      "1lowercase": "1 حرف صغير",
+      "1number": "1 رقم"
+    },
+    "buttonText": "إنشاء حساب",
+    "orContinueWith": "أو تابع باستخدام",
+    "continueWithGoogle": "تابع باستخدام Google",
+    "continueWithLinkedIn": "تابع باستخدام LinkedIn",
+    "terms": {
+      "text": "بالتسجيل، أنت توافق على",
+      "terms": "الشروط",
+      "and": "و",
+      "privacy": "الخصوصية"
+    }
+  },
+  "verifyEmail": {
+    "title": "التحقق من بريدك الإلكتروني",
+    "instructions": {
+      "text": "يرجى إدخال الرمز المكون من 6 أرقام الذي أرسلناه إلى",
+      "expiry": "سينتهي صلاحية هذا الرمز خلال 10 دقائق."
+    },
+    "enterCode": "أدخل الرمز",
+    "dontReceive": "لم تستلم الرمز؟",
+    "resendCode": "إعادة إرسال الرمز",
+    "resendCodeIn": "إعادة الإرسال خلال",
+    "verifyAccount": "التحقق من الحساب",
+    "skipForNow": "تخطي الآن"
+  },
+  "profile": {
+    "title": "أكمل ملفك الشخصي",
+    "subtitle": "اعثر على أشياء مثيرة للاهتمام عبر الويب.",
+    "fullName": "الاسم الكامل",
+    "fullNamePlaceholder": "أدخل اسمك الكامل",
+    "dateOfBirth": "تاريخ الميلاد (اختياري)",
+    "country": "الدولة",
+    "timeZone": "المنطقة الزمنية",
+    "language": "اللغة",
+    "finishSetup": "إنهاء الإعداد"
+  },
+  "login": {
+    "welcome": "مرحباً!",
+    "title": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "أدخل بريدك الإلكتروني",
+    "password": "كلمة المرور",
+    "passwordPlaceholder": "أدخل كلمة المرور",
+    "rememberMe": "تذكرني",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "buttonText": "تسجيل الدخول",
+    "orContinueWith": "أو تابع باستخدام",
+    "continueWithGoogle": "تابع باستخدام Google",
+    "continueWithLinkedIn": "تابع باستخدام LinkedIn",
+    "noAccount": "ليس لديك حساب؟",
+    "signUp": "سجل"
+  },
+  "forgotPassword": {
+    "title": "نسيت كلمة المرور",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "أدخل بريدك الإلكتروني",
+    "buttonText": "نسيت كلمة المرور"
+  },
+  "forgotModal": {
+    "title": "تحقق من بريدك الإلكتروني",
+    "description": "إذا كان هناك حساب للبريد الإلكتروني الذي أدخلته، فقد أرسلنا رابط إعادة تعيين كلمة المرور إليه. يرجى التحقق من صندوق الوارد ومجلد الرسائل غير المرغوب فيها.",
+    "setNewPasswordLink": "هل لديك رابط إعادة التعيين بالفعل؟ تعيين كلمة مرور جديدة",
+    "backToSignIn": "العودة لتسجيل الدخول"
+  },
+  "setNewPassword": {
+    "title": "تعيين كلمة مرور جديدة",
+    "description": "يجب أن تكون كلمة المرور الجديدة مختلفة عن كلمة المرور المستخدمة سابقاً.",
+    "newPassword": "كلمة المرور الجديدة",
+    "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
+    "confirmPassword": "تأكيد كلمة المرور الجديدة",
+    "confirmPasswordPlaceholder": "أكد كلمة المرور الجديدة",
+    "buttonText": "تعيين كلمة المرور الجديدة"
+  },
+  "passwordReset": {
+    "title": "تم إعادة تعيين كلمة المرور!",
+    "description": "تم إعادة تعيين كلمة المرور بنجاح. انقر أدناه للمتابعة لتسجيل الدخول.",
+    "buttonText": "المتابعة لتسجيل الدخول"
+  },
+  "dashboard": {
+    "header": {
+      "title": "لوحة التحكم"
+    },
+    "sidebar": {
+      "dashboard": "لوحة التحكم",
+      "practiceSession": "إنشاء جلسة تدريبية",
+      "performanceAnalytics": "تحليلات الأداء",
+      "reviewSessions": "مراجعة الجلسات"
+    },
+    "overview": {
+      "subtitle": "تقدمك في بنك الأسئلة بلمحة سريعة."
+    },
+    "performance": {
+      "title": "الأداء - آخر 10 جلسات"
+    },
+    "quickActions": {
+      "title": "إجراءات سريعة",
+      "startNewSession": "بدء جلسة جديدة",
+      "reviewSessions": "مراجعة الجلسات السابقة"
+    }
   }
 }
 

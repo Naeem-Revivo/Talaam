@@ -1,0 +1,10 @@
+import logodash from './logodash.svg';
+import dashboardicon from './dashboardicon.svg';
+import practice from './practice.svg';
+import analytics from './analytics.svg';
+import review from './review.svg';
+import dashboardiconblue from './dashboardiconblue.svg';
+import practiceblue from './practiceblue.svg';
+import blueanalytics from './blueanalytics.svg';
+import bluereview from './bluereview.svg';
+export { logodash, dashboardicon, practice, analytics, review, dashboardiconblue, practiceblue, blueanalytics, bluereview };

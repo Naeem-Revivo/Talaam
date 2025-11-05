@@ -1,14 +1,12 @@
 import React from 'react';
-import {
-  WhatYouGetSection,
-  OurPhilosophySection,
-  ChooseYourPlanSection,
-  ProductsGrid,
-  FeaturesComparison,
-  ProductsCTA,
-  ProductsHeroSection
-} from '../components/products';
-import { HowItWorksSection } from '../components/reusable';
+import WhatYouGetSection from '../components/products/WhatYouGetSection';
+import OurPhilosophySection from '../components/products/OurPhilosophySection';
+import ChooseYourPlanSection from '../components/products/ChooseYourPlanSection';
+import ProductsGrid from '../components/products/ProductsGrid';
+import FeaturesComparison from '../components/products/FeaturesComparison';
+import ProductsCTA from '../components/products/ProductsCTA';
+import ProductsHeroSection from '../components/products/ProductsHeroSection';
+import HowItWorksSection from '../components/reusable/HowItWorksSection';
 import { addperson, bookcard } from '../assets/svg';
 import { useLanguage } from '../context/LanguageContext';
 

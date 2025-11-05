@@ -1,6 +1,6 @@
 import React from "react";
 import { buttonvedio, heropagelogo, herocardimg1, herocardimg2, herocardimg3 } from "../../assets/svg";
-import { Card } from "../reusable";
+import Card from "../reusable/Card";
 import { useLanguage } from "../../context/LanguageContext";
 
 const HeroSection = () => {

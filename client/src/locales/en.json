@@ -323,6 +323,135 @@
       "title": "Follow us",
       "description": "An easy to use, powerful and secure solution for your business."
     }
+  },
+  "signUpFree": {
+    "title": "Sign up free",
+    "description": "Create an account to access thousands of questions and unlock your potential.",
+    "buttonText": "Sign up free",
+    "agreement": {
+      "text": "By continuing you agree to our",
+      "terms": "Terms",
+      "and": "and",
+      "privacy": "Privacy"
+    },
+    "loginPrompt": {
+      "text": "Already have an account?",
+      "link": "Sign in"
+    }
+  },
+  "createAccount": {
+    "title": "Create account",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "passwordRequirements": {
+      "8chars": "8+ characters",
+      "1uppercase": "1 uppercase",
+      "1special": "1 special char",
+      "1lowercase": "1 lowercase",
+      "1number": "1 number"
+    },
+    "buttonText": "Create account",
+    "orContinueWith": "or continue with",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithLinkedIn": "Continue with LinkedIn",
+    "terms": {
+      "text": "By signing up, you agree to our",
+      "terms": "Terms",
+      "and": "&",
+      "privacy": "Privacy"
+    }
+  },
+  "verifyEmail": {
+    "title": "Verify your email",
+    "instructions": {
+      "text": "Please enter the 6-digit code we sent to your",
+      "expiry": "This code will expire in 10 minutes."
+    },
+    "enterCode": "Enter Code",
+    "dontReceive": "Don't receive the code?",
+    "resendCode": "Resend code",
+    "resendCodeIn": "Resend code in",
+    "verifyAccount": "Verify Account",
+    "skipForNow": "Skip for now"
+  },
+  "profile": {
+    "title": "Complete your profile",
+    "subtitle": "Find interesting stuff across the web.",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "dateOfBirth": "Date of Birth (Optional)",
+    "country": "Country",
+    "timeZone": "Time Zone",
+    "language": "Language",
+    "finishSetup": "Finish Setup"
+  },
+  "login": {
+    "welcome": "Welcome!",
+    "title": "Sign In",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot Password?",
+    "buttonText": "Sign In",
+    "orContinueWith": "or continue with",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithLinkedIn": "Continue with LinkedIn",
+    "noAccount": "Don't have an Account?",
+    "signUp": "Sign Up"
+  },
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "buttonText": "Forgot Password"
+  },
+  "forgotModal": {
+    "title": "Check your email",
+    "description": "If an account exists for the email you entered, we've send a password reset link to it. please check your inbox and spam folder.",
+    "setNewPasswordLink": "Already have a reset link? Set new password",
+    "backToSignIn": "Back to sign in"
+  },
+  "setNewPassword": {
+    "title": "Set a new password",
+    "description": "Your new password must be different from previous used password.",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter new password",
+    "confirmPassword": "Confirm New Password",
+    "confirmPasswordPlaceholder": "Confirm new password",
+    "buttonText": "Set New Password"
+  },
+  "passwordReset": {
+    "title": "Password Reset!",
+    "description": "Your password has been successfully reset. Click below to continue to login.",
+    "buttonText": "Continue to Sign in"
+  },
+  "dashboard": {
+    "header": {
+      "title": "Dashboard"
+    },
+    "sidebar": {
+      "dashboard": "Dashboard",
+      "practiceSession": "Make Practice Session",
+      "performanceAnalytics": "Performance Analytics",
+      "reviewSessions": "Review Sessions"
+    },
+    "overview": {
+      "subtitle": "Your QBank progress at a glance."
+    },
+    "performance": {
+      "title": "Performance - Last 10 Sessions"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "startNewSession": "Start New Session",
+      "reviewSessions": "Review Previous Sessions"
+    }
   }
 }
 

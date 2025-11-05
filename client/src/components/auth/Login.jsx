@@ -1,0 +1,149 @@
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useLanguage } from '../../context/LanguageContext'
+import { eye, openeye, google, linkedin } from '../../assets/svg/signup'
+
+const Login = () => {
+  const { language, t } = useLanguage()
+  const dir = language === 'ar' ? 'rtl' : 'ltr'
+  
+  const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  })
+
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  }
+
+  const handleLogin = () => {
+    // Here you would typically validate the form and make an API call
+    console.log('Login data:', formData)
+    // Navigate to home or dashboard after login
+  }
+
+  return (
+    <div className="min-h-screen bg-white flex items-center justify-center p-4" dir={dir}>
+      <div className="bg-white rounded-lg border border-[#03274633] shadow-lg p-4 lg:p-8 w-full h-[842px] lg:h-[1038px] lg:w-[505px] flex flex-col">
+        <div className="w-full lg:w-[430px] pt-8 lg:pt-12 lg:h-[770px] flex flex-col mx-auto">
+          {/* Welcome Text */}
+          <p className="font-archivo font-bold text-[18px] lg:text-[24px] mb-1 lg:mb-2 text-oxford-blue">
+            {t('login.welcome')}
+          </p>
+
+          {/* Main Heading */}
+          <h1 className="font-archivo font-semibold mb-6 pt-3 lg:mb-8 text-[24px] lg:text-[36px] leading-none tracking-normal text-oxford-blue">
+            {t('login.title')}
+          </h1>
+
+          <div className="flex flex-col pt-10 gap-6 lg:gap-8">
+            {/* Email Field */}
+            <div className="flex flex-col gap-1">
+              <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
+                {t('login.email')}
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder={t('login.emailPlaceholder')}
+                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-none placeholder:tracking-normal placeholder:text-[#6B7280] font-roboto shadow-input"
+              />
+            </div>
+            <div className="flex flex-col gap-5">
+            {/* Password Field */}
+            <div className="flex flex-col gap-1">
+              <label className="block font-roboto font-normal text-base text-oxford-blue mb-2 leading-none tracking-normal">
+                {t('login.password')}
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder={t('login.passwordPlaceholder')}
+                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-none placeholder:tracking-normal placeholder:text-[#6B7280] font-roboto shadow-input"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  <img src={showPassword ? openeye : eye} alt="toggle password visibility" className="" />
+                </button>
+              </div>
+            </div>
+
+            {/* Remember Me & Forgot Password */}
+            <div className="flex justify-between sm:flex-row sm:justify-between items-start sm:items-center gap-3">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 border border-gray-300 rounded text-cinnebar-red focus:ring-cinnebar-red mr-2"
+                />
+                <span className="font-roboto font-normal text-[12px] leading-none tracking-normal text-oxford-blue">
+                  {t('login.rememberMe')}
+                </span>
+              </label>
+              <Link 
+                to="/forgot-password" 
+                className="font-roboto font-medium text-[12px] leading-none tracking-normal text-cinnebar-red underline hover:no-underline"
+              >
+                {t('login.forgotPassword')}
+              </Link>
+            </div>
+            </div>
+            {/* Sign In Button */}
+            <button
+              onClick={handleLogin}
+              className="bg-cinnebar-red text-white font-roboto font-semibold text-base leading-none tracking-normal rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90"
+            >
+              {t('login.buttonText')}
+            </button>
+
+            {/* Divider */}
+            <div className="flex px-4 lg:px-9 pt-6 justify-center items-center">
+              <div className="flex-1 border-t border-gray-300"></div>
+              <span className="px-4 text-sm text-gray-500">{t('login.orContinueWith')}</span>
+              <div className="flex-1 border-t border-gray-300"></div>
+            </div>
+
+            {/* Social Login Buttons */}
+            <div className="flex flex-col gap-4">
+              {/* Google Button */}
+              <button className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full lg:w-[423px] h-[57px]">
+                <img src={google} alt="Google" className="" />
+                <span className="font-roboto font-medium text-base leading-none tracking-normal text-gray-900">{t('login.continueWithGoogle')}</span>
+              </button>
+
+              {/* LinkedIn Button */}
+              <button className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full lg:w-[423px] h-[57px]">
+                <img src={linkedin} alt="LinkedIn" className="" />
+                <span className="font-roboto font-medium text-base leading-none tracking-normal text-gray-900">{t('login.continueWithLinkedIn')}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Footer Link */}
+          <p className="font-roboto font-normal text-sm lg:text-base leading-none tracking-normal text-center text-gray-500 mt-16 lg:mt-24">
+            {t('login.noAccount')}{' '}
+            <Link to="/signupfree" className="font-roboto font-bold text-sm lg:text-base leading-none tracking-normal text-center underline text-cinnebar-red">
+              {t('login.signUp')}
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Login

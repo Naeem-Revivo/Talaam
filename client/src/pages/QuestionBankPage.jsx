@@ -1,5 +1,5 @@
 import React from 'react';
-import { QuestionBankDashboard } from '../components/questionbank';
+import QuestionBankDashboard from '../components/questionbank/QuestionBankDashboard';
 
 const QuestionBankPage = () => {
   return <QuestionBankDashboard />;

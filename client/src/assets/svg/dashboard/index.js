@@ -1,0 +1,10 @@
+import vedio from './vedio.svg';
+import timer from './timer.svg';
+import setting from './setting.svg';
+import profile from './profile.svg';
+import logout from './logout.svg';
+import accuracy from './accuracy.svg';
+import time from './time.svg';
+import target from './target.svg';
+import trend from './trend.svg';
+export { vedio, timer, setting, profile, logout, accuracy, time, target, trend };

@@ -1,0 +1,292 @@
+import React, { useState } from 'react';
+
+const ReviewPage = () => {
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
+  const totalItems = 25;
+
+  // Sample session data matching the image
+  const sessions = [
+    { id: 'S001', date: 'Des 15,2024', mode: 'Test', questions: 25, correct: 84, avgTime: '45s' },
+    { id: 'S002', date: 'Des 14,2024', mode: 'Study', questions: 30, correct: 68, avgTime: '25s' },
+    { id: 'S003', date: 'Des 13,2024', mode: 'Test', questions: 20, correct: 92, avgTime: '60s' },
+    { id: 'S004', date: 'Des 12,2024', mode: 'Study', questions: 15, correct: 52, avgTime: '50s' },
+    { id: 'S005', date: 'Des 11,2024', mode: 'Test', questions: 35, correct: 78, avgTime: '15s' },
+  ];
+
+  // Filter sessions based on active filter
+  const filteredSessions = activeFilter === 'all' 
+    ? sessions 
+    : sessions.filter(s => s.mode.toLowerCase() === activeFilter.toLowerCase());
+
+  // Handle filter change and reset page
+  const handleFilterChange = (filter) => {
+    setActiveFilter(filter);
+    setCurrentPage(1);
+  };
+
+  // Calculate pagination
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+  const currentSessions = filteredSessions.slice(startIndex, endIndex);
+
+  const getCorrectColor = (percentage) => {
+    return percentage >= 80 ? 'text-[#EF4444]' : 'text-[#032746]';
+  };
+
+  const handleLoadMore = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  return (
+    <div className="bg-white min-h-screen p-4 md:p-6 lg:p-8">
+      {/* Page Title and Subtitle */}
+      <div className="mb-4 md:mb-6 lg:mb-8">
+        <h1 className="text-[18px] sm:text-[28px] md:text-[32px] lg:text-[36px] font-bold text-[#032746] mb-2 font-archivo leading-[20px] sm:leading-tight tracking-[0%]">
+          Review Previous Sessions
+        </h1>
+        <p className="text-[14px] sm:text-[16px] md:text-[18px] font-normal text-[#6B7280] font-roboto leading-[20px] sm:leading-relaxed tracking-[0%]">
+          Revisit any past practice set to reinforce your learning.
+        </p>
+      </div>
+
+      {/* Filter Buttons */}
+      <div className="flex flex-wrap gap-2 mb-4 md:mb-6 lg:mb-8 pt-2 md:pt-4">
+        <button
+          onClick={() => handleFilterChange('all')}
+          className={`px-3 md:px-4 py-2 rounded-full text-[14px] md:text-[16px] font-normal transition-colors font-roboto leading-[24px] tracking-[0%] text-center flex items-center justify-center ${
+            activeFilter === 'all'
+              ? 'bg-[#EF4444] text-white'
+              : 'bg-white border border-[#E5E7EB] text-[#374151]'
+          }`}
+        >
+          All
+        </button>
+        <button
+          onClick={() => handleFilterChange('test')}
+          className={`px-3 md:px-4 py-2 rounded-full text-[14px] md:text-[16px] font-normal transition-colors font-roboto leading-[24px] tracking-[0%] text-center flex items-center justify-center ${
+            activeFilter === 'test'
+              ? 'bg-[#EF4444] text-white'
+              : 'bg-white border border-[#E5E7EB] text-[#374151]'
+          }`}
+        >
+          Test Mode
+        </button>
+        <button
+          onClick={() => handleFilterChange('study')}
+          className={`px-3 md:px-4 py-2 rounded-full text-[14px] md:text-[16px] font-normal transition-colors font-roboto leading-[24px] tracking-[0%] text-center flex items-center justify-center ${
+            activeFilter === 'study'
+              ? 'bg-[#EF4444] text-white'
+              : 'bg-white border border-[#E5E7EB] text-[#374151]'
+          }`}
+        >
+          Study Mode
+        </button>
+      </div>
+
+      {/* Mobile/Tablet Card Layout */}
+      <div className="lg:hidden space-y-4 mb-4 ">
+        {currentSessions.map((session) => (
+          <div
+            key={session.id}
+            className="bg-white  rounded-lg border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] p-7 h-[143px] flex flex-col justify-between"
+          >
+            {/* Top Row: Session ID, Mode, Date */}
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <div className="text-[14px] font-normal text-[#032746] font-roboto leading-[100%] tracking-[0%]">
+                {session.id}
+              </div>
+              <div className="flex-1 flex justify-center">
+                <span
+                  className={`px-[10px] py-[5px] rounded-[6px] text-[14px] font-normal font-roboto whitespace-nowrap leading-[100%] tracking-[0%] text-center ${
+                    session.mode === 'Test'
+                      ? 'bg-[#FEEBC8] text-[#ED4122]'
+                      : 'bg-[#C6D8D3] text-[#032746]'
+                  }`}
+                >
+                  {session.mode}
+                </span>
+              </div>
+              <div className="text-[14px] font-normal text-[#032746] font-roboto leading-[100%] tracking-[0%]">
+                {session.date}
+              </div>
+            </div>
+
+            {/* Middle Row: Questions, Correct, Avg Time */}
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2 text-[14px] font-normal font-roboto leading-[100%] tracking-[0%]">
+              <div className="text-[#032746]">
+                Qs: {session.questions}
+              </div>
+              <div className={`${getCorrectColor(session.correct)}`}>
+                Correct: {session.correct}%
+              </div>
+              <div className="text-[#032746]">
+                Avg Time: {session.avgTime}
+              </div>
+            </div>
+
+            {/* Bottom Row: Action Buttons */}
+            <div className="flex gap-2 flex-wrap">
+              <button
+                className="flex-1 min-w-[120px] px-[10px] py-[5px] bg-[#ED4122] text-[#FFFFFF] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity"
+                onClick={() => console.log('Review All:', session.id)}
+              >
+                Review All
+              </button>
+              <button
+                className="flex-1 min-w-[120px] px-[10px] py-[5px] bg-[#C6D8D3] text-[#032746] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity"
+                onClick={() => console.log('Review Incorrect:', session.id)}
+              >
+                Review Incorrect
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table Layout */}
+      <div className="hidden lg:block bg-white rounded-lg overflow-hidden border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] w-full max-w-[1120px]">
+        {/* Table Header */}
+        <div className="bg-oxford-blue text-white w-full">
+          <div className="grid grid-cols-[repeat(6,1fr)_2fr] gap-4 px-4 md:px-6 py-3 md:py-4 items-center">
+            <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">#</div>
+            <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">DATE</div>
+            <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">MODE</div>
+            <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">#QS</div>
+            <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">% CORRECT</div>
+            <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">AVG TIME</div>
+            <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">ACTIONS</div>
+          </div>
+        </div>
+
+        {/* Table Body */}
+        <div className="bg-white w-full">
+          {currentSessions.map((session, index) => (
+            <div
+              key={session.id}
+              className={`grid grid-cols-[repeat(6,1fr)_2fr] gap-4 px-4 md:px-6 py-3 md:py-4 border-b border-[#E5E7EB] last:border-b-0 items-center ${
+                index % 2 === 0 ? 'bg-white' : 'bg-white'
+              }`}
+            >
+              {/* Session ID */}
+              <div className="text-[14px] font-normal text-[#032746] font-roboto leading-[100%] tracking-[0%] flex items-center justify-center">
+                {session.id}
+              </div>
+
+              {/* Date */}
+              <div className="text-[14px] font-normal text-[#032746] font-roboto leading-[100%] tracking-[0%] flex items-center justify-center">
+                {session.date}
+              </div>
+
+              {/* Mode Badge */}
+              <div className="flex items-center justify-center">
+                <span
+                  className={`px-[10px] py-[5px] rounded-[6px] text-[14px] font-normal font-roboto whitespace-nowrap leading-[100%] tracking-[0%] text-center ${
+                    session.mode === 'Test'
+                      ? 'bg-[#FEEBC8] text-[#ED4122]'
+                      : 'bg-[#C6D8D3] text-[#032746]'
+                  }`}
+                >
+                  {session.mode}
+                </span>
+              </div>
+
+              {/* Number of Questions */}
+              <div className="text-[14px] font-normal text-[#032746] font-roboto leading-[100%] tracking-[0%] flex items-center justify-center">
+                {session.questions}
+              </div>
+
+              {/* Percentage Correct */}
+              <div className={`text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] flex items-center justify-center ${getCorrectColor(session.correct)}`}>
+                {session.correct}%
+              </div>
+
+              {/* Average Time */}
+              <div className="text-[14px] font-normal text-[#032746] font-roboto leading-[100%] tracking-[0%] flex items-center justify-center">
+                {session.avgTime}
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-[10px] flex-wrap justify-center">
+                <button
+                  className="px-[10px] py-[5px] bg-[#ED4122] text-[#FFFFFF] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
+                  onClick={() => console.log('Review All:', session.id)}
+                >
+                  Review All
+                </button>
+                <button
+                  className="px-[10px] py-[5px] bg-[#C6D8D3] text-[#032746] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
+                  onClick={() => console.log('Review Incorrect:', session.id)}
+                >
+                  Review Incorrect
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Load More Button (Mobile/Tablet) */}
+      {currentPage < totalPages && (
+        <div className="lg:hidden mb-4">
+          <button
+            onClick={handleLoadMore}
+            className="w-full px-4 py-3 bg-[#EF4444] text-white rounded-lg text-[16px] font-normal font-roboto leading-[24px] tracking-[0%] text-center hover:opacity-90 transition-opacity"
+          >
+            Load More Results
+          </button>
+        </div>
+      )}
+
+      {/* Pagination (Desktop) */}
+      <div className="hidden lg:flex bg-oxford-blue text-white rounded-lg px-4 md:px-6  items-center justify-between gap-4 w-full max-w-[1120px] min-h-[46.8px]">
+        <div className="text-[12px] font-medium font-roboto text-white leading-[18px] tracking-[3%] whitespace-nowrap">
+          Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} results
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className={`w-[78px] h-[27.16px] rounded text-[14px] font-medium font-roboto leading-[16px] tracking-[0%] transition-colors border flex items-center justify-center ${
+              currentPage === 1
+                ? 'bg-white/20 text-white/70 cursor-not-allowed border-transparent'
+                : 'bg-white text-[#032746] border-[#032746] hover:opacity-90'
+            }`}
+          >
+            Previous
+          </button>
+          {[1, 2, 3].map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`w-[32px] h-[32px] rounded text-[14px] font-medium font-roboto leading-[16px] tracking-[0%] transition-colors border flex items-center justify-center ${
+                currentPage === page
+                  ? 'bg-[#EF4444] text-white border-[#EF4444]'
+                  : 'bg-white text-[#032746] border-[#032746] hover:opacity-90'
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            className={`w-[78px] h-[27.16px] rounded text-[14px] font-medium font-roboto leading-[16px] tracking-[0%] transition-colors border flex items-center justify-center ${
+              currentPage === totalPages
+                ? 'bg-white/20 text-white/70 cursor-not-allowed border-transparent'
+                : 'bg-white text-[#032746] border-[#032746] hover:opacity-90'
+            }`}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ReviewPage;

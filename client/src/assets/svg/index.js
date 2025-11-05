@@ -17,6 +17,7 @@ import { computer } from './products';
 import { mind, book, ielts, toefl, add, feature, lock, arrowup } from './questionbank';
 import { fb, instagram, linkedin, youtube, twitter, logofooter, rightarrow, tick, tickbg, applecard2 } from './shared';
 import { navlogo, downarrow, hamburger } from './navbar';
+import fevicon from './fevicon.svg';
 
 // Re-export all individually for compatibility
 export {
@@ -83,5 +84,6 @@ export {
   applecard2,
   navlogo,
   downarrow,
-  hamburger
+  hamburger,
+  fevicon
 };

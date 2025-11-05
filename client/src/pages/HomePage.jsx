@@ -1,5 +1,5 @@
 import React from 'react';
-import { HomePage as HomePageComponent } from '../components/homepage';
+import HomePageComponent from '../components/homepage/HomePage';
 
 const HomePage = () => {
   return <HomePageComponent />;

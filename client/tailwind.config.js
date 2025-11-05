@@ -11,15 +11,17 @@ export default {
         'orange-dark': '#ED4122',
         'orange-light': '#FF8B67',
         'blue-dark': '#032746',
-        'blue-light': '#6CA6C1',
         'cinnebar-red': '#ED4122',
         'moonstone-blue': '#6CA6C1',
-        'orange-dark-2' :'#E43F21'
+        'orange-dark-2' :'#E43F21',
+        'ash-gray' : '#C6D8D3',
+        'papaya-whip' : '#FDF0D5',
       },
       fontFamily: {
         'archivo': ['Archivo', 'sans-serif'],
         'roboto': ['Roboto', 'sans-serif'],
         'inter': ['Inter', 'sans-serif'],
+        'dm-sans': ['DM Sans', 'sans-serif'],
       },
       backgroundImage: {
         'soft-orange-fade': 'linear-gradient(136.4deg, rgba(248, 54, 0, 0.5) -52.28%, rgba(253, 240, 213, 0) 98.9%)',
@@ -28,6 +30,10 @@ export default {
         'soft-blue-green': 'linear-gradient(180deg, rgba(230, 235, 226, 0.63) 0%, rgba(108, 166, 193, 0.63) 100%)',
         'light-gradient': 'linear-gradient(90deg, #FEF9F3 0%, rgba(245, 247, 246, 0.42) 100%)',
         'blue-gradient': 'linear-gradient(98.53deg, #032746 -0.65%, #6CA6C1 139.01%)',
+        'bluewhite-gradient': 'linear-gradient(135deg, #6CA6C1 0%, #032746 100%)',
+      },
+      boxShadow: {
+        'input': '0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)',
       },
       screens: {
         'mobile': '320px',
