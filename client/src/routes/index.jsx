@@ -19,6 +19,8 @@ import DashboardPage from '../pages/dashboard/DashboardPage';
 import PracticePage from '../pages/dashboard/PracticePage';
 import AnalyticsPage from '../pages/dashboard/AnalyticsPage';
 import ReviewPage from '../pages/dashboard/ReviewPage';
+import ReviewIncorrectPage from '../pages/dashboard/ReviewIncorrectPage';
+import ReviewAllPage from '../pages/dashboard/ReviewAllPage';
 
 export const AppRoutes = () => {
   return (
@@ -46,6 +48,10 @@ export const AppRoutes = () => {
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="review" element={<ReviewPage />} />
       </Route>
+      
+      {/* Review Pages - No sidebar */}
+      <Route path="/dashboard/review-incorrect" element={<ReviewIncorrectPage />} />
+      <Route path="/dashboard/review-all" element={<ReviewAllPage />} />
     </Routes>
   );
 };

@@ -1,0 +1,538 @@
+import React, { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { tick, cross, analytics, watch, setting, flag } from '../../assets/svg/dashboard';
+
+const ReviewIncorrectPage = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const _sessionId = searchParams.get('sessionId') || 'S001';
+  
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(2); // 0-based, showing question 3
+  const [showExplanation, setShowExplanation] = useState(true);
+  const [visitedQuestions, setVisitedQuestions] = useState(new Set([2])); // Track visited questions
+  const [showQuestionNav, setShowQuestionNav] = useState(false); // Mobile question navigation
+  const [showExplanationPanel, setShowExplanationPanel] = useState(false); // Mobile explanation panel
+
+  // Sample question data
+  const questions = [
+    {
+      id: 1,
+      question: "A 25-year-old woman presents with sudden onset fever, chills, and painful urination. Urinalysis shows positive leukocyte esterase and nitrites. A urine culture grows gram-negative rods.",
+      options: [
+        { id: 'A', text: "Inhibits DNA gyrase and topoisomerase IV" },
+        { id: 'B', text: "Inhibits protein synthesis by binding to 30S ribosomal subunit" },
+        { id: 'C', text: "Inhibits cell wall synthesis by binding to D-alanyl-D-alanine" },
+        { id: 'D', text: "Inhibits folate synthesis by blocking dihydropteroate synthase", correct: true },
+        { id: 'E', text: "Inhibits peptidoglycan cross-linking by binding PBPs", userSelected: true }
+      ],
+      userAnswer: 'E',
+      correctAnswer: 'D',
+      timeSpent: '0:01',
+      percentageCorrect: 77,
+      correctExplanation: "Answer: D. Inhibits folate synthesis by blocking dihydropteroate synthase. This patient presents with symptoms and laboratory findings consistent with a urinary tract infection (UTI). The most common cause of UTIs is Escherichia coli, a gram-negative rod. For uncomplicated cystitis, first-line antibiotic therapy includes trimethoprim-sulfamethoxazole (TMP-SMX). Sulfonamides and trimethoprim work by inhibiting different steps in the folate synthesis pathway, which is essential for bacterial DNA synthesis. This mechanism is selective for bacteria because humans obtain folate from their diet rather than synthesizing it.",
+      wrongExplanation: "Answer: E. Inhibits peptidoglycan cross-linking by binding PBPs. This mechanism describes the action of beta-lactam antibiotics (e.g., penicillins, cephalosporins). While some beta-lactams can be used for UTIs, fluoroquinolones (which inhibit DNA gyrase) are sometimes used for complicated UTIs or pyelonephritis but are not preferred for simple cystitis due to resistance concerns and potential side effects."
+    },
+    // Add more sample questions as needed
+  ];
+
+  const totalQuestions = 20;
+  const currentQuestion = questions[0]; // For now, using the same question
+
+  const handleQuestionClick = (index) => {
+    setCurrentQuestionIndex(index);
+    setVisitedQuestions(prev => new Set([...prev, index]));
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      const newIndex = currentQuestionIndex - 1;
+      setCurrentQuestionIndex(newIndex);
+      setVisitedQuestions(prev => new Set([...prev, newIndex]));
+    }
+  };
+
+  const handleNext = () => {
+    if (currentQuestionIndex < totalQuestions - 1) {
+      const newIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(newIndex);
+      setVisitedQuestions(prev => new Set([...prev, newIndex]));
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Top Header Bar */}
+      <div className="bg-white border-b border-[#E5E7EB] px-4 md:px-6 py-3 md:py-4">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          {/* Top Row - Mobile: Item Info and Menu */}
+          <div className="flex items-center justify-between gap-4 w-full lg:w-auto">
+            <div className="text-[20px] font-bold text-[#032746] font-archivo leading-[28px] tracking-[0%]">
+              Item {currentQuestionIndex + 1} of {totalQuestions}
+            </div>
+            <div className="hidden lg:block text-[14px] md:text-[16px] font-normal text-[#6B7280] font-roboto">
+              Question Id: {currentQuestion.id}
+            </div>
+            <button className="hidden lg:block text-[#032746] hover:opacity-70">
+              <img src={flag} alt="Flag" className="" />
+            </button>
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setShowQuestionNav(!showQuestionNav)}
+              className="lg:hidden text-[#032746] hover:opacity-70"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Mobile: Mark, Formula Sheet, and Time Remaining */}
+          <div className="lg:hidden flex items-center gap-2 w-full justify-between">
+            <button className="px-3 py-1.5 bg-[#F3F4F6] text-[#032746] rounded text-[14px] font-normal font-roboto hover:opacity-70 flex items-center gap-2">
+              <img src={flag} alt="Mark" className="" />
+            </button>
+            <button className="px-3 py-1.5 bg-[#F3F4F6] text-[#032746] rounded text-[14px] font-normal font-roboto hover:opacity-70 flex items-center gap-2">
+              Formula Sheet
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-[14px] font-normal text-[#032746] font-roboto">
+                Time Remaining <span className="font-bold">12:45</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Center: Navigation Info - Hidden on mobile, shown on larger screens */}
+          <div className="hidden md:flex items-center gap-4 flex-wrap flex-1 justify-center">
+            
+            
+            {/* Navigation Controls */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePrevious}
+                disabled={currentQuestionIndex === 0}
+                className={`px-3 py-1 rounded text-[14px] font-normal font-roboto transition-colors ${
+                  currentQuestionIndex === 0
+                    ? 'text-[#9CA3AF] cursor-not-allowed'
+                    : 'text-[#032746] hover:bg-[#F3F4F6]'
+                }`}
+              >
+                &lt; Previous
+              </button>
+              <button
+                onClick={handleNext}
+                disabled={currentQuestionIndex === totalQuestions - 1}
+                className={`px-3 py-1 rounded text-[14px] font-normal font-roboto transition-colors ${
+                  currentQuestionIndex === totalQuestions - 1
+                    ? 'text-[#9CA3AF] cursor-not-allowed'
+                    : 'text-[#032746] hover:bg-[#F3F4F6]'
+                }`}
+              >
+                Next &gt;
+              </button>
+            </div>
+          </div>
+
+          {/* Right: Formula Sheet and Time */}
+          <div className="hidden lg:flex items-center gap-2 md:gap-4 w-full lg:w-auto justify-between lg:justify-end">
+            <button className="hidden lg:block px-2 md:px-3 py-1.5 bg-[#F3F4F6] text-[#032746] rounded text-[12px] md:text-[14px] font-normal font-roboto hover:opacity-70">
+              <span className="hidden sm:inline">Formula Sheet</span>
+              <span className="sm:hidden">Formula</span>
+            </button>
+            <div className="hidden lg:flex items-center gap-2">
+              <span className="text-[12px] md:text-[14px] font-normal text-[#032746] font-roboto">
+                <span className="hidden sm:inline">Time Remaining </span>12:45
+              </span>
+              <button className="text-[#032746] hover:opacity-70">
+                <img src={setting} alt="Settings" className="w-4 h-4 md:w-5 md:h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-120px)] pb-[180px] md:pb-0">
+        {/* Mobile Question Navigation Overlay */}
+        {showQuestionNav && (
+          <>
+            <div
+              className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+              onClick={() => setShowQuestionNav(false)}
+            />
+            <div className="fixed left-0 top-0 bottom-0 w-[280px] bg-white overflow-y-auto z-50 lg:hidden shadow-lg">
+              <div className="p-4 border-b border-[#E5E7EB] flex items-center justify-between">
+                <h3 className="text-[18px] font-bold text-[#032746] font-archivo">Questions</h3>
+                <button
+                  onClick={() => setShowQuestionNav(false)}
+                  className="text-[#032746] hover:opacity-70"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="p-2">
+                <div className="grid grid-cols-3 gap-2">
+                  {Array.from({ length: totalQuestions }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        handleQuestionClick(i);
+                        setShowQuestionNav(false);
+                      }}
+                      className={`py-2 px-3 text-[14px] font-medium font-roboto transition-colors text-center border border-[#B9C9C5] rounded ${
+                        i === currentQuestionIndex
+                          ? 'bg-[#EF4444] text-white border-[#EF4444]'
+                          : visitedQuestions.has(i)
+                          ? 'bg-[#C6D8D3] text-[#032746] hover:opacity-80'
+                          : 'bg-white text-[#032746] hover:opacity-80'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Left Question Navigation Pane - Desktop */}
+        <div className="hidden lg:flex w-[110px] h-full bg-white overflow-y-auto flex-col border-r border-[#E5E7EB]">
+          {/* Question Numbers */}
+          <div className="flex-1 py-2">
+            {Array.from({ length: totalQuestions }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => handleQuestionClick(i)}
+                className={`w-full py-2 text-[14px] font-medium font-roboto transition-colors text-center border border-[#B9C9C5] ${
+                  i === currentQuestionIndex
+                    ? 'bg-[#EF4444] text-white border-[#EF4444]'
+                    : visitedQuestions.has(i)
+                    ? 'bg-[#C6D8D3] text-[#032746] hover:opacity-80'
+                    : 'bg-white text-[#032746] hover:opacity-80'
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Central Content Area */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+          <div className="max-w-4xl mx-auto lg:ml-5">
+            {/* Title */}
+            <h2 className="text-[24px] md:text-[32px] lg:text-[36px] font-bold text-[#032746] mb-6 md:mb-10 font-archivo leading-tight tracking-[0%]">
+              Review Incorrect
+            </h2>
+
+            {/* Question Prompt */}
+            <div className="mb-4 md:mb-6">
+              <p className="text-[16px] md:text-[18px] font-normal text-[#032746] font-roboto leading-[24px] tracking-[0%]">
+                {currentQuestion.question}
+              </p>
+            </div>
+
+            {/* Answer Options (Initial Attempt View) */}
+            <div className="mb-4 md:mb-6">
+              <div className="space-y-3 mb-6 md:mb-10 w-full min-h-[300px] md:min-h-[400px] flex flex-col items-start justify-center p-4 md:pl-8 bg-white shadow-[2px_2px_10px_0px_#0000000D] rounded-lg">
+                {currentQuestion.options.map((option) => (
+                  <div
+                    key={option.id}
+                    className={`w-full min-h-[50px] rounded-lg border-2 flex items-center px-3 md:px-4 py-2 ${
+                      option.id === currentQuestion.userAnswer
+                        ? 'border-[#ED4122] bg-white'
+                        : 'border-[#E5E7EB] bg-white'
+                    }`}
+                  >
+                    <label className="flex items-center gap-2 md:gap-3 cursor-pointer w-full">
+                      <input
+                        type="radio"
+                        name="answer"
+                        value={option.id}
+                        checked={option.id === currentQuestion.userAnswer}
+                        readOnly
+                        className="w-4 h-4 md:w-5 md:h-5 text-[#EF4444] border-[#EF4444] focus:ring-[#EF4444] flex-shrink-0"
+                      />
+                      <span className="text-[14px] md:text-[16px] font-normal text-[#032746] font-roboto flex-1">
+                        <span className="font-medium">{option.id}.</span> {option.text}
+                      </span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Feedback Tags - Centered */}
+              <button className="w-full md:w-[316px] mb-6 md:mb-10 h-[50px] md:h-[60px] bg-[#ED4122] text-white rounded-[8px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] flex items-center justify-center hover:opacity-90 transition-opacity">
+                Incorrect Answer
+              </button>
+            </div>
+
+            {/* Feedback Section */}
+            <div className="mb-4 md:mb-6 w-full min-h-[110px] bg-[#FDF0D5] rounded-[14px] shadow-[0px_0px_5px_0px_#0000001A] flex flex-col md:flex-row items-start md:items-center border-l-4 border-[#ED4122] p-4 md:p-0">
+              {/* Left Section - Incorrect Status */}
+              <div className="flex-1 flex flex-col justify-center items-start pl-0 md:pl-6 mb-4 md:mb-0">
+                <div className="text-[14px] md:text-[16px] font-bold text-[#ED4122] font-roboto mb-1">
+                  Incorrect
+                </div>
+                <div className="text-[12px] md:text-[14px] font-normal text-[#6B7280] font-roboto">
+                  Correct answer: {currentQuestion.correctAnswer}
+                </div>
+              </div>
+
+              {/* Middle Section - Correctness Percentage */}
+              <div className="flex-1 flex flex-col justify-center items-start md:items-center mb-4 md:mb-0">
+                <div className="flex items-center gap-2">
+                  <img src={analytics} alt="Analytics" className="w-4 h-4 md:w-5 md:h-5" />
+                  <div className="text-[14px] md:text-[16px] font-bold text-[#032746] font-roboto">
+                    {currentQuestion.percentageCorrect}%
+                  </div>
+                </div>
+                <div className="text-[12px] md:text-[14px] font-normal text-[#6B7280] font-roboto">
+                  Answered correctly
+                </div>
+              </div>
+
+              {/* Right Section - Time Spent */}
+              <div className="flex-1 flex flex-col justify-center items-start md:items-center">
+                <div className="flex items-center gap-2">
+                  <img src={watch} alt="Time" className="w-4 h-4 md:w-5 md:h-5" />
+                  <div className="text-[14px] md:text-[16px] font-bold text-[#032746] font-roboto">
+                    {currentQuestion.timeSpent}
+                  </div>
+                </div>
+                <div className="text-[12px] md:text-[14px] font-normal text-[#6B7280] font-roboto">
+                  Time spent
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4 md:mb-6">
+              {/* Incorrect Tag */}
+              <div className="bg-[#FDF0D5] rounded-lg px-3 md:px-4 py-2 flex items-center gap-2">
+                <div className="w-4 h-4 md:w-5 md:h-5 bg-[#ED4122] rounded-full flex items-center justify-center flex-shrink-0">
+                  <img src={cross} alt="Incorrect" className="w-3 h-3 md:w-4 md:h-4" />
+                </div>
+                <span className="text-[12px] md:text-[14px] font-normal text-[#ED4122] font-roboto">
+                  Incorrect
+                </span>
+              </div>
+              
+              {/* Correct Answer Tag */}
+              <div>
+                <span className="text-[12px] md:text-[14px] font-normal text-[#032746] font-roboto">
+                  Correct Answer {currentQuestion.correctAnswer}
+                </span>
+              </div>
+            </div>
+
+            {/* Answer Options (Review Mode) */}
+            <div className="mb-4 md:mb-6">
+              <div className="space-y-3 mb-4 w-full min-h-[300px] md:min-h-[400px] flex flex-col items-start justify-center p-4 md:pl-8 bg-white shadow-[2px_2px_10px_0px_#0000000D] rounded-lg">
+                {currentQuestion.options.map((option) => {
+                  const isCorrect = option.correct;
+                  const isUserAnswer = option.id === currentQuestion.userAnswer;
+                  
+                  return (
+                    <div
+                      key={option.id}
+                      className={`w-full min-h-[50px] rounded-lg flex items-center px-3 md:px-4 py-2 ${
+                        isCorrect
+                          ? 'border-2 border-[#10B981] bg-[#ECFDF5]'
+                          : isUserAnswer
+                          ? 'border-2 border-[#EF4444] bg-[#FEF2F2]'
+                          : 'border-2 border-[#E5E7EB] bg-white'
+                      }`}
+                    >
+                      <label className="flex items-center gap-2 md:gap-3 cursor-pointer w-full">
+                        <input
+                          type="radio"
+                          name="answer-review"
+                          value={option.id}
+                          checked={isCorrect || isUserAnswer}
+                          readOnly
+                          className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 ${
+                            isCorrect
+                              ? 'text-[#10B981] border-[#10B981] focus:ring-[#10B981]'
+                              : isUserAnswer
+                              ? 'text-[#EF4444] border-[#EF4444] focus:ring-[#EF4444]'
+                              : 'text-[#E5E7EB] border-[#E5E7EB] focus:ring-[#E5E7EB]'
+                          }`}
+                        />
+                        <span className="text-[14px] md:text-[16px] font-normal text-[#032746] font-roboto flex-1">
+                          <span className="font-medium">{option.id}.</span> {option.text}
+                        </span>
+                        {isCorrect ? (
+                          <img src={tick} alt="Correct" className="text-white bg-cinnebar-red rounded-full p-1" />
+                        ) : isUserAnswer ? (
+                          <img src={cross} alt="Incorrect" className="text-white bg-cinnebar-red rounded-full p-1" />
+                        ) : null}
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Mobile Explanation Button */}
+            <button
+              onClick={() => setShowExplanationPanel(!showExplanationPanel)}
+              className="lg:hidden w-full mb-4 px-4 py-3 bg-[#F3F4F6] text-[#032746] rounded-lg text-[14px] font-normal font-roboto hover:opacity-90 transition-opacity flex items-center justify-between"
+            >
+              <span className="font-bold">Explanation</span>
+              <svg
+                className={`w-5 h-5 transition-transform ${showExplanationPanel ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* Mobile Explanation Panel */}
+            {showExplanationPanel && (
+              <div className="lg:hidden mb-4 p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB]">
+                <div className="space-y-6">
+                  {/* Correct Answer Explanation */}
+                  <div>
+                    <h4 className="text-[14px] md:text-[16px] font-medium text-[#032746] font-archivo leading-[24px] tracking-[0%] mb-3">
+                      Correct Answer Explanation
+                    </h4>
+                    <p className="text-[12px] md:text-[14px] font-normal text-[#6B7280] font-roboto leading-[24px] tracking-[0%] mb-2">
+                      Answer: {currentQuestion.correctAnswer}. {currentQuestion.options.find(o => o.id === currentQuestion.correctAnswer)?.text}
+                    </p>
+                    <h5 className="text-[14px] md:text-[16px] font-medium text-[#032746] font-archivo leading-[24px] tracking-[0%] mb-2">
+                      Explanation:
+                    </h5>
+                    <p className="text-[12px] md:text-[14px] font-normal text-[#6B7280] font-roboto leading-[24px] tracking-[0%]">
+                      {currentQuestion.correctExplanation}
+                    </p>
+                  </div>
+
+                  {/* Wrong Answer Explanation */}
+                  <div>
+                    <h4 className="text-[14px] md:text-[16px] font-medium text-[#032746] font-archivo leading-[24px] tracking-[0%] mb-3">
+                      Wrong Answer Explanation
+                    </h4>
+                    <p className="text-[12px] md:text-[14px] font-normal text-[#6B7280] font-roboto leading-[24px] tracking-[0%] mb-2">
+                      Answer: {currentQuestion.userAnswer}. {currentQuestion.options.find(o => o.id === currentQuestion.userAnswer)?.text}
+                    </p>
+                    <h5 className="text-[14px] md:text-[16px] font-medium text-[#032746] font-archivo leading-[24px] tracking-[0%] mb-2">
+                      Explanation:
+                    </h5>
+                    <p className="text-[12px] md:text-[14px] font-normal text-[#6B7280] font-roboto leading-[24px] tracking-[0%]">
+                      {currentQuestion.wrongExplanation}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Explanation Panel - Desktop */}
+        <div className="hidden lg:flex w-[256px] h-full bg-[#F9FAFB] border-l border-[#E5E7EB] overflow-y-auto">
+          <div className="p-4 md:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[18px] md:text-[20px] font-bold text-[#032746] font-archivo">
+                Explanation
+              </h3>
+              <button
+                onClick={() => setShowExplanation(!showExplanation)}
+                className="text-[14px] font-normal text-[#032746] font-roboto hover:opacity-70"
+              >
+                {showExplanation ? 'Hide' : 'Show'}
+              </button>
+            </div>
+
+            {showExplanation && (
+              <div className="space-y-6">
+                {/* Correct Answer Explanation */}
+                <div>
+                  <h4 className="text-[16px] font-medium text-[#032746] font-archivo leading-[24px] tracking-[0%] mb-3">
+                    Correct Answer Explanation
+                  </h4>
+                  <p className="text-[14px] font-normal text-[#6B7280] font-roboto leading-[24px] tracking-[0%] mb-2">
+                    Answer: {currentQuestion.correctAnswer}. {currentQuestion.options.find(o => o.id === currentQuestion.correctAnswer)?.text}
+                  </p>
+                  <h5 className="text-[16px] font-medium text-[#032746] font-archivo leading-[24px] tracking-[0%] mb-2">
+                    Explanation:
+                  </h5>
+                  <p className="text-[14px] font-normal text-[#6B7280] font-roboto leading-[24px] tracking-[0%]">
+                    {currentQuestion.correctExplanation}
+                  </p>
+                </div>
+
+                {/* Wrong Answer Explanation */}
+                <div>
+                  <h4 className="text-[16px] font-medium text-[#032746] font-archivo leading-[24px] tracking-[0%] mb-3">
+                    Wrong Answer Explanation
+                  </h4>
+                  <p className="text-[14px] font-normal text-[#6B7280] font-roboto leading-[24px] tracking-[0%] mb-2">
+                    Answer: {currentQuestion.userAnswer}. {currentQuestion.options.find(o => o.id === currentQuestion.userAnswer)?.text}
+                  </p>
+                  <h5 className="text-[16px] font-medium text-[#032746] font-archivo leading-[24px] tracking-[0%] mb-2">
+                    Explanation:
+                  </h5>
+                  <p className="text-[14px] font-normal text-[#6B7280] font-roboto leading-[24px] tracking-[0%]">
+                    {currentQuestion.wrongExplanation}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Footer Bar */}
+      <div className="fixed md:relative bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] px-4 md:px-6 py-3 md:py-4 z-30 shadow-[0_-2px_10px_0px_rgba(0,0,0,0.05)] md:shadow-none">
+        {/* Mobile: Previous and Next Buttons */}
+        <div className="md:hidden flex items-center justify-between gap-2 mb-4">
+          <button
+            onClick={handlePrevious}
+            disabled={currentQuestionIndex === 0}
+            className={`flex-1 px-3 py-2 rounded text-[14px] font-normal font-roboto transition-colors ${
+              currentQuestionIndex === 0
+                ? 'text-[#9CA3AF] cursor-not-allowed bg-[#F3F4F6]'
+                : 'text-[#032746] bg-[#F3F4F6] hover:bg-[#E5E7EB]'
+            }`}
+          >
+            &lt; Previous
+          </button>
+          <button
+            onClick={handleNext}
+            disabled={currentQuestionIndex === totalQuestions - 1}
+            className={`flex-1 px-3 py-2 rounded text-[14px] font-normal font-roboto transition-colors ${
+              currentQuestionIndex === totalQuestions - 1
+                ? 'text-[#9CA3AF] cursor-not-allowed bg-[#F3F4F6]'
+                : 'text-[#032746] bg-[#F3F4F6] hover:bg-[#E5E7EB]'
+            }`}
+          >
+            Next &gt;
+          </button>
+        </div>
+
+        {/* Footer Buttons */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 md:gap-10">
+          <button className="w-full sm:w-auto px-4 py-2 bg-white border border-[#E5E7EB] text-[#032746] rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity">
+            Study Mode
+          </button>
+          <button className="w-full sm:w-auto px-4 py-2 bg-[#EF4444] text-white rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity">
+            Review All
+          </button>
+          <button
+            onClick={() => navigate('/dashboard/review')}
+            className="w-full sm:w-auto px-4 py-2 bg-white border border-[#E5E7EB] text-[#032746] rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity"
+          >
+            Exit Session
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ReviewIncorrectPage;
+

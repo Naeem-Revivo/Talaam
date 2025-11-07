@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const ReviewPage = () => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
@@ -133,13 +135,13 @@ const ReviewPage = () => {
             <div className="flex gap-2 flex-wrap">
               <button
                 className="flex-1 min-w-[120px] px-[10px] py-[5px] bg-[#ED4122] text-[#FFFFFF] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity"
-                onClick={() => console.log('Review All:', session.id)}
+                onClick={() => navigate(`/dashboard/review-all?sessionId=${session.id}`)}
               >
                 Review All
               </button>
               <button
                 className="flex-1 min-w-[120px] px-[10px] py-[5px] bg-[#C6D8D3] text-[#032746] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity"
-                onClick={() => console.log('Review Incorrect:', session.id)}
+                onClick={() => navigate(`/dashboard/review-incorrect?sessionId=${session.id}`)}
               >
                 Review Incorrect
               </button>
@@ -214,13 +216,13 @@ const ReviewPage = () => {
               <div className="flex items-center gap-[10px] flex-wrap justify-center">
                 <button
                   className="px-[10px] py-[5px] bg-[#ED4122] text-[#FFFFFF] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
-                  onClick={() => console.log('Review All:', session.id)}
+                  onClick={() => navigate(`/dashboard/review-all?sessionId=${session.id}`)}
                 >
                   Review All
                 </button>
                 <button
                   className="px-[10px] py-[5px] bg-[#C6D8D3] text-[#032746] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
-                  onClick={() => console.log('Review Incorrect:', session.id)}
+                  onClick={() => navigate(`/dashboard/review-incorrect?sessionId=${session.id}`)}
                 >
                   Review Incorrect
                 </button>
