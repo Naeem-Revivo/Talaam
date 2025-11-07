@@ -20,11 +20,13 @@ const Footer = () => {
           <div className="flex flex-col lg:flex-row items-start justify-between px-4 md:px-8 lg:px-12 pt-5 md:pt-10 gap-8 lg:gap-0">
           {/* Logo and Mission Statement */}
           <div className="flex flex-col pb-6 md:pb-8 lg:pb-0">
-            <img
-              src={logofooter}
-              alt="Taalam Logo"
-              className="w-[100px] h-[50px] md:w-[114px] md:h-[57px]"
-            />
+            <Link to="/dashboard">
+              <img
+                src={logofooter}
+                alt="Taalam Logo"
+                className="w-[100px] h-[50px] md:w-[114px] md:h-[57px] cursor-pointer hover:opacity-80 transition"
+              />
+            </Link>
 
             <p className="font-roboto pt-3 md:pt-4 font-normal text-[12px] md:text-[14px] w-full max-w-[257px] leading-[18px] md:leading-[20px] tracking-[0] text-white">
               {t('footer.mission')}
