@@ -65,7 +65,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                   key={item.path}
                   to={item.path}
                   onClick={handleLinkClick}
-                  className={`relative flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full max-w-[236px] h-[48px] ${
+                  className={`relative flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full max-w-[256px] h-[48px] ${
                     active
                       ? 'bg-white text-oxford-blue'
                       : 'text-white hover:bg-blue-900'

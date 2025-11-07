@@ -45,7 +45,7 @@ const ReviewPage = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen p-4 md:p-6 lg:p-8">
+    <div className="bg-white min-h-screen p-4 md:p-6 lg:p-8 2xl:px-[70px]">
       {/* Page Title and Subtitle */}
       <div className="mb-4 md:mb-6 lg:mb-8">
         <h1 className="text-[18px] sm:text-[28px] md:text-[32px] lg:text-[36px] font-bold text-[#032746] mb-2 font-archivo leading-[20px] sm:leading-tight tracking-[0%]">

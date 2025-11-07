@@ -72,7 +72,7 @@ const PracticePage = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 bg-white min-h-screen">
+    <div className="p-4 md:p-6 lg:p-8 2xl:px-[70px] bg- min-h-screen">
       {/* Title and Subtitle */}
       <div className="mb-8">
         <h1 className="font-archivo font-bold text-[18px] md:text-4xl lg:text-[36px] leading-[40px] md:leading-tight tracking-[0%] text-oxford-blue mb-1 md:mb-2">
@@ -84,7 +84,7 @@ const PracticePage = () => {
       </div>
 
       {/* Session Mode and Question Status Cards - Flexed */}
-      <div className="flex flex-col lg:flex-row flex-wrap justify-start gap-4 mb-6">
+      <div className="flex flex-col lg:flex-row  flex-wrap justify-start gap-2 mb-6">
         {/* Session Mode Card */}
         <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 md:p-6 w-full lg:w-[594px] lg:h-[266px]">
         <h2 className="font-archivo font-bold text-lg md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-4">
