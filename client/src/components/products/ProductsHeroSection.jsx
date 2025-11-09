@@ -4,6 +4,7 @@ import { useLanguage } from '../../context/LanguageContext';
 
 const ProductsHeroSection = () => {
   const { t, language } = useLanguage();
+  const exploreLabel = t('products.hero.exploreQbank');
   return (
     <div className="max-w-full font-archivo h-[603px] md:h-auto lg:h-[603px] bg-soft-orange-fade">
       <div className="max-w-[1400px] mx-auto w-full md:h-auto lg:h-[648px] flex flex-col md:flex-col lg:flex-row py-8 px-4 md:py-12 md:px-8 lg:px-12 lg:justify-around">
@@ -25,7 +26,7 @@ const ProductsHeroSection = () => {
             </button>
             <button className="w-[156px] h-[44px] md:w-[156px] md:h-[44px] lg:w-[193px] lg:h-[54px] font-archivo font-semibold border border-oxford-blue rounded-[12px] text-[12px] leading-[14px] md:text-[12px] md:leading-[14px] lg:text-[14px] lg:leading-[14px] tracking-[0] align-middle uppercase text-oxford-blue">
               <div className="flex items-center justify-center gap-1">
-                <p className="">{t('products.hero.exploreMore')}</p>
+                <p className="">{exploreLabel === 'products.hero.exploreQbank' ? 'EXPLORE QBANK' : exploreLabel}</p>
                 <p className="">
                   <img src={buttonvedio} alt="" className="w-[18px] h-[18px] md:w-[18px] md:h-[18px] lg:w-auto lg:h-auto" />
                 </p>

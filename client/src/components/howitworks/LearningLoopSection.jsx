@@ -42,12 +42,20 @@ const LearningLoopSection = () => {
           <p className="font-roboto font-normal mobile:text-[14px] mobile:leading-[20px] tablet:text-[18px] tablet:leading-[22px] laptop:text-[20px] laptop:leading-[100%] tracking-[0] text-oxford-blue">{t('howItWorks.learningLoop.subtitle')}</p>
         </div>
         
-        <div className="flex mobile:flex-col tablet:flex-col laptop:flex-row mobile:items-center tablet:items-center laptop:items-start mobile:gap-4 tablet:gap-4 laptop:gap-0.5 w-full flex-wrap laptop:flex-nowrap">
+        <div className="flex mobile:flex-col tablet:flex-col laptop:flex-row mobile:items-center tablet:items-center laptop:items-start mobile:gap-4 tablet:gap-4 laptop:gap-0  w-full flex-wrap laptop:flex-nowrap">
           {steps.map((step, index) => (
             <React.Fragment key={index}>
-              <div className={`bg-white flex flex-col items-center justify-center gap-3 rounded-lg p-6 shadow-lg text-center flex-shrink-0 mobile:w-[291px] mobile:h-[210px] tablet:w-[224px] tablet:h-auto laptop:w-[210px] ${index % 2 === 1 ? 'laptop:h-[250px]' : 'laptop:h-[209px]'} ${isArabic ? 'px-10' : ''} ${!isArabic && 'mobile:px-6 tablet:px-6 laptop:px-5'} mobile:py-4 tablet:py-6 laptop:py-6`}>
-                <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center">
-                  <img src={step.icon} alt={step.title} className="w-full h-full object-contain" />
+              <div
+                className={`bg-white flex flex-col items-center justify-center gap-2 rounded-lg p-6 shadow-lg text-center flex-shrink-0 mobile:w-[291px] mobile:h-[210px] tablet:w-[224px] laptop:w-[220px] ${
+                  index % 2 === 1
+                    ? 'tablet:h-[250px] laptop:h-[250px]'
+                    : 'tablet:h-[209px] laptop:h-[209px]'
+                } ${isArabic ? 'px-10' : ''} ${
+                  !isArabic && 'mobile:px-6 tablet:px-6 laptop:px-5'
+                } mobile:py-4 tablet:py-6 laptop:py-6`}
+              >
+                <div className=" mx-auto mb-2 flex items-center justify-center">
+                  <img src={step.icon} alt={step.title} className=" object-contain" />
                 </div>
                 <h3 className="font-archivo font-semibold text-oxford-blue mobile:text-[18px] tablet:text-[20px] laptop:text-[22px] leading-[100%] tracking-[0]">{step.title}</h3>
                 <p className="text-oxford-blue font-roboto font-normal mobile:text-[14px] tablet:text-[15px] laptop:text-[16px] leading-[100%] tracking-[0] text-center">{step.description}</p>

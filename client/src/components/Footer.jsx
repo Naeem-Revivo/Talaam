@@ -4,7 +4,8 @@ import { fb, instagram, linkedin, youtube, logofooter } from "../assets/svg";
 import { useLanguage } from "../context/LanguageContext";
 
 const Footer = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isRTL = language === 'ar';
   const [email, setEmail] = useState("");
 
   const handleSubmit = (e) => {
@@ -34,9 +35,9 @@ const Footer = () => {
           </div>
 
           {/* Middle Section - Navigation Links */}
-          <div className="w-full lg:w-auto grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 lg:grid-cols-3 lg:gap-12">
+          <div className="w-full lg:w-auto pt-3 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 lg:grid-cols-3 lg:gap-12">
             {/* Company */}
-            <div className="mb-6 md:mb-8 lg:mb-0">
+            <div className="mb-6 md:mb-8 lg:mb-10">
               <h4 className="text-white font-archivo font-bold text-[16px] md:text-[20px] leading-[100%] tracking-[0] mb-3 md:mb-4">{t('footer.company.title')}</h4>
               <ul className="space-y-2">
                 <li>
@@ -113,9 +114,9 @@ const Footer = () => {
             </div>
 
             {/* Social - shown on mobile/tablet in grid, hidden on desktop */}
-            <div className="order-4 md:order-none lg:hidden">
+            <div className={`order-4 md:order-none lg:hidden ${isRTL ? 'text-right' : ''}`}>
               <h4 className="text-white font-archivo font-bold text-[16px] md:text-[20px] leading-[100%] tracking-[0] mb-3 md:mb-4">{t('footer.social')}</h4>
-              <div className="flex space-x-4">
+              <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
                 <a
                   href="#"
                   className="font-roboto font-normal text-[16px] leading-[100%] tracking-[0] text-white hover:opacity-70 transition"
@@ -147,7 +148,7 @@ const Footer = () => {
           {/* Right Section - Subscribe and Social (stacked on desktop) */}
           <div className="w-full lg:w-auto flex flex-col gap-6">
             {/* Subscribe */}
-            <div className="flex flex-col gap-3 md:gap-4">
+            <div className="flex flex-col gap-3 pt-3 md:gap-4">
               <h4 className="text-white font-archivo font-bold text-[16px] md:text-[20px] leading-[100%] tracking-[0]">{t('footer.subscribe.title')}</h4>
               <p className="font-roboto font-normal text-[14px] md:text-[16px] leading-[100%] tracking-[0] text-white">
                 {t('footer.subscribe.description')}
@@ -163,7 +164,7 @@ const Footer = () => {
                   />
                   <button
                     type="submit"
-                    className="bg-gradient-to-r from-orange-dark to-orange-light text-white px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg uppercase text-xs sm:text-sm font-semibold whitespace-nowrap hover:opacity-90 transition shrink-0"
+                    className="bg-gradient-to-r from-orange-dark to-orange-light text-white px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg uppercase text-[12px] font-archivo font-bold leading-[100%] whitespace-nowrap hover:opacity-90 transition shrink-0"
                   >
                     {t('footer.subscribe.button')}
                   </button>
@@ -175,9 +176,9 @@ const Footer = () => {
             </div>
 
             {/* Social - shown on desktop only, below subscribe */}
-            <div className="hidden lg:block">
+            <div className={`hidden lg:block ${isRTL ? 'text-right' : ''}`}>
               <h4 className="text-white font-archivo font-bold text-[16px] md:text-[20px] leading-[100%] tracking-[0] mb-3 md:mb-4">{t('footer.social')}</h4>
-              <div className="flex space-x-4">
+              <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
                 <a
                   href="#"
                   className="font-roboto font-normal text-[16px] leading-[100%] tracking-[0] text-white hover:opacity-70 transition"

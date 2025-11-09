@@ -37,14 +37,14 @@ const Login = () => {
           </p>
 
           {/* Main Heading */}
-          <h1 className="font-archivo font-semibold mb-6 pt-3 lg:mb-8 text-[24px] lg:text-[36px] leading-none tracking-normal text-oxford-blue">
+          <h1 className="font-archivo font-semibold mb-6 pt-3 lg:mb-8 text-[26px] lg:text-[30px] leading-[100%] tracking-[0] text-oxford-blue">
             {t('login.title')}
           </h1>
 
           <div className="flex flex-col pt-10 gap-6 lg:gap-8">
             {/* Email Field */}
             <div className="flex flex-col gap-1">
-              <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
+              <label className="block font-roboto font-normal text-[16px] leading-[100%] tracking-[0] text-oxford-blue mb-2">
                 {t('login.email')}
               </label>
               <input
@@ -53,13 +53,13 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder={t('login.emailPlaceholder')}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-none placeholder:tracking-normal placeholder:text-[#6B7280] font-roboto shadow-input"
+                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] font-roboto font-normal text-[16px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
               />
             </div>
             <div className="flex flex-col gap-5">
             {/* Password Field */}
             <div className="flex flex-col gap-1">
-              <label className="block font-roboto font-normal text-base text-oxford-blue mb-2 leading-none tracking-normal">
+              <label className="block font-roboto font-normal text-[16px] leading-[100%] tracking-[0] text-oxford-blue mb-2">
                 {t('login.password')}
               </label>
               <div className="relative">
@@ -69,7 +69,7 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder={t('login.passwordPlaceholder')}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-none placeholder:tracking-normal placeholder:text-[#6B7280] font-roboto shadow-input"
+                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] font-roboto font-normal text-[16px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
                 />
                 <button
                   type="button"
@@ -90,13 +90,13 @@ const Login = () => {
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="w-4 h-4 border border-gray-300 rounded text-cinnebar-red focus:ring-cinnebar-red mr-2"
                 />
-                <span className="font-roboto font-normal text-[12px] leading-none tracking-normal text-oxford-blue">
+                <span className="font-roboto font-normal text-[14px] leading-[100%] tracking-[0] text-oxford-blue">
                   {t('login.rememberMe')}
                 </span>
               </label>
               <Link 
                 to="/forgot-password" 
-                className="font-roboto font-medium text-[12px] leading-none tracking-normal text-cinnebar-red underline hover:no-underline"
+                className="font-roboto font-medium text-[14px] leading-[100%] tracking-[0] text-cinnebar-red underline hover:no-underline"
               >
                 {t('login.forgotPassword')}
               </Link>
@@ -105,7 +105,7 @@ const Login = () => {
             {/* Sign In Button */}
             <button
               onClick={handleLogin}
-              className="bg-cinnebar-red text-white font-roboto font-semibold text-base leading-none tracking-normal rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90"
+              className="bg-cinnebar-red text-white font-archivo font-semibold text-[20px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90"
             >
               {t('login.buttonText')}
             </button>
@@ -113,7 +113,7 @@ const Login = () => {
             {/* Divider */}
             <div className="flex px-4 lg:px-9 pt-6 justify-center items-center">
               <div className="flex-1 border-t border-gray-300"></div>
-              <span className="px-4 text-sm text-gray-500">{t('login.orContinueWith')}</span>
+              <span className="px-4 font-roboto text-[14px] leading-[100%] tracking-[0] text-gray-500">{t('login.orContinueWith')}</span>
               <div className="flex-1 border-t border-gray-300"></div>
             </div>
 
@@ -122,21 +122,21 @@ const Login = () => {
               {/* Google Button */}
               <button className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full lg:w-[423px] h-[57px]">
                 <img src={google} alt="Google" className="" />
-                <span className="font-roboto font-medium text-base leading-none tracking-normal text-gray-900">{t('login.continueWithGoogle')}</span>
+                <span className="font-roboto font-medium text-[16px] leading-[100%] tracking-[0] text-gray-900">{t('login.continueWithGoogle')}</span>
               </button>
 
               {/* LinkedIn Button */}
               <button className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full lg:w-[423px] h-[57px]">
                 <img src={linkedin} alt="LinkedIn" className="" />
-                <span className="font-roboto font-medium text-base leading-none tracking-normal text-gray-900">{t('login.continueWithLinkedIn')}</span>
+                <span className="font-roboto font-medium text-[16px] leading-[100%] tracking-[0] text-gray-900">{t('login.continueWithLinkedIn')}</span>
               </button>
             </div>
           </div>
 
           {/* Footer Link */}
-          <p className="font-roboto font-normal text-sm lg:text-base leading-none tracking-normal text-center text-gray-500 mt-16 lg:mt-24">
+          <p className="font-roboto font-normal text-[14px] lg:text-[16px] leading-[100%] tracking-[0] text-center text-gray-500 mt-16 lg:mt-24">
             {t('login.noAccount')}{' '}
-            <Link to="/signupfree" className="font-roboto font-bold text-sm lg:text-base leading-none tracking-normal text-center underline text-cinnebar-red">
+            <Link to="/signupfree" className="font-roboto font-bold text-[14px] lg:text-[16px] leading-[100%] tracking-[0] text-center underline text-cinnebar-red">
               {t('login.signUp')}
             </Link>
           </p>

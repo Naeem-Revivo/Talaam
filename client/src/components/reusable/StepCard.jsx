@@ -27,22 +27,13 @@ const StepCard = ({
       </div>
       
       <div className="flex flex-col gap-2 md:gap-2 lg:gap-2 flex-1 min-w-0">
-        <div className={`font-archivo font-semibold tracking-[0] ${stepText}
-          text-[24px] leading-[100%]
-          md:text-[22px] md:leading-[100%]
-          lg:text-[22px] lg:leading-[100%]`}>
+        <div className={`font-archivo font-semibold tracking-[0] text-[24px] leading-[100%] ${stepText}`}>
           {stepNumber}
         </div>
-        <h3 className="font-archivo font-semibold tracking-[0] text-oxford-blue mb-1
-          text-[20px] leading-[100%]
-          md:text-[24px] md:leading-[100%]
-          lg:text-[24px] lg:leading-[100%]">
+        <h3 className="font-archivo font-semibold tracking-[0] text-oxford-blue mb-1 text-[26px] leading-[100%]">
           {title}
         </h3>
-        <p className="font-roboto font-normal tracking-[0] text-oxford-blue
-          text-[15px] leading-[100%]
-          md:text-[17px] md:leading-[100%]
-          lg:text-[17px] lg:leading-[100%]">
+        <p className="font-roboto font-normal tracking-[0] text-oxford-blue text-[18px] leading-[100%]">
           {description}
         </p>
       </div>

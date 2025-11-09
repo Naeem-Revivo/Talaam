@@ -17,7 +17,7 @@ const CallToActionSection = () => {
         </p>
 
         {/* Call-to-Action Button */}
-        <button className="bg-white shadow-lg font-roboto font-bold mobile:text-[14px] mobile:leading-[18px] tablet:text-[16px] tablet:leading-[20px] laptop:text-[16px] laptop:leading-[20px] tracking-[0] uppercase mobile:px-8 mobile:py-3 tablet:px-10 tablet:py-4 laptop:w-[230px] rounded-lg mobile:w-auto tablet:w-auto laptop:-[62px] text-oxford-blue">
+        <button className="bg-white shadow-lg font-roboto font-semibold text-[20px] leading-[100%] tracking-[0] uppercase mobile:px-8 mobile:py-3 tablet:px-10 tablet:py-4 laptop:w-[250px] rounded-lg mobile:w-auto tablet:w-auto laptop:h-[62px] text-oxford-blue">
           {t('homepage.cta.button')}
         </button>
       </div>

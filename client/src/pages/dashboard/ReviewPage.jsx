@@ -45,13 +45,13 @@ const ReviewPage = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen p-4 md:p-6 lg:p-8 2xl:px-[70px]">
+    <div className="bg-white min-h-screen p-4 md:p-6 lg:p-8 2xl:px-[70px] desktop:px-[260px]">
       {/* Page Title and Subtitle */}
       <div className="mb-4 md:mb-6 lg:mb-8">
-        <h1 className="text-[18px] sm:text-[28px] md:text-[32px] lg:text-[36px] font-bold text-[#032746] mb-2 font-archivo leading-[20px] sm:leading-tight tracking-[0%]">
+        <h1 className="font-archivo font-bold text-[32px] md:text-[36px] leading-[36px] md:leading-[40px] text-oxford-blue mb-2">
           Review Previous Sessions
         </h1>
-        <p className="text-[14px] sm:text-[16px] md:text-[18px] font-normal text-[#6B7280] font-roboto leading-[20px] sm:leading-relaxed tracking-[0%]">
+        <p className="font-roboto font-normal text-[16px] md:text-[18px] leading-[24px] md:leading-[28px] text-[#6B7280]">
           Revisit any past practice set to reinforce your learning.
         </p>
       </div>
@@ -60,7 +60,7 @@ const ReviewPage = () => {
       <div className="flex flex-wrap gap-2 mb-4 md:mb-6 lg:mb-8 pt-2 md:pt-4">
         <button
           onClick={() => handleFilterChange('all')}
-          className={`px-3 md:px-4 py-2 rounded-full text-[14px] md:text-[16px] font-normal transition-colors font-roboto leading-[24px] tracking-[0%] text-center flex items-center justify-center ${
+          className={`px-4 md:px-6 py-2 rounded-full font-roboto text-[16px] leading-[24px] transition-colors text-center flex items-center justify-center ${
             activeFilter === 'all'
               ? 'bg-[#EF4444] text-white'
               : 'bg-white border border-[#E5E7EB] text-[#374151]'
@@ -70,7 +70,7 @@ const ReviewPage = () => {
         </button>
         <button
           onClick={() => handleFilterChange('test')}
-          className={`px-3 md:px-4 py-2 rounded-full text-[14px] md:text-[16px] font-normal transition-colors font-roboto leading-[24px] tracking-[0%] text-center flex items-center justify-center ${
+          className={`px-4 md:px-6 py-2 rounded-full font-roboto text-[16px] leading-[24px] transition-colors text-center flex items-center justify-center ${
             activeFilter === 'test'
               ? 'bg-[#EF4444] text-white'
               : 'bg-white border border-[#E5E7EB] text-[#374151]'
@@ -80,7 +80,7 @@ const ReviewPage = () => {
         </button>
         <button
           onClick={() => handleFilterChange('study')}
-          className={`px-3 md:px-4 py-2 rounded-full text-[14px] md:text-[16px] font-normal transition-colors font-roboto leading-[24px] tracking-[0%] text-center flex items-center justify-center ${
+          className={`px-4 md:px-6 py-2 rounded-full font-roboto text-[16px] leading-[24px] transition-colors text-center flex items-center justify-center ${
             activeFilter === 'study'
               ? 'bg-[#EF4444] text-white'
               : 'bg-white border border-[#E5E7EB] text-[#374151]'

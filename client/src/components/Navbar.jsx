@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   downarrow,
   fb,
@@ -14,6 +14,17 @@ import { useLanguage } from "../context/LanguageContext";
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { language, toggleLanguage, t } = useLanguage();
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname === path;
+  const getLinkClasses = (path) =>
+    `text-oxford-blue font-medium text-[18px] leading-[100%] tracking-[0] ${
+      isActive(path) ? "text-orange-light border-b-2 border-orange-light pb-1" : ""
+    }`;
+  const getMobileLinkClasses = (path) =>
+    `block px-3 py-2 text-lg font-archivo font-medium rounded-md ${
+      isActive(path) ? "text-orange-light bg-orange-light/10" : "text-oxford-blue hover:bg-gray-50"
+    }`;
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -52,14 +63,14 @@ const Navbar = () => {
             <div className={`hidden font-archivo lg:flex items-center ${language === 'ar' ? 'gap-8' : 'space-x-8'}`}>
               <Link
                 to="/how-it-works"
-                className="text-oxford-blue font-medium text-[18px] leading-[100%] tracking-[0]"
+                className={getLinkClasses("/how-it-works")}
               >
                 {t('navbar.howItWorks')}
               </Link>
               <div className="relative">
                 <Link
                   to="/products"
-                  className={`text-oxford-blue flex items-center font-medium text-[18px] leading-[100%] tracking-[0] ${language === 'ar' ? 'flex-row-reverse gap-1' : 'justify-center'}`}
+                  className={`${getLinkClasses("/products")} flex items-center ${language === 'ar' ? 'flex-row-reverse gap-1' : 'justify-center'}`}
                 >
                   {t('navbar.products')}
                   <img src={downarrow} alt="" className="" />
@@ -67,13 +78,13 @@ const Navbar = () => {
               </div>
               <Link
                 to="/about"
-                className="text-oxford-blue font-medium text-[18px] leading-[100%] tracking-[0]"
+                className={getLinkClasses("/about")}
               >
                 {t('navbar.about')}
               </Link>
               <Link
                 to="/contact"
-                className="text-oxford-blue font-medium text-[18px] leading-[100%] tracking-[0]"
+                className={getLinkClasses("/contact")}
               >
                 {t('navbar.contact')}
               </Link>
@@ -128,28 +139,28 @@ const Navbar = () => {
           <div className="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-12 pt-4 pb-6 space-y-4">
             <Link
               to="/how-it-works"
-              className="block px-3 py-2 text-lg font-archivo font-medium text-oxford-blue hover:bg-gray-50 rounded-md"
+              className={getMobileLinkClasses("/how-it-works")}
               onClick={toggleMenu}
             >
               {t('navbar.howItWorks')}
             </Link>
             <Link
               to="/products"
-              className="block px-3 py-2 text-lg font-archivo font-medium text-oxford-blue hover:bg-gray-50 rounded-md"
+              className={getMobileLinkClasses("/products")}
               onClick={toggleMenu}
             >
               {t('navbar.products')}
             </Link>
             <Link
               to="/about"
-              className="block px-3 py-2 text-lg font-archivo font-medium text-oxford-blue hover:bg-gray-50 rounded-md"
+              className={getMobileLinkClasses("/about")}
               onClick={toggleMenu}
             >
               {t('navbar.about')}
             </Link>
             <Link
               to="/contact"
-              className="block px-3 py-2 text-lg font-archivo font-medium text-oxford-blue hover:bg-gray-50 rounded-md"
+              className={getMobileLinkClasses("/contact")}
               onClick={toggleMenu}
             >
               {t('navbar.contact')}

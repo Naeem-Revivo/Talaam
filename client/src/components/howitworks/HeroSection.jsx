@@ -1,5 +1,4 @@
 import React from 'react';
-import { buttonvedio } from '../../assets/svg';
 import { logoimg } from '../../assets/svg/howitworks';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -24,14 +23,6 @@ const HeroSection = () => {
           <div className="flex md:flex-row gap-5 w-full md:w-auto lg:w-auto items-start md:items-center lg:items-start mt-6 md:mt-6 lg:mt-10">
             <button className="w-[140px] h-[44px] md:w-[140px] md:h-[44px] lg:w-[164px] lg:h-[54px] bg-orange-gradient rounded-[12px] text-white font-archivo font-semibold text-[12px] leading-[14px] md:text-[12px] md:leading-[14px] lg:text-[14px] lg:leading-[14px] tracking-[0] align-middle uppercase">
               {t('howItWorks.hero.getStarted')}
-            </button>
-            <button className="w-[156px] h-[44px] md:w-[156px] md:h-[44px] lg:w-[193px] lg:h-[54px] font-archivo font-semibold border border-oxford-blue rounded-[12px] text-[12px] leading-[14px] md:text-[12px] md:leading-[14px] lg:text-[14px] lg:leading-[14px] tracking-[0] align-middle uppercase text-oxford-blue">
-              <div className="flex items-center justify-center gap-1">
-                <p className="">{t('howItWorks.hero.exploreMore')}</p>
-                <p className="">
-                  <img src={buttonvedio} alt="" className="w-[18px] h-[18px] md:w-[18px] md:h-[18px] lg:w-auto lg:h-auto" />
-                </p>
-              </div>
             </button>
           </div>
         </div>

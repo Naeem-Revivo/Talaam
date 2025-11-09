@@ -54,7 +54,7 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 2xl:px-[70px] bg-gray-50 min-h-screen px-6">
+    <div className="p-4 md:p-6 lg:p-8 2xl:px-[70px] desktop:px-[260px] bg-gray-50 min-h-screen px-6">
       {/* Overview Section */}
       <div className="mb-8 md:mb-12">
         <h2 className="font-archivo font-bold text-2xl md:text-3xl lg:text-[36px] leading-tight md:leading-[40px] text-oxford-blue mb-2">Overview</h2>
@@ -65,7 +65,7 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 pt-4">
           {/* Progress Card */}
           <div className="rounded-xl border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 md:p-6 w-full max-w-full lg:max-w-[548px] h-auto min-h-[200px] md:min-h-[251px]">
-            <h3 className="font-archivo font-semibold text-base md:text-[18px] leading-6 md:leading-7 text-oxford-blue mb-3 md:mb-4">Progress</h3>
+            <h3 className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue mb-3 md:mb-4">Progress</h3>
             <div className="flex items-center justify-center">
               <div className="relative w-[90px] h-[90px] md:w-[115px] md:h-[115px]">
                 <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 192 192">
@@ -91,7 +91,7 @@ const DashboardPage = () => {
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <p className="font-archivo font-bold text-lg md:text-[22px] leading-7 md:leading-8 text-oxford-blue">70.5%</p>
+                    <p className="font-archivo font-bold text-[24px] leading-[32px] text-oxford-blue">32.5%</p>
                   </div>
                 </div>
               </div>
@@ -103,11 +103,11 @@ const DashboardPage = () => {
 
           {/* Accuracy Card */}
           <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 md:p-6 w-full max-w-full lg:max-w-[548px] h-auto min-h-[200px] md:min-h-[251px]">
-            <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-3 md:mb-4">Accuracy</h3>  
+            <h3 className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue mb-3 md:mb-10">Accuracy</h3>  
             <div className="flex items-start justify-center h-full">
               <div className="text-center">
-                <p className="text-4xl md:text-5xl lg:text-6xl font-bold text-cinnebar-red">78%</p>
-                <p className="font-roboto font-normal text-sm md:text-base leading-5 md:leading-6 tracking-normal text-center align-middle text-gray-500 mt-3 md:mt-4">Overall</p>
+                <p className="font-archivo font-bold text-[36px] leading-[40px] text-cinnebar-red">78%</p>
+                <p className="font-roboto font-normal text-sm md:text-base leading-5 md:leading-6 tracking-normal text-center align-middle text-gray-500">Overall</p>
               </div>
             </div>
           </div>
@@ -116,7 +116,7 @@ const DashboardPage = () => {
 
       {/* Section Breakdown */}
       <div className="w-full max-w-[382px] md:max-w-[1120px] h-[491px] md:h-[508px]">
-        <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-3">Section Breakdown</h2>
+        <h2 className="font-archivo font-bold text-[20px] leading-[32px] text-oxford-blue mb-4 md:mb-3">Section Breakdown</h2>
         <div className="rounded-xl shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] w-full bg-white p-4 md:p-5">
           <div className="space-y-3 w-full">
             {sectionData.map((section, index) => (
@@ -127,8 +127,8 @@ const DashboardPage = () => {
                 }`}
               >
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-sm md:text-base text-gray-700 font-medium">{section.name}</span>
-                  <span className="text-sm md:text-base text-gray-600 font-semibold">{section.progress}%</span>
+                  <span className="font-roboto text-[14px] leading-[20px] text-oxford-blue font-medium">{section.name}</span>
+                  <span className="font-roboto text-[14px] leading-[20px] text-oxford-blue font-semibold">{section.progress}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-[12px]">
                   <div
@@ -144,7 +144,7 @@ const DashboardPage = () => {
 
       {/* Performance Chart */}
       <div className="bg-white my-20 border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] w-full max-w-full md:w-[1120px] h-auto md:h-auto rounded-[12px] overflow-x-hidden overflow-y-visible pb-8">
-        <h2 className="font-archivo font-semibold pl-4 md:pl-6 lg:pl-10 pb-4 md:pb-5 pt-6 md:pt-10 text-lg md:text-[20px] leading-7 md:leading-[28px] text-gray-800">
+        <h2 className="font-archivo font-semibold pl-4 md:pl-6 lg:pl-10 pb-4 md:pb-5 pt-6 md:pt-10 text-[20px] leading-[28px] text-oxford-blue">
           {t('dashboard.performance.title')}
         </h2>
         <div className="rounded-xl flex flex-col items-center justify-center p-3 md:p-6 overflow-x-auto md:overflow-x-visible" style={{ scrollBehavior: 'smooth' }}>
@@ -260,15 +260,15 @@ const DashboardPage = () => {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: '#6CA6C1' }} />
-                <span className="text-xs text-gray-600">Normal</span>
+                <span className="font-roboto text-[14px] leading-[20px] text-[#6B7280]">Normal</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: '#032746' }} />
-                <span className="text-xs text-gray-600">Hovered</span>
+                <span className="font-roboto text-[14px] leading-[20px] text-[#6B7280]">Hovered</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ED4122' }} />
-                <span className="text-xs text-gray-600">Selected</span>
+                <span className="font-roboto text-[14px] leading-[20px] text-[#6B7280]">Selected</span>
               </div>
             </div>
           </div>
@@ -277,17 +277,21 @@ const DashboardPage = () => {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">
+        <h2 className="font-archivo font-bold text-[24px] leading-[32px] text-oxford-blue mb-4 md:mb-6">
           {t('dashboard.quickActions.title')}
         </h2>
         <div className="flex flex-col sm:flex-row gap-4 md:gap-8 lg:gap-16">
-          <button className="flex items-center justify-center gap-3 bg-cinnebar-red text-white w-full sm:w-auto sm:flex-1 max-w-full lg:max-w-[548px] h-[60px] md:h-[79.2px] rounded-lg font-semibold transition-colors shadow-lg hover:opacity-90">
+          <button className="flex items-center justify-center gap-3 bg-cinnebar-red text-white w-full sm:w-auto sm:flex-1 max-w-full lg:max-w-[548px] h-[60px] md:h-[79.2px] rounded-lg transition-colors shadow-lg hover:opacity-90">
             <img src={vedio} alt="video icon" className="w-5 h-5 md:w-6 md:h-6" />
-            <span className="text-sm md:text-base">{t('dashboard.quickActions.startNewSession')}</span>
+            <span className="font-archivo font-semibold text-[18px] leading-[28px] text-white">
+              {t('dashboard.quickActions.startNewSession')}
+            </span>
           </button>
-          <button className="flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 w-full sm:w-auto sm:flex-1 max-w-full lg:max-w-[548px] h-[60px] md:h-[79.2px] rounded-lg font-semibold transition-colors shadow-sm">
+          <button className="flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-oxford-blue border border-gray-300 w-full sm:w-auto sm:flex-1 max-w-full lg:max-w-[548px] h-[60px] md:h-[79.2px] rounded-lg transition-colors shadow-sm">
             <img src={timer} alt="timer icon" className="w-5 h-5 md:w-6 md:h-6" />
-            <span className="text-sm md:text-base">{t('dashboard.quickActions.reviewSessions')}</span>
+            <span className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue">
+              {t('dashboard.quickActions.reviewSessions')}
+            </span>
           </button>
         </div>
       </div>

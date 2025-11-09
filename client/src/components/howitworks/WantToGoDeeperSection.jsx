@@ -16,7 +16,7 @@ const WantToGoDeeperSection = () => {
           </div>
           
           {/* Video Player Placeholder */}
-         <div className="w-full max-w-[352px] h-[240px] md:w-auto md:h-auto">
+         <div className="w-[352px] h-[240px] md:w-auto md:h-auto">
           <img src={brainvedio} alt="" className="w-full h-full object-cover md:w-auto md:h-auto md:object-contain" />
          </div>
         </div>

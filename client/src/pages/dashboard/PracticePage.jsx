@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const PracticePage = () => {
+  const navigate = useNavigate();
   const [sessionMode, setSessionMode] = useState('study'); // 'test' or 'study'
   const [questionStatus, setQuestionStatus] = useState('new'); 
   const [selectedStatuses, setSelectedStatuses] = useState({
@@ -17,6 +19,20 @@ const PracticePage = () => {
   });
   const [selectedSubtopics, setSelectedSubtopics] = useState({});
   const [sessionSize, setSessionSize] = useState('20');
+
+  const selectedSubtopicCount = Object.values(selectedSubtopics).filter(Boolean).length;
+  const parsedSessionSize = Number(sessionSize);
+  const isSessionSizeValid =
+    Number.isInteger(parsedSessionSize) && parsedSessionSize >= 1 && parsedSessionSize <= 50;
+  const canStartTestSession =
+    sessionMode === 'test' && selectedSubtopicCount > 0 && isSessionSizeValid;
+  const canStartSession = sessionMode === 'study' || canStartTestSession;
+  const handleStartSession = () => {
+    if (!canStartSession) return;
+    const mode = sessionMode === 'test' ? 'test' : 'study';
+    navigate(`/dashboard/session?mode=${mode}`);
+  };
+
 
   const domains = [
     { id: 'quantitative', name: 'Quantitative' },
@@ -72,13 +88,13 @@ const PracticePage = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 2xl:px-[70px] bg- min-h-screen">
+    <div className="p-4 md:p-6 lg:p-8 2xl:px-[70px] desktop:px-[260px] bg- min-h-screen">
       {/* Title and Subtitle */}
       <div className="mb-8">
-        <h1 className="font-archivo font-bold text-[18px] md:text-4xl lg:text-[36px] leading-[40px] md:leading-tight tracking-[0%] text-oxford-blue mb-1 md:mb-2">
+        <h1 className="font-archivo font-bold text-[32px] md:text-[36px] leading-[36px] md:leading-[40px] text-oxford-blue mb-1 md:mb-2">
           Start a Practice Session
         </h1>
-        <p className="font-roboto font-normal text-[14px] md:text-[18px] leading-[28px] tracking-[0%] text-gray-500">
+        <p className="font-roboto font-normal text-[18px] leading-[28px] tracking-[0%] text-[#6B7280]">
           Pick your mode, choose topics, and begin.
         </p>
       </div>
@@ -99,12 +115,12 @@ const PracticePage = () => {
                   : 'bg-white border border-[#E5E7EB]'
               }`}
             >
-              <p className={`font-archivo font-bold text-[16px] leading-[24px] tracking-[0%] mb-1 md:mb-2 ${
+              <p className={`font-archivo font-bold text-[16px] leading-[24px] tracking-[0%] mb-1 md:mb-2 text-center ${
                 sessionMode === 'test' ? 'text-white' : 'text-black'
               }`}>
                 Test Mode
               </p>
-              <p className={`font-roboto font-normal text-[12px] md:text-[14px] leading-[20px] tracking-[0%] ${
+              <p className={`font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-center ${
                 sessionMode === 'test' ? 'text-white' : 'text-gray-600'
               }`}>
                 Timed practice scoring
@@ -118,12 +134,12 @@ const PracticePage = () => {
                   : 'bg-white border border-[#E5E7EB]'
               }`}
             >
-              <p className={`font-archivo font-bold text-[16px] leading-[24px] tracking-[0%] mb-1 md:mb-2 ${
+              <p className={`font-archivo font-bold text-[16px] leading-[24px] tracking-[0%] mb-1 md:mb-2 text-center ${
                 sessionMode === 'study' ? 'text-white' : 'text-black'
               }`}>
                 Study Mode
               </p>
-              <p className={`font-roboto font-normal text-[12px] md:text-[14px] leading-[20px] tracking-[0%] ${
+              <p className={`font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-center ${
                 sessionMode === 'study' ? 'text-white' : 'text-gray-600'
               }`}>
                 Learn with explanations
@@ -134,7 +150,7 @@ const PracticePage = () => {
             <svg className="w-5 h-5 text-oxford-blue flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
             </svg>
-            <p className="font-roboto font-normal text-[12px] md:text-[14px] leading-[20px] tracking-[0%] text-oxford-blue">
+            <p className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-oxford-blue">
               Time limits are available in Test Mode
             </p>
           </div>
@@ -148,7 +164,7 @@ const PracticePage = () => {
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setQuestionStatus('new')}
-            className={`px-4 py-2 rounded-lg font-roboto font-medium text-sm md:text-base transition-all duration-200 ${
+            className={`px-4 py-2 rounded-lg font-roboto font-normal text-[16px] leading-[24px] text-center transition-all duration-200 ${
               questionStatus === 'new'
                 ? 'bg-cinnebar-red text-white'
                 : 'bg-white text-gray-700 border border-[#E5E7EB]'
@@ -158,7 +174,7 @@ const PracticePage = () => {
           </button>
           <button
             onClick={() => setQuestionStatus('solved')}
-            className={`px-4 py-2 rounded-lg font-roboto font-medium text-sm md:text-base transition-all duration-200 ${
+            className={`px-4 py-2 rounded-lg font-roboto font-normal text-[16px] leading-[24px] text-center transition-all duration-200 ${
               questionStatus === 'solved'
                 ? 'bg-cinnebar-red text-white'
                 : 'bg-white text-gray-700 border border-[#E5E7EB]'
@@ -176,10 +192,10 @@ const PracticePage = () => {
                 onChange={() => handleStatusChange('incorrect')}
                 className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red"
               />
-              <span className="font-roboto font-normal text-[14px] md:text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
+              <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
                 Incorrect
               </span>
-              <span className="font-roboto font-normal text-[14px] md:text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
+              <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
                 45
               </span>
             </label>
@@ -190,10 +206,10 @@ const PracticePage = () => {
                 onChange={() => handleStatusChange('flagged')}
                 className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red"
               />
-              <span className="font-roboto font-normal text-[14px] md:text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
+              <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
                 Flagged
               </span>
-              <span className="font-roboto font-normal text-[14px] md:text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
+              <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
                 12
               </span>
             </label>
@@ -204,10 +220,10 @@ const PracticePage = () => {
                 onChange={() => handleStatusChange('correct')}
                 className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red"
               />
-              <span className="font-roboto font-normal text-[14px] md:text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
+              <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
                 Correct
               </span>
-              <span className="font-roboto font-normal text-[14px] md:text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
+              <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
                 128
               </span>
             </label>
@@ -230,7 +246,7 @@ const PracticePage = () => {
               onChange={() => setSelectedAllQuestions(!selectedAllQuestions)}
               className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red"
             />
-            <span className="font-archivo font-bold text-[14px] md:text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
+            <span className="font-archivo font-bold text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
               All Questions
             </span>
           </label>
@@ -298,7 +314,7 @@ const PracticePage = () => {
 
         {/* Warning Message */}
         <div className="mt-4 flex items-center gap-2 rounded-lg w-full bg-papaya-whip border border-[#FFE5B0] p-3">
-          <p className="font-roboto font-normal text-[12px] md:text-[14px] leading-[24px] tracking-[0%] text-oxford-blue text-center">
+          <p className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue text-center">
             No questions match your filters. Clear filters to continue.
           </p>
         </div>
@@ -310,7 +326,7 @@ const PracticePage = () => {
           Session Size
         </h2>
         <div className="mb-2">
-          <label className="block font-roboto text-sm md:text-base text-gray-700 mb-2">
+          <label className="block font-archivo font-bold text-[16px] leading-[24px] text-oxford-blue mb-2">
             Number of Questions
           </label>
           <input
@@ -319,7 +335,7 @@ const PracticePage = () => {
             onChange={(e) => setSessionSize(e.target.value)}
             min="1"
             max="50"
-            className="w-full max-w-[200px] px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-cinnebar-red focus:border-transparent font-roboto text-sm md:text-base"
+            className="w-full max-w-[200px] px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-cinnebar-red focus:border-transparent font-roboto font-medium text-[16px] leading-[24px] text-black"
           />
         </div>
         <p className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-gray-500 mb-4">
@@ -329,7 +345,7 @@ const PracticePage = () => {
           <svg className="w-5 h-5 text-cinnebar-red flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>
-          <p className="font-roboto font-normal text-[12px] md:text-sm leading-[20px] tracking-[0%] text-cinnebar-red">
+          <p className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-cinnebar-red">
             Only 0 questions available with current filters.
           </p>
         </div>
@@ -338,12 +354,13 @@ const PracticePage = () => {
       {/* Begin Session Button */}
       <div className="flex justify-center">
         <button
-          disabled={sessionMode !== 'study'}
-          className={`font-archivo font-bold text-[18px] md:text-[20px] leading-[28px] tracking-[0%] text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 w-full lg:w-[1120px] h-[50px] md:h-[60px] ${
-            sessionMode === 'study' ? 'bg-cinnebar-red' : 'bg-ash-gray'
+          disabled={!canStartSession}
+          onClick={handleStartSession}
+          className={`font-archivo font-bold text-[18px] leading-[28px] tracking-[0%] text-white text-center rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 w-full lg:w-[1120px] h-[50px] md:h-[60px] ${
+            canStartSession ? 'bg-moonstone-blue' : 'bg-ash-gray'
           }`}
         >
-          {sessionMode === 'study' ? 'Start Study Session' : 'Begin Session'}
+          {sessionMode === 'study' ? 'Start Study Session' : 'Start Test Session'}
         </button>
       </div>
     </div>

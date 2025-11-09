@@ -17,12 +17,12 @@ const Card = ({
       </div>
       
       {/* Title */}
-      <h3 className={`mobile:text-[26px] mobile:font-semibold mobile:leading-[31.2px] mobile:font-archivo mobile:text-oxford-blue tablet:text-xl tablet:font-bold laptop:text-xl desktop:text-2xl desktop:font-bold laptop:font-bold text-gray-900 mobile:mb-2 tablet:mb-3 laptop:mb-3 tablet:font-roboto laptop:font-roboto ${titleClassName}`}>
+      <h3 className={`text-[26px] font-semibold leading-[31.2px] font-archivo text-oxford-blue mb-2 ${titleClassName}`}>
         {title}
       </h3>
       
       {/* Description */}
-      <p className={`text-oxford-blue mobile:text-[16px] mobile:font-normal mobile:leading-[25.6px] mobile:tracking-[0px] mobile:font-roboto tablet:text-sm tablet:leading-relaxed tablet:font-roboto laptop:text-sm desktop:text-base desktop:leading-relaxed font-roboto ${descriptionClassName}`}>
+      <p className={`text-oxford-blue text-[16px] font-normal leading-[25.6px] font-roboto ${descriptionClassName}`}>
         {description}
       </p>
     </div>

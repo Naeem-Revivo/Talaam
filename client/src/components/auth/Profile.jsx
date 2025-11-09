@@ -64,7 +64,7 @@ const Profile = () => {
                 value={formData.fullName}
                 onChange={handleInputChange}
                 placeholder={t('profile.fullNamePlaceholder')}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-none placeholder:tracking-normal placeholder:text-[#6B7280] font-roboto shadow-input"
+                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[16px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] shadow-input"
               />
             </div>
 
@@ -78,7 +78,7 @@ const Profile = () => {
                 name="dateOfBirth"
                 value={formData.dateOfBirth}
                 onChange={handleInputChange}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto shadow-input"
+                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[16px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] shadow-input"
               />
             </div>
 
@@ -92,7 +92,7 @@ const Profile = () => {
                   name="country"
                   value={formData.country}
                   onChange={handleInputChange}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto shadow-input"
+                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto text-[16px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
                 >
                   {countries.map((country) => (
                     <option key={country} value={country}>
@@ -118,7 +118,7 @@ const Profile = () => {
                   name="timeZone"
                   value={formData.timeZone}
                   onChange={handleInputChange}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto shadow-input"
+                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto text-[16px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
                 >
                   {timeZones.map((timeZone) => (
                     <option key={timeZone} value={timeZone}>
@@ -144,7 +144,7 @@ const Profile = () => {
                   name="language"
                   value={formData.language}
                   onChange={handleInputChange}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto shadow-input"
+                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto text-[16px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
                 >
                   {languages.map((lang) => (
                     <option key={lang} value={lang}>
@@ -163,7 +163,7 @@ const Profile = () => {
             {/* Finish Setup Button */}
             <button
               onClick={handleFinishSetup}
-              className="bg-cinnebar-red text-white font-roboto font-semibold text-base leading-none tracking-normal rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90"
+              className="bg-cinnebar-red text-white font-archivo font-semibold text-[20px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90"
             >
               {t('profile.finishSetup')}
             </button>
