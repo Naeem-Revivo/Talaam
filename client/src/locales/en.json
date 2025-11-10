@@ -406,10 +406,12 @@
     "signUp": "Sign Up"
   },
   "forgotPassword": {
-    "title": "Forgot Password",
-    "email": "Email",
-    "emailPlaceholder": "Enter your email",
-    "buttonText": "Forgot Password"
+    "title": "Forgot Password?",
+    "instruction": "Enter your registered email address and we'll send you a verification code to reset your password.",
+    "email": "Email Address",
+    "emailPlaceholder": "Enter your registered email",
+    "buttonText": "Send Verification Code",
+    "backToLogin": "Back to Login"
   },
   "forgotModal": {
     "title": "Check your email",
