@@ -1,83 +1,215 @@
-import React from 'react';
-import { headcard1, headcard2, headcard3, headcard4 } from '../../assets/svg/dashboard/admin';
+import React, { useMemo } from "react";
+import {
+  headcard1,
+  headcard2,
+  headcard3,
+  headcard4,
+  threebar,
+  alert,
+  sclock,
+  blacktick,
+} from "../../assets/svg/dashboard/admin";
 
 const stats = [
   {
-    title: 'Total Users',
-    value: '12,800',
-    delta: '+12% from last month',
-    deltaColor: 'text-[#F97316]',
+    title: "Total Users",
+    value: "12,800",
+    delta: "+12% from last month",
+    deltaColor: "text-[#ED4122]",
     icon: headcard1,
   },
   {
-    title: 'Verified Users',
-    value: '9,234',
-    delta: '72% verification rate',
-    deltaColor: 'text-[#0EA5E9]',
+    title: "Verified Users",
+    value: "9,234",
+    delta: "72% verification rate",
+    deltaColor: "text-[#6B7280]",
     icon: headcard2,
   },
   {
-    title: 'Active Subscriptions',
-    value: '3,456',
-    delta: '+8% this week',
-    deltaColor: 'text-[#22C55E]',
+    title: "Active Subscriptions",
+    value: "3,456",
+    delta: "+8% this week",
+    deltaColor: "text-[#6B7280]",
     icon: headcard3,
   },
   {
-    title: 'Revenue',
-    value: '$89,432',
-    delta: '+15% this month',
-    deltaColor: 'text-[#EF4444]',
+    title: "Revenue",
+    value: "$89,432",
+    delta: "+15% this month",
+    deltaColor: "text-[#6B7280]",
     icon: headcard4,
   },
 ];
 
+const growthMonths = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+const growthValues = [
+  1, 1.4, 2.1, 3.8, 4.6, 6.1, 7.3, 8.8, 10.6, 11.9, 13.1, 14.3,
+];
+const growthYAxis = [0, 2.5, 5, 7.5, 10, 12.5, 15];
+
+const subscriptionSegments = [
+  { label: "Free", value: 70.8, color: "#E5E7EB", isBase: true },
+  { label: "Premium", value: 21.1, color: "#ED4122" },
+  { label: "Organization", value: 5.1, color: "#6CA6C1" },
+];
+
 const latestSignups = [
   {
-    name: 'Sarah Ahmad',
-    email: 'sarah.ahmad@gmail.com',
-    time: '2 min ago',
-    avatarColor: 'bg-[#FDE68A]',
+    name: "Sarah Ahmad",
+    email: "sarah.ahmad@gmail.com",
+    time: "2 min ago",
+    avatarColor: "bg-[#FDE68A]",
   },
   {
-    name: 'Emily Davis',
-    email: 'emilydavis@gmail.com',
-    time: '15 min ago',
-    avatarColor: 'bg-[#BFDBFE]',
+    name: "Emily Davis",
+    email: "emilydavis@gmail.com",
+    time: "15 min ago",
+    avatarColor: "bg-[#BFDBFE]",
   },
   {
-    name: 'Emily Davis',
-    email: 'emilydavis@gmail.com',
-    time: '30 min ago',
-    avatarColor: 'bg-[#C4B5FD]',
+    name: "Emily Davis",
+    email: "emilydavis@gmail.com",
+    time: "30 min ago",
+    avatarColor: "bg-[#C4B5FD]",
   },
 ];
 
 const notifications = [
   {
-    title: 'High Server Load',
-    description: 'CPU usage above 85%',
-    time: '10 min ago',
-    color: 'bg-[#FEE2E2]',
-    dot: 'bg-[#EF4444]',
+    title: "High Server Load",
+    description: "CPU usage above 85%",
+    time: "CPU usage above 85%",
+    bg: "bg-[#FEF2F2]",
+    border: "border-[#F97316]",
+    iconBg: "bg-[#EF4444]",
+    titleColor: "text-[#EF4444]",
+    descriptionColor: "text-[#EF4444]",
+    timeColor: "text-[#EF4444]",
+    icon: alert,
+    titleClass: "text-[16px] leading-[16px]",
+    descriptionClass: "text-[12px] leading-[16px]",
+    timeClass: "text-[8px] leading-[12px]",
   },
   {
-    title: 'Scheduled Maintenance',
-    description: 'Database backup at 2 AM',
-    time: '1 hr ago',
-    color: 'bg-[#E0F2FE]',
-    dot: 'bg-[#0EA5E9]',
+    title: "Scheduled Maintenance",
+    description: "Database backup at 2 AM",
+    time: "Tomorrow",
+    bg: "bg-[#FEFCE8]",
+    border: "border-[#FAFF70]",
+    iconBg: "bg-[#60A5FA]",
+    titleColor: "text-[#6CA6C1]",
+    descriptionColor: "text-[#6CA6C1]",
+    timeColor: "text-[#6CA6C1]",
+    icon: sclock,
+    titleClass: "text-[16px] leading-[16px]",
+    descriptionClass: "text-[12px] leading-[16px]",
+    timeClass: "text-[8px] leading-[14px]",
   },
   {
-    title: 'Backup Completed',
-    description: 'Daily backup successful',
-    time: '1 day ago',
-    color: 'bg-[#DCFCE7]',
-    dot: 'bg-[#22C55E]',
+    title: "Backup Completed",
+    description: "Daily backup successful",
+    time: "1 hour ago",
+    bg: "bg-[#F0FDF4]",
+    border: "border-[#BAFFCB]",
+    iconBg: "bg-[#0F172A]",
+    titleColor: "text-[#032746]",
+    descriptionColor: "text-[#032746]",
+    timeColor: "text-[#032746]",
+    icon: blacktick,
+    titleClass: "text-[16px] leading-[16px]",
+    descriptionClass: "text-[12px] leading-[16px]",
+    timeClass: "text-[8px] leading-[14px]",
   },
 ];
 
 const AdminDashboardPage = () => {
+  const { linePath, points } = useMemo(() => {
+    const chartWidth = 460;
+    const chartHeight = 240;
+    const leftPadding = 50;
+    const rightPadding = 20;
+    const topPadding = 20;
+    const bottomPadding = 30;
+    const usableWidth = chartWidth - leftPadding - rightPadding;
+    const usableHeight = chartHeight - topPadding - bottomPadding;
+
+    const maxValue = 15;
+    const pointCoords = growthValues.map((value, index) => {
+      const x = leftPadding + (usableWidth / (growthValues.length - 1)) * index;
+      const y = topPadding + usableHeight - (value / maxValue) * usableHeight;
+      return { x, y, value };
+    });
+
+    const d = pointCoords
+      .map(
+        (point, index) =>
+          `${index === 0 ? "M" : "L"}${point.x.toFixed(2)} ${point.y.toFixed(
+            2
+          )}`
+      )
+      .join(" ");
+
+    return { linePath: d, points: pointCoords };
+  }, []);
+
+  const donutData = useMemo(() => {
+    const radius = 90;
+    const circumference = 2 * Math.PI * radius;
+    const total = subscriptionSegments.reduce((sum, seg) => sum + seg.value, 0);
+
+    const baseSegment = subscriptionSegments.find((segment) => segment.isBase);
+    let accumulated = baseSegment ? baseSegment.value : 0;
+
+    const segments = subscriptionSegments
+      .filter((segment) => !segment.isBase)
+      .map((segment) => {
+        const length = (segment.value / total) * circumference;
+        const dasharray = `${length} ${circumference}`;
+        const dashoffset =
+          circumference - (accumulated / total) * circumference;
+        accumulated += segment.value;
+
+        return {
+          ...segment,
+          dasharray,
+          dashoffset,
+        };
+      });
+
+    let rotationAccumulator = 0;
+    const segmentsWithStart = segments.map((segment) => {
+      const dashLength = parseFloat(segment.dasharray.split(" ")[0]);
+      const dashFraction = dashLength / circumference;
+      const rotation = rotationAccumulator;
+      rotationAccumulator += dashFraction;
+      return {
+        ...segment,
+        rotation,
+        dashFraction,
+      };
+    });
+
+    return {
+      segments: segmentsWithStart,
+      radius,
+      circumference,
+      baseColor: baseSegment?.color ?? "#E5E7EB",
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-6 py-8">
       <div className="max-w-[1200px] mx-auto space-y-8">
@@ -98,69 +230,140 @@ const AdminDashboardPage = () => {
               className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] px-4 py-5 flex flex-col gap-4 w-[262px] h-[130px]"
             >
               <div className="flex items-center justify-between px-3">
-              <div className="space-y-2">
-                <p className="text-sm text-[#6B7280] font-roboto">{item.title}</p>
+                <div className="space-y-2">
+                  <p className="text-sm text-[#6B7280] font-roboto">
+                    {item.title}
+                  </p>
                   <p className="font-archivo font-semibold text-[30px] leading-[28px] text-[#032746]">
                     {item.value}
                   </p>
-                  <p className="font-roboto text-[16px] leading-[20px] text-[#ED4122]">
+                  <p
+                    className={`font-roboto text-[16px] leading-[20px] ${item.deltaColor}`}
+                  >
                     {item.delta}
                   </p>
-              </div>
-              <div className="w-10 h-10 rounded-[6px] flex items-center justify-center bg-[#ED4122]">
-                <img src={item.icon} alt={item.title} className="" />
-              </div>
+                </div>
+                <div className="w-10 h-10 rounded-[6px] flex items-center justify-center bg-[#ED4122]">
+                  <img src={item.icon} alt={item.title} className="" />
+                </div>
               </div>
             </div>
           ))}
         </section>
 
         {/* Charts */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6">
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-56">
+          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-[639px] h-[462px]">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-lg font-archivo font-semibold text-oxford-blue">
                   User Growth Trend
                 </h3>
-                <p className="text-sm text-[#6B7280] font-roboto">Monthly active users</p>
+                <p className="text-sm text-[#6B7280] font-roboto">
+                  Monthly active users
+                </p>
               </div>
-              <button className="w-10 h-10 flex items-center justify-center rounded-xl border border-[#E5E7EB] hover:bg-gray-50 transition">
+              <button className="w-10 h-10 flex items-center justify-center rounded-xl transition">
                 <span className="sr-only">More</span>
-                <div className="w-5 h-5 flex flex-col justify-between">
-                  <span className="block w-full h-[2px] bg-[#9CA3AF]" />
-                  <span className="block w-full h-[2px] bg-[#9CA3AF]" />
-                  <span className="block w-full h-[2px] bg-[#9CA3AF]" />
-                </div>
+                <img src={threebar} alt="menu" />
               </button>
             </div>
             <div className="mt-8">
-              <div className="h-[240px] relative">
-                <svg viewBox="0 0 460 240" className="absolute inset-0 w-full h-full">
+              <div className="h-[348px] relative">
+                <svg
+                  viewBox="0 0 460 240"
+                  className="absolute inset-0 w-full h-full"
+                >
                   <defs>
-                    <linearGradient id="growthGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#1D4ED8" stopOpacity="0.18" />
+                    <linearGradient
+                      id="growthGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="#1D4ED8"
+                        stopOpacity="0.18"
+                      />
                       <stop offset="100%" stopColor="#1D4ED8" stopOpacity="0" />
                     </linearGradient>
                   </defs>
-                  <rect x="0" y="0" width="460" height="240" fill="url(#gridPattern)" />
+                  {/* Grid lines */}
+                  {growthYAxis.map((value) => {
+                    const chartHeight = 240;
+                    const topPadding = 20;
+                    const bottomPadding = 30;
+                    const usableHeight =
+                      chartHeight - topPadding - bottomPadding;
+                    const y =
+                      topPadding + usableHeight - (value / 15) * usableHeight;
+                    return (
+                      <g key={value}>
+                        <line
+                          x1={50}
+                          x2={440}
+                          y1={y}
+                          y2={y}
+                          stroke="#E5E7EB"
+                          strokeWidth="1"
+                          strokeDasharray="4 4"
+                          opacity="0.8"
+                        />
+                        <text
+                          x={30}
+                          y={y + 4}
+                          fill="#9CA3AF"
+                          fontSize="12"
+                          fontFamily="Roboto"
+                          textAnchor="end"
+                        >
+                          {value === 0 ? "0" : `${value}k`}
+                        </text>
+                      </g>
+                    );
+                  })}
+
+                  {/* Area */}
                   <path
-                    d="M30 200 L80 190 L130 170 L180 150 L230 120 L280 100 L330 80 L380 60 L430 45"
+                    d={`M${points[0].x} ${points[0].y} ${points
+                      .map((point) => `L${point.x} ${point.y}`)
+                      .join(" ")} L${points[points.length - 1].x} 230 L${
+                      points[0].x
+                    } 230 Z`}
+                    fill="url(#growthGradient)"
+                  />
+
+                  {/* Line */}
+                  <path
+                    d={linePath}
                     fill="none"
                     stroke="#60A5FA"
-                    strokeWidth="4"
+                    strokeWidth="3"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
-                  <path
-                    d="M30 200 Q80 190 130 170 T230 120 330 80 430 45 L430 240 L30 240 Z"
-                    fill="url(#growthGradient)"
-                  />
-                  {['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov'].map((label, idx) => (
+
+                  {/* Points */}
+                  {points.map((point, index) => (
+                    <circle
+                      key={index}
+                      cx={point.x}
+                      cy={point.y}
+                      r="4.5"
+                      fill="#60A5FA"
+                      stroke="#FFFFFF"
+                      strokeWidth="2"
+                    />
+                  ))}
+
+                  {/* Month Labels */}
+                  {growthMonths.map((label, idx) => (
                     <text
                       key={label}
-                      x={30 + idx * 80}
-                      y={220}
+                      x={points[idx].x}
+                      y={230}
                       textAnchor="middle"
                       fill="#9CA3AF"
                       fontSize="12"
@@ -169,165 +372,153 @@ const AdminDashboardPage = () => {
                       {label}
                     </text>
                   ))}
-                  {[0, 5, 10, 15].map((value, idx) => (
-                    <text
-                      key={value}
-                      x={10}
-                      y={200 - idx * 50}
-                      textAnchor="middle"
-                      fill="#9CA3AF"
-                      fontSize="12"
-                      fontFamily="Roboto"
-                    >
-                      {value}k
-                    </text>
-                  ))}
                 </svg>
               </div>
             </div>
           </div>
-          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 flex flex-col">
+          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 flex flex-col w-[455px] h-[462px]">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="text-lg font-archivo font-semibold text-oxford-blue">Subscription Plans</h3>
-                <p className="text-sm text-[#6B7280] font-roboto">Plan distribution</p>
+                <h3 className="text-lg font-archivo font-semibold text-oxford-blue">
+                  Subscription Plans
+                </h3>
+                <p className="text-sm text-[#6B7280] font-roboto">
+                  Plan distribution
+                </p>
               </div>
-              <button className="w-10 h-10 flex items-center justify-center rounded-xl border border-[#E5E7EB] hover:bg-gray-50 transition">
+              <button className="w-10 h-10 flex items-center justify-center rounded-xl transition">
                 <span className="sr-only">More</span>
-                <div className="w-5 h-5 flex flex-col justify-between">
-                  <span className="block w-full h-[2px] bg-[#9CA3AF]" />
-                  <span className="block w-full h-[2px] bg-[#9CA3AF]" />
-                  <span className="block w-full h-[2px] bg-[#9CA3AF]" />
-                </div>
+                <img src={threebar} alt="menu" />
               </button>
             </div>
 
-            <div className="flex-1 flex items-center justify-center mt-6">
+            <div className="flex-1 flex items-center justify-center ">
               <div className="relative">
-                <svg width="220" height="220" viewBox="0 0 220 220">
+                <svg width="260" height="260" viewBox="0 0 260 260">
                   <circle
-                    cx="110"
-                    cy="110"
-                    r="90"
-                    stroke="#E5E7EB"
-                    strokeWidth="28"
+                    cx="130"
+                    cy="130"
+                    r={donutData.radius}
+                    stroke={donutData.baseColor}
+                    strokeWidth="26"
                     fill="none"
                   />
+                  {donutData.segments.map((segment) => (
+                    <circle
+                      key={segment.label}
+                      cx="130"
+                      cy="130"
+                      r={donutData.radius}
+                      stroke={segment.color}
+                      strokeWidth="26"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeDasharray={segment.dasharray}
+                      strokeDashoffset={segment.dashoffset}
+                      transform={`rotate(${
+                        segment.rotation * 360 - 90
+                      } 130 130)`}
+                    />
+                  ))}
                   <circle
-                    cx="110"
-                    cy="110"
-                    r="90"
-                    stroke="#60A5FA"
-                    strokeWidth="28"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 90 * 0.7} ${2 * Math.PI * 90}`}
-                    strokeDashoffset={-2 * Math.PI * 90 * 0.3}
-                    strokeLinecap="round"
-                  />
-                  <circle
-                    cx="110"
-                    cy="110"
-                    r="90"
-                    stroke="#F59E0B"
-                    strokeWidth="28"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 90 * 0.2} ${2 * Math.PI * 90}`}
-                    strokeDashoffset={-2 * Math.PI * 90 * 0.8}
-                    strokeLinecap="round"
-                  />
-                  <circle
-                    cx="110"
-                    cy="110"
-                    r="90"
-                    stroke="#1D4ED8"
-                    strokeWidth="28"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 90 * 0.1} ${2 * Math.PI * 90}`}
-                    strokeDashoffset={-2 * Math.PI * 90 * 0.95}
-                    strokeLinecap="round"
+                    cx="130"
+                    cy="130"
+                    r={donutData.radius - 30}
+                    fill="#FFFFFF"
                   />
                 </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <p className="text-2xl font-archivo font-semibold text-oxford-blue">70.8%</p>
-                  <p className="text-sm text-[#6B7280] font-roboto">Free Plan</p>
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                  <p className="font-archivo font-semibold text-[32px] leading-[36px] text-[#032746]">
+                    70.8%
+                  </p>
+                  <p className="text-sm font-roboto text-[#6B7280]">
+                    Free Plan
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 mt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-[#60A5FA]" />
-                  <span className="text-sm text-[#6B7280] font-roboto">Free</span>
+            <div className="grid grid-cols-1 gap-4 ">
+              {subscriptionSegments.map((segment) => (
+                <div
+                  key={segment.label}
+                  className="flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="w-3.5 h-3.5 rounded-full"
+                      style={{ backgroundColor: segment.color }}
+                    />
+                    <span className="text-sm text-[#6B7280] font-roboto">
+                      {segment.label}
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium text-[#032746] font-roboto">
+                    {segment.value.toFixed(1)}%
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-oxford-blue font-roboto">70.8%</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-[#F59E0B]" />
-                  <span className="text-sm text-[#6B7280] font-roboto">Premium</span>
-                </div>
-                <span className="text-sm font-medium text-oxford-blue font-roboto">21.1%</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-[#1D4ED8]" />
-                  <span className="text-sm text-[#6B7280] font-roboto">Organization</span>
-                </div>
-                <span className="text-sm font-medium text-oxford-blue font-roboto">5.1%</span>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
         {/* Bottom panels */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6">
+          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-[558px] h-[410px]">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-archivo font-semibold text-oxford-blue">Latest Sign-ups</h3>
-              <button className="text-sm text-[#3B82F6] font-roboto hover:underline">View all</button>
+              <h3 className="font-archivo font-semibold text-[20px] leading-[28px] text-[#032746]">
+                Latest Sign-ups
+              </h3>
             </div>
             <div className="space-y-4">
               {latestSignups.map((user) => (
                 <div
                   key={user.email}
-                  className="flex items-center justify-between bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl px-4 py-3"
+                  className="flex items-center justify-between bg-[#E5E7EB] border border-[#6CA6C1] rounded-xl px-4 py-3 w-[500px] h-[86px]"
                 >
                   <div className="flex items-center gap-3">
                     <div className={`${user.avatarColor} w-10 h-10 rounded-full flex items-center justify-center`}>
-                      <span className="text-base font-archivo font-semibold text-oxford-blue">
+                      <span className="font-roboto text-[16px] leading-[20px] text-[#032746] font-normal">
                         {user.name.charAt(0)}
                       </span>
                     </div>
                     <div>
-                      <p className="text-sm font-archivo font-semibold text-oxford-blue">{user.name}</p>
-                      <p className="text-xs text-[#6B7280] font-roboto">{user.email}</p>
+                      <p className="font-roboto text-[16px] leading-[20px] text-[#032746] font-normal">{user.name}</p>
+                      <p className="font-roboto text-[12px] leading-[20px] text-[#6B7280]">{user.email}</p>
                     </div>
                   </div>
-                  <span className="text-xs text-[#9CA3AF] font-roboto">{user.time}</span>
+                  <span className="font-roboto text-[12px] leading-[20px] text-[#6B7280]">{user.time}</span>
                 </div>
               ))}
             </div>
           </div>
-          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6">
+          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-[558px] h-[410px]">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-archivo font-semibold text-oxford-blue">System Notifications</h3>
-              <button className="text-sm text-[#3B82F6] font-roboto hover:underline">View all</button>
+              <h3 className="font-archivo font-semibold text-[20px] leading-[28px] text-[#032746]">
+                System Notifications
+              </h3>
             </div>
             <div className="space-y-4">
               {notifications.map((note) => (
                 <div
                   key={note.title}
-                  className={`${note.color} rounded-xl px-4 py-3 border border-[#E5E7EB] flex flex-col gap-1`}
+                  className={`${note.bg} rounded-xl px-4 py-4 border ${note.border} flex flex-col gap-2 w-[500px] h-[86px]`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2.5 h-2.5 rounded-full ${note.dot}`} />
-                      <p className="text-sm font-archivo font-semibold text-oxford-blue">{note.title}</p>
+                  <div className="flex items-start gap-3">
+               
+                      <img src={note.icon} alt="" className="" />
+                    <div className="flex flex-col gap-1">
+                      <p className={`font-roboto font-normal ${note.titleClass} ${note.titleColor}`}>
+                        {note.title}
+                      </p>
+                      <p className={`font-roboto font-normal ${note.descriptionClass} ${note.descriptionColor}`}>
+                        {note.description}
+                      </p>
+                      <p className={`font-roboto font-normal ${note.timeClass} ${note.timeColor}`}>
+                        {note.time}
+                      </p>
                     </div>
-                    <span className="text-xs text-[#9CA3AF] font-roboto">{note.time}</span>
                   </div>
-                  <p className="text-xs text-[#6B7280] font-roboto">{note.description}</p>
                 </div>
               ))}
             </div>
@@ -339,6 +530,3 @@ const AdminDashboardPage = () => {
 };
 
 export default AdminDashboardPage;
-
-
-
