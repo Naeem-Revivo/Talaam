@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { user, notif } from '../../assets/svg/dashboard/header';
 import { setting as settings, profile, logout } from '../../assets/svg/dashboard';
 import { hamburger } from '../../assets/svg';
+import { useAuth } from '../../context/AuthContext';
 
 const Header = ({ onToggleSidebar }) => {
   const { language, toggleLanguage, t } = useLanguage();
+  const { user: authUser, logout: doLogout, role } = useAuth();
+  const location = useLocation();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -23,10 +27,41 @@ const Header = ({ onToggleSidebar }) => {
   }, []);
 
   const handleMenuItemClick = (action) => {
-    console.log(`Clicked: ${action}`);
+    if (action === 'Logout') {
+      doLogout();
+      setIsUserMenuOpen(false);
+      return;
+    }
     setIsUserMenuOpen(false);
     // Add your navigation logic here
   };
+
+  const getTitleByPath = (pathname) => {
+    // Admin routes
+    if (pathname.startsWith('/admin')) {
+      if (pathname === '/admin') return 'Admin Dashboard';
+      if (pathname.startsWith('/admin/users')) return 'User Management';
+      if (pathname.startsWith('/admin/question-bank')) return 'Question Bank';
+      if (pathname.startsWith('/admin/subscriptions')) return 'Subscriptions & Billing';
+      if (pathname.startsWith('/admin/reports')) return 'Reports & Analytics';
+      if (pathname.startsWith('/admin/moderation')) return 'Content Moderation';
+      if (pathname.startsWith('/admin/settings')) return 'System Settings';
+      if (pathname.startsWith('/admin/security')) return 'Security & Permissions';
+      return 'Admin';
+    }
+    // User dashboard routes
+    if (pathname === '/dashboard') return 'Dashboard';
+    if (pathname.startsWith('/dashboard/practice')) return 'Practice Session';
+    if (pathname.startsWith('/dashboard/analytics')) return 'Performance Analytics';
+    if (pathname.startsWith('/dashboard/review-incorrect')) return 'Review Incorrect';
+    if (pathname.startsWith('/dashboard/review-all')) return 'Review All';
+    if (pathname.startsWith('/dashboard/review')) return 'Review Sessions';
+    if (pathname.startsWith('/dashboard/session-summary')) return 'Session Summary';
+    if (pathname.startsWith('/dashboard/session')) return 'Question Session';
+    return t('dashboard.header.title');
+  };
+
+  const headerTitle = getTitleByPath(location.pathname);
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50 h-[70.8px]">
@@ -44,7 +79,7 @@ const Header = ({ onToggleSidebar }) => {
           
           {/* Title */}
           <h1 className="text-lg md:text-[20px] text-oxford-blue leading-[100%] tracking-[0%] font-archivo font-[600]">
-            {t('dashboard.header.title')}
+            {headerTitle}
           </h1>
         </div>
 
@@ -89,8 +124,12 @@ const Header = ({ onToggleSidebar }) => {
               <img src={user} alt="User" className="" />
             </button>
             <div className="text-right hidden sm:block">
-              <p className="text-[14px] text-oxford-blue leading-[100%] tracking-[0px] font-archivo font-[700]">John Smith</p>
-              <p className="text-[12px] leading-[100%] tracking-[0px] text-left pt-1 pl-1 font-roboto font-[400] text-[#6B7280]">User</p>
+              <p className="text-[14px] text-oxford-blue leading-[100%] tracking-[0px] font-archivo font-[700]">
+                {authUser?.name || 'User'}
+              </p>
+              <p className="text-[12px] leading-[100%] tracking-[0px] text-left pt-1 pl-1 font-roboto font-[400] text-[#6B7280]">
+                {role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User'}
+              </p>
             </div>
 
             {/* User Dropdown Menu */}

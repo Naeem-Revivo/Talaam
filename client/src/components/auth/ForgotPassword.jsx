@@ -25,7 +25,7 @@ const ForgotPassword = () => {
       <div className="bg-white rounded-lg border border-[#03274633] shadow-lg p-4 lg:p-8 w-full lg:w-[505px] flex flex-col">
         <div className="w-full lg:w-[430px] pt-8 lg:pt-12 lg:pb-14 flex flex-col mx-auto">
           {/* Main Heading */}
-          <h1 className="font-archivo font-semibold mb-2 text-[26px] lg:text-[30px] leading-[100%] tracking-[0] text-oxford-blue text-center">
+          <h1 className="font-archivo font-bold mb-2 text-[24px] lg:text-[24px] leading-[100%] tracking-[0] text-oxford-blue text-center">
             {t('forgotPassword.title')}
           </h1>
 

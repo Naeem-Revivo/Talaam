@@ -2,10 +2,12 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../context/LanguageContext'
 import { eye, openeye, google, linkedin } from '../../assets/svg/signup'
+import { useAuth } from '../../context/AuthContext'
 
 const Login = () => {
   const { language, t } = useLanguage()
   const dir = language === 'ar' ? 'rtl' : 'ltr'
+  const { login } = useAuth()
   
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
@@ -13,6 +15,7 @@ const Login = () => {
     email: '',
     password: ''
   })
+  const [error, setError] = useState('')
 
   const handleInputChange = (e) => {
     setFormData({
@@ -22,9 +25,11 @@ const Login = () => {
   }
 
   const handleLogin = () => {
-    // Here you would typically validate the form and make an API call
-    console.log('Login data:', formData)
-    // Navigate to home or dashboard after login
+    setError('')
+    const { ok, message } = login(formData.email, formData.password)
+    if (!ok) {
+      setError(message || 'Login failed')
+    }
   }
 
   return (
@@ -53,7 +58,7 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder={t('login.emailPlaceholder')}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] font-roboto font-normal text-[16px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
+                className="px-4 py-3 border border-[#03274633] rounded-lg text-[14px] outline-none w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] font-roboto font-normal leading-[100%] tracking-[0] text-oxford-blue shadow-input"
               />
             </div>
             <div className="flex flex-col gap-5">
@@ -69,7 +74,7 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder={t('login.passwordPlaceholder')}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] font-roboto font-normal text-[16px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
+                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] font-roboto font-normal text-[14px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
                 />
                 <button
                   type="button"
@@ -88,32 +93,55 @@ const Login = () => {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 border border-gray-300 rounded text-cinnebar-red focus:ring-cinnebar-red mr-2"
+                  className="w-3 h-3 border border-gray-300 rounded text-cinnebar-red focus:ring-cinnebar-red mr-2"
                 />
-                <span className="font-roboto font-normal text-[14px] leading-[100%] tracking-[0] text-oxford-blue">
+                <span className="font-roboto font-normal pt-0.5 text-[12px] leading-[100%] tracking-[0] text-oxford-blue">
                   {t('login.rememberMe')}
                 </span>
               </label>
               <Link 
                 to="/forgot-password" 
-                className="font-roboto font-medium text-[14px] leading-[100%] tracking-[0] text-cinnebar-red underline hover:no-underline"
+                className="font-roboto font-medium text-[12px] leading-[100%] tracking-[0] text-cinnebar-red underline hover:no-underline"
               >
                 {t('login.forgotPassword')}
               </Link>
             </div>
             </div>
+
+            {error && (
+              <div className="text-red-600 text-sm font-roboto">{error}</div>
+            )}
+
             {/* Sign In Button */}
             <button
               onClick={handleLogin}
-              className="bg-cinnebar-red text-white font-archivo font-semibold text-[20px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90"
+              className="bg-cinnebar-red text-white font-archivo font-semibold text-[16px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90"
             >
               {t('login.buttonText')}
             </button>
 
+            {/* Quick fill helpers for demo */}
+            <div className="flex gap-3 justify-between">
+              <button
+                type="button"
+                onClick={() => setFormData({ email: 'admin@talaam.com', password: 'Admin@123' })}
+                className="text-xs text-gray-600 underline"
+              >
+                Use Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ email: 'user@talaam.com', password: 'User@123' })}
+                className="text-xs text-gray-600 underline"
+              >
+                Use User
+              </button>
+            </div>
+
             {/* Divider */}
             <div className="flex px-4 lg:px-9 pt-6 justify-center items-center">
               <div className="flex-1 border-t border-gray-300"></div>
-              <span className="px-4 font-roboto text-[14px] leading-[100%] tracking-[0] text-gray-500">{t('login.orContinueWith')}</span>
+              <span className="px-4 font-roboto text-[16px] leading-[100%] tracking-[0] text-gray-500">{t('login.orContinueWith')}</span>
               <div className="flex-1 border-t border-gray-300"></div>
             </div>
 

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  downarrow,
   fb,
   hamburger,
   instagram,
@@ -16,15 +15,23 @@ const Navbar = () => {
   const { language, toggleLanguage, t } = useLanguage();
   const location = useLocation();
 
-  const isActive = (path) => location.pathname === path;
-  const getLinkClasses = (path) =>
-    `text-oxford-blue font-medium text-[18px] leading-[100%] tracking-[0] ${
-      isActive(path) ? "text-orange-light border-b-2 border-orange-light pb-1" : ""
-    }`;
-  const getMobileLinkClasses = (path) =>
-    `block px-3 py-2 text-lg font-archivo font-medium rounded-md ${
-      isActive(path) ? "text-orange-light bg-orange-light/10" : "text-oxford-blue hover:bg-gray-50"
-    }`;
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+  const getLinkClasses = (path) => {
+    const active = isActive(path);
+    if (active) {
+      return "font-medium text-[18px] leading-[100%] tracking-[0] transition-colors text-[#ED4122]";
+    }
+    return "font-medium text-[18px] leading-[100%] tracking-[0] transition-colors text-oxford-blue hover:text-[#ED4122]";
+  };
+  const getMobileLinkClasses = (path) => {
+    const active = isActive(path);
+    if (active) {
+      return "block px-3 py-2 text-lg font-archivo font-medium rounded-md transition-colors text-[#ED4122] bg-orange-light/10";
+    }
+    return "block px-3 py-2 text-lg font-archivo font-medium rounded-md transition-colors text-oxford-blue hover:bg-gray-50 hover:text-[#ED4122]";
+  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -67,15 +74,33 @@ const Navbar = () => {
               >
                 {t('navbar.howItWorks')}
               </Link>
-              <div className="relative">
+              <div className="relative products-nav-item">
                 <Link
                   to="/products"
-                  className={`${getLinkClasses("/products")} flex items-center ${language === 'ar' ? 'flex-row-reverse gap-1' : 'justify-center'}`}
+                  className={`${getLinkClasses("/products")} flex items-center ${language === 'ar' ? 'flex-row-reverse gap-1' : 'gap-0'}`}
                 >
                   {t('navbar.products')}
-                  <img src={downarrow} alt="" className="" />
+                  <svg 
+                    width="24" 
+                    height="11" 
+                    viewBox="0 0 24 11" 
+                    fill="none" 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className="transition-colors products-arrow"
+                  >
+                    <path 
+                      d="M7 3L12 8L17 3H7Z" 
+                      fill={isActive("/products") ? "#ED4122" : "#032746"}
+                      className="transition-colors"
+                    />
+                  </svg>
                 </Link>
               </div>
+              <style>{`
+                .products-nav-item:hover .products-arrow path {
+                  fill: #ED4122 !important;
+                }
+              `}</style>
               <Link
                 to="/about"
                 className={getLinkClasses("/about")}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, useLocation } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
+import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import { AppRoutes } from './routes/index.jsx';
@@ -8,9 +9,10 @@ import { AppRoutes } from './routes/index.jsx';
 function AppContent() {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith('/dashboard');
+  const isAdmin = location.pathname.startsWith('/admin');
 
   // Don't wrap dashboard routes with the global Layout
-  if (isDashboard) {
+  if (isDashboard || isAdmin) {
     return <AppRoutes />;
   }
 
@@ -23,12 +25,14 @@ function AppContent() {
 
 function App() {
   return (
-    <LanguageProvider>
-      <Router>
-        <ScrollToTop />
-        <AppContent />
-      </Router>
-    </LanguageProvider>
+    <Router>
+      <LanguageProvider>
+        <AuthProvider>
+          <ScrollToTop />
+          <AppContent />
+        </AuthProvider>
+      </LanguageProvider>
+    </Router>
   );
 }
 

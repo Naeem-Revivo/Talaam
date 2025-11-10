@@ -64,7 +64,7 @@ const Profile = () => {
                 value={formData.fullName}
                 onChange={handleInputChange}
                 placeholder={t('profile.fullNamePlaceholder')}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[16px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] shadow-input"
+                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] shadow-input"
               />
             </div>
 
@@ -78,7 +78,7 @@ const Profile = () => {
                 name="dateOfBirth"
                 value={formData.dateOfBirth}
                 onChange={handleInputChange}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[16px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] shadow-input"
+                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] shadow-input"
               />
             </div>
 
@@ -92,7 +92,7 @@ const Profile = () => {
                   name="country"
                   value={formData.country}
                   onChange={handleInputChange}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto text-[16px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
+                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
                 >
                   {countries.map((country) => (
                     <option key={country} value={country}>
@@ -118,7 +118,7 @@ const Profile = () => {
                   name="timeZone"
                   value={formData.timeZone}
                   onChange={handleInputChange}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto text-[16px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
+                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
                 >
                   {timeZones.map((timeZone) => (
                     <option key={timeZone} value={timeZone}>
@@ -144,7 +144,7 @@ const Profile = () => {
                   name="language"
                   value={formData.language}
                   onChange={handleInputChange}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto text-[16px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
+                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
                 >
                   {languages.map((lang) => (
                     <option key={lang} value={lang}>

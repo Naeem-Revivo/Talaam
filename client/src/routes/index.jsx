@@ -23,6 +23,9 @@ import ReviewIncorrectPage from '../pages/dashboard/ReviewIncorrectPage';
 import ReviewAllPage from '../pages/dashboard/ReviewAllPage';
 import QuestionSessionPage from '../pages/dashboard/QuestionSessionPage';
 import QuestionSessionSummaryPage from '../pages/dashboard/QuestionSessionSummaryPage';
+import AdminLayout from '../pages/admin/AdminLayout';
+import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
+import { RoleRoute } from './ProtectedRoute';
 
 export const AppRoutes = () => {
   return (
@@ -43,19 +46,35 @@ export const AppRoutes = () => {
       <Route path="/set-new-password" element={<SetNewPasswordPage />} />
       <Route path="/password-reset" element={<PasswordResetPage />} />
       
-      {/* Dashboard Routes */}
-      <Route path="/dashboard" element={<DashboardLayout />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="practice" element={<PracticePage />} />
-        <Route path="analytics" element={<AnalyticsPage />} />
-        <Route path="review" element={<ReviewPage />} />
+      {/* Dashboard Routes (User) */}
+      <Route element={<RoleRoute allow={['user']} />}>
+        <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="practice" element={<PracticePage />} />
+          <Route path="analytics" element={<AnalyticsPage />} />
+          <Route path="review" element={<ReviewPage />} />
+        </Route>
+        {/* Review Pages - No sidebar */}
+        <Route path="/dashboard/review-incorrect" element={<ReviewIncorrectPage />} />
+        <Route path="/dashboard/review-all" element={<ReviewAllPage />} />
+        <Route path="/dashboard/session" element={<QuestionSessionPage />} />
+        <Route path="/dashboard/session-summary" element={<QuestionSessionSummaryPage />} />
       </Route>
       
-      {/* Review Pages - No sidebar */}
-      <Route path="/dashboard/review-incorrect" element={<ReviewIncorrectPage />} />
-      <Route path="/dashboard/review-all" element={<ReviewAllPage />} />
-      <Route path="/dashboard/session" element={<QuestionSessionPage />} />
-      <Route path="/dashboard/session-summary" element={<QuestionSessionSummaryPage />} />
+      {/* Admin Routes */}
+      <Route element={<RoleRoute allow={['admin']} />}>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboardPage />} />
+          {/* Placeholder child routes for the admin sidebar items */}
+          <Route path="users" element={<AdminDashboardPage />} />
+          <Route path="question-bank" element={<AdminDashboardPage />} />
+          <Route path="subscriptions" element={<AdminDashboardPage />} />
+          <Route path="reports" element={<AdminDashboardPage />} />
+          <Route path="moderation" element={<AdminDashboardPage />} />
+          <Route path="settings" element={<AdminDashboardPage />} />
+          <Route path="security" element={<AdminDashboardPage />} />
+        </Route>
+      </Route>
     </Routes>
   );
 };

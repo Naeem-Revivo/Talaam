@@ -8,7 +8,7 @@ const WhatYouGetSection = () => {
   
   const features = [
     {
-      icon: study,
+      icon: minding,
       title: t('products.whatYouGet.features.practiceQuestions.title'),
       description: t('products.whatYouGet.features.practiceQuestions.description'),
     },
@@ -18,7 +18,7 @@ const WhatYouGetSection = () => {
       description: t('products.whatYouGet.features.performanceTracking.description'),
     },
     {
-      icon: minding,
+      icon: study,
       title: t('products.whatYouGet.features.studyPlanTools.title'),
       description: t('products.whatYouGet.features.studyPlanTools.description'),
     },

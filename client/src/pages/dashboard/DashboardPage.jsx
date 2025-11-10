@@ -64,7 +64,7 @@ const DashboardPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 pt-4">
           {/* Progress Card */}
-          <div className="rounded-xl border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 md:p-6 w-full max-w-full lg:max-w-[548px] h-auto min-h-[200px] md:min-h-[251px]">
+          <div className="rounded-xl border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 md:p-6 w-full lg:w-[548px] h-auto min-h-[200px] md:min-h-[251px]">
             <h3 className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue mb-3 md:mb-4">Progress</h3>
             <div className="flex items-center justify-center">
               <div className="relative w-[90px] h-[90px] md:w-[115px] md:h-[115px]">
@@ -102,7 +102,7 @@ const DashboardPage = () => {
           </div>
 
           {/* Accuracy Card */}
-          <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 md:p-6 w-full max-w-full lg:max-w-[548px] h-auto min-h-[200px] md:min-h-[251px]">
+          <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 md:p-6 w-full lg:w-[548px] h-auto min-h-[200px] md:min-h-[251px]">
             <h3 className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue mb-3 md:mb-10">Accuracy</h3>  
             <div className="flex items-start justify-center h-full">
               <div className="text-center">

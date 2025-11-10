@@ -23,7 +23,7 @@ const SignUpFree = () => {
         <div className="flex justify-center w-full">
           <Link
             to="/create-account"
-            className="bg-cinnebar-red text-white font-archivo font-bold text-[24px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 w-[280px] md:w-[423px] h-12 md:h-[57px] flex items-center justify-center"
+            className="bg-cinnebar-red text-white font-roboto font-semibold text-[16px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 w-[280px] md:w-[423px] h-12 md:h-[57px] flex items-center justify-center"
           >
             {t('signUpFree.buttonText')}
           </Link>
