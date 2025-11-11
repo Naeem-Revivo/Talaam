@@ -9,6 +9,7 @@ import {
   sclock,
   blacktick,
 } from "../../assets/svg/dashboard/admin";
+import AdminMetricCard from "../../components/admin/AdminMetricCard";
 
 const stats = [
   {
@@ -207,7 +208,7 @@ const AdminDashboardPage = () => {
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-8 2xl:px-16 desktop:px-[258px]">
       <div className="max-w-[1200px] mx-auto space-y-6 sm:space-y-8">
-        <header className="space-y-2 text-center sm:text-left">
+        <header className="space-y-1 text-center sm:text-left">
           <h1 className="font-archivo font-bold text-[28px] leading-[32px] text-[#032746] sm:text-[36px] sm:leading-[40px]">
             Dashboard Overview
           </h1>
@@ -219,29 +220,16 @@ const AdminDashboardPage = () => {
         {/* Stats */}
         <section className="flex flex-wrap gap-4 sm:gap-6 lg:gap-7">
           {stats.map((item) => (
-            <div
+            <AdminMetricCard
               key={item.title}
-              className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] px-4 py-5 flex flex-col gap-4 w-full sm:w-[calc(50%-12px)] lg:w-[262px] lg:h-[130px]"
-            >
-              <div className="flex items-center justify-between px-3">
-                <div className="space-y-2">
-                  <p className="text-sm text-[#6B7280] font-roboto">
-                    {item.title}
-                  </p>
-                  <p className="font-archivo font-semibold text-[30px] leading-[28px] text-[#032746]">
-                    {item.value}
-                  </p>
-                  <p
-                    className={`font-roboto text-[16px] leading-[20px] ${item.deltaColor}`}
-                  >
-                    {item.delta}
-                  </p>
-                </div>
-                <div className="w-10 h-10 rounded-[6px] flex items-center justify-center bg-[#ED4122]">
-                  <img src={item.icon} alt={item.title} className="" />
-                </div>
-              </div>
-            </div>
+              title={item.title}
+              value={item.value}
+              subtext={item.delta}
+              subtextClassName={item.deltaColor}
+              icon={item.icon}
+              iconWrapperClassName="bg-[#ED4122]"
+              className="w-full sm:w-[calc(50%-12px)] lg:w-[262px] lg:h-[130px]"
+            />
           ))}
         </section>
 

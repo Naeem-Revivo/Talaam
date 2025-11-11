@@ -26,6 +26,9 @@ import QuestionSessionSummaryPage from '../pages/dashboard/QuestionSessionSummar
 import AdminLayout from '../pages/admin/AdminLayout';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import UserManagementPage from '../pages/admin/UserManagementPage';
+import AddUserPage from '../pages/admin/AddUserPage';
+import EditUserPage from '../pages/admin/EditUserPage';
+import UserDetailPage from '../pages/admin/UserDetailPage';
 import { RoleRoute } from './ProtectedRoute';
 
 export const AppRoutes = () => {
@@ -68,6 +71,9 @@ export const AppRoutes = () => {
           <Route index element={<AdminDashboardPage />} />
           {/* Placeholder child routes for the admin sidebar items */}
           <Route path="users" element={<UserManagementPage />} />
+          <Route path="users/add" element={<AddUserPage />} />
+          <Route path="users/:id" element={<UserDetailPage />} />
+          <Route path="users/:id/edit" element={<EditUserPage />} />
           <Route path="question-bank" element={<AdminDashboardPage />} />
           <Route path="subscriptions" element={<AdminDashboardPage />} />
           <Route path="reports" element={<AdminDashboardPage />} />

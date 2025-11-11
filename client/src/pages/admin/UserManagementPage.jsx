@@ -1,149 +1,40 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import UserSummaryCards from "../../components/admin/userManagement/UserSummaryCards";
 import UserFilterBar from "../../components/admin/userManagement/UserFilterBar";
 import UserTable from "../../components/admin/userManagement/UserTable";
-import UserFormModal from "../../components/admin/userManagement/UserFormModal";
-import UserDetailModal from "../../components/admin/userManagement/UserDetailModal";
-import { headcard1, headcard2, headcard3, headcard4 } from "../../assets/svg/dashboard/admin";
-
-const initialUsers = [
-  {
-    id: "u-1",
-    name: "John Doe",
-    email: "johndoe@gmail.com",
-    workflowRole: "Question Gatherer",
-    systemRole: "Admin",
-    status: "Active",
-    notes:
-      "John plays a critical role in sourcing high-quality questions for the creation pipeline.",
-    lastLogin: "Oct 12, 2025 • 10:22 AM",
-    dateCreated: "Jan 15, 2023",
-    activityLog: [
-      {
-        description: "User logged in from IP 192.168.1.1",
-        timestamp: "Oct 12, 2025 • 10:22 AM",
-      },
-      {
-        description: "Workflow role changed from Question Creator to Question Gatherer",
-        timestamp: "Oct 11, 2025 • 09:45 AM",
-      },
-    ],
-  },
-  {
-    id: "u-2",
-    name: "Jane Smith",
-    email: "janesmith@gmail.com",
-    workflowRole: "Question Creator",
-    systemRole: "Editor",
-    status: "Suspended",
-    notes:
-      "Currently under review for repeated violations of content guidelines.",
-    lastLogin: "Oct 08, 2025 • 04:18 PM",
-    dateCreated: "Feb 02, 2023",
-    activityLog: [
-      {
-        description: "Account suspended by Admin",
-        timestamp: "Oct 10, 2025 • 08:20 AM",
-      },
-      {
-        description: "Created new question #Q-12345",
-        timestamp: "Oct 09, 2025 • 01:04 PM",
-      },
-    ],
-  },
-  {
-    id: "u-3",
-    name: "Mike Johnson",
-    email: "mikejohnson@gmail.com",
-    workflowRole: "Processor",
-    systemRole: "Viewer",
-    status: "Active",
-    notes:
-      "Mike reviews and validates processed questions before they are added to the bank.",
-    lastLogin: "Oct 13, 2025 • 06:35 PM",
-    dateCreated: "Mar 19, 2023",
-    activityLog: [
-      {
-        description: "Reviewed 45 new questions",
-        timestamp: "Oct 13, 2025 • 05:40 PM",
-      },
-      {
-        description: "Password changed successfully",
-        timestamp: "Oct 11, 2025 • 11:15 AM",
-      },
-    ],
-  },
-  {
-    id: "u-4",
-    name: "Emily Davis",
-    email: "emilydavis@gmail.com",
-    workflowRole: "Question Explainer",
-    systemRole: "Admin",
-    status: "Active",
-    notes:
-      "Emily has consistently delivered high-quality content explanations for the question bank.",
-    lastLogin: "Oct 14, 2025 • 09:45 AM",
-    dateCreated: "May 24, 2023",
-    activityLog: [
-      {
-        description: "Published 5 new explanations",
-        timestamp: "Oct 14, 2025 • 09:45 AM",
-      },
-    ],
-  },
-  {
-    id: "u-5",
-    name: "Jane Smith",
-    email: "janesmith+gatherer@gmail.com",
-    workflowRole: "Question Gatherer",
-    systemRole: "Editor",
-    status: "Suspended",
-    notes: "Duplicate account flagged for verification.",
-    lastLogin: "Sep 30, 2025 • 02:02 PM",
-    dateCreated: "Jul 05, 2023",
-    activityLog: [
-      {
-        description: "Account flagged for duplicate entries",
-        timestamp: "Oct 01, 2025 • 08:15 AM",
-      },
-    ],
-  },
-];
+import { useAdminUsers } from "../../context/AdminUsersContext";
+import {
+  usermanage1,
+  usermanage2,
+  usermanage3,
+  usermanage4,
+} from "../../assets/svg/dashboard/admin";
 
 const roleIcons = {
-  "Question Gatherer": headcard1,
-  "Question Creator": headcard2,
-  Processor: headcard3,
-  "Question Explainer": headcard4,
+  "Question Gatherer": usermanage1,
+  "Question Creator": usermanage2,
+  Processor: usermanage3,
+  "Question Explainer": usermanage4,
 };
 
 const pageSize = 5;
 
 const UserManagementPage = () => {
-  const [users, setUsers] = useState(initialUsers);
+  const { users } = useAdminUsers();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [roleFilter, setRoleFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [formModalState, setFormModalState] = useState({
-    open: false,
-    mode: "add",
-    user: null,
-  });
-  const [detailModalState, setDetailModalState] = useState({
-    open: false,
-    user: null,
-  });
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
       const matchesSearch =
         user.name.toLowerCase().includes(search.toLowerCase()) ||
         user.email.toLowerCase().includes(search.toLowerCase());
-      const matchesStatus =
-        statusFilter === "All" ? true : user.status === statusFilter;
-      const matchesRole =
-        roleFilter === "All" ? true : user.workflowRole === roleFilter;
+      const matchesStatus = statusFilter ? user.status === statusFilter : true;
+      const matchesRole = roleFilter ? user.workflowRole === roleFilter : true;
       return matchesSearch && matchesStatus && matchesRole;
     });
   }, [users, search, statusFilter, roleFilter]);
@@ -165,81 +56,31 @@ const UserManagementPage = () => {
       const usersByRole = users.filter(
         (user) => user.workflowRole === role
       );
+      const totalCount = usersByRole.length;
       const activeCount = usersByRole.filter(
         (user) => user.status === "Active"
       ).length;
+      const badgeTone = activeCount ? "active" : "suspended";
       return {
         label: role,
-        total: usersByRole.length,
-        status: activeCount ? "Active" : "Suspended",
-        subtext: `${activeCount} active`,
+        value: totalCount,
+        badgeText: badgeTone === "active" ? "Active" : "Suspended",
+        badgeTone,
         icon: roleIcons[role],
       };
     });
   }, [users]);
 
-  const openAddModal = () => {
-    setFormModalState({ open: true, mode: "add", user: null });
-  };
-
-  const openEditModal = (user) => {
-    setFormModalState({ open: true, mode: "edit", user });
-  };
-
-  const closeFormModal = () => {
-    setFormModalState({ open: false, mode: "add", user: null });
-  };
-
-  const handleFormSubmit = (values, mode) => {
-    const { password, ...rest } = values;
-    if (mode === "edit" && formModalState.user) {
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.id === formModalState.user.id ? { ...user, ...rest } : user
-        )
-      );
-    } else {
-      const newUser = {
-        ...rest,
-        id: `u-${Date.now()}`,
-        dateCreated: new Date().toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "2-digit",
-        }),
-        lastLogin: "Never",
-        activityLog: [
-          {
-            description: "Account created",
-            timestamp: new Date().toLocaleString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          },
-        ],
-      };
-      setUsers((prev) => [newUser, ...prev]);
-    }
-    closeFormModal();
-  };
-
-  const openDetailModal = (user) => {
-    setDetailModalState({ open: true, user });
-  };
-
-  const closeDetailModal = () => {
-    setDetailModalState({ open: false, user: null });
+  const handleAddUser = () => {
+    navigate("/admin/users/add");
   };
 
   const handleView = (user) => {
-    openDetailModal(user);
+    navigate(`/admin/users/${user.id}`);
   };
 
   const handleEdit = (user) => {
-    openEditModal(user);
+    navigate(`/admin/users/${user.id}/edit`);
   };
 
   const handleExport = () => {
@@ -262,14 +103,14 @@ const UserManagementPage = () => {
   };
 
   return (
-    <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 lg:px-10 xl:px-16">
+    <div className="min-h-full bg-[#F5F7FB] px-4 xl:px-6 py-6 sm:px-6  2xl:px-[66px]">
       <div className="mx-auto flex max-w-[1200px] flex-col gap-6">
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="font-archivo text-[32px] leading-[36px] text-[#032746]">
+            <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-[#032746]">
               User Management
             </h1>
-            <p className="font-roboto text-sm text-[#6B7280]">
+            <p className="font-roboto text-[18px] leading-[28px] text-[#6B7280]">
               Manage user accounts and workflow roles.
             </p>
           </div>
@@ -277,14 +118,26 @@ const UserManagementPage = () => {
             <button
               type="button"
               onClick={handleExport}
-              className="rounded-[10px] border border-[#E5E7EB] bg-white px-5 py-3 text-sm font-semibold text-[#032746] transition hover:bg-[#F3F4F6]"
+              className="h-[36px] w-[124px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6] flex items-center justify-center gap-2"
             >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M5.10357 3.51181C4.86316 3.2714 4.86316 2.88163 5.10357 2.64122L7.5651 0.179682C7.62172 0.123067 7.68994 0.0779487 7.76542 0.0467692C7.91558 -0.0155898 8.08542 -0.0155898 8.23558 0.0467692C8.31106 0.0779487 8.37908 0.123067 8.4357 0.179682L10.8972 2.64122C11.1376 2.88163 11.1376 3.2714 10.8972 3.51181C10.7774 3.63161 10.6199 3.6923 10.4623 3.6923C10.3048 3.6923 10.1472 3.63243 10.0274 3.51181L8.61619 2.10051V11.2821C8.61619 11.6217 8.34049 11.8974 8.0008 11.8974C7.66111 11.8974 7.38542 11.6217 7.38542 11.2821V2.10131L5.97416 3.51262C5.73293 3.75221 5.34398 3.75223 5.10357 3.51181ZM12.9231 5.74359C12.5834 5.74359 12.3077 6.01928 12.3077 6.35897C12.3077 6.69866 12.5834 6.97436 12.9231 6.97436C14.217 6.97436 14.7692 7.52656 14.7692 8.82051V12.9231C14.7692 14.217 14.217 14.7692 12.9231 14.7692H3.07692C1.78297 14.7692 1.23077 14.217 1.23077 12.9231V8.82051C1.23077 7.52656 1.78297 6.97436 3.07692 6.97436C3.41662 6.97436 3.69231 6.69866 3.69231 6.35897C3.69231 6.01928 3.41662 5.74359 3.07692 5.74359C1.09292 5.74359 0 6.83651 0 8.82051V12.9231C0 14.9071 1.09292 16 3.07692 16H12.9231C14.9071 16 16 14.9071 16 12.9231V8.82051C16 6.83651 14.9071 5.74359 12.9231 5.74359Z"
+                  fill="#032746"
+                />
+              </svg>
               Export
             </button>
             <button
               type="button"
-              onClick={openAddModal}
-              className="rounded-[10px] bg-[#ED4122] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#d43a1f]"
+              onClick={handleAddUser}
+              className="h-[36px] w-[180px] rounded-[10px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
               + Add New User
             </button>
@@ -322,23 +175,6 @@ const UserManagementPage = () => {
         />
       </div>
 
-      <UserFormModal
-        isOpen={formModalState.open}
-        mode={formModalState.mode}
-        initialValues={formModalState.user}
-        onClose={closeFormModal}
-        onSubmit={handleFormSubmit}
-      />
-
-      <UserDetailModal
-        isOpen={detailModalState.open}
-        user={detailModalState.user}
-        onClose={closeDetailModal}
-        onEdit={(user) => {
-          closeDetailModal();
-          openEditModal(user);
-        }}
-      />
     </div>
   );
 };
