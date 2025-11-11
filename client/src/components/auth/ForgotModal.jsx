@@ -25,7 +25,7 @@ const ForgotModal = ({ onClose }) => {
         </div>
 
         {/* Heading */}
-        <h2 className="font-archivo font-bold text-2xl lg:text-3xl py-3 leading-none tracking-normal text-oxford-blue mb-4 text-center">
+        <h2 className="font-archivo font-bold text-2xl  py-3 leading-none tracking-normal text-oxford-blue mb-4 text-center">
           {t('forgotModal.title')}
         </h2>
 

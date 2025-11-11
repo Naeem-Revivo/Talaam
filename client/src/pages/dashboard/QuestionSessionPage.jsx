@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import StudyModeLayout from './components/questionSession/StudyModeLayout';
-import TestModeLayout from './components/questionSession/TestModeLayout';
-import SessionCompletionModal from './components/questionSession/SessionCompletionModal';
+import StudyModeLayout from '../../components/dashboard/questionSession/StudyModeLayout';
+import TestModeLayout from '../../components/dashboard/questionSession/TestModeLayout';
+import SessionCompletionModal from '../../components/dashboard/questionSession/SessionCompletionModal';
 
 const buildInitialState = (questions) =>
   questions.map(() => ({

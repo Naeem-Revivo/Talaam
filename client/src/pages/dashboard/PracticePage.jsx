@@ -356,11 +356,11 @@ const PracticePage = () => {
         <button
           disabled={!canStartSession}
           onClick={handleStartSession}
-          className={`font-archivo font-bold text-[18px] leading-[28px] tracking-[0%] text-white text-center rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 w-full lg:w-[1120px] h-[50px] md:h-[60px] ${
-            canStartSession ? 'bg-moonstone-blue' : 'bg-ash-gray'
+          className={`font-archivo font-bold text-[20px] leading-[28px] tracking-[0%] text-oxford-blue text-center rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 w-full lg:w-[1120px] h-[50px] md:h-[60px] ${
+            canStartSession ? 'bg-cinnebar-red text-white' : 'bg-ash-gray text-oxford-blue'
           }`}
         >
-          {sessionMode === 'study' ? 'Start Study Session' : 'Start Test Session'}
+          Begin Session
         </button>
       </div>
     </div>

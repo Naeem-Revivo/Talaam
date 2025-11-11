@@ -169,65 +169,59 @@ const AdminDashboardPage = () => {
     const radius = 90;
     const circumference = 2 * Math.PI * radius;
     const total = subscriptionSegments.reduce((sum, seg) => sum + seg.value, 0);
-
-    const baseSegment = subscriptionSegments.find((segment) => segment.isBase);
-    let accumulated = baseSegment ? baseSegment.value : 0;
-
-    const segments = subscriptionSegments
-      .filter((segment) => !segment.isBase)
-      .map((segment) => {
-        const length = (segment.value / total) * circumference;
-        const dasharray = `${length} ${circumference}`;
-        const dashoffset =
-          circumference - (accumulated / total) * circumference;
-        accumulated += segment.value;
-
-        return {
-          ...segment,
-          dasharray,
-          dashoffset,
-        };
-      });
+    const gapSize = 8;
+    const segmentsCount = subscriptionSegments.length;
+    const availableCircumference = circumference - gapSize * segmentsCount;
+    const gapFraction = gapSize / circumference;
 
     let rotationAccumulator = 0;
-    const segmentsWithStart = segments.map((segment) => {
-      const dashLength = parseFloat(segment.dasharray.split(" ")[0]);
-      const dashFraction = dashLength / circumference;
+    const segments = subscriptionSegments.map((segment) => {
+      const strokeLength =
+        (segment.value / total) * Math.max(availableCircumference, 0);
+      const dasharray = `${strokeLength} ${circumference}`;
+      const dashFraction = strokeLength / circumference;
       const rotation = rotationAccumulator;
-      rotationAccumulator += dashFraction;
+      rotationAccumulator += dashFraction + gapFraction;
+
       return {
         ...segment,
+        dasharray,
         rotation,
-        dashFraction,
       };
     });
 
+    const highlighted =
+      subscriptionSegments.find((segment) => segment.isBase) ??
+      subscriptionSegments[0];
+
     return {
-      segments: segmentsWithStart,
+      segments,
       radius,
       circumference,
-      baseColor: baseSegment?.color ?? "#E5E7EB",
+      gapSize,
+      trackColor: "#EEF2F6",
+      highlighted,
     };
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#F5F7FB] px-6 py-8">
-      <div className="max-w-[1200px] mx-auto space-y-8">
-        <header className="space-y-2">
-          <h1 className="font-archivo font-bold text-[36px] leading-[40px] text-[#032746]">
+    <div className="min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-8 2xl:px-16 desktop:px-[258px]">
+      <div className="max-w-[1200px] mx-auto space-y-6 sm:space-y-8">
+        <header className="space-y-2 text-center sm:text-left">
+          <h1 className="font-archivo font-bold text-[28px] leading-[32px] text-[#032746] sm:text-[36px] sm:leading-[40px]">
             Dashboard Overview
           </h1>
-          <p className="font-roboto text-[18px] leading-[28px] text-[#6B7280]">
+          <p className="font-roboto text-[16px] leading-[24px] text-[#6B7280] sm:text-[18px] sm:leading-[28px]">
             Monitor system activity and key metrics
           </p>
         </header>
 
         {/* Stats */}
-        <section className="flex flex-wrap gap-7">
+        <section className="flex flex-wrap gap-4 sm:gap-6 lg:gap-7">
           {stats.map((item) => (
             <div
               key={item.title}
-              className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] px-4 py-5 flex flex-col gap-4 w-[262px] h-[130px]"
+              className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] px-4 py-5 flex flex-col gap-4 w-full sm:w-[calc(50%-12px)] lg:w-[262px] lg:h-[130px]"
             >
               <div className="flex items-center justify-between px-3">
                 <div className="space-y-2">
@@ -252,9 +246,9 @@ const AdminDashboardPage = () => {
         </section>
 
         {/* Charts */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-56">
-          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-[639px] h-[462px]">
-            <div className="flex items-start justify-between">
+        <section className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-56">
+          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-full lg:w-[639px] lg:h-[462px]">
+            <div className="flex items-start justify-between flex-col gap-4 sm:flex-row sm:gap-0">
               <div>
                 <h3 className="text-lg font-archivo font-semibold text-oxford-blue">
                   User Growth Trend
@@ -268,11 +262,11 @@ const AdminDashboardPage = () => {
                 <img src={threebar} alt="menu" />
               </button>
             </div>
-            <div className="mt-8">
-              <div className="h-[348px] relative">
+            <div className="mt-6 sm:mt-8">
+              <div className="relative h-[300px] sm:h-[348px]">
                 <svg
                   viewBox="0 0 460 240"
-                  className="absolute inset-0 w-full h-full"
+                  className="absolute inset-0 h-full w-full"
                 >
                   <defs>
                     <linearGradient
@@ -376,7 +370,7 @@ const AdminDashboardPage = () => {
               </div>
             </div>
           </div>
-          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 flex flex-col w-[455px] h-[462px]">
+          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 flex flex-col w-full lg:w-[455px] lg:h-[462px]">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-lg font-archivo font-semibold text-oxford-blue">
@@ -392,14 +386,14 @@ const AdminDashboardPage = () => {
               </button>
             </div>
 
-            <div className="flex-1 flex items-center justify-center ">
+            <div className="flex flex-1 items-center justify-center">
               <div className="relative">
                 <svg width="260" height="260" viewBox="0 0 260 260">
                   <circle
                     cx="130"
                     cy="130"
                     r={donutData.radius}
-                    stroke={donutData.baseColor}
+                    stroke={donutData.trackColor}
                     strokeWidth="26"
                     fill="none"
                   />
@@ -412,9 +406,8 @@ const AdminDashboardPage = () => {
                       stroke={segment.color}
                       strokeWidth="26"
                       fill="none"
-                      strokeLinecap="round"
+                      strokeLinecap="butt"
                       strokeDasharray={segment.dasharray}
-                      strokeDashoffset={segment.dashoffset}
                       transform={`rotate(${
                         segment.rotation * 360 - 90
                       } 130 130)`}
@@ -429,16 +422,16 @@ const AdminDashboardPage = () => {
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                   <p className="font-archivo font-semibold text-[32px] leading-[36px] text-[#032746]">
-                    70.8%
+                    {donutData.highlighted.value.toFixed(1)}%
                   </p>
                   <p className="text-sm font-roboto text-[#6B7280]">
-                    Free Plan
+                    {donutData.highlighted.label}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 ">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4">
               {subscriptionSegments.map((segment) => (
                 <div
                   key={segment.label}
@@ -463,21 +456,23 @@ const AdminDashboardPage = () => {
         </section>
 
         {/* Bottom panels */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-[558px] h-[410px]">
-            <div className="flex items-center justify-between mb-6">
+        <section className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-4">
+          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-full lg:w-[558px] lg:h-[410px]">
+            <div className="mb-4 flex items-center justify-between sm:mb-6">
               <h3 className="font-archivo font-semibold text-[20px] leading-[28px] text-[#032746]">
                 Latest Sign-ups
               </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {latestSignups.map((user) => (
                 <div
                   key={user.email}
-                  className="flex items-center justify-between bg-[#E5E7EB] border border-[#6CA6C1] rounded-xl px-4 py-3 w-[500px] h-[86px]"
+                  className="flex w-full flex-col gap-3 rounded-xl border border-[#6CA6C1] bg-[#E5E7EB] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0 lg:w-[500px] lg:h-[86px]"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`${user.avatarColor} w-10 h-10 rounded-full flex items-center justify-center`}>
+                    <div
+                      className={`${user.avatarColor} flex h-10 w-10 items-center justify-center rounded-full`}
+                    >
                       <span className="font-roboto text-[16px] leading-[20px] text-[#032746] font-normal">
                         {user.name.charAt(0)}
                       </span>
@@ -492,17 +487,17 @@ const AdminDashboardPage = () => {
               ))}
             </div>
           </div>
-          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-[558px] h-[410px]">
-            <div className="flex items-center justify-between mb-6">
+          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-full lg:w-[558px] lg:h-[410px]">
+            <div className="mb-4 flex items-center justify-between sm:mb-6">
               <h3 className="font-archivo font-semibold text-[20px] leading-[28px] text-[#032746]">
                 System Notifications
               </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {notifications.map((note) => (
                 <div
                   key={note.title}
-                  className={`${note.bg} rounded-xl px-4 py-4 border ${note.border} flex flex-col gap-2 w-[500px] h-[86px]`}
+                  className={`${note.bg} flex w-full flex-col gap-2 rounded-xl border ${note.border} px-4 py-4 lg:w-[500px] lg:h-[86px]`}
                 >
                   <div className="flex items-start gap-3">
                
