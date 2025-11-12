@@ -30,6 +30,7 @@ import AddUserPage from '../pages/admin/AddUserPage';
 import EditUserPage from '../pages/admin/EditUserPage';
 import UserDetailPage from '../pages/admin/UserDetailPage';
 import { RoleRoute } from './ProtectedRoute';
+import AdminQuestionBankPage from '../pages/admin/QuestionBankPage';
 
 export const AppRoutes = () => {
   return (
@@ -74,7 +75,7 @@ export const AppRoutes = () => {
           <Route path="users/add" element={<AddUserPage />} />
           <Route path="users/:id" element={<UserDetailPage />} />
           <Route path="users/:id/edit" element={<EditUserPage />} />
-          <Route path="question-bank" element={<AdminDashboardPage />} />
+          <Route path="question-bank" element={<AdminQuestionBankPage />} />
           <Route path="subscriptions" element={<AdminDashboardPage />} />
           <Route path="reports" element={<AdminDashboardPage />} />
           <Route path="moderation" element={<AdminDashboardPage />} />
