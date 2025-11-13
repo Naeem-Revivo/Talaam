@@ -31,6 +31,9 @@ import EditUserPage from '../pages/admin/EditUserPage';
 import UserDetailPage from '../pages/admin/UserDetailPage';
 import { RoleRoute } from './ProtectedRoute';
 import ClassificationManagement from '../pages/admin/ClassificationManagementPage';
+import AdminQuestionBankPage from '../pages/admin/QuestionBankPage';
+import AddSubjectPage from '../pages/admin/AddSubjectPage';
+import AddTopicPage from '../pages/admin/AddTopicPage';
 
 export const AppRoutes = () => {
   return (
@@ -77,6 +80,10 @@ export const AppRoutes = () => {
           <Route path="users/:id/edit" element={<EditUserPage />} />
           <Route path="question-bank" element={<AdminDashboardPage />} />
           <Route path="subscriptions" element={<ClassificationManagement />} />
+          <Route path="subscriptions/add-subject" element={<AddSubjectPage/>} />
+          <Route path="subscriptions/add-topic" element={<AddTopicPage />} />
+          <Route path="question-bank" element={<AdminQuestionBankPage />} />
+          <Route path="subscriptions" element={<AdminDashboardPage />} />
           <Route path="reports" element={<AdminDashboardPage />} />
           <Route path="moderation" element={<AdminDashboardPage />} />
           <Route path="settings" element={<AdminDashboardPage />} />

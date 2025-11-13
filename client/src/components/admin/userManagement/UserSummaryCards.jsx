@@ -12,7 +12,7 @@ const UserSummaryCards = ({ summaries }) => {
   }
 
   return (
-    <section className="mt-4 flex flex-wrap gap-4 sm:mt-6 sm:gap-6 lg:gap-7">
+    <section className="mt-4 flex flex-wrap gap-4 sm:mt-6 sm:gap-6 lg:gap-7 w-full xl:justify-between">
       {summaries.map((item) => (
         <AdminMetricCard
           key={item.label}

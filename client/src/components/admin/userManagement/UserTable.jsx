@@ -305,7 +305,7 @@ const UserTable = ({
   onEdit,
 }) => {
   return (
-    <section className="w-full max-w-[1120px] overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_54px_rgba(0,0,0,0.05)] md:min-h-[348px]">
+    <section className="w-full overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_54px_rgba(0,0,0,0.05)] md:min-h-[348px]">
       <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full border-collapse">
           <TableHeader />

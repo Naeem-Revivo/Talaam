@@ -5,39 +5,88 @@ import Tabs from "../../components/admin/ClassificationManaement/ClassificationT
 import HierarchyBreadcrumb from "../../components/admin/ClassificationManaement/Hiararchy";
 import StatsCards from "../../components/admin/ClassificationManaement/StatsCard";
 import { useAdminSubjects } from "../../context/AdminClassificationContext";
+import { useNavigate } from "react-router-dom";
+
+
+const getTabConfig = (subjects, topics, subtopics, concepts) => ({
+    Subject: {
+        data: subjects,
+        columns: ["Subject Name", "Description", "Created By", "Date", "Actions"],
+        addButtonText: "+ Add New Subject",
+        addRoute: "/admin/subscriptions/add-subject",
+        emptyMessage: "No subjects match the current filters.",
+        heading: "Classification Management",
+        subheading: "Organize questions by subject, topic, subtopic, and concept",
+    },
+    Topics: {
+        data: topics,
+        columns: ["Topic Name", "Description", "Created By", "Date", "Actions"],
+        addButtonText: "+ Add New Topic",
+        addRoute: "/admin/subscriptions/add-topic",
+        emptyMessage: "No topics match the current filters.",
+        heading: "Topics Management",
+        subheading: "Manage and organize topics within subjects",
+    },
+    Subtopics: {
+        data: subtopics,
+        columns: ["Subtopic Name", "Description", "Created By", "Date", "Actions"],
+        addButtonText: "+ Add New Subtopic",
+        addRoute: "/admin/subscriptions/add-subtopic",
+        emptyMessage: "No subtopics match the current filters.",
+        heading: "Subtopics Management",
+        subheading: "Manage and organize subtopics within topics",
+    },
+    Concepts: {
+        data: concepts,
+        columns: ["Concept Name", "Description", "Linked Subtopic", "Date", "Actions"],
+        addButtonText: "+ Add New Concept",
+        addRoute: "/admin/subscriptions/add-concept",
+        emptyMessage: "No concepts match the current filters.",
+        heading: "Concepts Management",
+        subheading: "Manage and organize concepts within subtopics",
+    },
+});
 
 // Main Component
 const ClassificationManagement = () => {
-    const { subjects } = useAdminSubjects();
+    const { subjects, topics, subtopics, concepts } = useAdminSubjects();
+    const [activeTab, setActiveTab] = useState("Subject");
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
     const [subject, setSubject] = useState("");
     const [topic, setTopic] = useState("");
     const [subtopic, setSubtopic] = useState("");
 
+    const tabConfig = getTabConfig(subjects, topics, subtopics, concepts);
+    const currentConfig = tabConfig[activeTab];
+
+    const navigate = useNavigate();
+
     const pageSize = 5;
 
-    // Filter subjects based on search
-    const filteredSubjects = useMemo(() => {
-        return subjects.filter((subject) => {
-            const matchesSearch =
-                subject.name.toLowerCase().includes(search.toLowerCase()) ||
-                subject.description.toLowerCase().includes(search.toLowerCase()) ||
-                subject.dateCreated.toLowerCase().includes(search.toLowerCase());
-            return matchesSearch;
+    // Filter data based on search
+    const filteredData = useMemo(() => {
+        return currentConfig.data.filter((item) => {
+            const searchLower = search.toLowerCase();
+            return (
+                item.name.toLowerCase().includes(searchLower) ||
+                item.description.toLowerCase().includes(searchLower) ||
+                item.createdBy.toLowerCase().includes(searchLower) ||
+                item.dateCreated.toLowerCase().includes(searchLower)
+            );
         });
-    }, [search]);
+    }, [currentConfig.data, search]);
 
-    // Paginate filtered subjects
-    const paginatedSubjects = useMemo(() => {
+    // Paginate filtered data
+    const paginatedData = useMemo(() => {
         const start = (page - 1) * pageSize;
-        return filteredSubjects.slice(start, start + pageSize);
-    }, [filteredSubjects, page]);
+        return filteredData.slice(start, start + pageSize);
+    }, [filteredData, page]);
 
-    // Reset page when filters change
+    // Reset page when filters or tab change
     useMemo(() => {
         setPage(1);
-    }, [search]);
+    }, [search, activeTab]);
 
     const handleView = (subject) => {
         alert(`Viewing: ${subject.name}\n\nDescription: ${subject.description}\nCreated By: ${subject.createdBy}\nDate: ${subject.date}`);
@@ -47,9 +96,11 @@ const ClassificationManagement = () => {
         alert(`Edit mode for: ${subject.name}`);
     };
 
-    const handleAddSubject = () => {
-        alert("Add New Subject clicked");
+    const handleAddNew = () => {
+        navigate(currentConfig.addRoute);
+        // In real app: navigate(currentConfig.addRoute);
     };
+
 
     const handleExport = () => {
         alert("Export clicked");
@@ -57,10 +108,11 @@ const ClassificationManagement = () => {
 
     const statsData = [
         { label: "Subjects", value: subjects.length },
-        { label: "Topics", value: 50 },
-        { label: "Subtopics", value: 200 },
-        { label: "Concepts", value: 500 },
+        { label: "Topics", value: topics.length },
+        { label: "Subtopics", value: subtopics.length },
+        { label: "Concepts", value: concepts.length },
     ];
+
 
     return (
         <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 sm:px-6 2xl:px-[66px]">
@@ -96,10 +148,10 @@ const ClassificationManagement = () => {
                         </button>
                         <button
                             type="button"
-                            onClick={handleAddSubject}
+                            onClick={handleAddNew}
                             className="h-[36px] w-[180px] rounded-[10px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
                         >
-                            + Add New Subject
+                            {currentConfig.addButtonText}
                         </button>
                     </div>
                 </header>
@@ -117,16 +169,18 @@ const ClassificationManagement = () => {
                     onSubtopicChange={setSubtopic}
                 />
 
-                <Tabs />
+                <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
 
                 <ClassificationTable
-                    subjects={paginatedSubjects}
+                    items={paginatedData}
+                    columns={currentConfig.columns}
                     page={page}
                     pageSize={pageSize}
-                    total={filteredSubjects.length}
+                    total={filteredData.length}
                     onPageChange={setPage}
                     onView={handleView}
                     onEdit={handleEdit}
+                    emptyMessage={currentConfig.emptyMessage}
                 />
 
                 <HierarchyBreadcrumb />

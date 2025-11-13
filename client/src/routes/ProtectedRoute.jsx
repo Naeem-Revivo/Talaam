@@ -21,5 +21,3 @@ export const RoleRoute = ({ allow = [] }) => {
   }
   return <Outlet />;
 };
-
-

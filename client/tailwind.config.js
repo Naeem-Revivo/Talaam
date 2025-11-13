@@ -40,6 +40,7 @@ export default {
         'tablet': '640px',
         'laptop': '1024px',
         'desktop': '1920px',
+        'layout': '1440px',
         // Standard Tailwind breakpoints
         'sm': '640px',
         'md': '768px',
