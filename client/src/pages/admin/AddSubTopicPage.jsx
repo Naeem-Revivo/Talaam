@@ -1,51 +1,54 @@
 import React, { useState } from "react";
 
-export default function AddSubjectPage() {
+export default function AddSubTopicPage() {
+    const [topicName, setTopicName] = useState("");
     const [subjectName, setSubjectName] = useState("");
     const [description, setDescription] = useState("");
-    const [code, setCode] = useState("");
+    const [subtopicName, setSubtopicName] = useState("");
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const subjectData = { subjectName, description, code };
-        console.log("Created Subject:", subjectData);
+        const projectData = { subjectName, description, topicName, subtopicName };
+        console.log("Created Project:", projectData);
         // TODO: Add API call or database save logic here
     };
 
     const handleCancel = () => {
-        setSubjectName("");
+        setTopicName("");
         setDescription("");
-        setCode("");
+        setSubjectName("");
+        setSubtopicName("");
     };
 
     return (
-        <div className=" bg-gray-50 ">
+        <div className=" bg-gray-50">
             <div className="flex flex-col justify-center max-w-[1200px] mx-auto p-6">
-                <h1 className="text-4xl font-bold text-blue-dark mb-12">
-                    Create Subject
-                </h1>
+                <div className="mb-12">
+                    <h1 className="text-4xl font-bold text-blue-dark">
+                        Add Subtopic
+                    </h1>
+                </div>
 
                 <div className="rounded-[14px] bg-white shadow-[0px_2px_20px_0px_#0327460D] border border-[#03274633] w-full pt-10 pb-7 px-8">
                     <h3 className="text-lg font-bold text-blue-dark mb-10">
-                        Create Subject
+                        Add New Subtopic
                     </h3>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Subject Name */}
                         <div>
                             <label className="block text-base font-normal text-blue-dark mb-3">
-                                Subject Name
+                                Subtopic Name
                             </label>
                             <input
                                 type="text"
-                                placeholder="Enter subject name"
+                                placeholder="e.g. Advanced SEO Techniques"
                                 value={subjectName}
-                                onChange={(e) => setSubjectName(e.target.value)}
+                                onChange={(e) => setSubtopicName(e.target.value)}
                                 className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
                                 required
                             />
                         </div>
 
-                        {/* Description */}
                         <div>
                             <label className="block text-base font-normal text-blue-dark mb-3">
                                 Description
@@ -59,17 +62,31 @@ export default function AddSubjectPage() {
                             ></textarea>
                         </div>
 
-                        {/* Code (optional) */}
                         <div>
                             <label className="block text-base font-normal text-blue-dark mb-3">
-                                Code (optional)
+                                Select Subject
                             </label>
                             <input
                                 type="text"
-                                placeholder="Enter subject code"
-                                value={code}
-                                onChange={(e) => setCode(e.target.value)}
-                                className="w-full h-[50px] border border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
+                                placeholder="Enter subject name"
+                                value={subjectName}
+                                onChange={(e) => setSubjectName(e.target.value)}
+                                className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-base font-normal text-blue-dark mb-3">
+                                Select Topic
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="Select a Topic"
+                                value={subjectName}
+                                onChange={(e) => setTopicName(e.target.value)}
+                                className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
+                                required
                             />
                         </div>
 
@@ -86,7 +103,7 @@ export default function AddSubjectPage() {
                                 type="submit"
                                 className="sm:w-[120px] py-2 bg-orange-dark w-full text-white text-base font-medium rounded-md hover:bg-orange-600 transition"
                             >
-                                Create
+                                Save Subtopic
                             </button>
                         </div>
                     </form>

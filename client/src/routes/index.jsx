@@ -34,6 +34,8 @@ import ClassificationManagement from '../pages/admin/ClassificationManagementPag
 import AdminQuestionBankPage from '../pages/admin/QuestionBankPage';
 import AddSubjectPage from '../pages/admin/AddSubjectPage';
 import AddTopicPage from '../pages/admin/AddTopicPage';
+import AddSubTopicPage from '../pages/admin/AddSubTopicPage';
+import AddConceptPage from '../pages/admin/AddConceptPage';
 
 export const AppRoutes = () => {
   return (
@@ -79,9 +81,11 @@ export const AppRoutes = () => {
           <Route path="users/:id" element={<UserDetailPage />} />
           <Route path="users/:id/edit" element={<EditUserPage />} />
           <Route path="question-bank" element={<AdminDashboardPage />} />
-          <Route path="subscriptions" element={<ClassificationManagement />} />
+          <Route path="classification" element={<ClassificationManagement />} />
           <Route path="subscriptions/add-subject" element={<AddSubjectPage/>} />
           <Route path="subscriptions/add-topic" element={<AddTopicPage />} />
+          <Route path="subscriptions/add-subtopic" element={<AddSubTopicPage />} />
+          <Route path="subscriptions/add-concept" element={<AddConceptPage />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
           <Route path="subscriptions" element={<AdminDashboardPage />} />
           <Route path="reports" element={<AdminDashboardPage />} />

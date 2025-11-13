@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 
-export default function AddTopicPage() {
+export default function AddConceptPage() {
     const [topicName, setTopicName] = useState("");
     const [subjectName, setSubjectName] = useState("");
     const [description, setDescription] = useState("");
+    const [subtopicName, setSubtopicName] = useState("");
+    const [conceptName, setConceptName] = useState("");
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const projectData = { subjectName, description, topicName };
+        const projectData = { subjectName, description, topicName, subtopicName, conceptName };
         console.log("Created Project:", projectData);
         // TODO: Add API call or database save logic here
     };
@@ -16,6 +19,8 @@ export default function AddTopicPage() {
         setTopicName("");
         setDescription("");
         setSubjectName("");
+        setSubtopicName("");
+        setConceptName("");
     };
 
     return (
@@ -23,48 +28,30 @@ export default function AddTopicPage() {
             <div className="flex flex-col justify-center max-w-[1200px] mx-auto p-6">
             <div className="mb-12">
             <h1 className="text-4xl font-bold text-blue-dark">
-                Add New Topic
+                Add Concepts
             </h1>
-            <p className="font-roboto text-[18px] leading-[28px] text-[#6B7280]">
-                Organize questions by subject, topic, subtopic, and concept
-            </p>
             </div>
 
             <div className="rounded-[14px] bg-white shadow-[0px_2px_20px_0px_#0327460D] border border-[#03274633] w-full pt-10 pb-7 px-8">
                 <h3 className="text-lg font-bold text-blue-dark mb-10">
-                    Add New Topic
+                    Add New Concept
                 </h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Subject Name */}
-                    <div>
-                        <label className="block text-base font-normal text-blue-dark mb-3">
-                            Parent Subject
-                        </label>
-                        <input
-                            type="text"
-                            placeholder="Enter subject name"
-                            value={subjectName}
-                            onChange={(e) => setSubjectName(e.target.value)}
-                            className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
-                            required
-                        />
-                    </div>
-
                      <div>
                         <label className="block text-base font-normal text-blue-dark mb-3">
-                            Topic Name
+                            Concept Name
                         </label>
                         <input
                             type="text"
-                            placeholder="Enter subject name"
+                            placeholder="Enter concept name"
                             value={subjectName}
-                            onChange={(e) => setTopicName(e.target.value)}
+                            onChange={(e) => setConceptName(e.target.value)}
                             className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
                             required
                         />
                     </div>
 
-                    {/* Description */}
                     <div>
                         <label className="block text-base font-normal text-blue-dark mb-3">
                             Description
@@ -76,6 +63,48 @@ export default function AddTopicPage() {
                             rows="4"
                             className="w-full h-[160px] border border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
                         ></textarea>
+                    </div>
+
+                    <div>
+                        <label className="block text-base font-normal text-blue-dark mb-3">
+                            Select Subject
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="Enter subject name"
+                            value={subjectName}
+                            onChange={(e) => setSubjectName(e.target.value)}
+                            className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-base font-normal text-blue-dark mb-3">
+                            Select Topic
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="Select a Topic"
+                            value={subjectName}
+                            onChange={(e) => setTopicName(e.target.value)}
+                            className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
+                            required
+                        />
+                    </div>
+
+                     <div>
+                        <label className="block text-base font-normal text-blue-dark mb-3">
+                            Select Subtopic
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="e.g. Advanced SEO Techniques"
+                            value={subjectName}
+                            onChange={(e) => setSubtopicName(e.target.value)}
+                            className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
+                            required
+                        />
                     </div>
 
                     {/* Buttons */}
@@ -91,7 +120,7 @@ export default function AddTopicPage() {
                             type="submit"
                             className="sm:w-[120px] py-2 bg-orange-dark w-full text-white text-base font-medium rounded-md hover:bg-orange-600 transition"
                         >
-                            Create
+                            Save Concepts
                         </button>
                     </div>
                 </form>

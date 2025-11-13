@@ -6,6 +6,8 @@ import HierarchyBreadcrumb from "../../components/admin/ClassificationManaement/
 import StatsCards from "../../components/admin/ClassificationManaement/StatsCard";
 import { useAdminSubjects } from "../../context/AdminClassificationContext";
 import { useNavigate } from "react-router-dom";
+import TopicPageHierarchy from "../../components/admin/ClassificationManaement/TopicPageHirarchy";
+import SubtopicHirarchy from "../../components/admin/ClassificationManaement/SubTopicHirarchy";
 
 
 const getTabConfig = (subjects, topics, subtopics, concepts) => ({
@@ -66,16 +68,17 @@ const ClassificationManagement = () => {
 
     // Filter data based on search
     const filteredData = useMemo(() => {
-        return currentConfig.data.filter((item) => {
-            const searchLower = search.toLowerCase();
-            return (
-                item.name.toLowerCase().includes(searchLower) ||
-                item.description.toLowerCase().includes(searchLower) ||
-                item.createdBy.toLowerCase().includes(searchLower) ||
-                item.dateCreated.toLowerCase().includes(searchLower)
-            );
-        });
-    }, [currentConfig.data, search]);
+    return currentConfig.data.filter((item) => {
+      const searchLower = search.toLowerCase();
+      return (
+        item.name.toLowerCase().includes(searchLower) ||
+        item.description.toLowerCase().includes(searchLower) ||
+        (item.createdby && item.createdby.toLowerCase().includes(searchLower)) ||
+        (item.date && item.date.toLowerCase().includes(searchLower))
+      );
+    });
+  }, [currentConfig.data, search]);
+
 
     // Paginate filtered data
     const paginatedData = useMemo(() => {
@@ -183,7 +186,10 @@ const ClassificationManagement = () => {
                     emptyMessage={currentConfig.emptyMessage}
                 />
 
-                <HierarchyBreadcrumb />
+                {activeTab === "Subject" &&  <HierarchyBreadcrumb />}
+                {activeTab === "Topics" &&  <TopicPageHierarchy />}
+                {activeTab === "Subtopics" &&  <SubtopicHirarchy />}
+                {activeTab === "Concepts" &&  <SubtopicHirarchy />}
             </div>
         </div>
     );

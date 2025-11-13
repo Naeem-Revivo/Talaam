@@ -13,7 +13,7 @@ const statusTone = {
 
 const TableHeader = () => (
   <thead className="hidden md:table-header-group">
-    <tr className="bg-[#032746] text-left">
+    <tr className="bg-[#032746] text-center">
       {["User Name", "Email", "Workflow Role", "System Role", "Status", "Actions"].map(
         (column) => (
           <th
@@ -33,27 +33,27 @@ const TableRow = ({ user, onView, onEdit }) => {
 
   return (
     <tr className="hidden border-b border-[#E5E7EB] bg-white text-[#032746] last:border-none md:table-row">
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] capitalize">
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] capitalize text-center">
         {user.name}
       </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746]">
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746] text-center">
         {user.email}
       </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746]">
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746] text-center">
         {user.workflowRole}
       </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746]">
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746] text-center">
         {user.systemRole}
       </td>
-      <td className="px-6 py-4">
+      <td className="px-6 py-4 text-center">
         <span
-          className={`inline-flex h-[26px] min-w-[59px] items-center justify-center rounded-md px-3 text-xs font-semibold ${tone.wrapper} ${tone.text}`}
+          className={`inline-flex h-[26px] min-w-[59px] items-center justify-center rounded-md px-3 text-sm font-normal ${tone.wrapper} ${tone.text}`}
         >
           {user.status}
         </span>
       </td>
-      <td className="px-6 py-4">
-        <div className="flex items-center gap-3">
+      <td className="px-6 py-4 text-center">
+        <div className="flex items-center justify-center gap-3">
           <button
             type="button"
             onClick={() => onView?.(user)}
@@ -256,7 +256,7 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
           type="button"
           onClick={handlePrev}
           disabled={page === 1}
-          className={`flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors ${
+          className={`flex h-[27.16px] w-[78px] items-center justify-center font-medium rounded border text-[14px] font-archivo leading-[16px] transition-colors ${
             page === 1
               ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
               : "border-[#032746] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-white"
@@ -282,7 +282,7 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
           type="button"
           onClick={handleNext}
           disabled={page === safeTotalPages}
-          className={`flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors ${
+          className={`flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-normal leading-[16px] transition-colors ${
             page === safeTotalPages
               ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
               : "border-[#032746] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-white"

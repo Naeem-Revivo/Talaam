@@ -2,7 +2,7 @@ import React from "react";
 import AdminMetricCard from "../AdminMetricCard";
 
 const statusBadgeStyles = {
-  active: "bg-[#FDF2EC] text-[#ED4122]",
+  active: "bg-[#FDF0D5] text-[#ED4122]",
   suspended: "bg-[#F3F4F6] text-[#6B7280]",
 };
 
@@ -12,7 +12,7 @@ const UserSummaryCards = ({ summaries }) => {
   }
 
   return (
-    <section className="mt-4 flex flex-wrap gap-4 sm:mt-6 sm:gap-6 lg:gap-7 w-full xl:justify-between">
+    <section className="mt-4 flex flex-wrap gap-4 sm:mt-6 sm:gap-6 lg:gap-7 xl:w-full xl:justify-between">
       {summaries.map((item) => (
         <AdminMetricCard
           key={item.label}
