@@ -85,7 +85,6 @@ export const AppRoutes = () => {
           <Route path="users/add" element={<AddUserPage />} />
           <Route path="users/:id" element={<UserDetailPage />} />
           <Route path="users/:id/edit" element={<EditUserPage />} />
-          <Route path="question-bank" element={<AdminDashboardPage />} />
           <Route path="classification" element={<ClassificationManagement />} />
           <Route path="subscriptions/add-subject" element={<AddSubjectPage/>} />
           <Route path="subscriptions/add-topic" element={<AddTopicPage />} />
