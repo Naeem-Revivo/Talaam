@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import Header from '../../components/dashboard/Header';
 import { AdminUsersProvider } from '../../context/AdminUsersContext';
+import { AdminClassificationProvider } from '../../context/AdminClassificationContext';
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -23,10 +24,12 @@ const AdminLayout = () => {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminUsersProvider>
+        <AdminClassificationProvider>
           <Header onToggleSidebar={toggleSidebar} />
           <main className="flex-1 overflow-y-auto bg-gray-50">
             <Outlet />
           </main>
+          </AdminClassificationProvider>
         </AdminUsersProvider>
       </div>
     </div>
