@@ -32,6 +32,11 @@ import UserDetailPage from '../pages/admin/UserDetailPage';
 import { RoleRoute } from './ProtectedRoute';
 import ClassificationManagement from '../pages/admin/ClassificationManagementPage';
 import AdminQuestionBankPage from '../pages/admin/QuestionBankPage';
+import QuestionManagementPage from '../pages/admin/QuestionManagementPage';
+import AddNewQuestionPage from '../pages/admin/AddNewQuestionPage';
+import QuestionDetailsPage from '../pages/admin/QuestionDetailsPage';
+import CreateVariantPage from '../pages/admin/CreateVariantPage';
+import VariantQuestionReviewPage from '../pages/admin/VariantQuestionReviewPage';
 import AddSubjectPage from '../pages/admin/AddSubjectPage';
 import AddTopicPage from '../pages/admin/AddTopicPage';
 import AddSubTopicPage from '../pages/admin/AddSubTopicPage';
@@ -87,6 +92,11 @@ export const AppRoutes = () => {
           <Route path="subscriptions/add-subtopic" element={<AddSubTopicPage />} />
           <Route path="subscriptions/add-concept" element={<AddConceptPage />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
+          <Route path="question-management" element={<QuestionManagementPage />} />
+          <Route path="add-question" element={<AddNewQuestionPage />} />
+          <Route path="question-details" element={<QuestionDetailsPage />} />
+          <Route path="create-variant" element={<CreateVariantPage />} />
+          <Route path="variant-question-review" element={<VariantQuestionReviewPage />} />
           <Route path="subscriptions" element={<AdminDashboardPage />} />
           <Route path="reports" element={<AdminDashboardPage />} />
           <Route path="moderation" element={<AdminDashboardPage />} />
