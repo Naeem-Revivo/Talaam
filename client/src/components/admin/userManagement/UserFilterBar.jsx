@@ -67,7 +67,7 @@ const UserFilterBar = ({
           value={searchValue}
           onChange={(event) => onSearchChange?.(event.target.value)}
           placeholder="Search by name / Email"
-          className="h-[50px] w-full rounded-[14px] border border-transparent bg-white pl-12 pr-4 text-base font-roboto text-[#032746] placeholder:text-[#9CA3AF] shadow-[0_8px_20px_rgba(3,39,70,0.05)] focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#D6E3F0] md:w-[548px]"
+          className="h-[50px] w-full rounded-[14px] border border-transparent placeholder:text-[#6B7280] placeholder:text-sm bg-white pl-12 pr-4 text-base font-roboto text-[#032746] shadow-[0_8px_20px_rgba(3,39,70,0.05)] focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#D6E3F0] md:w-[548px]"
         />
         <svg
           width="21"

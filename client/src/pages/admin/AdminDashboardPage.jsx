@@ -206,7 +206,7 @@ const AdminDashboardPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-8 2xl:px-16 desktop:px-[258px]">
+    <div className="min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-8 2xl:px-16">
       <div className="max-w-[1200px] mx-auto space-y-6 sm:space-y-8">
         <header className="space-y-1 text-center sm:text-left">
           <h1 className="font-archivo font-bold text-[28px] leading-[32px] text-[#032746] sm:text-[36px] sm:leading-[40px]">
@@ -218,7 +218,7 @@ const AdminDashboardPage = () => {
         </header>
 
         {/* Stats */}
-        <section className="flex flex-wrap gap-4 sm:gap-6 lg:gap-7">
+        <section className="flex flex-wrap gap-4 sm:gap-6 lg:gap-7 w-full xl:justify-between">
           {stats.map((item) => (
             <AdminMetricCard
               key={item.title}
@@ -234,8 +234,8 @@ const AdminDashboardPage = () => {
         </section>
 
         {/* Charts */}
-        <section className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-56">
-          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-full lg:w-[639px] lg:h-[462px]">
+        <section className="flex flex-col lg:flex-row gap-10 w-full justify-between">
+          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-full lg:w-[639px] xl:w-full lg:h-[462px]">
             <div className="flex items-start justify-between flex-col gap-4 sm:flex-row sm:gap-0">
               <div>
                 <h3 className="text-lg font-archivo font-semibold text-oxford-blue">
@@ -444,8 +444,8 @@ const AdminDashboardPage = () => {
         </section>
 
         {/* Bottom panels */}
-        <section className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-4">
-          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-full lg:w-[558px] lg:h-[410px]">
+        <section className="flex flex-col lg:flex-row gap-6 lg:gap-4 justify-between">
+          <div className="flex-wrap rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-full lg:w-[558px] xl:w-full lg:h-[410px]">
             <div className="mb-4 flex items-center justify-between sm:mb-6">
               <h3 className="font-archivo font-semibold text-[20px] leading-[28px] text-[#032746]">
                 Latest Sign-ups
@@ -454,8 +454,8 @@ const AdminDashboardPage = () => {
             <div className="space-y-3 sm:space-y-4">
               {latestSignups.map((user, index) => (
                 <div
-                  key={`${user.email}-${index}-${user.time}`}
-                  className="flex w-full flex-col gap-3 rounded-xl border border-[#6CA6C1] bg-[#E5E7EB] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0 lg:w-[500px] lg:h-[86px]"
+                  key={user.email}
+                  className="flex w-full flex-col gap-3 rounded-xl border border-[#6CA6C1] bg-[#E5E7EB] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0  lg:h-[86px]"
                 >
                   <div className="flex items-center gap-3">
                     <div
@@ -475,7 +475,7 @@ const AdminDashboardPage = () => {
               ))}
             </div>
           </div>
-          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-full lg:w-[558px] lg:h-[410px]">
+          <div className="flex-wrap rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-full lg:w-[558px] xl:w-full lg:h-[410px]">
             <div className="mb-4 flex items-center justify-between sm:mb-6">
               <h3 className="font-archivo font-semibold text-[20px] leading-[28px] text-[#032746]">
                 System Notifications
@@ -485,7 +485,7 @@ const AdminDashboardPage = () => {
               {notifications.map((note) => (
                 <div
                   key={note.title}
-                  className={`${note.bg} flex w-full flex-col gap-2 rounded-xl border ${note.border} px-4 py-4 lg:w-[500px] lg:h-[86px]`}
+                  className={`${note.bg} flex w-full flex-col gap-2 rounded-xl border ${note.border} px-4 py-4 w-full lg:h-[86px]`}
                 >
                   <div className="flex items-start gap-3">
                
