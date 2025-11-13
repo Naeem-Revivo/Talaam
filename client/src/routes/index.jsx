@@ -30,12 +30,17 @@ import AddUserPage from '../pages/admin/AddUserPage';
 import EditUserPage from '../pages/admin/EditUserPage';
 import UserDetailPage from '../pages/admin/UserDetailPage';
 import { RoleRoute } from './ProtectedRoute';
+import ClassificationManagement from '../pages/admin/ClassificationManagementPage';
 import AdminQuestionBankPage from '../pages/admin/QuestionBankPage';
 import QuestionManagementPage from '../pages/admin/QuestionManagementPage';
 import AddNewQuestionPage from '../pages/admin/AddNewQuestionPage';
 import QuestionDetailsPage from '../pages/admin/QuestionDetailsPage';
 import CreateVariantPage from '../pages/admin/CreateVariantPage';
 import VariantQuestionReviewPage from '../pages/admin/VariantQuestionReviewPage';
+import AddSubjectPage from '../pages/admin/AddSubjectPage';
+import AddTopicPage from '../pages/admin/AddTopicPage';
+import AddSubTopicPage from '../pages/admin/AddSubTopicPage';
+import AddConceptPage from '../pages/admin/AddConceptPage';
 
 export const AppRoutes = () => {
   return (
@@ -80,6 +85,12 @@ export const AppRoutes = () => {
           <Route path="users/add" element={<AddUserPage />} />
           <Route path="users/:id" element={<UserDetailPage />} />
           <Route path="users/:id/edit" element={<EditUserPage />} />
+          <Route path="question-bank" element={<AdminDashboardPage />} />
+          <Route path="classification" element={<ClassificationManagement />} />
+          <Route path="subscriptions/add-subject" element={<AddSubjectPage/>} />
+          <Route path="subscriptions/add-topic" element={<AddTopicPage />} />
+          <Route path="subscriptions/add-subtopic" element={<AddSubTopicPage />} />
+          <Route path="subscriptions/add-concept" element={<AddConceptPage />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
           <Route path="question-management" element={<QuestionManagementPage />} />
           <Route path="add-question" element={<AddNewQuestionPage />} />

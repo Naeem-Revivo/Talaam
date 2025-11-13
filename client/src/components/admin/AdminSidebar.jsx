@@ -199,6 +199,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
     { path: '/admin', label: 'Dashboard', icon: DashboardIcon },
     { path: '/admin/users', label: 'User Management', icon: UserManagementIcon },
     { path: '/admin/question-bank', label: 'Question Bank', icon: QuestionBankIcon },
+    { path: '/admin/classification', label: 'Classification', icon: QuestionBankIcon },
     { path: '/admin/subscriptions', label: 'Subscriptions & Billing', icon: SubscriptionsIcon },
     { path: '/admin/reports', label: 'Reports & Analytics', icon: ReportsIcon },
     { path: '/admin/moderation', label: 'Content Moderation', icon: ModerationIcon },

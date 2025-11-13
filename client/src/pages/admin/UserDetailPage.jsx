@@ -124,10 +124,10 @@ const ActivityItem = ({ icon, title, timestamp }) => {
         {icon}
       </div>
       <div className="flex flex-col gap-1">
-        <p className="text-[16px] font-roboto font-medium text-[#032746]">
+        <p className="font-roboto font-normal text-sm text-black">
           {renderTitle()}
         </p>
-        <span className="text-[13px] font-roboto text-[#6B7280]">
+        <span className="text-xs font-normal font-roboto text-[#6B7280]">
           {timestamp}
         </span>
       </div>
@@ -231,11 +231,11 @@ const UserDetailPage = () => {
                 )}
                 <div className="flex flex-col gap-2">
                   <div className="flex flex-wrap items-center gap-3">
-                    <h1 className="font-archivo text-[28px] font-semibold leading-[32px] text-[#032746]">
+                    <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-[#032746]">
                       {user.name}
                     </h1>
                     <span
-                      className={`inline-flex h-[26px] min-w-[59px] items-center justify-center rounded-full px-3 text-[12px] font-roboto font-medium ${badgeClass}`}
+                      className={`inline-flex h-[26px] min-w-[59px] items-center justify-center rounded-md px-3 text-sm font-roboto font-normal ${badgeClass}`}
                     >
                       {user.status}
                     </span>
@@ -260,8 +260,11 @@ const UserDetailPage = () => {
                 <InfoField label="Full Name" value={user.name} />
                 <InfoField label="Email" value={user.email} />
               </div>
+            </div>
+          </div>
 
-              <div className="mt-10 border-t border-[#E2E2E2] pt-8">
+          <div className="rounded-[24px] border border-[#032746]/10 bg-white px-8 py-6 shadow-[0_24px_60px_rgba(3,39,70,0.08)]">
+          <div className=" border-[#E2E2E2]">
                 <h2 className="text-[20px] font-archivo font-bold leading-[100%] text-[#032746]">
                   Account Details
                 </h2>
@@ -273,8 +276,7 @@ const UserDetailPage = () => {
                   <InfoField label="Date Created" value={user.dateCreated} />
                 </div>
               </div>
-            </div>
-          </div>
+              </div>
 
           <div className="rounded-[24px] border border-[#032746]/10 bg-white px-8 py-6 shadow-[0_24px_60px_rgba(3,39,70,0.08)]">
             <h2 className="border-b border-[#E2E2E2] pb-5 text-[20px] font-archivo font-bold leading-[100%] text-[#032746]">

@@ -8,7 +8,7 @@ const AdminMetricCard = ({
   icon,
   iconWrapperClassName = "",
   badgeText,
-  badgeClassName = "bg-[#FDF2EC] text-[#ED4122]",
+  badgeClassName = "bg-[#FDF0D5] text-[#ED4122]",
   className = "",
 }) => {
   const hasValue = value !== undefined && value !== null && value !== "";
@@ -43,7 +43,7 @@ const AdminMetricCard = ({
       {badgeText && (
         <footer className="">
           <span
-            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${badgeClassName}`}
+            className={`inline-flex items-center rounded-md px-3 py-1 text-sm font-normal ${badgeClassName}`}
           >
             {badgeText}
           </span>
