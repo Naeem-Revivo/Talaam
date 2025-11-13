@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import QuestionBankTabs from "../../components/admin/questionBank/QuestionBankTabs";
 import QuestionBankFilters from "../../components/admin/questionBank/QuestionBankFilters";
 import QuestionBankSummaryCards from "../../components/admin/questionBank/QuestionBankSummaryCards";
@@ -127,6 +128,7 @@ const getTabCounts = (questions) => {
 };
 
 const QuestionBankPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({
@@ -291,9 +293,10 @@ const QuestionBankPage = () => {
           <div className="flex flex-wrap gap-4">
             <button
               type="button"
+              onClick={() => navigate("/admin/question-management")}
               className="flex h-[36px] w-[195px] items-center justify-center rounded-[8px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
-              Manage Classification
+              Question Management
             </button>
             <button
               type="button"
@@ -303,6 +306,7 @@ const QuestionBankPage = () => {
             </button>
             <button
               type="button"
+              onClick={() => navigate("/admin/add-question")}
               className="flex h-[36px] items-center justify-center rounded-[10px] bg-[#ED4122] px-4 text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
               + Add New Question

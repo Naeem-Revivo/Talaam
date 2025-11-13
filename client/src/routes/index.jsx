@@ -31,6 +31,11 @@ import EditUserPage from '../pages/admin/EditUserPage';
 import UserDetailPage from '../pages/admin/UserDetailPage';
 import { RoleRoute } from './ProtectedRoute';
 import AdminQuestionBankPage from '../pages/admin/QuestionBankPage';
+import QuestionManagementPage from '../pages/admin/QuestionManagementPage';
+import AddNewQuestionPage from '../pages/admin/AddNewQuestionPage';
+import QuestionDetailsPage from '../pages/admin/QuestionDetailsPage';
+import CreateVariantPage from '../pages/admin/CreateVariantPage';
+import VariantQuestionReviewPage from '../pages/admin/VariantQuestionReviewPage';
 
 export const AppRoutes = () => {
   return (
@@ -76,6 +81,11 @@ export const AppRoutes = () => {
           <Route path="users/:id" element={<UserDetailPage />} />
           <Route path="users/:id/edit" element={<EditUserPage />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
+          <Route path="question-management" element={<QuestionManagementPage />} />
+          <Route path="add-question" element={<AddNewQuestionPage />} />
+          <Route path="question-details" element={<QuestionDetailsPage />} />
+          <Route path="create-variant" element={<CreateVariantPage />} />
+          <Route path="variant-question-review" element={<VariantQuestionReviewPage />} />
           <Route path="subscriptions" element={<AdminDashboardPage />} />
           <Route path="reports" element={<AdminDashboardPage />} />
           <Route path="moderation" element={<AdminDashboardPage />} />
