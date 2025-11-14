@@ -6,7 +6,7 @@ import ProductsGrid from '../components/products/ProductsGrid';
 import FeaturesComparison from '../components/products/FeaturesComparison';
 import ProductsCTA from '../components/products/ProductsCTA';
 import ProductsHeroSection from '../components/products/ProductsHeroSection';
-import HowItWorksSection from '../components/reusable/HowItWorksSection';
+import HowItWorksSection from '../components/shared/HowItWorksSection';
 import { addperson, bookcard } from '../assets/svg';
 import { useLanguage } from '../context/LanguageContext';
 

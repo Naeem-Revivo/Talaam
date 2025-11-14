@@ -5,10 +5,10 @@ const StatsCards = ({ stats }) => {
       {stats.map((item, index) => (
         <div
           key={index}
-          className="flex-1 min-w-[150px] bg-white shadow-sm border border-gray-100 rounded-xl p-5 space-y-2"
+          className="flex-1 min-w-[150px] bg-white shadow-sm border border-[#E5E7EB] rounded-md p-5 space-y-[10px]"
         >
-          <p className="text-sm font-normal text-[#6B7280]">{item.label}</p>
-          <p className="text-2xl font-semibold text-blue-dark">{item.value}</p>
+          <p className="text-[16px] leading-[20px] font-normal text-[#6B7280]">{item.label}</p>
+          <p className="text-[30px] leading-[28px] font-semibold text-blue-dark">{item.value}</p>
         </div>
       ))}
     </div>

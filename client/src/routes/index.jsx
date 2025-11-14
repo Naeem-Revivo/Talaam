@@ -41,6 +41,9 @@ import AddSubjectPage from '../pages/admin/AddSubjectPage';
 import AddTopicPage from '../pages/admin/AddTopicPage';
 import AddSubTopicPage from '../pages/admin/AddSubTopicPage';
 import AddConceptPage from '../pages/admin/AddConceptPage';
+import ReportsAndAnalyticsPage from '../pages/admin/ReportsAndAnalyticsPage';
+import ContentModerationPage from '../pages/admin/ContentModerationPage';
+import ContentDetailsPage from '../pages/admin/ContentDetailsPage';
 import SystemSettingPlan from '../pages/admin/SystemSettingPage';
 import SiteWideAnnouncements from '../pages/admin/SiteWideAnnouncements';
 import AdminRolePermissions from '../pages/admin/AdminRolePermissionsPage';
@@ -48,6 +51,10 @@ import LanguageManagement from '../pages/admin/LanguageManagement';
 import EmailTemplatePage from '../pages/admin/EmailTemplatePage';
 import AddNewAnnouncements from '../pages/admin/AddNewAnnouncements';
 import EditAnnouncementPage from '../pages/admin/EditAnnouncementPage';
+import SecuritySettingsPage from '../pages/admin/SecurityPage';
+import AuditLogsPage from '../pages/admin/AuditLogsPage';
+import RolesPermissionsPage from '../pages/admin/RolesPermissionsPage';
+import ViewLogDetails from '../pages/admin/ViewLogsDetailPage';
 
 export const AppRoutes = () => {
   return (
@@ -92,12 +99,11 @@ export const AppRoutes = () => {
           <Route path="users/add" element={<AddUserPage />} />
           <Route path="users/:id" element={<UserDetailPage />} />
           <Route path="users/:id/edit" element={<EditUserPage />} />
-          <Route path="question-bank" element={<AdminDashboardPage />} />
           <Route path="classification" element={<ClassificationManagement />} />
-          <Route path="subscriptions/add-subject" element={<AddSubjectPage/>} />
-          <Route path="subscriptions/add-topic" element={<AddTopicPage />} />
-          <Route path="subscriptions/add-subtopic" element={<AddSubTopicPage />} />
-          <Route path="subscriptions/add-concept" element={<AddConceptPage />} />
+          <Route path="classification/add-subject" element={<AddSubjectPage/>} />
+          <Route path="classification/add-topic" element={<AddTopicPage />} />
+          <Route path="classification/add-subtopic" element={<AddSubTopicPage />} />
+          <Route path="classification/add-concept" element={<AddConceptPage />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
           <Route path="question-management" element={<QuestionManagementPage />} />
           <Route path="add-question" element={<AddNewQuestionPage />} />
@@ -105,6 +111,9 @@ export const AppRoutes = () => {
           <Route path="create-variant" element={<CreateVariantPage />} />
           <Route path="variant-question-review" element={<VariantQuestionReviewPage />} />
           <Route path="subscriptions" element={<AdminDashboardPage />} />
+          <Route path="reports" element={<ReportsAndAnalyticsPage />} />
+          <Route path="moderation" element={<ContentModerationPage />} />
+          <Route path="moderation/details" element={<ContentDetailsPage />} />
           <Route path="reports" element={<AdminDashboardPage />} />
           <Route path="moderation" element={<AdminDashboardPage />} />
           <Route path="settings" element={<SystemSettingPlan />} />
@@ -114,7 +123,10 @@ export const AppRoutes = () => {
           <Route path="settings/add-announcements" element={<AddNewAnnouncements />} />
           <Route path="settings/edit-announcements" element={<EditAnnouncementPage />} />
           <Route path="settings/email-template" element={<EmailTemplatePage />} />
-          <Route path="security" element={<AdminDashboardPage />} />
+          <Route path="security" element={<SecuritySettingsPage />} />
+          <Route path="security/audit-logs" element={<AuditLogsPage />} />
+          <Route path="security/view-logs" element={<ViewLogDetails />} />
+          <Route path="security/roles-permissions" element={<RolesPermissionsPage />} />
         </Route>
       </Route>
     </Routes>
