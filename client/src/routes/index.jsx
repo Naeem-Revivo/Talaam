@@ -44,6 +44,13 @@ import AddConceptPage from '../pages/admin/AddConceptPage';
 import ReportsAndAnalyticsPage from '../pages/admin/ReportsAndAnalyticsPage';
 import ContentModerationPage from '../pages/admin/ContentModerationPage';
 import ContentDetailsPage from '../pages/admin/ContentDetailsPage';
+import SystemSettingPlan from '../pages/admin/SystemSettingPage';
+import SiteWideAnnouncements from '../pages/admin/SiteWideAnnouncements';
+import AdminRolePermissions from '../pages/admin/AdminRolePermissionsPage';
+import LanguageManagement from '../pages/admin/LanguageManagement';
+import EmailTemplatePage from '../pages/admin/EmailTemplatePage';
+import AddNewAnnouncements from '../pages/admin/AddNewAnnouncements';
+import EditAnnouncementPage from '../pages/admin/EditAnnouncementPage';
 
 export const AppRoutes = () => {
   return (
@@ -104,6 +111,15 @@ export const AppRoutes = () => {
           <Route path="moderation" element={<ContentModerationPage />} />
           <Route path="moderation/details" element={<ContentDetailsPage />} />
           <Route path="settings" element={<AdminDashboardPage />} />
+          <Route path="reports" element={<AdminDashboardPage />} />
+          <Route path="moderation" element={<AdminDashboardPage />} />
+          <Route path="settings" element={<SystemSettingPlan />} />
+          <Route path="settings/language-management" element={<LanguageManagement />} />
+          <Route path="settings/roles-permissions" element={<AdminRolePermissions />} />
+          <Route path="settings/announcements" element={<SiteWideAnnouncements />} />
+          <Route path="settings/add-announcements" element={<AddNewAnnouncements />} />
+          <Route path="settings/edit-announcements" element={<EditAnnouncementPage />} />
+          <Route path="settings/email-template" element={<EmailTemplatePage />} />
           <Route path="security" element={<AdminDashboardPage />} />
         </Route>
       </Route>
