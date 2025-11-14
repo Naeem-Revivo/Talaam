@@ -60,30 +60,30 @@ const ReviewPage = () => {
       <div className="flex flex-wrap gap-2 mb-4 md:mb-6 lg:mb-8 pt-2 md:pt-4">
         <button
           onClick={() => handleFilterChange('all')}
-          className={`px-4 md:px-6 py-2 rounded-full font-roboto text-[16px] leading-[24px] transition-colors text-center flex items-center justify-center ${
+          className={`px-4 md:px-6 py-2 rounded-full font-roboto font-normal text-[16px] leading-[24px] transition-colors text-center flex items-center justify-center ${
             activeFilter === 'all'
               ? 'bg-[#EF4444] text-white'
-              : 'bg-white border border-[#E5E7EB] text-[#374151]'
+              : 'bg-white border border-[#E5E7EB] text-blue-dark'
           }`}
         >
           All
         </button>
         <button
           onClick={() => handleFilterChange('test')}
-          className={`px-4 md:px-6 py-2 rounded-full font-roboto text-[16px] leading-[24px] transition-colors text-center flex items-center justify-center ${
+          className={`px-4 md:px-6 py-2 rounded-full font-roboto font-normal text-[16px] leading-[24px] transition-colors text-center flex items-center justify-center ${
             activeFilter === 'test'
               ? 'bg-[#EF4444] text-white'
-              : 'bg-white border border-[#E5E7EB] text-[#374151]'
+              : 'bg-white border border-[#E5E7EB] text-blue-dark'
           }`}
         >
           Test Mode
         </button>
         <button
           onClick={() => handleFilterChange('study')}
-          className={`px-4 md:px-6 py-2 rounded-full font-roboto text-[16px] leading-[24px] transition-colors text-center flex items-center justify-center ${
+          className={`px-4 md:px-6 py-2 rounded-full font-roboto font-normal text-[16px] leading-[24px] transition-colors text-center flex items-center justify-center ${
             activeFilter === 'study'
               ? 'bg-[#EF4444] text-white'
-              : 'bg-white border border-[#E5E7EB] text-[#374151]'
+              : 'bg-white border border-[#E5E7EB] text-blue-dark'
           }`}
         >
           Study Mode
@@ -113,7 +113,7 @@ const ReviewPage = () => {
                   {session.mode}
                 </span>
               </div>
-              <div className="text-[14px] font-normal text-[#032746] font-roboto leading-[100%] tracking-[0%]">
+              <div className="text-[14px] font-normal text-[#032746] font-archivo leading-[100%] tracking-[0%]">
                 {session.date}
               </div>
             </div>

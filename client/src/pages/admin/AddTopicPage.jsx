@@ -31,7 +31,7 @@ export default function AddTopicPage() {
             </div>
 
             <div className="rounded-[14px] bg-white shadow-[0px_2px_20px_0px_#0327460D] border border-[#03274633] w-full pt-10 pb-7 px-8">
-                <h3 className="text-lg font-bold text-blue-dark mb-10">
+                <h3 className="text-[20px] leading-[100%] font-bold text-blue-dark mb-10">
                     Add New Topic
                 </h3>
                 <form onSubmit={handleSubmit} className="space-y-6">

@@ -61,6 +61,10 @@ import LanguageManagement from '../pages/admin/LanguageManagement';
 import EmailTemplatePage from '../pages/admin/EmailTemplatePage';
 import AddNewAnnouncements from '../pages/admin/AddNewAnnouncements';
 import EditAnnouncementPage from '../pages/admin/EditAnnouncementPage';
+import SecuritySettingsPage from '../pages/admin/SecurityPage';
+import AuditLogsPage from '../pages/admin/AuditLogsPage';
+import RolesPermissionsPage from '../pages/admin/RolesPermissionsPage';
+import ViewLogDetails from '../pages/admin/ViewLogsDetailPage';
 
 export const AppRoutes = () => {
   return (
@@ -117,6 +121,10 @@ export const AppRoutes = () => {
           <Route path="subscriptions/details" element={<SubscriptionDetailsPage />} />
           <Route path="subscriptions/payment-history" element={<PaymentHistoryPage />} />
           <Route path="subscriptions/new-question-bank" element={<CreateNewQuestionBankPage />} />
+          <Route path="classification/add-subject" element={<AddSubjectPage/>} />
+          <Route path="classification/add-topic" element={<AddTopicPage />} />
+          <Route path="classification/add-subtopic" element={<AddSubTopicPage />} />
+          <Route path="classification/add-concept" element={<AddConceptPage />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
           <Route path="question-management" element={<QuestionManagementPage />} />
           <Route path="add-question" element={<AddNewQuestionPage />} />
@@ -129,6 +137,8 @@ export const AppRoutes = () => {
           <Route path="reports/subscription-trends" element={<SubscriptionTrendsPage />} />
           <Route path="reports/performance-analytics" element={<PerformanceAnalyticsPage />} />
           <Route path="reports/export" element={<ExportReportsPage />} />
+          <Route path="subscriptions" element={<AdminDashboardPage />} />
+          <Route path="reports" element={<ReportsAndAnalyticsPage />} />
           <Route path="moderation" element={<ContentModerationPage />} />
           <Route path="moderation/details" element={<ContentDetailsPage />} />
           <Route path="reports" element={<AdminDashboardPage />} />
@@ -141,6 +151,10 @@ export const AppRoutes = () => {
           <Route path="settings/edit-announcements" element={<EditAnnouncementPage />} />
           <Route path="settings/email-template" element={<EmailTemplatePage />} />
           <Route path="security" element={<AdminDashboardPage />} />
+          <Route path="security" element={<SecuritySettingsPage />} />
+          <Route path="security/audit-logs" element={<AuditLogsPage />} />
+          <Route path="security/view-logs" element={<ViewLogDetails />} />
+          <Route path="security/roles-permissions" element={<RolesPermissionsPage />} />
         </Route>
       </Route>
     </Routes>
