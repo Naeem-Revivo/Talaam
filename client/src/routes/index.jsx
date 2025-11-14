@@ -46,6 +46,10 @@ import UserGrowthAnalyticsPage from '../pages/admin/UserGrowthAnalyticsPage';
 import SubscriptionTrendsPage from '../pages/admin/SubscriptionTrendsPage';
 import SubscriptionPlanPage from '../pages/admin/SubscriptionPlanPage';
 import AddNewPlanPage from '../pages/admin/AddNewPlanPage';
+import ManageUserSubscriptionsPage from '../pages/admin/ManageUserSubscriptionsPage';
+import SubscriptionDetailsPage from '../pages/admin/SubscriptionDetailsPage';
+import PaymentHistoryPage from '../pages/admin/PaymentHistoryPage';
+import CreateNewQuestionBankPage from '../pages/admin/CreateNewQuestionBankPage';
 import PerformanceAnalyticsPage from '../pages/admin/PerformanceAnalyticsPage';
 import ExportReportsPage from '../pages/admin/ExportReportsPage';
 import ContentModerationPage from '../pages/admin/ContentModerationPage';
@@ -107,6 +111,12 @@ export const AppRoutes = () => {
           <Route path="subscriptions/add-subtopic" element={<AddSubTopicPage />} />
           <Route path="subscriptions/add-concept" element={<AddConceptPage />} />
           <Route path="subscriptions/add-plan" element={<AddNewPlanPage />} />
+          <Route path="subscriptions/edit-plan" element={<AddNewPlanPage />} />
+          <Route path="subscriptions/new-plan" element={<AddNewPlanPage />} />
+          <Route path="subscriptions/manage-users" element={<ManageUserSubscriptionsPage />} />
+          <Route path="subscriptions/details" element={<SubscriptionDetailsPage />} />
+          <Route path="subscriptions/payment-history" element={<PaymentHistoryPage />} />
+          <Route path="subscriptions/new-question-bank" element={<CreateNewQuestionBankPage />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
           <Route path="question-management" element={<QuestionManagementPage />} />
           <Route path="add-question" element={<AddNewQuestionPage />} />

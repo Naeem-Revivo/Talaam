@@ -92,8 +92,7 @@ const SubscriptionPlan = () => {
   };
 
   const handleEdit = (plan) => {
-    // Navigate to edit plan page
-    console.log("Edit plan:", plan);
+    navigate("/admin/subscriptions/edit-plan", { state: { plan } });
   };
 
   const handleDelete = (plan) => {
@@ -141,6 +140,34 @@ const SubscriptionPlan = () => {
               className="h-[36px] w-[180px] rounded-[10px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
               + Add New Plan
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/admin/subscriptions/new-plan")}
+              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6]"
+            >
+              New Plan
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/admin/subscriptions/manage-users")}
+              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6]"
+            >
+              Manage User
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/admin/subscriptions/payment-history")}
+              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6]"
+            >
+              Payment History
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/admin/subscriptions/new-question-bank")}
+              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6]"
+            >
+              New Question
             </button>
           </div>
         </header>
