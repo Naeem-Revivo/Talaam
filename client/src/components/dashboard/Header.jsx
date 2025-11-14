@@ -42,6 +42,7 @@ const Header = ({ onToggleSidebar }) => {
       if (pathname === '/admin') return 'Admin Dashboard';
       if (pathname.startsWith('/admin/users')) return 'User Management';
       if (pathname.startsWith('/admin/question-bank')) return 'Question Bank';
+      if (pathname.startsWith('/admin/classification')) return 'Classification Management';
       if (pathname.startsWith('/admin/subscriptions')) return 'Subscriptions & Billing';
       if (pathname.startsWith('/admin/reports')) return 'Reports & Analytics';
       if (pathname.startsWith('/admin/moderation')) return 'Content Moderation';

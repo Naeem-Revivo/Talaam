@@ -164,20 +164,20 @@ const PracticePage = () => {
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setQuestionStatus('new')}
-            className={`px-4 py-2 rounded-lg font-roboto font-normal text-[16px] leading-[24px] text-center transition-all duration-200 ${
+            className={`px-4 py-2 rounded-full font-roboto font-normal text-[16px] leading-[24px] text-center transition-all duration-200 ${
               questionStatus === 'new'
                 ? 'bg-cinnebar-red text-white'
-                : 'bg-white text-gray-700 border border-[#E5E7EB]'
+                : 'bg-white text-[#032746] border border-[#E5E7EB]'
             }`}
           >
             New
           </button>
           <button
             onClick={() => setQuestionStatus('solved')}
-            className={`px-4 py-2 rounded-lg font-roboto font-normal text-[16px] leading-[24px] text-center transition-all duration-200 ${
+            className={`px-4 py-2 rounded-full font-roboto font-normal text-[16px] leading-[24px] text-center transition-all duration-200 ${
               questionStatus === 'solved'
                 ? 'bg-cinnebar-red text-white'
-                : 'bg-white text-gray-700 border border-[#E5E7EB]'
+                : 'bg-white text-[#032746] border border-[#E5E7EB]'
             }`}
           >
             Solved
@@ -335,7 +335,7 @@ const PracticePage = () => {
             onChange={(e) => setSessionSize(e.target.value)}
             min="1"
             max="50"
-            className="w-full max-w-[200px] px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-cinnebar-red focus:border-transparent font-roboto font-medium text-[16px] leading-[24px] text-black"
+            className="w-full max-w-[200px] px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-cinnebar-red focus:border-transparent font-roboto font-medium text-[16px] leading-[24px] text-black placeholder:text-[16px] placeholder:text-black"
           />
         </div>
         <p className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-gray-500 mb-4">
@@ -354,10 +354,10 @@ const PracticePage = () => {
       {/* Begin Session Button */}
       <div className="flex justify-center">
         <button
-          disabled={!canStartSession}
+          // disabled={!canStartSession}
           onClick={handleStartSession}
-          className={`font-archivo font-bold text-[20px] leading-[28px] tracking-[0%] text-oxford-blue text-center rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 w-full lg:w-[1120px] h-[50px] md:h-[60px] ${
-            canStartSession ? 'bg-cinnebar-red text-white' : 'bg-ash-gray text-oxford-blue'
+          className={`font-archivo font-bold text-[20px] leading-[28px] tracking-[0%] text-[#032746] text-center rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 w-full lg:w-[1120px] h-[50px] md:h-[60px] ${
+            canStartSession ? 'bg-cinnebar-red text-white' : 'bg-ash-gray text-[#032746] cursor-not-allowed'
           }`}
         >
           Begin Session

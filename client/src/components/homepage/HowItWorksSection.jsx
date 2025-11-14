@@ -1,5 +1,5 @@
 import React from 'react';
-import StepCard from '../reusable/StepCard';
+import StepCard from '../shared/StepCard';
 import { addperson, bookcard } from '../../assets/svg';
 import { useLanguage } from '../../context/LanguageContext';
 

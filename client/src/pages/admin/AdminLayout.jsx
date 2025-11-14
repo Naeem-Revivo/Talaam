@@ -21,7 +21,6 @@ const AdminLayout = () => {
           onClick={closeSidebar}
         />
       )}
-
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminUsersProvider>
         <AdminClassificationProvider>

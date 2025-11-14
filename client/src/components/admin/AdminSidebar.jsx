@@ -207,7 +207,18 @@ const AdminSidebar = ({ isOpen, onClose }) => {
     { path: '/admin/security', label: 'Security & Permissions', icon: SecurityIcon },
   ];
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => {
+  // If the menu item is exactly "/admin"
+  if (path === "/admin") {
+    return location.pathname === "/admin";
+  }
+
+  // For all other paths: only active if it matches exactly or nested under it
+  return (
+    location.pathname === path ||
+    location.pathname.startsWith(path + "/")
+  );
+};
 
   const handleLinkClick = () => {
     if (window.innerWidth < 1024) onClose();

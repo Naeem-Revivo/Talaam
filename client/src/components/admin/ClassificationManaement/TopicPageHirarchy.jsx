@@ -4,7 +4,7 @@ export default function TopicPageHierarchy() {
             <h2 className="text-[20px] leading-7 font-semibold text-dark-blue mb-3">Hierarchy</h2>
             <div className="border rounded-md px-5 py-4 bg-white">
                 <nav className="flex flex-col gap-2">
-                    <div className="flex items-center space-x-3 text-sm font-semibold text-blue-dark">
+                    <div className="flex items-center space-x-3 text-base font-medium text-blue-dark">
                         <a href="#" className="hover:underline text-dark-blue">
                             Computer Science
                         </a>
@@ -13,7 +13,7 @@ export default function TopicPageHierarchy() {
                             Machine Learing
                         </a>
                     </div>
-                    <div className="flex items-center space-x-3 text-sm font-semibold text-blue-dark">
+                    <div className="flex items-center space-x-3 text-base font-medium text-blue-dark">
                         <a href="#" className="hover:underline text-dark-blue">
                             Computer Science
                         </a>
@@ -22,7 +22,7 @@ export default function TopicPageHierarchy() {
                             Data Visualization
                         </a>
                     </div>
-                    <div className="flex items-center space-x-3 text-sm font-semibold text-blue-dark">
+                    <div className="flex items-center space-x-3 text-base font-medium text-blue-dark">
                         <a href="#" className="hover:underline text-dark-blue">
                             Computer Science
                         </a>

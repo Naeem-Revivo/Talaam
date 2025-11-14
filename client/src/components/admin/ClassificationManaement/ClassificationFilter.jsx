@@ -24,7 +24,7 @@ const Dropdown = ({ label, value, options, onChange }) => {
   return (
     <div className="w-full lg:w-[180px]" ref={dropdownRef}>
       {/* Label only on small screens */}
-      <p className="text-sm font-medium text-[#032746] mb-3 block lg:hidden">{label}</p>
+      <p className="text-[16px] leading-[100%] font-semibold text-[#032746] mb-3 block lg:hidden">{label}</p>
 
       {/* Dropdown Box */}
       <div

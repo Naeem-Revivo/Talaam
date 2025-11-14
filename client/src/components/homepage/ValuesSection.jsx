@@ -1,5 +1,5 @@
 import React from 'react';
-import ValueCard from '../reusable/ValueCard';
+import ValueCard from '../shared/ValueCard';
 import { starvalue } from '../../assets/svg';
 import { boxcard } from '../../assets/svg';
 import { applecard } from '../../assets/svg';
