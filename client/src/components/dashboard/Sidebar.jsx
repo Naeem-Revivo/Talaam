@@ -7,6 +7,8 @@ const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const { t } = useLanguage();
 
+  console.log(location.pathname, "pathname")
+
   const menuItems = [
     {
       path: '/dashboard',

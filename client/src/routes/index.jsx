@@ -94,10 +94,10 @@ export const AppRoutes = () => {
           <Route path="users/:id/edit" element={<EditUserPage />} />
           <Route path="question-bank" element={<AdminDashboardPage />} />
           <Route path="classification" element={<ClassificationManagement />} />
-          <Route path="subscriptions/add-subject" element={<AddSubjectPage/>} />
-          <Route path="subscriptions/add-topic" element={<AddTopicPage />} />
-          <Route path="subscriptions/add-subtopic" element={<AddSubTopicPage />} />
-          <Route path="subscriptions/add-concept" element={<AddConceptPage />} />
+          <Route path="classification/add-subject" element={<AddSubjectPage/>} />
+          <Route path="classification/add-topic" element={<AddTopicPage />} />
+          <Route path="classification/add-subtopic" element={<AddSubTopicPage />} />
+          <Route path="classification/add-concept" element={<AddConceptPage />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
           <Route path="question-management" element={<QuestionManagementPage />} />
           <Route path="add-question" element={<AddNewQuestionPage />} />
