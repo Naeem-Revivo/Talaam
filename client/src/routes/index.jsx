@@ -42,6 +42,16 @@ import AddTopicPage from '../pages/admin/AddTopicPage';
 import AddSubTopicPage from '../pages/admin/AddSubTopicPage';
 import AddConceptPage from '../pages/admin/AddConceptPage';
 import ReportsAndAnalyticsPage from '../pages/admin/ReportsAndAnalyticsPage';
+import UserGrowthAnalyticsPage from '../pages/admin/UserGrowthAnalyticsPage';
+import SubscriptionTrendsPage from '../pages/admin/SubscriptionTrendsPage';
+import SubscriptionPlanPage from '../pages/admin/SubscriptionPlanPage';
+import AddNewPlanPage from '../pages/admin/AddNewPlanPage';
+import ManageUserSubscriptionsPage from '../pages/admin/ManageUserSubscriptionsPage';
+import SubscriptionDetailsPage from '../pages/admin/SubscriptionDetailsPage';
+import PaymentHistoryPage from '../pages/admin/PaymentHistoryPage';
+import CreateNewQuestionBankPage from '../pages/admin/CreateNewQuestionBankPage';
+import PerformanceAnalyticsPage from '../pages/admin/PerformanceAnalyticsPage';
+import ExportReportsPage from '../pages/admin/ExportReportsPage';
 import ContentModerationPage from '../pages/admin/ContentModerationPage';
 import ContentDetailsPage from '../pages/admin/ContentDetailsPage';
 import SystemSettingPlan from '../pages/admin/SystemSettingPage';
@@ -100,6 +110,17 @@ export const AppRoutes = () => {
           <Route path="users/:id" element={<UserDetailPage />} />
           <Route path="users/:id/edit" element={<EditUserPage />} />
           <Route path="classification" element={<ClassificationManagement />} />
+          <Route path="subscriptions/add-subject" element={<AddSubjectPage/>} />
+          <Route path="subscriptions/add-topic" element={<AddTopicPage />} />
+          <Route path="subscriptions/add-subtopic" element={<AddSubTopicPage />} />
+          <Route path="subscriptions/add-concept" element={<AddConceptPage />} />
+          <Route path="subscriptions/add-plan" element={<AddNewPlanPage />} />
+          <Route path="subscriptions/edit-plan" element={<AddNewPlanPage />} />
+          <Route path="subscriptions/new-plan" element={<AddNewPlanPage />} />
+          <Route path="subscriptions/manage-users" element={<ManageUserSubscriptionsPage />} />
+          <Route path="subscriptions/details" element={<SubscriptionDetailsPage />} />
+          <Route path="subscriptions/payment-history" element={<PaymentHistoryPage />} />
+          <Route path="subscriptions/new-question-bank" element={<CreateNewQuestionBankPage />} />
           <Route path="classification/add-subject" element={<AddSubjectPage/>} />
           <Route path="classification/add-topic" element={<AddTopicPage />} />
           <Route path="classification/add-subtopic" element={<AddSubTopicPage />} />
@@ -110,6 +131,12 @@ export const AppRoutes = () => {
           <Route path="question-details" element={<QuestionDetailsPage />} />
           <Route path="create-variant" element={<CreateVariantPage />} />
           <Route path="variant-question-review" element={<VariantQuestionReviewPage />} />
+          <Route path="subscriptions" element={<SubscriptionPlanPage />} />
+          <Route path="reports" element={<ReportsAndAnalyticsPage />} />
+          <Route path="reports/user-growth" element={<UserGrowthAnalyticsPage />} />
+          <Route path="reports/subscription-trends" element={<SubscriptionTrendsPage />} />
+          <Route path="reports/performance-analytics" element={<PerformanceAnalyticsPage />} />
+          <Route path="reports/export" element={<ExportReportsPage />} />
           <Route path="subscriptions" element={<AdminDashboardPage />} />
           <Route path="reports" element={<ReportsAndAnalyticsPage />} />
           <Route path="moderation" element={<ContentModerationPage />} />
@@ -123,6 +150,7 @@ export const AppRoutes = () => {
           <Route path="settings/add-announcements" element={<AddNewAnnouncements />} />
           <Route path="settings/edit-announcements" element={<EditAnnouncementPage />} />
           <Route path="settings/email-template" element={<EmailTemplatePage />} />
+          <Route path="security" element={<AdminDashboardPage />} />
           <Route path="security" element={<SecuritySettingsPage />} />
           <Route path="security/audit-logs" element={<AuditLogsPage />} />
           <Route path="security/view-logs" element={<ViewLogDetails />} />
