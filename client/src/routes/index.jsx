@@ -41,6 +41,9 @@ import AddSubjectPage from '../pages/admin/AddSubjectPage';
 import AddTopicPage from '../pages/admin/AddTopicPage';
 import AddSubTopicPage from '../pages/admin/AddSubTopicPage';
 import AddConceptPage from '../pages/admin/AddConceptPage';
+import ReportsAndAnalyticsPage from '../pages/admin/ReportsAndAnalyticsPage';
+import ContentModerationPage from '../pages/admin/ContentModerationPage';
+import ContentDetailsPage from '../pages/admin/ContentDetailsPage';
 
 export const AppRoutes = () => {
   return (
@@ -97,8 +100,9 @@ export const AppRoutes = () => {
           <Route path="create-variant" element={<CreateVariantPage />} />
           <Route path="variant-question-review" element={<VariantQuestionReviewPage />} />
           <Route path="subscriptions" element={<AdminDashboardPage />} />
-          <Route path="reports" element={<AdminDashboardPage />} />
-          <Route path="moderation" element={<AdminDashboardPage />} />
+          <Route path="reports" element={<ReportsAndAnalyticsPage />} />
+          <Route path="moderation" element={<ContentModerationPage />} />
+          <Route path="moderation/details" element={<ContentDetailsPage />} />
           <Route path="settings" element={<AdminDashboardPage />} />
           <Route path="security" element={<AdminDashboardPage />} />
         </Route>
