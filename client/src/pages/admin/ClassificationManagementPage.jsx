@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import ClassificationFilter from "../../components/admin/ClassificationManaement/ClassificationFilter";
 import ClassificationTable from "../../components/admin/ClassificationManaement/ClassificationTable";
 import Tabs from "../../components/admin/ClassificationManaement/ClassificationTab";
@@ -79,7 +79,6 @@ const ClassificationManagement = () => {
         });
     }, [currentConfig.data, search]);
 
-
     // Paginate filtered data
     const paginatedData = useMemo(() => {
         const start = (page - 1) * pageSize;
@@ -87,7 +86,7 @@ const ClassificationManagement = () => {
     }, [filteredData, page]);
 
     // Reset page when filters or tab change
-    useMemo(() => {
+    useEffect(() => {
         setPage(1);
     }, [search, activeTab]);
 
@@ -103,7 +102,6 @@ const ClassificationManagement = () => {
         navigate(currentConfig.addRoute);
         // In real app: navigate(currentConfig.addRoute);
     };
-
 
     const handleExport = () => {
         alert("Export clicked");

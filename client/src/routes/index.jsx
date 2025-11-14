@@ -41,6 +41,9 @@ import AddSubjectPage from '../pages/admin/AddSubjectPage';
 import AddTopicPage from '../pages/admin/AddTopicPage';
 import AddSubTopicPage from '../pages/admin/AddSubTopicPage';
 import AddConceptPage from '../pages/admin/AddConceptPage';
+import ReportsAndAnalyticsPage from '../pages/admin/ReportsAndAnalyticsPage';
+import ContentModerationPage from '../pages/admin/ContentModerationPage';
+import ContentDetailsPage from '../pages/admin/ContentDetailsPage';
 import SystemSettingPlan from '../pages/admin/SystemSettingPage';
 import SiteWideAnnouncements from '../pages/admin/SiteWideAnnouncements';
 import AdminRolePermissions from '../pages/admin/AdminRolePermissionsPage';
@@ -92,7 +95,6 @@ export const AppRoutes = () => {
           <Route path="users/add" element={<AddUserPage />} />
           <Route path="users/:id" element={<UserDetailPage />} />
           <Route path="users/:id/edit" element={<EditUserPage />} />
-          <Route path="question-bank" element={<AdminDashboardPage />} />
           <Route path="classification" element={<ClassificationManagement />} />
           <Route path="classification/add-subject" element={<AddSubjectPage/>} />
           <Route path="classification/add-topic" element={<AddTopicPage />} />
@@ -105,6 +107,10 @@ export const AppRoutes = () => {
           <Route path="create-variant" element={<CreateVariantPage />} />
           <Route path="variant-question-review" element={<VariantQuestionReviewPage />} />
           <Route path="subscriptions" element={<AdminDashboardPage />} />
+          <Route path="reports" element={<ReportsAndAnalyticsPage />} />
+          <Route path="moderation" element={<ContentModerationPage />} />
+          <Route path="moderation/details" element={<ContentDetailsPage />} />
+          <Route path="settings" element={<AdminDashboardPage />} />
           <Route path="reports" element={<AdminDashboardPage />} />
           <Route path="moderation" element={<AdminDashboardPage />} />
           <Route path="settings" element={<SystemSettingPlan />} />
