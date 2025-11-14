@@ -316,7 +316,6 @@ const AdminDashboardPage = () => {
                     } 230 Z`}
                     fill="url(#growthGradient)"
                   />
-
                   {/* Line */}
                   <path
                     d={linePath}
@@ -326,7 +325,6 @@ const AdminDashboardPage = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
-
                   {/* Points */}
                   {points.map((point, index) => (
                     <circle
@@ -466,11 +464,17 @@ const AdminDashboardPage = () => {
                       </span>
                     </div>
                     <div>
-                      <p className="font-roboto text-[16px] leading-[20px] text-[#032746] font-normal">{user.name}</p>
-                      <p className="font-roboto text-[12px] leading-[20px] text-[#6B7280]">{user.email}</p>
+                      <p className="font-roboto text-[16px] leading-[20px] text-[#032746] font-normal">
+                        {user.name}
+                      </p>
+                      <p className="font-roboto text-[12px] leading-[20px] text-[#6B7280]">
+                        {user.email}
+                      </p>
                     </div>
                   </div>
-                  <span className="font-roboto text-[12px] leading-[20px] text-[#6B7280]">{user.time}</span>
+                  <span className="font-roboto text-[12px] leading-[20px] text-[#6B7280]">
+                    {user.time}
+                  </span>
                 </div>
               ))}
             </div>
@@ -488,16 +492,21 @@ const AdminDashboardPage = () => {
                   className={`${note.bg} flex w-full flex-col gap-2 rounded-xl border ${note.border} px-4 py-4 w-full lg:h-[86px]`}
                 >
                   <div className="flex items-start gap-3">
-               
-                      <img src={note.icon} alt="" className="" />
+                    <img src={note.icon} alt="" className="" />
                     <div className="flex flex-col gap-1">
-                      <p className={`font-roboto font-normal ${note.titleClass} ${note.titleColor}`}>
+                      <p
+                        className={`font-roboto font-normal ${note.titleClass} ${note.titleColor}`}
+                      >
                         {note.title}
                       </p>
-                      <p className={`font-roboto font-normal ${note.descriptionClass} ${note.descriptionColor}`}>
+                      <p
+                        className={`font-roboto font-normal ${note.descriptionClass} ${note.descriptionColor}`}
+                      >
                         {note.description}
                       </p>
-                      <p className={`font-roboto font-normal ${note.timeClass} ${note.timeColor}`}>
+                      <p
+                        className={`font-roboto font-normal ${note.timeClass} ${note.timeColor}`}
+                      >
                         {note.time}
                       </p>
                     </div>
