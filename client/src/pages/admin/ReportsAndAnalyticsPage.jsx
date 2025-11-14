@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Reusable KPI Card Component
 const KPICard = ({ title, value, icon, titleSize = "text-[16px]", valueSize = "text-[30px]", valueWeight = "font-semibold", marginBottom = "mb-1" }) => {
@@ -26,10 +27,12 @@ const KPICard = ({ title, value, icon, titleSize = "text-[16px]", valueSize = "t
 };
 
 const ReportsAndAnalyticsPage = () => {
+  const navigate = useNavigate();
   const [exam, setExam] = useState("");
   const [subject, setSubject] = useState("");
   const [cognitiveLevel, setCognitiveLevel] = useState("");
   const [dateRange, setDateRange] = useState("");
+  const [activeTab, setActiveTab] = useState("");
 
   // Mock data for charts
   const performanceData = [
@@ -248,6 +251,7 @@ const ReportsAndAnalyticsPage = () => {
     return { ...item, path };
   });
 
+
   return (
     <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]">
       <div className="mx-auto flex max-w-[1400px] flex-col gap-6">
@@ -302,7 +306,7 @@ const ReportsAndAnalyticsPage = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3 md:gap-4">
+        <div className="flex flex-wrap items-center gap-3 md:gap-3">
           {/* Exam Dropdown */}
           <div className="relative">
             <select
@@ -463,22 +467,86 @@ const ReportsAndAnalyticsPage = () => {
           </div>
         </div>
 
-        {/* KPI Summary Cards */}
-        <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-[#032746] pt-4">KPI Summary Cards</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {kpiCards.map((card) => (
-            <KPICard
-              key={card.id}
-              title={card.title}
-              value={card.value}
-              icon={card.icon}
-              titleSize={card.titleSize}
-              valueSize={card.valueSize}
-              valueWeight={card.valueWeight}
-              marginBottom={card.marginBottom}
-            />
-          ))}
+        {/* Navigation Tabs */}
+        <div className="flex flex-wrap gap-3 md:gap-4">
+          <button
+            type="button"
+            onClick={() => navigate("/admin/reports/user-growth")}
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-[#032746] hover:bg-[#F9FAFB]"
+            style={{
+              width: "211px",
+              height: "44px",
+              borderRadius: "30px",
+            }}
+          >
+            User Growth Analytics
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("subscription")}
+            className={`flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition ${
+              activeTab === "subscription"
+                ? "bg-[#ED4122] text-white"
+                : "border border-[#03274633] bg-white text-[#032746] hover:bg-[#F9FAFB]"
+            }`}
+            style={{
+              width: "211px",
+              height: "44px",
+              borderRadius: "30px",
+            }}
+          >
+            Subscription Trends
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("performance")}
+            className={`flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition ${
+              activeTab === "performance"
+                ? "bg-[#ED4122] text-white"
+                : "border border-[#03274633] bg-white text-[#032746] hover:bg-[#F9FAFB]"
+            }`}
+            style={{
+              width: "211px",
+              height: "44px",
+              borderRadius: "30px",
+            }}
+          >
+            Performance Analytics
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("export")}
+            className={`flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition ${
+              activeTab === "export"
+                ? "bg-[#ED4122] text-white"
+                : "border border-[#03274633] bg-white text-[#032746] hover:bg-[#F9FAFB]"
+            }`}
+            style={{
+              width: "211px",
+              height: "44px",
+              borderRadius: "30px",
+            }}
+          >
+            Export Reports
+          </button>
         </div>
+
+        {/* KPI Summary Cards */}
+            <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-[#032746] pt-4">KPI Summary Cards</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              {kpiCards.map((card) => (
+                <KPICard
+                  key={card.id}
+                  title={card.title}
+                  value={card.value}
+                  icon={card.icon}
+                  titleSize={card.titleSize}
+                  valueSize={card.valueSize}
+                  valueWeight={card.valueWeight}
+                  marginBottom={card.marginBottom}
+                />
+              ))}
+            </div>
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
