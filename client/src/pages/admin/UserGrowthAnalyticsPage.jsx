@@ -1,19 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import AdminMetricCard from "../../components/admin/AdminMetricCard";
-import {
-  headcard1,
-  headcard2,
-  headcard3,
-  headcard4,
-} from "../../assets/svg/dashboard/admin";
 
 const UserGrowthAnalyticsPage = () => {
-  const navigate = useNavigate();
   
   // User Growth Analytics filters
   const [userGrowthDateRange, setUserGrowthDateRange] = useState("Last 30 Days");
-  const [userType, setUserType] = useState("All Roles");
+  const [userType, setUserType] = useState("");
   const [userRole, setUserRole] = useState("All Roles");
   const [userPlan, setUserPlan] = useState("All Plans");
 
@@ -25,7 +17,12 @@ const UserGrowthAnalyticsPage = () => {
       value: "10,884",
       subtext: "+15% from last month",
       subtextClassName: "text-[#10B981]",
-      icon: headcard1,
+      icon: (
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="40" height="40" rx="6" fill="#ED4122"/>
+          <path d="M29.25 18.528C29.25 18.942 28.914 19.278 28.5 19.278H26.75V21.028C26.75 21.442 26.414 21.778 26 21.778C25.586 21.778 25.25 21.442 25.25 21.028V19.278H23.5C23.086 19.278 22.75 18.942 22.75 18.528C22.75 18.114 23.086 17.778 23.5 17.778H25.25V16.028C25.25 15.614 25.586 15.278 26 15.278C26.414 15.278 26.75 15.614 26.75 16.028V17.778H28.5C28.914 17.778 29.25 18.114 29.25 18.528ZM17.509 19C19.715 19 21.509 17.206 21.509 15C21.509 12.794 19.715 11 17.509 11C15.303 11 13.509 12.794 13.509 15C13.509 17.206 15.303 19 17.509 19ZM19.5 21H15.5C11.44 21 10 23.973 10 26.519C10 28.796 11.2111 30 13.5031 30H21.4969C23.7889 30 25 28.796 25 26.519C25 23.973 23.56 21 19.5 21Z" fill="white"/>
+        </svg>
+      ),
     },
     {
       id: 2,
@@ -33,7 +30,12 @@ const UserGrowthAnalyticsPage = () => {
       value: "5,432",
       subtext: "+ 8% vs last month",
       subtextClassName: "text-[#10B981]",
-      icon: headcard2,
+      icon: (
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="40" height="40" rx="6" fill="#ED4122"/>
+          <path d="M26.8929 27.5186C26.8929 29.7644 25.6542 31 23.4067 31H15.5933C13.3458 31 12.1071 29.7632 12.1071 27.5186C12.1071 24.9899 13.5309 22.0368 17.545 22.0368H21.454C25.4691 22.0357 26.8929 24.9899 26.8929 27.5186ZM19.5088 19.9612C21.6358 19.9612 23.3652 18.2227 23.3652 16.0863C23.3652 13.9489 21.6347 12.2115 19.5088 12.2115C17.383 12.2115 15.6536 13.95 15.6536 16.0863C15.6536 18.2227 17.3819 19.9612 19.5088 19.9612ZM26.9367 17.1076H25.1734C25.0201 17.1076 24.8886 17.2181 24.8557 17.3618C24.6148 18.4117 24.0671 19.3511 23.3114 20.0695C23.1252 20.2463 23.2348 20.5558 23.4867 20.6221C25.4253 21.0863 26.7724 22.2357 27.5719 23.6946C27.6267 23.8162 27.7362 23.8935 27.8786 23.8935H28.3385C30.058 23.8935 31 22.9431 31 21.219C31 19.329 29.9377 17.1076 26.9367 17.1076ZM25.5348 10.0011C24.4417 10.0011 23.4877 10.6056 22.9872 11.4997C22.9467 11.5726 22.9489 11.6533 22.9642 11.723C22.9806 11.7959 23.0125 11.8347 23.0804 11.8922C24.1526 12.8039 24.8678 14.1246 24.985 15.6178C24.9916 15.7018 25.0201 15.7537 25.0704 15.8079C25.1208 15.862 25.1963 15.8951 25.296 15.9039C25.3738 15.9106 25.4537 15.915 25.5348 15.915C27.1448 15.915 28.4591 14.5888 28.4591 12.9531C28.4591 11.3273 27.1448 10.0011 25.5348 10.0011ZM8 21.219C8 22.9431 8.94196 23.8935 10.6615 23.8935H11.1214C11.2638 23.8935 11.3733 23.8162 11.4281 23.6946C12.2276 22.2357 13.5747 21.0863 15.5133 20.6221C15.7652 20.5558 15.8748 20.2463 15.6886 20.0695C14.9329 19.3511 14.3852 18.4117 14.1443 17.3618C14.1114 17.2181 13.9799 17.1076 13.8266 17.1076H12.0633C9.06234 17.1076 8 19.329 8 21.219ZM10.5409 12.952C10.5409 14.5877 11.8552 15.9139 13.4652 15.9139C13.5463 15.9139 13.6262 15.9095 13.704 15.9028C13.8048 15.894 13.8792 15.8609 13.9296 15.8068C13.9799 15.7526 14.0084 15.7007 14.015 15.6167C14.1322 14.1236 14.8474 12.8027 15.9196 11.8909C15.9864 11.8335 16.0194 11.7948 16.0358 11.7219C16.0511 11.6523 16.0533 11.5727 16.0128 11.4986C15.5112 10.6045 14.5583 10 13.4652 10C11.8552 10.0011 10.5409 11.3274 10.5409 12.952Z" fill="white"/>
+        </svg>
+      ),
     },
     {
       id: 3,
@@ -41,7 +43,12 @@ const UserGrowthAnalyticsPage = () => {
       value: "85%",
       subtext: "- 2% vs last month",
       subtextClassName: "text-[#ED4122]",
-      icon: headcard3,
+      icon: (
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="40" height="40" rx="6" fill="#ED4122"/>
+          <path d="M30 20.0003V23.0003C30 25.2063 28.206 27.0003 26 27.0003H13.4141L14.707 28.2932C15.098 28.6842 15.098 29.3163 14.707 29.7073C14.512 29.9023 14.256 30.0003 14 30.0003C13.744 30.0003 13.488 29.9023 13.293 29.7073L10.2939 26.7083C10.2009 26.6153 10.1279 26.5054 10.0769 26.3824C9.9759 26.1384 9.9759 25.8622 10.0769 25.6182C10.1279 25.4952 10.2009 25.3853 10.2939 25.2923L13.293 22.2933C13.684 21.9023 14.316 21.9023 14.707 22.2933C15.098 22.6842 15.098 23.3163 14.707 23.7073L13.4141 25.0003H26C27.103 25.0003 28 24.1033 28 23.0003V20.0003C28 19.4483 28.447 19.0003 29 19.0003C29.553 19.0003 30 19.4483 30 20.0003ZM11 21.0003C11.553 21.0003 12 20.5523 12 20.0003V17.0003C12 15.8973 12.897 15.0003 14 15.0003H26.5859L25.293 16.2933C24.902 16.6842 24.902 17.3163 25.293 17.7073C25.488 17.9023 25.744 18.0003 26 18.0003C26.256 18.0003 26.512 17.9023 26.707 17.7073L29.7061 14.7083C29.7991 14.6153 29.8721 14.5054 29.9231 14.3824C30.0241 14.1384 30.0241 13.8622 29.9231 13.6182C29.8721 13.4952 29.7991 13.3853 29.7061 13.2923L26.707 10.2932C26.316 9.90225 25.684 9.90225 25.293 10.2932C24.902 10.6842 24.902 11.3163 25.293 11.7073L26.5859 13.0003H14C11.794 13.0003 10 14.7943 10 17.0003V20.0003C10 20.5523 10.447 21.0003 11 21.0003Z" fill="white"/>
+        </svg>
+      ),
     },
     {
       id: 4,
@@ -49,7 +56,12 @@ const UserGrowthAnalyticsPage = () => {
       value: "72%",
       subtext: "+5% vs month",
       subtextClassName: "text-[#10B981]",
-      icon: headcard4,
+      icon: (
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="40" height="40" rx="6" fill="#ED4122"/>
+          <path d="M20.0181 10C17.7781 11.111 16 12 11 13C11 14.137 11 17.7019 11 18.8889C11 25.5559 16.667 28.889 20 30C23.333 28.889 29 25.5559 29 18.8889C29 17.6639 29 14.194 29 13C24 12 22.2221 11.111 20.0181 10ZM23.542 18.53L19.542 22.53C19.396 22.676 19.204 22.75 19.012 22.75C18.82 22.75 18.6279 22.677 18.4819 22.53L16.4819 20.53C16.1889 20.237 16.1889 19.762 16.4819 19.469C16.7749 19.176 17.25 19.176 17.543 19.469L19.0129 20.939L22.4829 17.469C22.7759 17.176 23.2509 17.176 23.5439 17.469C23.8369 17.762 23.835 18.237 23.542 18.53Z" fill="white"/>
+        </svg>
+      ),
     },
   ];
 
@@ -120,17 +132,19 @@ const UserGrowthAnalyticsPage = () => {
         </div>
 
         {/* User Growth Filters */}
-        <div className="flex flex-wrap items-center gap-3 md:gap-3">
+        <div className="flex flex-wrap items-center gap-3  md:gap-6">
+          {/* Date Range Filter */}
           <div className="relative">
             <select
               value={userGrowthDateRange}
               onChange={(e) => setUserGrowthDateRange(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-[#032746] outline-none"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
               style={{
                 width: "184px",
                 height: "50px",
               }}
             >
+              <option value="" disabled>Date range</option>
               <option value="Last 30 Days">Last 30 Days</option>
               <option value="Last 7 Days">Last 7 Days</option>
               <option value="Last 90 Days">Last 90 Days</option>
@@ -151,17 +165,18 @@ const UserGrowthAnalyticsPage = () => {
             </svg>
           </div>
 
-          <div className="relative">
+          {/* User Type Filter */}
+          <div className="relative xl:ml-[320px]">
             <select
               value={userType}
               onChange={(e) => setUserType(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-[#032746] outline-none"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
               style={{
                 width: "184px",
                 height: "50px",
               }}
             >
-              <option value="All Roles">User Type</option>
+              <option value="" disabled>User Type</option>
               <option value="Student">Student</option>
               <option value="Teacher">Teacher</option>
               <option value="Admin">Admin</option>
@@ -182,11 +197,12 @@ const UserGrowthAnalyticsPage = () => {
             </svg>
           </div>
 
+          {/* All Roles Filter */}
           <div className="relative">
             <select
               value={userRole}
               onChange={(e) => setUserRole(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-[#032746] outline-none"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
               style={{
                 width: "184px",
                 height: "50px",
@@ -213,11 +229,12 @@ const UserGrowthAnalyticsPage = () => {
             </svg>
           </div>
 
+          {/* All Plans Filter */}
           <div className="relative">
             <select
               value={userPlan}
               onChange={(e) => setUserPlan(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-[#032746] outline-none"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
               style={{
                 width: "184px",
                 height: "50px",
@@ -254,7 +271,6 @@ const UserGrowthAnalyticsPage = () => {
               subtext={card.subtext}
               subtextClassName={card.subtextClassName}
               icon={card.icon}
-              iconWrapperClassName="bg-[#ED4122] p-2 rounded-[6px]"
               className="w-full sm:w-[calc(50%-12px)] lg:w-[262px]"
             />
           ))}

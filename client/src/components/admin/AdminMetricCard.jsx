@@ -34,8 +34,12 @@ const AdminMetricCard = ({
           )}
         </div>
         {icon && (
-          <div className={`flex items-center justify-center rounded-full ${iconWrapperClassName}`}>
-            <img src={icon} alt={title} />
+          <div className={`flex items-center justify-center ${iconWrapperClassName}`}>
+            {typeof icon === 'string' ? (
+              <img src={icon} alt={title} />
+            ) : (
+              icon
+            )}
           </div>
         )}
       </div>

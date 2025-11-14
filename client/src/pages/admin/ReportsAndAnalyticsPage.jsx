@@ -32,7 +32,6 @@ const ReportsAndAnalyticsPage = () => {
   const [subject, setSubject] = useState("");
   const [cognitiveLevel, setCognitiveLevel] = useState("");
   const [dateRange, setDateRange] = useState("");
-  const [activeTab, setActiveTab] = useState("");
 
   // Mock data for charts
   const performanceData = [
@@ -286,6 +285,7 @@ const ReportsAndAnalyticsPage = () => {
             </button>
             <button
               type="button"
+              onClick={() => navigate("/admin/reports/export")}
               className="flex h-[36px] items-center justify-center gap-2 rounded-[8px] bg-[#ED4122] px-3 md:px-5 text-[14px] md:text-[16px] font-roboto font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
               <svg
@@ -483,12 +483,8 @@ const ReportsAndAnalyticsPage = () => {
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab("subscription")}
-            className={`flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition ${
-              activeTab === "subscription"
-                ? "bg-[#ED4122] text-white"
-                : "border border-[#03274633] bg-white text-[#032746] hover:bg-[#F9FAFB]"
-            }`}
+            onClick={() => navigate("/admin/reports/subscription-trends")}
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-[#032746] hover:bg-[#F9FAFB]"
             style={{
               width: "211px",
               height: "44px",
@@ -499,12 +495,8 @@ const ReportsAndAnalyticsPage = () => {
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab("performance")}
-            className={`flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition ${
-              activeTab === "performance"
-                ? "bg-[#ED4122] text-white"
-                : "border border-[#03274633] bg-white text-[#032746] hover:bg-[#F9FAFB]"
-            }`}
+            onClick={() => navigate("/admin/reports/performance-analytics")}
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-[#032746] hover:bg-[#F9FAFB]"
             style={{
               width: "211px",
               height: "44px",
@@ -515,12 +507,8 @@ const ReportsAndAnalyticsPage = () => {
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab("export")}
-            className={`flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition ${
-              activeTab === "export"
-                ? "bg-[#ED4122] text-white"
-                : "border border-[#03274633] bg-white text-[#032746] hover:bg-[#F9FAFB]"
-            }`}
+            onClick={() => navigate("/admin/reports/export")}
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-[#032746] hover:bg-[#F9FAFB]"
             style={{
               width: "211px",
               height: "44px",

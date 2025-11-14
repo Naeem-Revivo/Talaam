@@ -43,6 +43,11 @@ import AddSubTopicPage from '../pages/admin/AddSubTopicPage';
 import AddConceptPage from '../pages/admin/AddConceptPage';
 import ReportsAndAnalyticsPage from '../pages/admin/ReportsAndAnalyticsPage';
 import UserGrowthAnalyticsPage from '../pages/admin/UserGrowthAnalyticsPage';
+import SubscriptionTrendsPage from '../pages/admin/SubscriptionTrendsPage';
+import SubscriptionPlanPage from '../pages/admin/SubscriptionPlanPage';
+import AddNewPlanPage from '../pages/admin/AddNewPlanPage';
+import PerformanceAnalyticsPage from '../pages/admin/PerformanceAnalyticsPage';
+import ExportReportsPage from '../pages/admin/ExportReportsPage';
 import ContentModerationPage from '../pages/admin/ContentModerationPage';
 import ContentDetailsPage from '../pages/admin/ContentDetailsPage';
 import SystemSettingPlan from '../pages/admin/SystemSettingPage';
@@ -101,18 +106,21 @@ export const AppRoutes = () => {
           <Route path="subscriptions/add-topic" element={<AddTopicPage />} />
           <Route path="subscriptions/add-subtopic" element={<AddSubTopicPage />} />
           <Route path="subscriptions/add-concept" element={<AddConceptPage />} />
+          <Route path="subscriptions/add-plan" element={<AddNewPlanPage />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
           <Route path="question-management" element={<QuestionManagementPage />} />
           <Route path="add-question" element={<AddNewQuestionPage />} />
           <Route path="question-details" element={<QuestionDetailsPage />} />
           <Route path="create-variant" element={<CreateVariantPage />} />
           <Route path="variant-question-review" element={<VariantQuestionReviewPage />} />
-          <Route path="subscriptions" element={<AdminDashboardPage />} />
+          <Route path="subscriptions" element={<SubscriptionPlanPage />} />
           <Route path="reports" element={<ReportsAndAnalyticsPage />} />
           <Route path="reports/user-growth" element={<UserGrowthAnalyticsPage />} />
+          <Route path="reports/subscription-trends" element={<SubscriptionTrendsPage />} />
+          <Route path="reports/performance-analytics" element={<PerformanceAnalyticsPage />} />
+          <Route path="reports/export" element={<ExportReportsPage />} />
           <Route path="moderation" element={<ContentModerationPage />} />
           <Route path="moderation/details" element={<ContentDetailsPage />} />
-          <Route path="settings" element={<AdminDashboardPage />} />
           <Route path="reports" element={<AdminDashboardPage />} />
           <Route path="moderation" element={<AdminDashboardPage />} />
           <Route path="settings" element={<SystemSettingPlan />} />
