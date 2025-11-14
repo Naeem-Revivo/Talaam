@@ -337,7 +337,6 @@ const AdminDashboardPage = () => {
                       strokeWidth="2"
                     />
                   ))}
-
                   {/* Month Labels */}
                   {growthMonths.map((label, idx) => (
                     <text
@@ -371,7 +370,6 @@ const AdminDashboardPage = () => {
                 <img src={threebar} alt="menu" />
               </button>
             </div>
-
             <div className="flex flex-1 items-center justify-center">
               <div className="relative">
                 <svg width="260" height="260" viewBox="0 0 260 260">
@@ -416,7 +414,6 @@ const AdminDashboardPage = () => {
                 </div>
               </div>
             </div>
-
             <div className="grid grid-cols-1 gap-3 sm:gap-4">
               {subscriptionSegments.map((segment) => (
                 <div
