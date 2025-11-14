@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import ClassificationFilter from "../../components/admin/ClassificationManaement/ClassificationFilter";
 import ClassificationTable from "../../components/admin/ClassificationManaement/ClassificationTable";
 import Tabs from "../../components/admin/ClassificationManaement/ClassificationTab";
@@ -86,7 +86,7 @@ const ClassificationManagement = () => {
     }, [filteredData, page]);
 
     // Reset page when filters or tab change
-    useMemo(() => {
+    useEffect(() => {
         setPage(1);
     }, [search, activeTab]);
 
