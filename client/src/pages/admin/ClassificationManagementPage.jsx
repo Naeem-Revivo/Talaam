@@ -79,7 +79,6 @@ const ClassificationManagement = () => {
     });
   }, [currentConfig.data, search]);
 
-
     // Paginate filtered data
     const paginatedData = useMemo(() => {
         const start = (page - 1) * pageSize;
@@ -103,7 +102,6 @@ const ClassificationManagement = () => {
         navigate(currentConfig.addRoute);
         // In real app: navigate(currentConfig.addRoute);
     };
-
 
     const handleExport = () => {
         alert("Export clicked");
