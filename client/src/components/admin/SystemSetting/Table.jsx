@@ -34,8 +34,8 @@ const TableRow = ({ item, columns, onView, onEdit }) => {
           const isScheduled = value.toLowerCase() === 'scheduled';
           return (
             <td key={column} className="px-6 py-4 text-center">
-              <span className={`inline-block px-3 py-1 rounded-md text-[14px] leading-[100%] font-normal ${isActive ? 'bg-[#FDF0D5] text-[#ED4122]' :
-                isScheduled ? 'bg-[#FDF0D5] text-[#ED4122]' :
+              <span className={`inline-block px-[12px] py-[5px] rounded-md text-[14px] leading-[100%] font-normal ${isActive ? 'bg-[#FDF0D5] text-[#ED4122]' :
+                isScheduled ? 'bg-[#ED4122] text-white' :
                   'bg-[#C6D8D3] text-[#032746]'
                 }`}>
                 {value}
@@ -148,9 +148,9 @@ const MobileCard = ({ item, columns, onView, onEdit }) => {
           const isScheduled = statusValue.toLowerCase() === 'scheduled';
           
           return (
-            <span className={`inline-flex items-center px-3 py-1 rounded-md text-[14px] font-normal ${
+            <span className={`inline-flex items-center px-[12px] py-[5px] rounded-md text-[14px] font-normal ${
               isActive ? 'bg-[#FDF0D5] text-[#ED4122]' : 
-              isScheduled ? 'bg-[#FDF0D5] text-[#ED4122]' : 
+              isScheduled ? 'bg-[#ED4122] text-white' : 
               'bg-[#C6D8D3] text-[#032746]'
             }`}>
               {statusValue}
@@ -203,7 +203,7 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
   const pages = Array.from({ length: safeTotalPages }, (_, index) => index + 1);
 
   return (
-    <div className="flex flex-col gap-4 px-4 py-4 text-[#032746] md:flex-row md:items-center md:justify-between md:bg-[#032746] md:px-6 md:text-white">
+    <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-[#032746] md:flex-row md:items-center md:justify-between md:bg-[#032746] md:px-6 md:text-white">
       <p className="text-[12px] font-medium leading-[18px]">
         Showing {firstItem} to {lastItem} of {total} results
       </p>
@@ -260,7 +260,7 @@ export const DataTable = ({
   emptyMessage,
 }) => {
   return (
-    <section className="w-full flex flex-col justify-between overflow-hidden rounded-[12px] md:min-h-[348px]">
+    <section className="w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_54px_rgba(0,0,0,0.05)] md:min-h-[348px]">
       <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full border-collapse">
           <TableHeader columns={columns} />

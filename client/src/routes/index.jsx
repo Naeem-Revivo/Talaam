@@ -32,6 +32,11 @@ import UserDetailPage from '../pages/admin/UserDetailPage';
 import { RoleRoute } from './ProtectedRoute';
 import ClassificationManagement from '../pages/admin/ClassificationManagementPage';
 import AdminQuestionBankPage from '../pages/admin/QuestionBankPage';
+import QuestionManagementPage from '../pages/admin/QuestionManagementPage';
+import AddNewQuestionPage from '../pages/admin/AddNewQuestionPage';
+import QuestionDetailsPage from '../pages/admin/QuestionDetailsPage';
+import CreateVariantPage from '../pages/admin/CreateVariantPage';
+import VariantQuestionReviewPage from '../pages/admin/VariantQuestionReviewPage';
 import AddSubjectPage from '../pages/admin/AddSubjectPage';
 import AddTopicPage from '../pages/admin/AddTopicPage';
 import AddSubTopicPage from '../pages/admin/AddSubTopicPage';
@@ -39,6 +44,10 @@ import AddConceptPage from '../pages/admin/AddConceptPage';
 import SystemSettingPlan from '../pages/admin/SystemSettingPage';
 import SiteWideAnnouncements from '../pages/admin/SiteWideAnnouncements';
 import AdminRolePermissions from '../pages/admin/AdminRolePermissionsPage';
+import LanguageManagement from '../pages/admin/LanguageManagement';
+import EmailTemplatePage from '../pages/admin/EmailTemplatePage';
+import AddNewAnnouncements from '../pages/admin/AddNewAnnouncements';
+import EditAnnouncementPage from '../pages/admin/EditAnnouncementPage';
 
 export const AppRoutes = () => {
   return (
@@ -90,12 +99,21 @@ export const AppRoutes = () => {
           <Route path="subscriptions/add-subtopic" element={<AddSubTopicPage />} />
           <Route path="subscriptions/add-concept" element={<AddConceptPage />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
+          <Route path="question-management" element={<QuestionManagementPage />} />
+          <Route path="add-question" element={<AddNewQuestionPage />} />
+          <Route path="question-details" element={<QuestionDetailsPage />} />
+          <Route path="create-variant" element={<CreateVariantPage />} />
+          <Route path="variant-question-review" element={<VariantQuestionReviewPage />} />
           <Route path="subscriptions" element={<AdminDashboardPage />} />
           <Route path="reports" element={<AdminDashboardPage />} />
           <Route path="moderation" element={<AdminDashboardPage />} />
           <Route path="settings" element={<SystemSettingPlan />} />
-          <Route path="rolesandpermissions" element={<AdminRolePermissions />} />
-          <Route path="announcements" element={<SiteWideAnnouncements />} />
+          <Route path="settings/language-management" element={<LanguageManagement />} />
+          <Route path="settings/roles-permissions" element={<AdminRolePermissions />} />
+          <Route path="settings/announcements" element={<SiteWideAnnouncements />} />
+          <Route path="settings/add-announcements" element={<AddNewAnnouncements />} />
+          <Route path="settings/edit-announcements" element={<EditAnnouncementPage />} />
+          <Route path="settings/email-template" element={<EmailTemplatePage />} />
           <Route path="security" element={<AdminDashboardPage />} />
         </Route>
       </Route>
