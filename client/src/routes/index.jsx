@@ -36,6 +36,9 @@ import AddSubjectPage from '../pages/admin/AddSubjectPage';
 import AddTopicPage from '../pages/admin/AddTopicPage';
 import AddSubTopicPage from '../pages/admin/AddSubTopicPage';
 import AddConceptPage from '../pages/admin/AddConceptPage';
+import SystemSettingPlan from '../pages/admin/SystemSettingPage';
+import SiteWideAnnouncements from '../pages/admin/SiteWideAnnouncements';
+import AdminRolePermissions from '../pages/admin/AdminRolePermissionsPage';
 
 export const AppRoutes = () => {
   return (
@@ -90,7 +93,9 @@ export const AppRoutes = () => {
           <Route path="subscriptions" element={<AdminDashboardPage />} />
           <Route path="reports" element={<AdminDashboardPage />} />
           <Route path="moderation" element={<AdminDashboardPage />} />
-          <Route path="settings" element={<AdminDashboardPage />} />
+          <Route path="settings" element={<SystemSettingPlan />} />
+          <Route path="rolesandpermissions" element={<AdminRolePermissions />} />
+          <Route path="announcements" element={<SiteWideAnnouncements />} />
           <Route path="security" element={<AdminDashboardPage />} />
         </Route>
       </Route>
