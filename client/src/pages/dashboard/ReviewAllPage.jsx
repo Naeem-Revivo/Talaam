@@ -68,7 +68,7 @@ const ReviewAllPage = () => {
             <div className="text-[20px] font-bold text-[#032746] font-archivo leading-[28px] tracking-[0%]">
               Item {currentQuestionIndex + 1} of {totalQuestions}
             </div>
-            <div className="hidden lg:block text-[14px] md:text-[16px] font-normal text-[#6B7280] font-roboto">
+            <div className="hidden lg:block text-[14px] md:text-[16px] leading-[100%] font-normal text-blue-dark font-roboto">
               Question Id: {currentQuestion.id}
             </div>
             <button className="hidden lg:block text-[#032746] hover:opacity-70">

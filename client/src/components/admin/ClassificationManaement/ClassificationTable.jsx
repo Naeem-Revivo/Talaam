@@ -225,7 +225,7 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
                         key={pageNumber}
                         type="button"
                         onClick={() => onPageChange?.(pageNumber)}
-                        className={`flex h-8 w-8 items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${pageNumber === page
+                        className={`flex h-[27.16px] w-8 items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${pageNumber === page
                             ? "border-[#ED4122] bg-[#ED4122] text-white"
                             : "border-[#E5E7EB] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-[#032746]"
                             }`}

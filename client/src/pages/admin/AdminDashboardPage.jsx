@@ -451,8 +451,6 @@ const AdminDashboardPage = () => {
                 <div
                   key={`${user.email}-${index}-${user.time}`}
                   className="flex w-full flex-col gap-3 rounded-xl border border-[#6CA6C1] bg-[#E5E7EB] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0 lg:w-[500px] lg:h-[86px]"
-                  key={user.email}
-                  className="flex w-full flex-col gap-3 rounded-xl border border-[#6CA6C1] bg-[#E5E7EB] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0  lg:h-[86px]"
                 >
                   <div className="flex items-center gap-3">
                     <div

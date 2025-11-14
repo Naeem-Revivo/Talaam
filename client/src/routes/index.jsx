@@ -51,6 +51,10 @@ import LanguageManagement from '../pages/admin/LanguageManagement';
 import EmailTemplatePage from '../pages/admin/EmailTemplatePage';
 import AddNewAnnouncements from '../pages/admin/AddNewAnnouncements';
 import EditAnnouncementPage from '../pages/admin/EditAnnouncementPage';
+import SecuritySettingsPage from '../pages/admin/SecurityPage';
+import AuditLogsPage from '../pages/admin/AuditLogsPage';
+import RolesPermissionsPage from '../pages/admin/RolesPermissionsPage';
+import ViewLogDetails from '../pages/admin/ViewLogsDetailPage';
 
 export const AppRoutes = () => {
   return (
@@ -110,7 +114,6 @@ export const AppRoutes = () => {
           <Route path="reports" element={<ReportsAndAnalyticsPage />} />
           <Route path="moderation" element={<ContentModerationPage />} />
           <Route path="moderation/details" element={<ContentDetailsPage />} />
-          <Route path="settings" element={<AdminDashboardPage />} />
           <Route path="reports" element={<AdminDashboardPage />} />
           <Route path="moderation" element={<AdminDashboardPage />} />
           <Route path="settings" element={<SystemSettingPlan />} />
@@ -120,7 +123,10 @@ export const AppRoutes = () => {
           <Route path="settings/add-announcements" element={<AddNewAnnouncements />} />
           <Route path="settings/edit-announcements" element={<EditAnnouncementPage />} />
           <Route path="settings/email-template" element={<EmailTemplatePage />} />
-          <Route path="security" element={<AdminDashboardPage />} />
+          <Route path="security" element={<SecuritySettingsPage />} />
+          <Route path="security/audit-logs" element={<AuditLogsPage />} />
+          <Route path="security/view-logs" element={<ViewLogDetails />} />
+          <Route path="security/roles-permissions" element={<RolesPermissionsPage />} />
         </Route>
       </Route>
     </Routes>
