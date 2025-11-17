@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 
 const ContentDetailsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useLanguage();
   
   // Get content data from navigation state or use mock data
   const contentData = location.state?.content || {
@@ -50,8 +52,8 @@ const ContentDetailsPage = () => {
       <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 lg:px-12">
         {/* Header Section */}
         <div className="mb-4 md:mb-6">
-          <h1 className="font-archivo text-[24px] sm:text-[28px] md:text-[36px] font-bold leading-[28px] sm:leading-[32px] md:leading-[40px] text-[#032746] mb-2">
-            Content Details
+          <h1 className="font-archivo text-[24px] sm:text-[28px] md:text-[36px] font-bold leading-[28px] sm:leading-[32px] md:leading-[40px] text-oxford-blue mb-2">
+            {t('admin.contentDetails.hero.title')}
           </h1>
         </div>
 
@@ -67,43 +69,43 @@ const ContentDetailsPage = () => {
                 minHeight: "auto",
               }}
             >
-              <h2 className="font-archivo text-[18px] sm:text-[20px] font-bold leading-[24px] sm:leading-[28px] text-[#032746] mb-3 sm:mb-4">
-                Report Information
+              <h2 className="font-archivo text-[18px] sm:text-[20px] font-bold leading-[24px] sm:leading-[28px] text-oxford-blue mb-3 sm:mb-4">
+                {t('admin.contentDetails.sections.reportInformation')}
               </h2>
               <div className="border-t border-[#E5E7EB] mb-3 sm:mb-4"></div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 lg:gap-16">
                 <div className="space-y-3 sm:space-y-4">
                   <div>
-                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-[#6B7280] mb-1">
-                      Content Type
+                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-dark-gray mb-1">
+                      {t('admin.contentDetails.fields.contentType')}
                     </p>
-                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-[#032746]">
+                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-oxford-blue">
                       {contentData.contentType}
                     </p>
                   </div>
                   <div>
-                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-[#6B7280] mb-1">
-                      Date Reported
+                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-dark-gray mb-1">
+                      {t('admin.contentDetails.fields.dateReported')}
                     </p>
-                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-[#032746]">
+                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-oxford-blue">
                       {contentData.dateReported}
                     </p>
                   </div>
                 </div>
                 <div className="space-y-3 sm:space-y-4">
                   <div>
-                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-[#6B7280] mb-1">
-                      Reported By
+                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-dark-gray mb-1">
+                      {t('admin.contentDetails.fields.reportedBy')}
                     </p>
-                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-[#032746]">
+                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-oxford-blue">
                       {contentData.submittedBy || contentData.reportedBy}
                     </p>
                   </div>
                   <div>
-                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-[#6B7280] mb-1">
-                      Flag Reason
+                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-dark-gray mb-1">
+                      {t('admin.contentDetails.fields.flagReason')}
                     </p>
-                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-[#032746]">
+                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-oxford-blue">
                       {contentData.flagReason}
                     </p>
                   </div>
@@ -120,8 +122,8 @@ const ContentDetailsPage = () => {
               }}
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
-                <h2 className="font-archivo text-[18px] sm:text-[20px] font-bold leading-[24px] sm:leading-[28px] text-[#032746]">
-                  Content
+                <h2 className="font-archivo text-[18px] sm:text-[20px] font-bold leading-[24px] sm:leading-[28px] text-oxford-blue">
+                  {t('admin.contentDetails.sections.content')}
                 </h2>
                 <button
                   type="button"
@@ -141,19 +143,19 @@ const ContentDetailsPage = () => {
                       fill="#ED4122"
                     />
                   </svg>
-                  Revision History
+                  {t('admin.contentDetails.buttons.revisionHistory')}
                 </button>
               </div>
               <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <p className="font-roboto text-[16px] sm:text-[18px] font-medium leading-[22px] sm:leading-[24px] text-[#032746] mb-2 sm:mb-3">
-                    Question: {contentData.question}
+                  <p className="font-roboto text-[16px] sm:text-[18px] font-medium leading-[22px] sm:leading-[24px] text-oxford-blue mb-2 sm:mb-3">
+                    {t('admin.contentDetails.fields.question')} {contentData.question}
                   </p>
                   <div className="space-y-2 sm:space-y-3 py-2 sm:py-3 ml-2 sm:ml-4">
                     {contentData.options.map((option, index) => (
                       <p
                         key={index}
-                        className="font-roboto text-[14px] sm:text-[16px] leading-[20px] sm:leading-[100%] text-[#032746]"
+                        className="font-roboto text-[14px] sm:text-[16px] leading-[20px] sm:leading-[100%] text-oxford-blue"
                       >
                         <span className="font-medium">{String.fromCharCode(65 + index)}.</span>{" "}
                         <span className="font-normal">{option}</span>
@@ -162,10 +164,10 @@ const ContentDetailsPage = () => {
                   </div>
                 </div>
                 <div>
-                  <p className="font-roboto text-[16px] sm:text-[18px] font-medium leading-[20px] text-[#032746] mb-2">
-                    Explanation:
+                  <p className="font-roboto text-[16px] sm:text-[18px] font-medium leading-[20px] text-oxford-blue mb-2">
+                    {t('admin.contentDetails.fields.explanation')}
                   </p>
-                  <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746]">
+                  <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue">
                     {contentData.explanation}
                   </p>
                 </div>
@@ -174,24 +176,24 @@ const ContentDetailsPage = () => {
 
             {/* User's Moderation Record Card */}
             <div>
-              <h2 className="font-archivo pt-1 text-[18px] sm:text-[20px] font-semibold leading-[24px] sm:leading-[28px] text-[#032746] mb-3 sm:mb-4">
-                User's Moderation Record
+              <h2 className="font-archivo pt-1 text-[18px] sm:text-[20px] font-semibold leading-[24px] sm:leading-[28px] text-oxford-blue mb-3 sm:mb-4">
+                {t('admin.contentDetails.sections.usersModerationRecord')}
               </h2>
               <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                 <div className="rounded-[8px] border w-full border-[#E5E7EB] bg-white p-3 sm:p-4 text-center shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-                  <p className="font-archivo text-[24px] sm:text-[30px] font-semibold leading-[32px] sm:leading-[40px] text-[#032746] mb-1">
+                  <p className="font-archivo text-[24px] sm:text-[30px] font-semibold leading-[32px] sm:leading-[40px] text-oxford-blue mb-1">
                     {contentData.approvedCount || 120}
                   </p>
-                  <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-[#6B7280]">
-                    Approved
+                  <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-dark-gray">
+                    {t('admin.contentDetails.labels.approved')}
                   </p>
                 </div>
                 <div className="rounded-[8px] border border-[#E5E7EB] bg-white p-3 sm:p-4 text-center shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-                  <p className="font-archivo text-[24px] sm:text-[32px] font-semibold leading-[32px] sm:leading-[40px] text-[#032746] mb-1">
+                  <p className="font-archivo text-[24px] sm:text-[32px] font-semibold leading-[32px] sm:leading-[40px] text-oxford-blue mb-1">
                     {contentData.rejectedCount || 30}
                   </p>
-                  <p className="font-roboto text-[14px] font-normal leading-[18px] sm:leading-[20px] text-[#6B7280]">
-                    Rejected
+                  <p className="font-roboto text-[14px] font-normal leading-[18px] sm:leading-[20px] text-dark-gray">
+                    {t('admin.contentDetails.labels.rejected')}
                   </p>
                 </div>
               </div>
@@ -202,24 +204,24 @@ const ContentDetailsPage = () => {
           <div className="w-full lg:w-[400px]">
             {/* Moderation Actions Card */}
             <div className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 sm:p-6">
-              <h2 className="font-archivo text-[18px] sm:text-[20px] font-bold leading-[24px] sm:leading-[28px] text-[#032746] mb-3 sm:mb-4">
-                Moderation Actions
+              <h2 className="font-archivo text-[18px] sm:text-[20px] font-bold leading-[24px] sm:leading-[28px] text-oxford-blue mb-3 sm:mb-4">
+                {t('admin.contentDetails.sections.moderationActions')}
               </h2>
               <div className="border-t border-[#E5E7EB] mb-3 sm:mb-4"></div>
               <div className="space-y-3 sm:space-y-4">
                 <div>
                   <label
                     htmlFor="moderator-comments"
-                    className="block font-roboto text-[16px] font-normal leading-[18px] sm:leading-[20px] text-[#032746] mb-2"
+                    className="block font-roboto text-[16px] font-normal leading-[18px] sm:leading-[20px] text-oxford-blue mb-2"
                   >
-                    Moderator Comments
+                    {t('admin.contentDetails.fields.moderatorComments')}
                   </label>
                   <textarea
                     id="moderator-comments"
                     value={moderatorComments}
                     onChange={(e) => setModeratorComments(e.target.value)}
-                    placeholder="Add optional comments.."
-                    className="rounded-[8px] outline-none border px-3 sm:px-4 py-2 sm:py-3 font-roboto text-[14px] font-normal leading-[20px] text-[#032746] placeholder:text-[#9CA3AF] bg-[#E5E7EB] w-full resize-none"
+                    placeholder={t('admin.contentDetails.placeholders.moderatorComments')}
+                    className="rounded-[8px] outline-none border px-3 sm:px-4 py-2 sm:py-3 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue placeholder:text-[#9CA3AF] bg-[#E5E7EB] w-full resize-none"
                     style={{
                       height: "150px",
                       minHeight: "150px",
@@ -256,7 +258,7 @@ const ContentDetailsPage = () => {
                         strokeLinejoin="round"
                       />
                     </svg>
-                    Approve
+                    {t('admin.contentDetails.buttons.approve')}
                   </button>
                   <button
                     type="button"
@@ -285,7 +287,7 @@ const ContentDetailsPage = () => {
                         strokeLinejoin="round"
                       />
                     </svg>
-                    Reject
+                    {t('admin.contentDetails.buttons.reject')}
                   </button>
                   <button
                     type="button"
@@ -313,7 +315,7 @@ const ContentDetailsPage = () => {
                         strokeLinejoin="round"
                       />
                     </svg>
-                    Request Change
+                    {t('admin.contentDetails.buttons.requestChange')}
                   </button>
                 </div>
               </div>

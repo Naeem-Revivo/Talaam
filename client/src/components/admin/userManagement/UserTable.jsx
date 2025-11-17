@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 
 const statusTone = {
   Active: {
@@ -7,49 +8,76 @@ const statusTone = {
   },
   Suspended: {
     wrapper: "bg-[#C6D8D3]",
-    text: "text-[#032746]",
+    text: "text-oxford-blue",
   },
 };
 
-const TableHeader = () => (
-  <thead className="hidden md:table-header-group">
-    <tr className="bg-[#032746] text-center">
-      {["User Name", "Email", "Workflow Role", "System Role", "Status", "Actions"].map(
-        (column) => (
+const TableHeader = () => {
+  const { t } = useLanguage();
+  const columns = [
+    t('admin.userManagement.table.headers.userName'),
+    t('admin.userManagement.table.headers.email'),
+    t('admin.userManagement.table.headers.workflowRole'),
+    t('admin.userManagement.table.headers.systemRole'),
+    t('admin.userManagement.table.headers.status'),
+    t('admin.userManagement.table.headers.actions'),
+  ];
+  
+  return (
+    <thead className="hidden md:table-header-group">
+      <tr className="bg-oxford-blue text-center">
+        {columns.map((column) => (
           <th
             key={column}
             className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white"
           >
             {column}
           </th>
-        )
-      )}
-    </tr>
-  </thead>
-);
+        ))}
+      </tr>
+    </thead>
+  );
+};
 
 const TableRow = ({ user, onView, onEdit }) => {
+  const { t } = useLanguage();
   const tone = statusTone[user.status] ?? statusTone.Active;
+  
+  const getStatusLabel = (status) => {
+    if (status === "Active") return t('admin.userManagement.status.active');
+    if (status === "Suspended") return t('admin.userManagement.status.suspended');
+    return status;
+  };
+  
+  const getRoleLabel = (role) => {
+    const roleMap = {
+      "Question Gatherer": t('admin.userManagement.roles.questionGatherer'),
+      "Question Creator": t('admin.userManagement.roles.questionCreator'),
+      "Processor": t('admin.userManagement.roles.processor'),
+      "Question Explainer": t('admin.userManagement.roles.questionExplainer'),
+    };
+    return roleMap[role] || role;
+  };
 
   return (
-    <tr className="hidden border-b border-[#E5E7EB] bg-white text-[#032746] last:border-none md:table-row">
+    <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row">
       <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] capitalize text-center">
         {user.name}
       </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746] text-center">
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-oxford-blue text-center">
         {user.email}
       </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746] text-center">
-        {user.workflowRole}
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-oxford-blue text-center">
+        {getRoleLabel(user.workflowRole)}
       </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746] text-center">
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-oxford-blue text-center">
         {user.systemRole}
       </td>
       <td className="px-6 py-4 text-center">
         <span
           className={`inline-flex h-[26px] min-w-[59px] items-center justify-center rounded-md px-3 text-sm font-normal ${tone.wrapper} ${tone.text}`}
         >
-          {user.status}
+          {getStatusLabel(user.status)}
         </span>
       </td>
       <td className="px-6 py-4 text-center">
@@ -57,8 +85,8 @@ const TableRow = ({ user, onView, onEdit }) => {
           <button
             type="button"
             onClick={() => onView?.(user)}
-            className="rounded-full p-2 text-[#032746] transition hover:bg-[#F3F4F6]"
-            aria-label={`View ${user.name}`}
+            className="rounded-full p-2 text-oxford-blue transition hover:bg-[#F3F4F6]"
+            aria-label={t('admin.userManagement.table.ariaLabels.view').replace('{{name}}', user.name)}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -83,8 +111,8 @@ const TableRow = ({ user, onView, onEdit }) => {
           <button
             type="button"
             onClick={() => onEdit?.(user)}
-            className="rounded-full p-2 text-[#032746] transition hover:bg-[#F3F4F6]"
-            aria-label={`Edit ${user.name}`}
+            className="rounded-full p-2 text-oxford-blue transition hover:bg-[#F3F4F6]"
+            aria-label={t('admin.userManagement.table.ariaLabels.edit').replace('{{name}}', user.name)}
           >
             <svg
               width="12"
@@ -153,11 +181,28 @@ const mobileIcons = {
 };
 
 const MobileUserCard = ({ user, onView, onEdit }) => {
+  const { t } = useLanguage();
   const tone = statusTone[user.status] ?? statusTone.Active;
+  
+  const getStatusLabel = (status) => {
+    if (status === "Active") return t('admin.userManagement.status.active');
+    if (status === "Suspended") return t('admin.userManagement.status.suspended');
+    return status;
+  };
+  
+  const getRoleLabel = (role) => {
+    const roleMap = {
+      "Question Gatherer": t('admin.userManagement.roles.questionGatherer'),
+      "Question Creator": t('admin.userManagement.roles.questionCreator'),
+      "Processor": t('admin.userManagement.roles.processor'),
+      "Question Explainer": t('admin.userManagement.roles.questionExplainer'),
+    };
+    return roleMap[role] || role;
+  };
 
   return (
-    <article className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] bg-white px-5 py-4 shadow-[0_6px_24px_rgba(0,0,0,0.05)] md:hidden">
-      <div className="flex flex-col gap-3 text-[#032746]">
+    <article className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] bg-white px-5 py-4 shadow-empty md:hidden">
+      <div className="flex flex-col gap-3 text-oxford-blue">
         <div className="flex items-center gap-3">
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F0F4FA]">{mobileIcons.user}</span>
           <p className="text-[16px] font-archivo font-semibold leading-[20px]">{user.name}</p>
@@ -168,7 +213,7 @@ const MobileUserCard = ({ user, onView, onEdit }) => {
         </div>
         <div className="flex items-center gap-3">
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F0F4FA]">{mobileIcons.workflow}</span>
-          <p className="text-[14px] font-roboto leading-[18px]">{user.workflowRole}</p>
+          <p className="text-[14px] font-roboto leading-[18px]">{getRoleLabel(user.workflowRole)}</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F0F4FA]">{mobileIcons.system}</span>
@@ -182,15 +227,15 @@ const MobileUserCard = ({ user, onView, onEdit }) => {
           <span
             className={`inline-flex h-[28px] min-w-[62px] items-center justify-center rounded-md px-3 text-xs font-semibold ${tone.wrapper} ${tone.text}`}
           >
-            {user.status}
+            {getStatusLabel(user.status)}
           </span>
         </div>
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => onView?.(user)}
-            className="rounded-full p-2 text-[#032746] transition hover:bg-[#F3F4F6]"
-            aria-label={`View ${user.name}`}
+            className="rounded-full p-2 text-oxford-blue transition hover:bg-[#F3F4F6]"
+            aria-label={t('admin.userManagement.table.ariaLabels.view').replace('{{name}}', user.name)}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -215,8 +260,8 @@ const MobileUserCard = ({ user, onView, onEdit }) => {
           <button
             type="button"
             onClick={() => onEdit?.(user)}
-            className="rounded-full p-2 text-[#032746] transition hover:bg-[#F3F4F6]"
-            aria-label={`Edit ${user.name}`}
+            className="rounded-full p-2 text-oxford-blue transition hover:bg-[#F3F4F6]"
+            aria-label={t('admin.userManagement.table.ariaLabels.edit').replace('{{name}}', user.name)}
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -232,6 +277,7 @@ const MobileUserCard = ({ user, onView, onEdit }) => {
 };
 
 const Pagination = ({ page, pageSize, total, onPageChange }) => {
+  const { t } = useLanguage();
   const totalPages = Math.ceil(total / pageSize);
   const safeTotalPages = Math.max(totalPages, 1);
   const firstItem = total ? (page - 1) * pageSize + 1 : 0;
@@ -247,9 +293,12 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
   const pages = Array.from({ length: safeTotalPages }, (_, index) => index + 1);
 
   return (
-    <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-[#032746] md:flex-row md:items-center md:justify-between md:bg-[#032746] md:px-6 md:text-white">
+    <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-oxford-blue md:flex-row md:items-center md:justify-between md:bg-oxford-blue md:px-6 md:text-white">
       <p className="text-[12px] font-roboto font-medium leading-[18px] tracking-[3%]">
-        Showing {firstItem} to {lastItem} of {total} results
+        {t('admin.userManagement.table.pagination.showing')
+          .replace('{{first}}', firstItem)
+          .replace('{{last}}', lastItem)
+          .replace('{{total}}', total)}
       </p>
       <div className="flex items-center gap-2">
         <button
@@ -259,10 +308,10 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
           className={`flex h-[27.16px] w-[78px] items-center justify-center font-medium rounded border text-[14px] font-archivo leading-[16px] transition-colors ${
             page === 1
               ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
-              : "border-[#032746] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-white"
+              : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
           }`}
         >
-          Previous
+          {t('admin.userManagement.table.pagination.previous')}
         </button>
         {pages.map((pageNumber) => (
           <button
@@ -272,7 +321,7 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
             className={`flex h-8 w-8 items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors ${
               pageNumber === page
                 ? "border-[#ED4122] bg-[#ED4122] text-white"
-                : "border-[#E5E7EB] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-[#032746]"
+                : "border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
             }`}
           >
             {pageNumber}
@@ -285,10 +334,10 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
           className={`flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-normal leading-[16px] transition-colors ${
             page === safeTotalPages
               ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
-              : "border-[#032746] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-white"
+              : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
           }`}
         >
-          Next
+          {t('admin.userManagement.table.pagination.next')}
         </button>
       </div>
     </div>
@@ -304,8 +353,9 @@ const UserTable = ({
   onView,
   onEdit,
 }) => {
+  const { t } = useLanguage();
   return (
-    <section className="w-full overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_54px_rgba(0,0,0,0.05)] md:min-h-[348px]">
+    <section className="w-full overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard md:min-h-[348px]">
       <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full border-collapse">
           <TableHeader />
@@ -323,9 +373,9 @@ const UserTable = ({
               <tr>
                 <td
                   colSpan={6}
-                  className="px-6 py-10 text-center text-sm text-[#6B7280]"
+                  className="px-6 py-10 text-center text-sm text-dark-gray"
                 >
-                  No users match the current filters.
+                  {t('admin.userManagement.table.emptyState')}
                 </td>
               </tr>
             )}
@@ -338,8 +388,8 @@ const UserTable = ({
             <MobileUserCard key={user.id} user={user} onView={onView} onEdit={onEdit} />
           ))
         ) : (
-          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-[#6B7280] shadow-[0_6px_24px_rgba(0,0,0,0.05)]">
-            No users match the current filters.
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-dark-gray shadow-empty">
+            {t('admin.userManagement.table.emptyState')}
           </div>
         )}
       </div>

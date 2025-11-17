@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useLanguage } from '../../context/LanguageContext'
 import { downarrow } from '../../assets/svg/signup'
+import profileData from '../../data/profileData.json'
 
 const Profile = () => {
   const { language, t } = useLanguage()
@@ -29,14 +30,9 @@ const Profile = () => {
     // navigate('/')
   }
 
-  const countries = ['United States', 'Canada', 'United Kingdom', 'Saudi Arabia', 'UAE', 'Egypt', 'Jordan']
-  const timeZones = [
-    '(GMT-08:00) Pacific Time',
-    '(GMT-05:00) Eastern Time',
-    '(GMT+00:00) GMT',
-    '(GMT+03:00) Arabia Standard Time'
-  ]
-  const languages = ['English', 'العربية']
+  const countries = profileData.countries
+  const timeZones = profileData.timeZones
+  const languages = profileData.languages
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4" dir={dir}>
@@ -64,7 +60,7 @@ const Profile = () => {
                 value={formData.fullName}
                 onChange={handleInputChange}
                 placeholder={t('profile.fullNamePlaceholder')}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] shadow-input"
+                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input"
               />
             </div>
 
@@ -78,7 +74,7 @@ const Profile = () => {
                 name="dateOfBirth"
                 value={formData.dateOfBirth}
                 onChange={handleInputChange}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] shadow-input"
+                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input"
               />
             </div>
 

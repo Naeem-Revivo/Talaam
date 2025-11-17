@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "planname": "Basic Plan",
+    "price": "$9.99",
+    "duration": "Monthly",
+    "subscriber": 120,
+    "status": "Active"
+  },
+  {
+    "id": 2,
+    "planname": "Premium Plan",
+    "price": "$19.99",
+    "duration": "Monthly",
+    "subscriber": 250,
+    "status": "Active"
+  },
+  {
+    "id": 3,
+    "planname": "Annual Plan",
+    "price": "$99.99",
+    "duration": "Yearly",
+    "subscriber": 50,
+    "status": "Inactive"
+  }
+]
+

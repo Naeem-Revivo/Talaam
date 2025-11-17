@@ -30,7 +30,7 @@ const ForgotModal = ({ onClose }) => {
         </h2>
 
         {/* Description */}
-        <p className="font-roboto font-normal text-base pt-3 leading-[100%] tracking-normal text-[#6B7280] mb-4 text-center">
+        <p className="font-roboto font-normal text-base pt-3 leading-[100%] tracking-normal text-dark-gray mb-4 text-center">
           {t('forgotModal.description')}
         </p>
 

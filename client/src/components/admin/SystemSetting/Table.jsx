@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 
 const TableHeader = ({ columns }) => (
   <thead className="hidden md:table-header-group">
-    <tr className="bg-[#032746] text-center">
+    <tr className="bg-oxford-blue text-center">
       {columns.map((column) => (
         <th
           key={column}
@@ -23,7 +23,7 @@ const TableRow = ({ item, columns, onView, onEdit }) => {
   };
 
   return (
-    <tr className="hidden border-b border-[#E5E7EB] bg-white text-[#032746] last:border-none md:table-row">
+    <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row">
       {columns.slice(0, -1).map((column) => {
         const fieldKey = getFieldKey(column);
         let value = item[fieldKey] || "—";
@@ -36,7 +36,7 @@ const TableRow = ({ item, columns, onView, onEdit }) => {
             <td key={column} className="px-6 py-4 text-center">
               <span className={`inline-block px-[12px] py-[5px] rounded-md text-[14px] leading-[100%] font-normal ${isActive ? 'bg-[#FDF0D5] text-[#ED4122]' :
                 isScheduled ? 'bg-[#ED4122] text-white' :
-                  'bg-[#C6D8D3] text-[#032746]'
+                  'bg-[#C6D8D3] text-oxford-blue'
                 }`}>
                 {value}
               </span>
@@ -72,7 +72,7 @@ const TableRow = ({ item, columns, onView, onEdit }) => {
           <button
             type="button"
             onClick={() => onEdit?.(item)}
-            className="rounded-full p-2 text-[#032746] transition hover:bg-[#F3F4F6]"
+            className="rounded-full p-2 text-oxford-blue transition hover:bg-[#F3F4F6]"
             aria-label="Delete"
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -83,7 +83,7 @@ const TableRow = ({ item, columns, onView, onEdit }) => {
           <button
             type="button"
             onClick={() => onView?.(item)}
-            className="rounded-full p-2 text-[#032746] transition hover:bg-[#F3F4F6]"
+            className="rounded-full p-2 text-oxford-blue transition hover:bg-[#F3F4F6]"
             aria-label="View"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -106,7 +106,7 @@ const MobileCard = ({ item, columns, onView, onEdit }) => {
 
   return (
     <article className="flex flex-col rounded-[8px] border border-[#E5E7EB] bg-white shadow-sm md:hidden overflow-hidden">
-      <div className="flex flex-col gap-2 px-4 py-3 text-[#032746]">
+      <div className="flex flex-col gap-2 px-4 py-3 text-oxford-blue">
         {displayColumns.map((column) => {
           const fieldKey = getFieldKey(column);
           let value = item[fieldKey] || "—";
@@ -116,7 +116,7 @@ const MobileCard = ({ item, columns, onView, onEdit }) => {
             const isDefault = item[fieldKey] === true || item[fieldKey] === 'true';
             return (
               <div key={column} className="flex items-center gap-2">
-                <span className="text-[14px] font-normal text-[#032746]">{column}:</span>
+                <span className="text-[14px] font-normal text-oxford-blue">{column}:</span>
                 <svg width="16" height="16" viewBox="0 0 23 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M10.288 0.692674C10.5873 -0.228637 11.8907 -0.228635 12.1901 0.692676L14.1577 6.7484C14.2916 7.16043 14.6755 7.43939 15.1088 7.43939H21.4761C22.4449 7.43939 22.8476 8.679 22.0639 9.2484L16.9126 12.9911C16.5621 13.2457 16.4155 13.6971 16.5493 14.1091L18.517 20.1648C18.8163 21.0861 17.7618 21.8522 16.9781 21.2828L11.8268 17.5402C11.4763 17.2856 11.0017 17.2856 10.6512 17.5402L5.49993 21.2828C4.71621 21.8522 3.66174 21.0861 3.96109 20.1648L5.92871 14.1091C6.06259 13.6971 5.91593 13.2457 5.56544 12.9911L0.41413 9.2484C-0.369583 8.679 0.0331933 7.43939 1.00192 7.43939H7.36929C7.80251 7.43939 8.18647 7.16043 8.32034 6.7484L10.288 0.692674Z" fill={isDefault ? "#ED4122" : "#D1D5DB"} />
                 </svg>
@@ -131,8 +131,8 @@ const MobileCard = ({ item, columns, onView, onEdit }) => {
 
           return (
             <div key={column} className="flex items-center gap-2">
-              <span className="text-[14px] font-normal text-[#032746]">{column}:</span>
-              <span className="text-[14px] font-normal text-[#6B7280]">{value}</span>
+              <span className="text-[14px] font-normal text-oxford-blue">{column}:</span>
+              <span className="text-[14px] font-normal text-dark-gray">{value}</span>
             </div>
           );
         })}
@@ -151,7 +151,7 @@ const MobileCard = ({ item, columns, onView, onEdit }) => {
             <span className={`inline-flex items-center px-[12px] py-[5px] rounded-md text-[14px] font-normal ${
               isActive ? 'bg-[#FDF0D5] text-[#ED4122]' : 
               isScheduled ? 'bg-[#ED4122] text-white' : 
-              'bg-[#C6D8D3] text-[#032746]'
+              'bg-[#C6D8D3] text-oxford-blue'
             }`}>
               {statusValue}
             </span>
@@ -163,7 +163,7 @@ const MobileCard = ({ item, columns, onView, onEdit }) => {
           <button
             type="button"
             onClick={() => onEdit?.(item)}
-            className="rounded-full p-1.5 text-[#032746] transition hover:bg-white"
+            className="rounded-full p-1.5 text-oxford-blue transition hover:bg-white"
             aria-label="Edit"
           >
             <svg width="16" height="16" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -173,7 +173,7 @@ const MobileCard = ({ item, columns, onView, onEdit }) => {
           <button
             type="button"
             onClick={() => onView?.(item)}
-            className="rounded-full p-1.5 text-[#032746] transition hover:bg-white"
+            className="rounded-full p-1.5 text-oxford-blue transition hover:bg-white"
             aria-label="Delete"
           >
             <svg width="16" height="16" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -203,7 +203,7 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
   const pages = Array.from({ length: safeTotalPages }, (_, index) => index + 1);
 
   return (
-    <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-[#032746] md:flex-row md:items-center md:justify-between md:bg-[#032746] md:px-6 md:text-white">
+    <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-oxford-blue md:flex-row md:items-center md:justify-between md:bg-oxford-blue md:px-6 md:text-white">
       <p className="text-[12px] font-medium leading-[18px]">
         Showing {firstItem} to {lastItem} of {total} results
       </p>
@@ -214,7 +214,7 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
           disabled={page === 1}
           className={`flex h-[27px] w-[78px] items-center justify-center rounded border text-[14px] font-semibold leading-[16px] transition-colors ${page === 1
             ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
-            : "border-[#032746] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-white"
+            : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
             }`}
         >
           Previous
@@ -226,7 +226,7 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
             onClick={() => onPageChange?.(pageNumber)}
             className={`flex h-8 w-8 items-center justify-center rounded border text-[14px] font-semibold leading-[16px] transition-colors ${pageNumber === page
               ? "border-[#ED4122] bg-[#ED4122] text-white"
-              : "border-[#E5E7EB] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-[#032746]"
+              : "border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
               }`}
           >
             {pageNumber}
@@ -238,7 +238,7 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
           disabled={page === safeTotalPages}
           className={`flex h-[27px] w-[78px] items-center justify-center rounded border text-[14px] font-semibold leading-[16px] transition-colors ${page === safeTotalPages
             ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
-            : "border-[#032746] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-white"
+            : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
             }`}
         >
           Next
@@ -260,7 +260,7 @@ export const DataTable = ({
   emptyMessage,
 }) => {
   return (
-    <section className="w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_54px_rgba(0,0,0,0.05)] md:min-h-[348px]">
+    <section className="w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard md:min-h-[348px]">
       <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full border-collapse">
           <TableHeader columns={columns} />
@@ -279,7 +279,7 @@ export const DataTable = ({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-6 py-10 text-center text-sm text-[#6B7280]"
+                  className="px-6 py-10 text-center text-sm text-dark-gray"
                 >
                   {emptyMessage}
                 </td>
@@ -300,7 +300,7 @@ export const DataTable = ({
             />
           ))
         ) : (
-          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-[#6B7280] shadow-[0_6px_24px_rgba(0,0,0,0.05)]">
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-dark-gray shadow-empty">
             {emptyMessage}
           </div>
         )}

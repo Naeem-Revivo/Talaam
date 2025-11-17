@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 import { logodash } from '../../assets/svg/dashboard/sidebar';
 
 const DashboardIcon = ({ active }) => {
@@ -194,17 +195,18 @@ const SecurityIcon = ({ active }) => {
 
 const AdminSidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
+  const { t } = useLanguage();
 
   const menuItems = [
-    { path: '/admin', label: 'Dashboard', icon: DashboardIcon },
-    { path: '/admin/users', label: 'User Management', icon: UserManagementIcon },
-    { path: '/admin/question-bank', label: 'Question Bank', icon: QuestionBankIcon },
-    { path: '/admin/classification', label: 'Classification', icon: QuestionBankIcon },
-    { path: '/admin/subscriptions', label: 'Subscriptions & Billing', icon: SubscriptionsIcon },
-    { path: '/admin/reports', label: 'Reports & Analytics', icon: ReportsIcon },
-    { path: '/admin/moderation', label: 'Content Moderation', icon: ModerationIcon },
-    { path: '/admin/settings', label: 'System Settings', icon: SettingsIcon },
-    { path: '/admin/security', label: 'Security & Permissions', icon: SecurityIcon },
+    { path: '/admin', labelKey: 'admin.sidebar.dashboard', icon: DashboardIcon },
+    { path: '/admin/users', labelKey: 'admin.sidebar.userManagement', icon: UserManagementIcon },
+    { path: '/admin/question-bank', labelKey: 'admin.sidebar.questionBank', icon: QuestionBankIcon },
+    { path: '/admin/classification', labelKey: 'admin.sidebar.classification', icon: QuestionBankIcon },
+    { path: '/admin/subscriptions', labelKey: 'admin.sidebar.subscriptions', icon: SubscriptionsIcon },
+    { path: '/admin/reports', labelKey: 'admin.sidebar.reports', icon: ReportsIcon },
+    { path: '/admin/moderation', labelKey: 'admin.sidebar.moderation', icon: ModerationIcon },
+    { path: '/admin/settings', labelKey: 'admin.sidebar.settings', icon: SettingsIcon },
+    { path: '/admin/security', labelKey: 'admin.sidebar.security', icon: SecurityIcon },
   ];
 
   const isActive = (path) => {
@@ -251,7 +253,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
                 <div className="absolute left-0 top-0 h-full w-[5px] bg-orange-dark rounded-l-lg"></div>
               )}
               {Icon && <Icon active={active} />}
-              <span className="font-medium">{item.label}</span>
+              <span className="font-medium">{t(item.labelKey)}</span>
             </NavLink>
           );
         })}

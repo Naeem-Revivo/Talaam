@@ -64,7 +64,7 @@ const CreateAccount = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder={t('createAccount.emailPlaceholder')}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280]"
+                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray"
               />
             </div>
 
@@ -80,7 +80,7 @@ const CreateAccount = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder={t('createAccount.passwordPlaceholder')}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280]"
+                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray"
                 />
                 <button
                   type="button"
@@ -96,31 +96,31 @@ const CreateAccount = () => {
             <div className="grid grid-cols-3 gap-2">
               <div className="flex items-center">
                 <span className={`mr-2 w-[10px] h-[10px] rounded-full ${passwordRequirements.minLength ? 'bg-green-500' : 'bg-[#D9D9D9]'}`}></span>
-                <span className="font-roboto font-normal text-[12px] leading-[100%] tracking-[0] text-[#6B7280]">
+                <span className="font-roboto font-normal text-[12px] leading-[100%] tracking-[0] text-dark-gray">
                   {t('createAccount.passwordRequirements.8chars')}
                 </span>
               </div>
               <div className="flex items-center">
                 <span className={`mr-2 w-[10px] h-[10px] rounded-full ${passwordRequirements.hasUppercase ? 'bg-green-500' : 'bg-[#D9D9D9]'}`}></span>
-                <span className="font-roboto font-normal text-[12px] leading-[100%] tracking-[0] text-[#6B7280]">
+                <span className="font-roboto font-normal text-[12px] leading-[100%] tracking-[0] text-dark-gray">
                   {t('createAccount.passwordRequirements.1uppercase')}
                 </span>
               </div>
               <div className="flex items-center">
                 <span className={`mr-2 w-[10px] h-[10px] rounded-full ${passwordRequirements.hasSpecial ? 'bg-green-500' : 'bg-[#D9D9D9]'}`}></span>
-                <span className="font-roboto font-normal text-[12px] leading-[100%] tracking-[0] text-[#6B7280]">
+                <span className="font-roboto font-normal text-[12px] leading-[100%] tracking-[0] text-dark-gray">
                   {t('createAccount.passwordRequirements.1special')}
                 </span>
               </div>
               <div className="flex items-center">
                 <span className={`mr-2 w-[10px] h-[10px] rounded-full ${passwordRequirements.hasLowercase ? 'bg-green-500' : 'bg-[#D9D9D9]'}`}></span>
-                <span className="font-roboto font-normal text-[12px] leading-[100%] tracking-[0] text-[#6B7280]">
+                <span className="font-roboto font-normal text-[12px] leading-[100%] tracking-[0] text-dark-gray">
                   {t('createAccount.passwordRequirements.1lowercase')}
                 </span>
               </div>
               <div className="flex items-center">
                 <span className={`mr-2 w-[10px] h-[10px] rounded-full ${passwordRequirements.hasNumber ? 'bg-green-500' : 'bg-[#D9D9D9]'}`}></span>
-                <span className="font-roboto font-normal text-[12px] leading-[100%] tracking-[0] text-[#6B7280]">
+                <span className="font-roboto font-normal text-[12px] leading-[100%] tracking-[0] text-dark-gray">
                   {t('createAccount.passwordRequirements.1number')}
                 </span>
               </div>
@@ -138,7 +138,7 @@ const CreateAccount = () => {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   placeholder={t('createAccount.confirmPasswordPlaceholder')}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280]"
+                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray"
                 />
                 <button
                   type="button"

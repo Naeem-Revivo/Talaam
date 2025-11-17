@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 
 // ============= ROLE CARD COMPONENT =============
 const RoleCard = ({ title, description, badge, onEdit, onDelete }) => {
+  const { t } = useLanguage();
   const getBadgeStyles = () => {
-    if (badge === 'All Permissions') {
+    if (badge === t('admin.adminRolePermissions.badges.allPermissions')) {
       return 'bg-[#FDF0D5] text-[#ED4122]';
     }
-    return 'bg-[#C6D8D3] text-[#032746]';
+    return 'bg-[#C6D8D3] text-oxford-blue';
   };
 
   return (
@@ -14,12 +16,12 @@ const RoleCard = ({ title, description, badge, onEdit, onDelete }) => {
       {/* Top section with title and edit button - Fixed height */}
       <div className="flex items-start justify-between px-6 pt-8 pb-6 flex-1">
         <div className="flex-1 pr-3">
-          <h3 className="text-xl font-bold text-[#032746] mb-4">{title}</h3>
-          <p className="text-[14px] text-[#6B7280] leading-[100%] line-clamp-2">{description}</p>
+          <h3 className="text-xl font-bold text-oxford-blue mb-4">{title}</h3>
+          <p className="text-[14px] text-dark-gray leading-[100%] line-clamp-2">{description}</p>
         </div>
         <button
           onClick={onEdit}
-          className="text-[#032746] hover:text-[#000] transition-colors flex-shrink-0 mt-2"
+          className="text-oxford-blue hover:text-[#000] transition-colors flex-shrink-0 mt-2"
           aria-label={`Edit ${title}`}
         >
           <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -35,7 +37,7 @@ const RoleCard = ({ title, description, badge, onEdit, onDelete }) => {
         </span>
         <button
           onClick={onDelete}
-          className="text-[#6B7280] hover:text-[#DC2626] transition-colors"
+          className="text-dark-gray hover:text-[#DC2626] transition-colors"
           aria-label={`Delete ${title}`}
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -71,7 +73,7 @@ const Checkbox = ({ id, label, checked, onChange }) => {
           )}
         </div>
       </div>
-      <span className="text-[16px] leading-[100%] font-normal text-[#032746] select-none">{label}</span>
+      <span className="text-[16px] leading-[100%] font-normal text-oxford-blue select-none">{label}</span>
     </label>
   );
 };
@@ -80,7 +82,7 @@ const Checkbox = ({ id, label, checked, onChange }) => {
 const PermissionSection = ({ title, permissions, values, onChange }) => {
   return (
     <div>
-      <h4 className="text-[20px] leading-[100%] font-bold text-[#032746] mb-8">{title}</h4>
+      <h4 className="text-[20px] leading-[100%] font-bold text-oxford-blue mb-8">{title}</h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {permissions.map((permission) => (
           <Checkbox
@@ -98,24 +100,25 @@ const PermissionSection = ({ title, permissions, values, onChange }) => {
 
 // ============= MAIN APP COMPONENT =============
 export default function AdminRolePermissions() {
+  const { t } = useLanguage();
   const [roles] = useState([
     {
       id: 1,
       title: 'Super Admin',
       description: 'Full access to all features and settings',
-      badge: 'All Permissions'
+      badge: t('admin.adminRolePermissions.badges.allPermissions')
     },
     {
       id: 2,
       title: 'Moderator',
       description: 'Manages user interactions and content moderation',
-      badge: 'Limited Permissions'
+      badge: t('admin.adminRolePermissions.badges.limitedPermissions')
     },
     {
       id: 3,
       title: 'Instructor',
       description: 'Manages courses and student progress',
-      badge: 'Limited Permissions'
+      badge: t('admin.adminRolePermissions.badges.limitedPermissions')
     }
   ]);
 
@@ -132,21 +135,21 @@ export default function AdminRolePermissions() {
   });
 
   const dashboardPermissions = [
-    { id: 'viewAnalytics', label: 'View Analytics' },
-    { id: 'viewReports', label: 'View Reports' }
+    { id: 'viewAnalytics', label: t('admin.adminRolePermissions.permissions.viewAnalytics') },
+    { id: 'viewReports', label: t('admin.adminRolePermissions.permissions.viewReports') }
   ];
 
   const userManagementPermissions = [
-    { id: 'createUsers', label: 'Create Users' },
-    { id: 'editUsers', label: 'Edit Users' },
-    { id: 'deleteUsers', label: 'Delete Users' },
-    { id: 'assignRoles', label: 'Assign Roles' }
+    { id: 'createUsers', label: t('admin.adminRolePermissions.permissions.createUsers') },
+    { id: 'editUsers', label: t('admin.adminRolePermissions.permissions.editUsers') },
+    { id: 'deleteUsers', label: t('admin.adminRolePermissions.permissions.deleteUsers') },
+    { id: 'assignRoles', label: t('admin.adminRolePermissions.permissions.assignRoles') }
   ];
 
   const questionBankPermissions = [
-    { id: 'createQuestions', label: 'Create Questions' },
-    { id: 'editQuestions', label: 'Edit Questions' },
-    { id: 'deleteQuestions', label: 'Delete Questions' }
+    { id: 'createQuestions', label: t('admin.adminRolePermissions.permissions.createQuestions') },
+    { id: 'editQuestions', label: t('admin.adminRolePermissions.permissions.editQuestions') },
+    { id: 'deleteQuestions', label: t('admin.adminRolePermissions.permissions.deleteQuestions') }
   ];
 
   const handlePermissionChange = (permissionId, value) => {
@@ -177,9 +180,9 @@ export default function AdminRolePermissions() {
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-[50px] flex flex-col md:flex-row items-start md:items-center justify-between">
-          <h1 className="text-[26px] leading[40px] font-bold text-[#032746]">Admin Roles & Permissions</h1>
+          <h1 className="text-[26px] leading[40px] font-bold text-oxford-blue">{t('admin.adminRolePermissions.hero.title')}</h1>
           <button className="flex items-center justify-center w-[171px] h-[36px] gap-2 rounded-lg bg-[#ED4122] px-4 py-2.5 text-[16px] leading[16px] font-semibold text-white shadow-sm transition-all hover:bg-[#DC2626] active:scale-95">
-            + Add New Role
+            {t('admin.adminRolePermissions.buttons.addNewRole')}
           </button>
         </div>
 
@@ -200,7 +203,7 @@ export default function AdminRolePermissions() {
         {/* Permission Settings */}
         <div className="">
           <div className="pb-[30px]">
-            <h2 className="text-[20px] font-bold leading-[100%] text-[#032746]">Permission Settings</h2>
+            <h2 className="text-[20px] font-bold leading-[100%] text-oxford-blue">{t('admin.adminRolePermissions.sections.permissionSettings')}</h2>
           </div>
 
 
@@ -208,7 +211,7 @@ export default function AdminRolePermissions() {
 
           <div className="space-y-6 px-6 py-10">
             <PermissionSection
-              title="Dashboard"
+              title={t('admin.adminRolePermissions.sections.dashboard')}
               permissions={dashboardPermissions}
               values={permissions}
               onChange={handlePermissionChange}
@@ -216,7 +219,7 @@ export default function AdminRolePermissions() {
 
             <div className="pt-6">
               <PermissionSection
-                title="User Management"
+                title={t('admin.adminRolePermissions.sections.userManagement')}
                 permissions={userManagementPermissions}
                 values={permissions}
                 onChange={handlePermissionChange}
@@ -225,7 +228,7 @@ export default function AdminRolePermissions() {
 
             <div className="pt-6">
               <PermissionSection
-                title="Question Bank"
+                title={t('admin.adminRolePermissions.sections.questionBank')}
                 permissions={questionBankPermissions}
                 values={permissions}
                 onChange={handlePermissionChange}
@@ -237,15 +240,15 @@ export default function AdminRolePermissions() {
           <div className="flex flex-col sm:flex-row items-center justify-end gap-3 border-t border-[#E5E7EB] px-6 py-4">
             <button
               onClick={handleCancel}
-              className="rounded-md w-full sm:w-[120px] border border-[#E5E7EB] bg-white px-5 py-2 text-[16px] leading-[100%] font-medium text-[#032746] shadow-sm transition-all hover:bg-[#F9FAFB] active:scale-95"
+              className="rounded-md w-full sm:w-[120px] border border-[#E5E7EB] bg-white px-5 py-2 text-[16px] leading-[100%] font-medium text-oxford-blue shadow-sm transition-all hover:bg-[#F9FAFB] active:scale-95"
             >
-              Cancel
+              {t('admin.adminRolePermissions.buttons.cancel')}
             </button>
             <button
               onClick={handleSaveChanges}
               className="rounded-md bg-[#ED4122] px-5 py-2 text-[16px] leading-[100%] w-full sm:w-[158px] font-medium text-white shadow-sm transition-all hover:bg-[#DC2626] active:scale-95"
             >
-              Save Changes
+              {t('admin.adminRolePermissions.buttons.saveChanges')}
             </button>
           </div>
         </div>

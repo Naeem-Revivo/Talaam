@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 
 const VariantQuestionReviewPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [comment, setComment] = useState("");
   const [explanation, setExplanation] = useState("");
 
@@ -709,7 +711,7 @@ const VariantQuestionReviewPage = () => {
           onInput={handleInput}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          className={`w-full p-4 font-roboto text-[16px] leading-[100%] text-[#032746] focus:outline-none ${
+          className={`w-full p-4 font-roboto text-[16px] leading-[100%] text-oxford-blue focus:outline-none ${
             !value && !isFocused ? "text-[#9CA3AF]" : ""
           }`}
           style={{
@@ -785,11 +787,11 @@ const VariantQuestionReviewPage = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row items-start justify-between mb-6 md:mb-8 gap-4">
           <div>
-            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[38px] text-[#032746] mb-2">
-              Variant Question Review
+            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[38px] text-oxford-blue mb-2">
+              {t('admin.variantQuestionReview.hero.title')}
             </h1>
-            <p className="font-roboto text-[14px] md:text-[18px] font-normal leading-[20px] md:leading-[24px] text-[#6B7280]">
-              Review and take action on a submitted variant
+            <p className="font-roboto text-[14px] md:text-[18px] font-normal leading-[20px] md:leading-[24px] text-dark-gray">
+              {t('admin.variantQuestionReview.hero.subtitle')}
             </p>
           </div>
           <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
@@ -798,14 +800,14 @@ const VariantQuestionReviewPage = () => {
               onClick={handleCancel}
               className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
             >
-              Cancel
+              {t('admin.variantQuestionReview.buttons.cancel')}
             </button>
             <button
               type="button"
               onClick={handleRefresh}
               className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
             >
-              Refresh
+              {t('admin.variantQuestionReview.buttons.refresh')}
             </button>
             <button
               type="button"
@@ -815,7 +817,7 @@ const VariantQuestionReviewPage = () => {
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M5.10357 3.51181C4.86316 3.2714 4.86316 2.88163 5.10357 2.64122L7.5651 0.179682C7.62172 0.123067 7.68994 0.0779487 7.76542 0.0467692C7.91558 -0.0155898 8.08542 -0.0155898 8.23558 0.0467692C8.31106 0.0779487 8.37908 0.123067 8.4357 0.179682L10.8972 2.64122C11.1376 2.88163 11.1376 3.2714 10.8972 3.51181C10.7774 3.63161 10.6199 3.6923 10.4623 3.6923C10.3048 3.6923 10.1472 3.63243 10.0274 3.51181L8.61619 2.10051V11.2821C8.61619 11.6217 8.34049 11.8974 8.0008 11.8974C7.66111 11.8974 7.38542 11.6217 7.38542 11.2821V2.10131L5.97416 3.51262C5.73293 3.75221 5.34398 3.75223 5.10357 3.51181ZM12.9231 5.74359C12.5834 5.74359 12.3077 6.01928 12.3077 6.35897C12.3077 6.69866 12.5834 6.97436 12.9231 6.97436C14.217 6.97436 14.7692 7.52656 14.7692 8.82051V12.9231C14.7692 14.217 14.217 14.7692 12.9231 14.7692H3.07692C1.78297 14.7692 1.23077 14.217 1.23077 12.9231V8.82051C1.23077 7.52656 1.78297 6.97436 3.07692 6.97436C3.41662 6.97436 3.69231 6.69866 3.69231 6.35897C3.69231 6.01928 3.41662 5.74359 3.07692 5.74359C1.09292 5.74359 0 6.83651 0 8.82051V12.9231C0 14.9071 1.09292 16 3.07692 16H12.9231C14.9071 16 16 14.9071 16 12.9231V8.82051C16 6.83651 14.9071 5.74359 12.9231 5.74359Z" fill="white"/>
               </svg>
-              Export
+              {t('admin.variantQuestionReview.buttons.export')}
             </button>
           </div>
         </div>
@@ -825,24 +827,23 @@ const VariantQuestionReviewPage = () => {
           <div
             className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[296px]"
             style={{
-              boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)",
             }}
           >
-            <h2 className="p-4 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Source Question Reference
+            <h2 className="p-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.variantQuestionReview.sections.sourceQuestionReference')}
             </h2>
             <div className="p-4 space-y-3">
-              <p className="font-roboto text-[20px] font-bold leading-[20px] text-[#032746]">
-                <span className="font-bold">Question ID:</span> 12345
+              <p className="font-roboto text-[20px] font-bold leading-[20px] text-oxford-blue">
+                <span className="font-bold">{t('admin.variantQuestionReview.fields.questionId')}</span> 12345
               </p>
-              <p className="font-roboto pt-2 text-[16px] font-normal leading-[20px] text-[#6B7280]">
+              <p className="font-roboto pt-2 text-[16px] font-normal leading-[20px] text-dark-gray">
                 What is the capital of France?
               </p>
               <div className="grid pt-1 grid-cols-2 gap-x-8 gap-y-3">
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">A. Berlin</p>
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">B. Paris</p>
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">C. Rome</p>
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">D. Madrid</p>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">A. Berlin</p>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">B. Paris</p>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">C. Rome</p>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">D. Madrid</p>
               </div>
             </div>
           </div>
@@ -851,35 +852,34 @@ const VariantQuestionReviewPage = () => {
           <div
             className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[686px]"
             style={{
-              boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)",
             }}
           >
-            <h2 className="p-4 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Variant Question
+            <h2 className="p-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.variantQuestionReview.sections.variantQuestion')}
             </h2>
             <div className="p-4 space-y-4">
               <div>
-                <label className="block font-roboto text-[20px] font-bold leading-[20px] text-[#032746] mb-2">
-                  Question
+                <label className="block font-roboto text-[20px] font-bold leading-[20px] text-oxford-blue mb-2">
+                  {t('admin.variantQuestionReview.fields.question')}
                 </label>
-                <p className="font-roboto py-2 text-[16px] font-normal leading-[20px] text-[#6B7280]">
+                <p className="font-roboto py-2 text-[16px] font-normal leading-[20px] text-dark-gray">
                   What is the capital of France?
                 </p>
               </div>
               <div>
-                <label className="block pb-3 font-archivo text-[20px] font-bold leading-[20px] text-[#032746] mb-2">
-                  Options
+                <label className="block pb-3 font-archivo text-[20px] font-bold leading-[20px] text-oxford-blue mb-2">
+                  {t('admin.variantQuestionReview.fields.options')}
                 </label>
                 <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">A. Berlin</p>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">B. Paris</p>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">C. Rome</p>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">D. Madrid</p>
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">A. Berlin</p>
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">B. Paris</p>
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">C. Rome</p>
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">D. Madrid</p>
                 </div>
               </div>
               <div>
-                <label className="block pb-3 font-archivo text-[20px] font-bold leading-[20px] text-[#032746] mb-2">
-                  Correct Answer
+                <label className="block pb-3 font-archivo text-[20px] font-bold leading-[20px] text-oxford-blue mb-2">
+                  {t('admin.variantQuestionReview.fields.correctAnswer')}
                 </label>
                 <p className="font-roboto pb-5 text-[16px] font-normal leading-[20px] text-[#ED4122]">
                   B. Paris
@@ -887,27 +887,27 @@ const VariantQuestionReviewPage = () => {
               </div>
               <div className="flex flex-col gap-4">
                 <div>
-                  <label className="block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280] mb-2">
-                    Type
+                  <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                    {t('admin.variantQuestionReview.fields.type')}
                   </label>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
-                    Multiple Choice
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                    {t('admin.variantQuestionReview.types.multipleChoice')}
                   </p>
                 </div>
                 <div>
-                  <label className="block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280] mb-2">
-                    Creator
+                  <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                    {t('admin.variantQuestionReview.fields.creator')}
                   </label>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                     Sarah Johnson
                   </p>
                 </div>
                 <div>
-                  <label className="block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280] mb-2">
-                    Status
+                  <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                    {t('admin.variantQuestionReview.fields.status')}
                   </label>
                   <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#ED4122]">
-                    In Review
+                    {t('admin.variantQuestionReview.status.inReview')}
                   </p>
                 </div>
               </div>
@@ -919,28 +919,28 @@ const VariantQuestionReviewPage = () => {
                 onClick={handleCancel}
                 className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-3 md:px-4 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
               >
-                Cancel
+                {t('admin.variantQuestionReview.buttons.cancel')}
               </button>
               <button
                 type="button"
                 onClick={handleSendToExplainer}
                 className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-3 md:px-4 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
               >
-                Send to Explainer
+                {t('admin.variantQuestionReview.buttons.sendToExplainer')}
               </button>
               <button
                 type="button"
                 onClick={handleReject}
                 className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-3 md:px-4 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
               >
-                Reject
+                {t('admin.variantQuestionReview.buttons.reject')}
               </button>
               <button
                 type="button"
                 onClick={handleApprove}
                 className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 md:px-7 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]"
               >
-                Approve
+                {t('admin.variantQuestionReview.buttons.approve')}
               </button>
             </div>
           </div>
@@ -948,16 +948,16 @@ const VariantQuestionReviewPage = () => {
           {/* Explanation Card */}
           <div
             className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px]"
-            style={{ boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)" }}
+            className="shadow-card"
           >
-            <h2 className="py-4 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Explanation
+            <h2 className="py-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.variantQuestionReview.sections.explanation')}
             </h2>
             <div className="mt-4">
               <RichTextEditor
                 value={explanation}
                 onChange={setExplanation}
-                placeholder="Enter explanation..."
+                placeholder={t('admin.variantQuestionReview.placeholders.explanation')}
                 minHeight="182px"
               />
             </div>
@@ -966,57 +966,57 @@ const VariantQuestionReviewPage = () => {
           {/* Classification Card */}
           <div
             className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[263px]"
-            style={{ boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)" }}
+            className="shadow-card"
           >
-            <h2 className="py-4 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Classification
+            <h2 className="py-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.variantQuestionReview.sections.classification')}
             </h2>
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               <div>
-                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280] mb-2">
-                  Subject
+                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                  {t('admin.variantQuestionReview.fields.subject')}
                 </label>
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                   Geography
                 </p>
               </div>
               <div>
-                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280] mb-2">
-                  Topic
+                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                  {t('admin.variantQuestionReview.fields.topic')}
                 </label>
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                   European Capitals
                 </p>
               </div>
               <div>
-                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280] mb-2">
-                  Cognitive Level
+                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                  {t('admin.variantQuestionReview.fields.cognitiveLevel')}
                 </label>
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                   Recall
                 </p>
               </div>
               <div>
-                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280] mb-2">
-                  Source Question
+                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                  {t('admin.variantQuestionReview.fields.sourceQuestion')}
                 </label>
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                   Q123456
                 </p>
               </div>
               <div>
-                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280] mb-2">
-                  Workflow Stage
+                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                  {t('admin.variantQuestionReview.fields.workflowStage')}
                 </label>
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                   Review
                 </p>
               </div>
               <div>
-                  <label className="block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280] mb-2">
-                  Last Update
+                  <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                  {t('admin.variantQuestionReview.fields.lastUpdate')}
                 </label>
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                   15-01-2024
                 </p>
               </div>
@@ -1027,11 +1027,10 @@ const VariantQuestionReviewPage = () => {
           <div
             className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[308px]"
             style={{
-              boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)",
             }}
           >
-            <h2 className="py-4 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Internal Comments
+            <h2 className="py-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.variantQuestionReview.sections.internalComments')}
             </h2>
             <div className="mt-1 space-y-4">
               {comments.map((comment) => (
@@ -1042,14 +1041,14 @@ const VariantQuestionReviewPage = () => {
                   <div className="flex-1">
                     <div className="rounded-[8px] bg-[#F6F7F8] border border-[#E5E7EB] p-4">
                       <div className="flex items-center gap-3 ">
-                        <p className="font-roboto text-[12px] font-medium leading-[20px] text-[#032746]">
+                        <p className="font-roboto text-[12px] font-medium leading-[20px] text-oxford-blue">
                           {comment.author}
                         </p>
-                        <p className="font-roboto text-[10px] font-normal leading-[20px] text-[#6B7280]">
+                        <p className="font-roboto text-[10px] font-normal leading-[20px] text-dark-gray">
                           {comment.date}
                         </p>
                       </div>
-                      <p className="font-roboto text-[12px] font-normal leading-[20px] text-[#032746]">
+                      <p className="font-roboto text-[12px] font-normal leading-[20px] text-oxford-blue">
                         {comment.text}
                       </p>
                     </div>
@@ -1064,15 +1063,15 @@ const VariantQuestionReviewPage = () => {
                   <textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder="Add a comment...."
-                    className="w-full p-3 border border-[#03274633] rounded-[8px] bg-white font-roboto text-[12px] md:text-[16px] font-normal leading-[20px] text-[#032746] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#ED4122] resize-none lg:w-[776px] lg:h-[62px]"
+                    placeholder={t('admin.variantQuestionReview.placeholders.addComment')}
+                    className="w-full p-3 border border-[#03274633] rounded-[8px] bg-white font-roboto text-[12px] md:text-[16px] font-normal leading-[20px] text-oxford-blue placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#ED4122] resize-none lg:w-[776px] lg:h-[62px]"
                   />
                   <button
                     type="button"
                     onClick={handleAddComment}
                     className="bottom-3 right-3 flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-6 text-[16px] font-roboto font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]"
                   >
-                    Add Comment
+                    {t('admin.variantQuestionReview.buttons.addComment')}
                   </button>
                 </div>
               </div>
@@ -1082,10 +1081,10 @@ const VariantQuestionReviewPage = () => {
           {/* Activity Log Card */}
           <div
             className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[874px]"
-            style={{ boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)" }}
+            className="shadow-card"
           >
-            <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Activity Log
+            <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.variantQuestionReview.sections.activityLog')}
             </h2>
             <div className="mt-4 space-y-4">
               {activityLog.map((activity) => (
@@ -1095,10 +1094,10 @@ const VariantQuestionReviewPage = () => {
                 >
                   <div className="flex-shrink-0">{activity.icon}</div>
                   <div className="flex-1">
-                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746] mb-1">
+                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue mb-1">
                       {activity.description}
                     </p>
-                    <p className="font-roboto text-[12px] font-normal leading-[16px] text-[#6B7280]">
+                    <p className="font-roboto text-[12px] font-normal leading-[16px] text-dark-gray">
                       {activity.date}
                     </p>
                   </div>
@@ -1115,14 +1114,14 @@ const VariantQuestionReviewPage = () => {
             onClick={handleCancel}
             className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-3 md:px-4 text-[14px] md:text-[16px] font-archivo font-semibold leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
           >
-            Cancel
+            {t('admin.variantQuestionReview.buttons.cancel')}
           </button>
           <button
             type="button"
             onClick={() => navigate("/admin/create-variant")}
             className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-3 md:px-4 text-[14px] md:text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
           >
-            Create Variant
+            {t('admin.variantQuestionReview.buttons.createVariant')}
           </button>
         </div>
       </div>

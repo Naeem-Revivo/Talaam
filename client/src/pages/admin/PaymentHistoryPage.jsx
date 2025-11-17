@@ -1,58 +1,11 @@
 import React, { useState, useMemo } from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import { DataTable } from "../../components/admin/SystemSetting/Table";
+import basePaymentsData from "../../data/paymentHistoryData.json";
 
 // Mock data for payment history
 const allPayments = [
-  {
-    id: 1,
-    invoiceid: "Inv-001",
-    user: "John Due",
-    plan: "Premium",
-    amount: "$99.99",
-    date: "12-06-2023",
-    paymentmethod: "Credit Card",
-    status: "Paid",
-  },
-  {
-    id: 2,
-    invoiceid: "Inv-002",
-    user: "Ali Raza",
-    plan: "Organization",
-    amount: "$49.99",
-    date: "12-06-2023",
-    paymentmethod: "Bank Transfer",
-    status: "Pending",
-  },
-  {
-    id: 3,
-    invoiceid: "Inv-003",
-    user: "Sarah khan",
-    plan: "Basic",
-    amount: "$19.99",
-    date: "20-01-2025",
-    paymentmethod: "Paypal",
-    status: "Paid",
-  },
-  {
-    id: 4,
-    invoiceid: "Inv-004",
-    user: "Sofia Clark",
-    plan: "Premium",
-    amount: "$9.99",
-    date: "01-07-2024",
-    paymentmethod: "Bank Transfer",
-    status: "Pending",
-  },
-  {
-    id: 5,
-    invoiceid: "Inv-005",
-    user: "Laim Harper",
-    plan: "Organization",
-    amount: "$19.99",
-    date: "15-12-2024",
-    paymentmethod: "Credit Card",
-    status: "Paid",
-  },
+  ...basePaymentsData,
   // Add more mock data
   ...Array.from({ length: 20 }, (_, i) => ({
     id: i + 6,
@@ -71,29 +24,29 @@ const PaymentTableRow = ({ item }) => {
   // Status badge colors
   const statusBadgeColors = {
     Paid: { bg: "bg-[#FDF0D5]", text: "text-[#ED4122]" },
-    Pending: { bg: "bg-[#C6D8D3]", text: "text-[#032746]" },
+    Pending: { bg: "bg-[#C6D8D3]", text: "text-oxford-blue" },
   };
 
   const statusBadge = statusBadgeColors[item.status] || statusBadgeColors.Pending;
 
   return (
-    <tr className="hidden border-b border-[#E5E7EB] bg-white text-[#032746] last:border-none md:table-row">
+    <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row">
       <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center">
         {item.invoiceid}
       </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746] text-center">
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-oxford-blue text-center">
         {item.user}
       </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746] text-center">
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-oxford-blue text-center">
         {item.plan}
       </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746] text-center">
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-oxford-blue text-center">
         {item.amount}
       </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746] text-center">
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-oxford-blue text-center">
         {item.date}
       </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746] text-center">
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-oxford-blue text-center">
         {item.paymentmethod}
       </td>
       <td className="px-6 py-4 text-center">
@@ -109,6 +62,7 @@ const PaymentTableRow = ({ item }) => {
 };
 
 const PaymentHistoryPage = () => {
+  const { t } = useLanguage();
   const [dateRangeFilter, setDateRangeFilter] = useState("All");
   const [planFilter, setPlanFilter] = useState("All");
   const [paymentStatusFilter, setPaymentStatusFilter] = useState("All");
@@ -201,11 +155,11 @@ const PaymentHistoryPage = () => {
       : 0;
 
     return (
-      <section className="w-full overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_54px_rgba(0,0,0,0.05)]">
+      <section className="w-full overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard">
         <div className="hidden overflow-x-auto md:block">
           <table className="min-w-full border-collapse">
             <thead className="hidden md:table-header-group">
-              <tr className="bg-[#032746] text-center">
+              <tr className="bg-oxford-blue text-center">
                 {columns.map((column) => (
                   <th
                     key={column}
@@ -225,7 +179,7 @@ const PaymentHistoryPage = () => {
                 <tr>
                   <td
                     colSpan={columns.length}
-                    className="px-6 py-10 text-center text-sm text-[#6B7280]"
+                    className="px-6 py-10 text-center text-sm text-dark-gray"
                   >
                     No payments match the current filters.
                   </td>
@@ -242,7 +196,7 @@ const PaymentHistoryPage = () => {
                 key={payment.id}
                 className="rounded-[12px] border border-[#E5E7EB] bg-white p-4 shadow-sm"
               >
-                <div className="space-y-2 text-[#032746]">
+                <div className="space-y-2 text-oxford-blue">
                   <div>
                     <span className="text-[14px] font-semibold">Invoice ID: </span>
                     <span className="text-[14px]">{payment.invoiceid}</span>
@@ -275,13 +229,13 @@ const PaymentHistoryPage = () => {
               </div>
             ))
           ) : (
-            <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-[#6B7280] shadow-[0_6px_24px_rgba(0,0,0,0.05)]">
+            <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-dark-gray shadow-empty">
               No payments match the current filters.
             </div>
           )}
         </div>
         {/* Pagination */}
-        <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-[#032746] px-6 py-4 text-white md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-oxford-blue px-6 py-4 text-white md:flex-row md:items-center md:justify-between">
           <p className="text-[12px] font-roboto font-medium leading-[18px] tracking-[3%]">
             Showing {firstItem} to {lastItem} of {filteredPayments.length} results
           </p>
@@ -335,8 +289,8 @@ const PaymentHistoryPage = () => {
       <div className="mx-auto flex max-w-[1200px] flex-col gap-5">
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-[#032746]">
-              Payment History
+            <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
+              {t('admin.paymentHistory.hero.title')}
             </h1>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -382,7 +336,7 @@ const PaymentHistoryPage = () => {
                 <option value="Last 90 days">Last 90 days</option>
               </select>
               <svg
-                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]"
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dark-gray"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -413,7 +367,7 @@ const PaymentHistoryPage = () => {
                 ))}
               </select>
               <svg
-                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]"
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dark-gray"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -442,7 +396,7 @@ const PaymentHistoryPage = () => {
                 <option value="Pending">Pending</option>
               </select>
               <svg
-                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]"
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dark-gray"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

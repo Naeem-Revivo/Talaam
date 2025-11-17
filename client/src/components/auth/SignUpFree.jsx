@@ -15,7 +15,7 @@ const SignUpFree = () => {
 
         <div className="flex flex-col items-center justify-center gap-9 md:gap-9">
         {/* Descriptive Text */}
-        <p className="font-roboto font-normal text-[14px] lg:text-[16px] leading-[140%] tracking-[0] text-center text-[#6B7280] w-full max-w-[280px] md:max-w-[423px]">
+        <p className="font-roboto font-normal text-[14px] lg:text-[16px] leading-[140%] tracking-[0] text-center text-dark-gray w-full max-w-[280px] md:max-w-[423px]">
           {t('signUpFree.description')}
         </p>
         
@@ -30,7 +30,7 @@ const SignUpFree = () => {
         </div>
         
         {/* Agreement Text */}
-        <p className="font-roboto font-normal text-[14px] md:text-[16px] leading-[140%] tracking-[0] text-center text-[#6B7280] mb-4">
+        <p className="font-roboto font-normal text-[14px] md:text-[16px] leading-[140%] tracking-[0] text-center text-dark-gray mb-4">
           {t('signUpFree.agreement.text')}{' '}
           <a href="#" className="font-roboto font-bold text-[14px] md:text-[16px] leading-[140%] tracking-[0] text-center underline text-cinnebar-red">
             {t('signUpFree.agreement.terms')}

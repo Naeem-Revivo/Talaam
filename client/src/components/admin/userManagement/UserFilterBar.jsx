@@ -1,13 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-
-const statusOptions = ["All", "Active", "Suspended"];
-const roleOptions = [
-  "All",
-  "Question Gatherer",
-  "Question Creator",
-  "Processor",
-  "Question Explainer",
-];
+import { useLanguage } from "../../../context/LanguageContext";
+import { dropdownArrow } from "../../../assets/svg";
 
 const UserFilterBar = ({
   searchValue,
@@ -17,6 +10,22 @@ const UserFilterBar = ({
   onStatusChange,
   onRoleChange,
 }) => {
+  const { t } = useLanguage();
+  
+  const statusOptions = [
+    { value: "All", label: t('admin.userManagement.status.all') },
+    { value: "Active", label: t('admin.userManagement.status.active') },
+    { value: "Suspended", label: t('admin.userManagement.status.suspended') },
+  ];
+  
+  const roleOptions = [
+    { value: "All", label: t('admin.userManagement.status.all') },
+    { value: "Question Gatherer", label: t('admin.userManagement.roles.questionGatherer') },
+    { value: "Question Creator", label: t('admin.userManagement.roles.questionCreator') },
+    { value: "Processor", label: t('admin.userManagement.roles.processor') },
+    { value: "Question Explainer", label: t('admin.userManagement.roles.questionExplainer') },
+  ];
+
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const mobileFilterRef = useRef(null);
 
@@ -50,6 +59,16 @@ const UserFilterBar = ({
     const newValue = roleValue === value ? "" : value;
     onRoleChange?.(newValue);
   };
+  
+  const getStatusLabel = (value) => {
+    const option = statusOptions.find(opt => opt.value === value);
+    return option ? option.label : value;
+  };
+  
+  const getRoleLabel = (value) => {
+    const option = roleOptions.find(opt => opt.value === value);
+    return option ? option.label : value;
+  };
 
   const handleRefresh = () => {
     onSearchChange?.("");
@@ -66,8 +85,8 @@ const UserFilterBar = ({
           type="text"
           value={searchValue}
           onChange={(event) => onSearchChange?.(event.target.value)}
-          placeholder="Search by name / Email"
-          className="h-[50px] w-full rounded-[14px] border border-transparent placeholder:text-[#6B7280] placeholder:text-sm bg-white pl-12 pr-4 text-base font-roboto text-[#032746] shadow-[0_8px_20px_rgba(3,39,70,0.05)] focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#D6E3F0] md:w-[548px]"
+          placeholder={t('admin.userManagement.filters.searchPlaceholder')}
+          className="h-[50px] w-full rounded-[14px] border border-transparent placeholder:text-dark-gray placeholder:text-sm bg-white pl-12 pr-4 text-base font-roboto text-oxford-blue shadow-filter focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#D6E3F0] md:w-[548px]"
         />
         <svg
           width="21"
@@ -91,7 +110,7 @@ const UserFilterBar = ({
         <button
           type="button"
           onClick={() => setIsMobileFiltersOpen((prev) => !prev)}
-          className="flex h-[48px] min-w-[150px] items-center justify-between rounded-[14px] border border-transparent bg-white px-4 text-[16px] font-archivo font-semibold text-[#032746] shadow-[0_8px_20px_rgba(3,39,70,0.08)] focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#D6E3F0]"
+          className="flex h-[48px] min-w-[150px] items-center justify-between rounded-[14px] border border-transparent bg-white px-4 text-[16px] font-archivo font-semibold text-oxford-blue shadow-filter-hover focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#D6E3F0]"
           aria-expanded={isMobileFiltersOpen}
         >
           <span className="flex items-center gap-2">
@@ -101,34 +120,32 @@ const UserFilterBar = ({
                 fill="#032746"
               />
             </svg>
-            Filter
+            {t('admin.userManagement.filters.filter')}
           </span>
-          <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 1.5L6 6.5L11 1.5" stroke="#032746" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
+          <img src={dropdownArrow} alt="" />
         </button>
 
         {isMobileFiltersOpen ? (
-          <div className="absolute right-0 top-full z-20 mt-3 w-[250px] rounded-[18px] border border-[#E5E7EB] bg-white p-4 shadow-[0_18px_45px_rgba(3,39,70,0.18)]">
-            <div className="flex flex-col gap-4 text-[#032746]">
+          <div className="absolute right-0 top-full z-20 mt-3 w-[250px] rounded-[18px] border border-[#E5E7EB] bg-white p-4 shadow-dropdown">
+            <div className="flex flex-col gap-4 text-oxford-blue">
               <section className="flex flex-col gap-2">
-                <p className="text-[13px] font-archivo font-semibold uppercase tracking-[0.08em] text-[#6B7280]">
-                  Status
+                <p className="text-[13px] font-archivo font-semibold uppercase tracking-[0.08em] text-dark-gray">
+                  {t('admin.userManagement.filters.status')}
                 </p>
                 <div className="flex flex-col gap-2">
                   {statusOptions
-                    .filter((option) => option !== "All")
+                    .filter((option) => option.value !== "All")
                     .map((option) => {
-                      const isChecked = statusValue === option;
+                      const isChecked = statusValue === option.value;
                       return (
-                        <label key={option} className="flex items-center gap-2 text-[14px] font-roboto">
+                        <label key={option.value} className="flex items-center gap-2 text-[14px] font-roboto">
                           <input
                             type="checkbox"
                             checked={isChecked}
-                            onChange={() => handleStatusToggle(option)}
+                            onChange={() => handleStatusToggle(option.value)}
                             className="h-4 w-4 rounded border border-[#9CA3AF] text-[#ED4122] focus:ring-[#ED4122]"
                           />
-                          {option}
+                          {option.label}
                         </label>
                       );
                     })}
@@ -136,23 +153,23 @@ const UserFilterBar = ({
               </section>
 
               <section className="flex flex-col gap-2">
-                <p className="text-[13px] font-archivo font-semibold uppercase tracking-[0.08em] text-[#6B7280]">
-                  Role
+                <p className="text-[13px] font-archivo font-semibold uppercase tracking-[0.08em] text-dark-gray">
+                  {t('admin.userManagement.filters.role')}
                 </p>
                 <div className="flex flex-col gap-2">
                   {roleOptions
-                    .filter((option) => option !== "All")
+                    .filter((option) => option.value !== "All")
                     .map((option) => {
-                      const isChecked = roleValue === option;
+                      const isChecked = roleValue === option.value;
                       return (
-                        <label key={option} className="flex items-center gap-2 text-[14px] font-roboto">
+                        <label key={option.value} className="flex items-center gap-2 text-[14px] font-roboto">
                           <input
                             type="checkbox"
                             checked={isChecked}
-                            onChange={() => handleRoleToggle(option)}
+                            onChange={() => handleRoleToggle(option.value)}
                             className="h-4 w-4 rounded border border-[#9CA3AF] text-[#ED4122] focus:ring-[#ED4122]"
                           />
-                          {option}
+                          {option.label}
                         </label>
                       );
                     })}
@@ -164,16 +181,16 @@ const UserFilterBar = ({
               <button
                 type="button"
                 onClick={handleRefresh}
-                className="h-[44px] rounded-[12px] border border-[#032746] bg-white text-[15px] font-archivo font-semibold text-[#032746] transition hover:bg-[#F2F5FA]"
+                className="h-[44px] rounded-[12px] border border-[#032746] bg-white text-[15px] font-archivo font-semibold text-oxford-blue transition hover:bg-[#F2F5FA]"
               >
-                Refresh
+                {t('admin.userManagement.filters.refresh')}
               </button>
               <button
                 type="button"
                 onClick={() => setIsMobileFiltersOpen(false)}
                 className="h-[44px] rounded-[12px] bg-[#ED4122] text-[15px] font-archivo font-semibold text-white transition hover:bg-[#d43a1f]"
               >
-                Apply Filters
+                {t('admin.userManagement.filters.applyFilters')}
               </button>
             </div>
           </div>
@@ -187,14 +204,14 @@ const UserFilterBar = ({
           <select
             value={statusValue}
             onChange={(event) => onStatusChange?.(event.target.value)}
-            className="h-[50px] w-full appearance-none rounded-[14px] border border-transparent bg-white px-4 pr-10 text-[16px] font-archivo font-semibold text-[#032746] shadow-[0_8px_20px_rgba(3,39,70,0.08)] focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#D6E3F0]"
+            className="h-[50px] w-full appearance-none rounded-[14px] border border-transparent bg-white px-4 pr-10 text-[16px] font-archivo font-semibold text-oxford-blue shadow-filter-hover focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#D6E3F0]"
           >
             <option value="" disabled hidden>
-              Status
+              {t('admin.userManagement.filters.status')}
             </option>
             {statusOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
@@ -214,14 +231,14 @@ const UserFilterBar = ({
           <select
             value={roleValue}
             onChange={(event) => onRoleChange?.(event.target.value)}
-            className="h-[50px] w-full appearance-none rounded-[14px] border border-transparent bg-white px-4 pr-10 text-[16px] font-archivo font-semibold text-[#032746] shadow-[0_8px_20px_rgba(3,39,70,0.08)] focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#D6E3F0]"
+            className="h-[50px] w-full appearance-none rounded-[14px] border border-transparent bg-white px-4 pr-10 text-[16px] font-archivo font-semibold text-oxford-blue shadow-filter-hover focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#D6E3F0]"
           >
             <option value="" disabled hidden>
-              Role
+              {t('admin.userManagement.filters.role')}
             </option>
             {roleOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>

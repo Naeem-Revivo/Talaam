@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function AddConceptPage() {
+    const { t } = useLanguage();
     const [topicName, setTopicName] = useState("");
     const [subjectName, setSubjectName] = useState("");
     const [description, setDescription] = useState("");
@@ -28,24 +30,24 @@ export default function AddConceptPage() {
             <div className="flex flex-col justify-center max-w-[1200px] mx-auto p-6">
             <div className="mb-12">
             <h1 className="text-4xl font-bold text-blue-dark">
-                Add Concepts
+                {t('admin.addConcept.hero.title')}
             </h1>
             </div>
 
             <div className="rounded-[14px] bg-white shadow-[0px_2px_20px_0px_#0327460D] border border-[#03274633] w-full pt-10 pb-7 px-8">
                 <h3 className="text-[20px] leading-[100%] font-bold text-blue-dark mb-10">
-                    Add New Concept
+                    {t('admin.addConcept.sections.addNewConcept')}
                 </h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Subject Name */}
                      <div>
                         <label className="block text-base font-normal text-blue-dark mb-3">
-                            Concept Name
+                            {t('admin.addConcept.fields.conceptName')}
                         </label>
                         <input
                             type="text"
-                            placeholder="Enter concept name"
-                            value={subjectName}
+                            placeholder={t('admin.addConcept.placeholders.conceptName')}
+                            value={conceptName}
                             onChange={(e) => setConceptName(e.target.value)}
                             className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
                             required
@@ -54,10 +56,10 @@ export default function AddConceptPage() {
 
                     <div>
                         <label className="block text-base font-normal text-blue-dark mb-3">
-                            Description
+                            {t('admin.addConcept.fields.description')}
                         </label>
                         <textarea
-                            placeholder="A brief description of the subject"
+                            placeholder={t('admin.addConcept.placeholders.description')}
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             rows="4"
@@ -67,11 +69,11 @@ export default function AddConceptPage() {
 
                     <div>
                         <label className="block text-base font-normal text-blue-dark mb-3">
-                            Select Subject
+                            {t('admin.addConcept.fields.selectSubject')}
                         </label>
                         <input
                             type="text"
-                            placeholder="Enter subject name"
+                            placeholder={t('admin.addConcept.placeholders.subjectName')}
                             value={subjectName}
                             onChange={(e) => setSubjectName(e.target.value)}
                             className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
@@ -81,12 +83,12 @@ export default function AddConceptPage() {
 
                     <div>
                         <label className="block text-base font-normal text-blue-dark mb-3">
-                            Select Topic
+                            {t('admin.addConcept.fields.selectTopic')}
                         </label>
                         <input
                             type="text"
-                            placeholder="Select a Topic"
-                            value={subjectName}
+                            placeholder={t('admin.addConcept.placeholders.selectTopic')}
+                            value={topicName}
                             onChange={(e) => setTopicName(e.target.value)}
                             className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
                             required
@@ -95,12 +97,12 @@ export default function AddConceptPage() {
 
                      <div>
                         <label className="block text-base font-normal text-blue-dark mb-3">
-                            Select Subtopic
+                            {t('admin.addConcept.fields.selectSubtopic')}
                         </label>
                         <input
                             type="text"
-                            placeholder="e.g. Advanced SEO Techniques"
-                            value={subjectName}
+                            placeholder={t('admin.addConcept.placeholders.selectSubtopic')}
+                            value={subtopicName}
                             onChange={(e) => setSubtopicName(e.target.value)}
                             className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
                             required
@@ -114,13 +116,13 @@ export default function AddConceptPage() {
                             onClick={handleCancel}
                             className="px-4 sm:w-[120px] py-2 border border-[#E5E7EB] w-full rounded-lg text-base text-blue-dark font-medium bg-white hover:bg-gray-100 transition"
                         >
-                            Cancel
+                            {t('admin.addConcept.buttons.cancel')}
                         </button>
                         <button
                             type="submit"
                             className="sm:w-[120px] py-2 bg-orange-dark w-full text-white text-base font-medium rounded-md hover:bg-orange-600 transition"
                         >
-                            Save Concepts
+                            {t('admin.addConcept.buttons.saveConcepts')}
                         </button>
                     </div>
                 </form>

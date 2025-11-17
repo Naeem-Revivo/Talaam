@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-// import { BarChart } from '@mui/x-charts/BarChart';
+import { BarChart } from '@mui/x-charts/BarChart';
 import { vedio, timer } from '../../assets/svg/dashboard';
 
 const DashboardPage = () => {
@@ -57,15 +57,15 @@ const DashboardPage = () => {
     <div className="p-4 md:p-6 lg:p-8 2xl:px-[70px] desktop:px-[260px] bg-gray-50 min-h-screen px-6">
       {/* Overview Section */}
       <div className="mb-8 md:mb-12">
-        <h2 className="font-archivo font-bold text-2xl md:text-3xl lg:text-[36px] leading-tight md:leading-[40px] text-oxford-blue mb-2">Overview</h2>
+        <h2 className="font-archivo font-bold text-2xl md:text-3xl lg:text-[36px] leading-tight md:leading-[40px] text-oxford-blue mb-2">{t('dashboard.overview.title')}</h2>
         <p className="font-roboto font-normal text-base md:text-[18px] leading-6 md:leading-7 text-gray-500 mb-4 md:mb-6">
           {t('dashboard.overview.subtitle')}
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 pt-4">
           {/* Progress Card */}
-          <div className="rounded-xl border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 md:p-6 w-full lg:w-[548px] h-auto min-h-[200px] md:min-h-[251px]">
-            <h3 className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue mb-3 md:mb-4">Progress</h3>
+          <div className="rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:w-[548px] h-auto min-h-[200px] md:min-h-[251px]">
+            <h3 className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue mb-3 md:mb-4">{t('dashboard.overview.progress')}</h3>
             <div className="flex items-center justify-center">
               <div className="relative w-[90px] h-[90px] md:w-[115px] md:h-[115px]">
                 <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 192 192">
@@ -97,17 +97,17 @@ const DashboardPage = () => {
               </div>
             </div>
             <p className="text-center font-roboto font-normal text-sm md:text-[16px] leading-5 md:leading-6 text-gray-500 mt-3 md:mt-4">
-              325/1000 Questions Completed
+              325/1000 {t('dashboard.overview.questionsCompleted')}
             </p>
           </div>
 
           {/* Accuracy Card */}
-          <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 md:p-6 w-full lg:w-[548px] h-auto min-h-[200px] md:min-h-[251px]">
-            <h3 className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue mb-3 md:mb-10">Accuracy</h3>  
+          <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:w-[548px] h-auto min-h-[200px] md:min-h-[251px]">
+            <h3 className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue mb-3 md:mb-10">{t('dashboard.overview.accuracy')}</h3>  
             <div className="flex items-start justify-center h-full">
               <div className="text-center">
                 <p className="font-archivo font-bold text-[36px] leading-[40px] text-cinnebar-red">78%</p>
-                <p className="font-roboto font-normal text-sm md:text-base leading-5 md:leading-6 tracking-normal text-center align-middle text-gray-500">Overall</p>
+                <p className="font-roboto font-normal text-sm md:text-base leading-5 md:leading-6 tracking-normal text-center align-middle text-gray-500">{t('dashboard.overview.overall')}</p>
               </div>
             </div>
           </div>
@@ -116,8 +116,8 @@ const DashboardPage = () => {
 
       {/* Section Breakdown */}
       <div className="w-full max-w-[382px] md:max-w-[1120px] h-[491px] md:h-[508px]">
-        <h2 className="font-archivo font-bold text-[20px] leading-[32px] text-oxford-blue mb-4 md:mb-3">Section Breakdown</h2>
-        <div className="rounded-xl shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] w-full bg-white p-4 md:p-5">
+        <h2 className="font-archivo font-bold text-[20px] leading-[32px] text-oxford-blue mb-4 md:mb-3">{t('dashboard.overview.sectionBreakdown')}</h2>
+        <div className="rounded-xl shadow-dashboard w-full bg-white p-4 md:p-5">
           <div className="space-y-3 w-full">
             {sectionData.map((section, index) => (
               <div 
@@ -143,116 +143,116 @@ const DashboardPage = () => {
       </div>
 
       {/* Performance Chart */}
-      <div className="bg-white my-20 border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] w-full max-w-full md:w-[1120px] h-auto md:h-auto rounded-[12px] overflow-x-hidden overflow-y-visible pb-8">
+      <div className="bg-white my-20 border border-[#E5E7EB] shadow-dashboard w-full max-w-full md:w-[1120px] h-auto md:h-auto rounded-[12px] overflow-x-hidden overflow-y-visible pb-8">
         <h2 className="font-archivo font-semibold pl-4 md:pl-6 lg:pl-10 pb-4 md:pb-5 pt-6 md:pt-10 text-[20px] leading-[28px] text-oxford-blue">
           {t('dashboard.performance.title')}
         </h2>
         <div className="rounded-xl flex flex-col items-center justify-center p-3 md:p-6 overflow-x-auto md:overflow-x-visible" style={{ scrollBehavior: 'smooth' }}>
           <div className="min-w-[650px] md:min-w-0 w-full md:w-[1070px] h-[320px]">
-            {/* <BarChart
+            <BarChart
               width={chartWidth}
               height={320}
               margin={{ left: 70, right: 30, top: 30, bottom: 80 }}
-            series={[
-              {
-                data: performanceData.map((data) => data.accuracy),
-                borderRadius: 4,
-              },
-            ]}
-            xAxis={[
-              {
-                id: 'sessions',
-                data: performanceData.map((data) => data.session),
-                scaleType: 'band',
-                label: 'Sessions',
-                labelStyle: {
-                  fontFamily: 'Roboto',
-                  fontSize: 12,
-                  fill: '#6B7280',
+              series={[
+                {
+                  data: performanceData.map((data) => data.accuracy),
+                  borderRadius: 4,
                 },
-                tickLabelStyle: {
-                  fontFamily: 'Roboto',
-                  fontSize: 12,
-                  fill: '#6B7280',
+              ]}
+              xAxis={[
+                {
+                  id: 'sessions',
+                  data: performanceData.map((data) => data.session),
+                  scaleType: 'band',
+                  label: 'Sessions',
+                  labelStyle: {
+                    fontFamily: 'Roboto',
+                    fontSize: 12,
+                    fill: '#6B7280',
+                  },
+                  tickLabelStyle: {
+                    fontFamily: 'Roboto',
+                    fontSize: 12,
+                    fill: '#6B7280',
+                  },
+                  colorMap: {
+                    type: 'ordinal',
+                    values: performanceData.map((data) => data.session),
+                    colors: performanceData.map((data) => getBarColor(data.state)),
+                  },
                 },
-                colorMap: {
-                  type: 'ordinal',
-                  values: performanceData.map((data) => data.session),
-                  colors: performanceData.map((data) => getBarColor(data.state)),
+              ]}
+              yAxis={[
+                {
+                  id: 'accuracy',
+                  min: 0,
+                  max: 100,
+                  label: 'Accuracy (%)',
+                  labelStyle: {
+                    fontFamily: 'Roboto',
+                    fontSize: 12,
+                    fill: '#6B7280',
+                  },
+                  tickLabelStyle: {
+                    fontFamily: 'Roboto',
+                    fontSize: 12,
+                    fill: '#6B7280',
+                  },
+                  tickNumber: 6,
                 },
-              },
-            ]}
-            yAxis={[
-              {
-                id: 'accuracy',
-                min: 0,
-                max: 100,
-                label: 'Accuracy (%)',
-                labelStyle: {
-                  fontFamily: 'Roboto',
-                  fontSize: 12,
-                  fill: '#6B7280',
+              ]}
+              grid={{ horizontal: true }}
+              sx={{
+                '& .MuiChartsAxis-directionY .MuiChartsAxis-line': {
+                  stroke: 'transparent',
                 },
-                tickLabelStyle: {
-                  fontFamily: 'Roboto',
-                  fontSize: 12,
-                  fill: '#6B7280',
+                '& .MuiChartsGrid-horizontal .MuiChartsGrid-line': {
+                  strokeDasharray: '4 4',
+                  stroke: '#E5E7EB',
                 },
-                tickNumber: 6,
-              },
-            ]}
-            grid={{ horizontal: true }}
-            sx={{
-              '& .MuiChartsAxis-directionY .MuiChartsAxis-line': {
-                stroke: 'transparent',
-              },
-              '& .MuiChartsGrid-horizontal .MuiChartsGrid-line': {
-                strokeDasharray: '4 4',
-                stroke: '#E5E7EB',
-              },
-              '& .MuiChartsAxis-tickLabel': {
-                fill: '#6B7280 !important',
-                fontFamily: 'Roboto !important',
-                fontSize: '12px !important',
-              },
-              '& .MuiChartsAxis-label': {
-                fill: '#6B7280 !important',
-                fontFamily: 'Roboto !important',
-                fontSize: '12px !important',
-              },
-              '& .MuiChartsAxis-root': {
-                overflow: 'visible',
-              },
-              '& .MuiChartsAxisBottom .MuiChartsAxis-tickLabel': {
-                fill: '#6B7280 !important',
-                fontFamily: 'Roboto !important',
-                fontSize: '12px !important',
-              },
-              '& .MuiChartsAxisBottom .MuiChartsAxis-label': {
-                fill: '#6B7280 !important',
-                fontFamily: 'Roboto !important',
-                fontSize: '12px !important',
-              },
-              '& .MuiChartsAxisLeft .MuiChartsAxis-tickLabel': {
-                fill: '#6B7280 !important',
-                fontFamily: 'Roboto !important',
-                fontSize: '12px !important',
-              },
-              '& .MuiChartsAxisLeft .MuiChartsAxis-label': {
-                fill: '#6B7280 !important',
-                fontFamily: 'Roboto !important',
-                fontSize: '12px !important',
-              },
-            }}
-            slotProps={{
-              legend: {
-                hidden: true,
-              },
-              bar: {
-                width: 35,
-              },
-            }}
-            /> */}
+                '& .MuiChartsAxis-tickLabel': {
+                  fill: '#6B7280 !important',
+                  fontFamily: 'Roboto !important',
+                  fontSize: '12px !important',
+                },
+                '& .MuiChartsAxis-label': {
+                  fill: '#6B7280 !important',
+                  fontFamily: 'Roboto !important',
+                  fontSize: '12px !important',
+                },
+                '& .MuiChartsAxis-root': {
+                  overflow: 'visible',
+                },
+                '& .MuiChartsAxisBottom .MuiChartsAxis-tickLabel': {
+                  fill: '#6B7280 !important',
+                  fontFamily: 'Roboto !important',
+                  fontSize: '12px !important',
+                },
+                '& .MuiChartsAxisBottom .MuiChartsAxis-label': {
+                  fill: '#6B7280 !important',
+                  fontFamily: 'Roboto !important',
+                  fontSize: '12px !important',
+                },
+                '& .MuiChartsAxisLeft .MuiChartsAxis-tickLabel': {
+                  fill: '#6B7280 !important',
+                  fontFamily: 'Roboto !important',
+                  fontSize: '12px !important',
+                },
+                '& .MuiChartsAxisLeft .MuiChartsAxis-label': {
+                  fill: '#6B7280 !important',
+                  fontFamily: 'Roboto !important',
+                  fontSize: '12px !important',
+                },
+              }}
+              slotProps={{
+                legend: {
+                  hidden: true,
+                },
+                bar: {
+                  width: 35,
+                },
+              }}
+            />
           </div>
           
           {/* Footer with legend */}
@@ -260,15 +260,15 @@ const DashboardPage = () => {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: '#6CA6C1' }} />
-                <span className="font-roboto text-[14px] leading-[20px] text-[#6B7280]">Normal</span>
+                <span className="font-roboto text-[14px] leading-[20px] text-dark-gray">{t('dashboard.overview.legend.normal')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: '#032746' }} />
-                <span className="font-roboto text-[14px] leading-[20px] text-[#6B7280]">Hovered</span>
+                <span className="font-roboto text-[14px] leading-[20px] text-dark-gray">{t('dashboard.overview.legend.hovered')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ED4122' }} />
-                <span className="font-roboto text-[14px] leading-[20px] text-[#6B7280]">Selected</span>
+                <span className="font-roboto text-[14px] leading-[20px] text-dark-gray">{t('dashboard.overview.legend.selected')}</span>
               </div>
             </div>
           </div>

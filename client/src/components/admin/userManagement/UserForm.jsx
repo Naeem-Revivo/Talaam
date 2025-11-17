@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useLanguage } from "../../../context/LanguageContext";
+import { dropdownArrowAdmin } from "../../../assets/svg";
 
 const defaultValues = {
   name: "",
@@ -10,15 +12,6 @@ const defaultValues = {
   notes: "",
 };
 
-const systemRoles = ["Admin", "Editor", "Viewer"];
-const workflowRoles = [
-  "Question Gatherer",
-  "Question Creator",
-  "Processor",
-  "Question Explainer",
-];
-const statusOptions = ["Active", "Suspended"];
-
 const UserForm = ({
   mode = "add",
   initialValues,
@@ -26,10 +19,29 @@ const UserForm = ({
   onCancel,
   submitLabel,
 }) => {
+  const { t } = useLanguage();
   const [formValues, setFormValues] = useState({
     ...defaultValues,
     ...initialValues,
   });
+
+  const systemRoles = [
+    { value: "Admin", label: t('admin.addUser.form.systemRoles.admin') },
+    { value: "Editor", label: t('admin.addUser.form.systemRoles.editor') },
+    { value: "Viewer", label: t('admin.addUser.form.systemRoles.viewer') },
+  ];
+  
+  const workflowRoles = [
+    { value: "Question Gatherer", label: t('admin.userManagement.roles.questionGatherer') },
+    { value: "Question Creator", label: t('admin.userManagement.roles.questionCreator') },
+    { value: "Processor", label: t('admin.userManagement.roles.processor') },
+    { value: "Question Explainer", label: t('admin.userManagement.roles.questionExplainer') },
+  ];
+  
+  const statusOptions = [
+    { value: "Active", label: t('admin.userManagement.status.active') },
+    { value: "Suspended", label: t('admin.userManagement.status.suspended') },
+  ];
 
   useEffect(() => {
     setFormValues({ ...defaultValues, ...initialValues });
@@ -46,27 +58,27 @@ const UserForm = ({
   };
 
   const actionLabel =
-    submitLabel || (mode === "edit" ? "Save Changes" : "Save User");
+    submitLabel || (mode === "edit" ? t('admin.addUser.form.buttons.saveChanges') : t('admin.addUser.form.buttons.saveUser'));
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <div className="grid gap-7 md:grid-cols-2">
         <label className="flex flex-col gap-2">
-          <span className="text-[16px] font-roboto font-normal text-[#032746]">
-            User Name <span className="text-[#ED4122]">*</span>
+          <span className="text-[16px] font-roboto font-normal text-oxford-blue">
+            {t('admin.addUser.form.fields.userName')} <span className="text-[#ED4122]">*</span>
           </span>
           <input
             required
             name="name"
             value={formValues.name}
             onChange={handleChange}
-            placeholder="Enter name"
-            className="h-[59px] w-full max-w-[476px] rounded-[12px] border border-[#032746]/20 bg-white px-4 text-[14px] font-roboto text-[#032746] shadow-[0_4px_6px_-4px_rgba(0,0,0,0.1),0_10px_15px_-3px_rgba(0,0,0,0.1)] outline-none"
+            placeholder={t('admin.addUser.form.placeholders.enterName')}
+            className="h-[59px] w-full max-w-[476px] rounded-[12px] border border-[#032746]/20 bg-white px-4 text-[14px] font-roboto text-oxford-blue shadow-input outline-none"
           />
         </label>
         <label className="flex flex-col gap-2">
-          <span className="text-[16px] font-roboto font-normal text-[#032746]">
-            Email Address <span className="text-[#ED4122]">*</span>
+          <span className="text-[16px] font-roboto font-normal text-oxford-blue">
+            {t('admin.addUser.form.fields.emailAddress')} <span className="text-[#ED4122]">*</span>
           </span>
           <input
             required
@@ -74,58 +86,49 @@ const UserForm = ({
             name="email"
             value={formValues.email}
             onChange={handleChange}
-            placeholder="Enter your email address"
-            className="h-[59px] w-full max-w-[476px] rounded-[12px] border border-[#032746]/20 bg-white px-4 text-[14px] font-roboto text-[#032746] shadow-[0_4px_6px_-4px_rgba(0,0,0,0.1),0_10px_15px_-3px_rgba(0,0,0,0.1)] outline-none"
+            placeholder={t('admin.addUser.form.placeholders.enterEmail')}
+            className="h-[59px] w-full max-w-[476px] rounded-[12px] border border-[#032746]/20 bg-white px-4 text-[14px] font-roboto text-oxford-blue shadow-input outline-none"
           />
         </label>
         {mode === "add" && (
           <label className="flex flex-col gap-2">
-            <span className="text-[16px] font-roboto font-normal text-[#032746]">
-              Password
+            <span className="text-[16px] font-roboto font-normal text-oxford-blue">
+              {t('admin.addUser.form.fields.password')}
             </span>
             <input
               name="password"
               value={formValues.password}
               onChange={handleChange}
-              placeholder="Auto generated (Optional)"
-              className="h-[59px] w-full max-w-[476px] rounded-[12px] border border-[#032746]/20 bg-white px-4 text-[14px] font-roboto text-[#032746] shadow-[0_4px_6px_-4px_rgba(0,0,0,0.1),0_10px_15px_-3px_rgba(0,0,0,0.1)] outline-none"
+              placeholder={t('admin.addUser.form.placeholders.autoGenerated')}
+              className="h-[59px] w-full max-w-[476px] rounded-[12px] border border-[#032746]/20 bg-white px-4 text-[14px] font-roboto text-oxford-blue shadow-input outline-none"
             />
           </label>
         )}
         <label className="flex flex-col gap-2">
-          <span className="text-[16px] font-roboto font-normal text-[#032746]">Status</span>
+          <span className="text-[16px] font-roboto font-normal text-oxford-blue">{t('admin.addUser.form.fields.status')}</span>
           <div className="relative w-full max-w-[476px]">
             <select
               name="status"
               value={formValues.status}
               onChange={handleChange}
-              className="h-[59px] w-full appearance-none rounded-[12px] border border-[#032746]/20 bg-white px-4 pr-10 text-[14px] font-roboto text-[#032746] shadow-[0_4px_6px_-4px_rgba(0,0,0,0.1),0_10px_15px_-3px_rgba(0,0,0,0.1)] outline-none"
+              className="h-[59px] w-full appearance-none rounded-[12px] border border-[#032746]/20 bg-white px-4 pr-10 text-[14px] font-roboto text-oxford-blue shadow-input outline-none"
             >
               {statusOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
-            <svg
-              width="15"
-              height="9"
-              viewBox="0 0 15 9"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+            <img 
+              src={dropdownArrowAdmin} 
+              alt=""
               className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2"
-            >
-              <path
-                d="M0.6875 0.726562L7.00848 6.71211L13.3295 0.726562"
-                stroke="#032746"
-                strokeWidth="2"
-              />
-            </svg>
+            />
           </div>
         </label>
         <label className="flex flex-col gap-2">
-          <span className="text-[16px] font-roboto font-normal text-[#032746]">
-            System Role <span className="text-[#ED4122]">*</span>
+          <span className="text-[16px] font-roboto font-normal text-oxford-blue">
+            {t('admin.addUser.form.fields.systemRole')} <span className="text-[#ED4122]">*</span>
           </span>
           <div className="relative w-full max-w-[476px]">
             <select
@@ -133,34 +136,25 @@ const UserForm = ({
               name="systemRole"
               value={formValues.systemRole}
               onChange={handleChange}
-              className="h-[59px] w-full appearance-none rounded-[12px] border border-[#032746]/20 bg-white px-4 pr-10 text-[14px] font-roboto text-[#032746] shadow-[0_4px_6px_-4px_rgba(0,0,0,0.1),0_10px_15px_-3px_rgba(0,0,0,0.1)] outline-none"
+              className="h-[59px] w-full appearance-none rounded-[12px] border border-[#032746]/20 bg-white px-4 pr-10 text-[14px] font-roboto text-oxford-blue shadow-input outline-none"
             >
-              <option value="">Select a system role</option>
+              <option value="">{t('admin.addUser.form.placeholders.selectSystemRole')}</option>
               {systemRoles.map((role) => (
-                <option key={role} value={role}>
-                  {role}
+                <option key={role.value} value={role.value}>
+                  {role.label}
                 </option>
               ))}
             </select>
-            <svg
-              width="15"
-              height="9"
-              viewBox="0 0 15 9"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+            <img 
+              src={dropdownArrowAdmin} 
+              alt=""
               className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2"
-            >
-              <path
-                d="M0.6875 0.726562L7.00848 6.71211L13.3295 0.726562"
-                stroke="#032746"
-                strokeWidth="2"
-              />
-            </svg>
+            />
           </div>
         </label>
         <label className="flex flex-col gap-2">
-          <span className="text-[16px] font-roboto font-normal text-[#032746]">
-            Workflow Role <span className="text-[#ED4122]">*</span>
+          <span className="text-[16px] font-roboto font-normal text-oxford-blue">
+            {t('admin.addUser.form.fields.workflowRole')} <span className="text-[#ED4122]">*</span>
           </span>
           <div className="relative w-full max-w-[476px]">
             <select
@@ -168,29 +162,20 @@ const UserForm = ({
               name="workflowRole"
               value={formValues.workflowRole}
               onChange={handleChange}
-              className="h-[59px] w-full appearance-none rounded-[12px] border border-[#032746]/20 bg-white px-4 pr-10 text-[14px] font-roboto text-[#032746] shadow-[0_4px_6px_-4px_rgba(0,0,0,0.1),0_10px_15px_-3px_rgba(0,0,0,0.1)] outline-none"
+              className="h-[59px] w-full appearance-none rounded-[12px] border border-[#032746]/20 bg-white px-4 pr-10 text-[14px] font-roboto text-oxford-blue shadow-input outline-none"
             >
-              <option value="">Select a workflow role</option>
+              <option value="">{t('admin.addUser.form.placeholders.selectWorkflowRole')}</option>
               {workflowRoles.map((role) => (
-                <option key={role} value={role}>
-                  {role}
+                <option key={role.value} value={role.value}>
+                  {role.label}
                 </option>
               ))}
             </select>
-            <svg
-              width="15"
-              height="9"
-              viewBox="0 0 15 9"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+            <img 
+              src={dropdownArrowAdmin} 
+              alt=""
               className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2"
-            >
-              <path
-                d="M0.6875 0.726562L7.00848 6.71211L13.3295 0.726562"
-                stroke="#032746"
-                strokeWidth="2"
-              />
-            </svg>
+            />
           </div>
         </label>
       </div>
@@ -199,9 +184,9 @@ const UserForm = ({
         <button
           type="button"
           onClick={onCancel}
-          className="h-[44px] rounded-[10px] border border-[#E5E7EB] px-6 text-[16px] font-roboto font-medium leading-[24px] text-[#032746] transition hover:bg-[#F3F4F6]"
+          className="h-[44px] rounded-[10px] border border-[#E5E7EB] px-6 text-[16px] font-roboto font-medium leading-[24px] text-oxford-blue transition hover:bg-[#F3F4F6]"
         >
-          Cancel
+          {t('admin.addUser.form.buttons.cancel')}
         </button>
         <button
           type="submit"

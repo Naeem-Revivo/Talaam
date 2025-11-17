@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 
 const ExportReportsPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [reportType, setReportType] = useState("User Growth");
   const [format, setFormat] = useState("Excel");
   const [startDate, setStartDate] = useState("");
@@ -38,13 +40,13 @@ const ExportReportsPage = () => {
         {/* Header */}
 
         {/* Form Card */}
-        <div className="rounded-[12px] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 sm:p-6 lg:p-8">
+        <div className="rounded-[12px] bg-white shadow-dashboard p-4 sm:p-6 lg:p-8">
         <div>
-          <h1 className="font-archivo text-[20px] lg:text-[20px] font-bold leading-[28px] lg:leading-[40px] text-[#032746]">
-            Export Reports
+          <h1 className="font-archivo text-[20px] lg:text-[20px] font-bold leading-[28px] lg:leading-[40px] text-oxford-blue">
+            {t('admin.exportReports.hero.title')}
           </h1>
-          <p className="font-roboto text-[14px] lg:text-[14px] font-normal leading-[20px] lg:leading-[24px] text-[#6B7280]">
-            Select your desired report options below.
+          <p className="font-roboto text-[14px] lg:text-[14px] font-normal leading-[20px] lg:leading-[24px] text-dark-gray">
+            {t('admin.exportReports.hero.subtitle')}
           </p>
         </div>
           {/* Report Configuration Section */}
@@ -52,22 +54,21 @@ const ExportReportsPage = () => {
 
             {/* Select Report Type */}
             <div>
-              <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746] mb-2">
-                Select Report Type
+              <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue mb-2">
+                {t('admin.exportReports.fields.selectReportType')}
               </label>
               <div className="relative">
                 <select
                   value={reportType}
                   onChange={(e) => setReportType(e.target.value)}
-                  className="appearance-none w-full lg:w-[990px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 pr-10 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
-                  style={{ boxShadow: '0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                  className="appearance-none w-full lg:w-[990px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 pr-10 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition shadow-input"
                 >
-                  <option value="User Growth">User Growth</option>
-                  <option value="Subscription Trends">Subscription Trends</option>
-                  <option value="Performance Analytics">Performance Analytics</option>
+                  <option value="User Growth">{t('admin.exportReports.options.reportType.userGrowth')}</option>
+                  <option value="Subscription Trends">{t('admin.exportReports.options.reportType.subscriptionTrends')}</option>
+                  <option value="Performance Analytics">{t('admin.exportReports.options.reportType.performanceAnalytics')}</option>
                 </select>
                 <svg
-                  className="pointer-events-none absolute right-3 lg:right-20 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+                  className="pointer-events-none absolute right-3 lg:right-20 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -84,22 +85,21 @@ const ExportReportsPage = () => {
 
             {/* Select Format */}
             <div>
-              <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746] mb-2">
-                Select Format
+              <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue mb-2">
+                {t('admin.exportReports.fields.selectFormat')}
               </label>
               <div className="relative">
                 <select
                   value={format}
                   onChange={(e) => setFormat(e.target.value)}
-                  className="appearance-none w-full lg:w-[990px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 pr-10 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
-                  style={{ boxShadow: '0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                  className="appearance-none w-full lg:w-[990px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 pr-10 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition shadow-input"
                 >
-                  <option value="Excel">Excel</option>
-                  <option value="PDF">PDF</option>
-                  <option value="CSV">CSV</option>
+                  <option value="Excel">{t('admin.exportReports.options.format.excel')}</option>
+                  <option value="PDF">{t('admin.exportReports.options.format.pdf')}</option>
+                  <option value="CSV">{t('admin.exportReports.options.format.csv')}</option>
                 </select>
                 <svg
-                  className="pointer-events-none absolute right-3 lg:right-20 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+                  className="pointer-events-none absolute right-3 lg:right-20 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -116,8 +116,8 @@ const ExportReportsPage = () => {
 
             {/* Date Range */}
             <div>
-              <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746] mb-2">
-                Date Range
+              <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue mb-2">
+                {t('admin.exportReports.fields.dateRange')}
               </label>
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-10">
                 <div className="relative w-full sm:w-auto">
@@ -125,9 +125,8 @@ const ExportReportsPage = () => {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full lg:w-[475px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
+                    className="w-full lg:w-[475px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition shadow-input"
                     placeholder="mm/dd/yyyy"
-                    style={{ boxShadow: '0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
                   />
                 </div>
                 <div className="relative w-full sm:w-auto">
@@ -135,9 +134,8 @@ const ExportReportsPage = () => {
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full lg:w-[475px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
+                    className="w-full lg:w-[475px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition shadow-input"
                     placeholder="mm/dd/yyyy"
-                    style={{ boxShadow: '0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
                   />
                 </div>
               </div>
@@ -158,8 +156,8 @@ const ExportReportsPage = () => {
                   }`}
                 />
               </button>
-              <label className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746]">
-                Include Charts
+              <label className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue">
+                {t('admin.exportReports.fields.includeCharts')}
               </label>
             </div>
           </div>
@@ -180,8 +178,8 @@ const ExportReportsPage = () => {
                   }`}
                 />
               </button>
-              <label className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746]">
-                Schedule Recurring Export
+              <label className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue">
+                {t('admin.exportReports.fields.scheduleRecurring')}
               </label>
             </div>
 
@@ -189,22 +187,21 @@ const ExportReportsPage = () => {
               <>
                 {/* Frequency */}
                 <div>
-                  <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746] mb-2">
-                    Frequency
+                  <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue mb-2">
+                    {t('admin.exportReports.fields.frequency')}
                   </label>
                   <div className="relative">
                     <select
                       value={frequency}
                       onChange={(e) => setFrequency(e.target.value)}
-                      className="appearance-none w-full lg:w-[990px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 pr-10 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
-                      style={{ boxShadow: '0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                      className="appearance-none w-full lg:w-[990px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 pr-10 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition shadow-input"
                     >
-                      <option value="Daily">Daily</option>
-                      <option value="Weekly">Weekly</option>
-                      <option value="Monthly">Monthly</option>
+                      <option value="Daily">{t('admin.exportReports.options.frequency.daily')}</option>
+                      <option value="Weekly">{t('admin.exportReports.options.frequency.weekly')}</option>
+                      <option value="Monthly">{t('admin.exportReports.options.frequency.monthly')}</option>
                     </select>
                     <svg
-                      className="pointer-events-none absolute right-3 lg:right-20 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+                      className="pointer-events-none absolute right-3 lg:right-20 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -221,21 +218,20 @@ const ExportReportsPage = () => {
 
                 {/* Delivery Method */}
                 <div>
-                  <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746] mb-2">
-                    Delivery Method
+                  <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue mb-2">
+                    {t('admin.exportReports.fields.deliveryMethod')}
                   </label>
                   <div className="relative">
                     <select
                       value={deliveryMethod}
                       onChange={(e) => setDeliveryMethod(e.target.value)}
-                      className="appearance-none w-full lg:w-[990px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 pr-10 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
-                      style={{ boxShadow: '0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                      className="appearance-none w-full lg:w-[990px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 pr-10 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition shadow-input"
                     >
-                      <option value="Email">Email</option>
-                      <option value="Download">Download</option>
+                      <option value="Email">{t('admin.exportReports.options.deliveryMethod.email')}</option>
+                      <option value="Download">{t('admin.exportReports.options.deliveryMethod.download')}</option>
                     </select>
                     <svg
-                      className="pointer-events-none absolute right-3 lg:right-20 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+                      className="pointer-events-none absolute right-3 lg:right-20 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -252,16 +248,15 @@ const ExportReportsPage = () => {
 
                 {/* Recipients */}
                 <div>
-                  <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746] mb-2">
-                    Recipients
+                  <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue mb-2">
+                    {t('admin.exportReports.fields.recipients')}
                   </label>
                   <input
                     type="email"
                     value={recipients}
                     onChange={(e) => setRecipients(e.target.value)}
-                    placeholder="Enter email address"
-                    className="w-full lg:w-[990px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-[#032746] outline-none hover:border-[#03274666] transition"
-                    style={{ boxShadow: '0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                    placeholder={t('admin.exportReports.placeholders.recipients')}
+                    className="w-full lg:w-[990px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue outline-none hover:border-[#03274666] transition shadow-input"
                   />
                 </div>
               </>
@@ -273,16 +268,16 @@ const ExportReportsPage = () => {
             <button
               type="button"
               onClick={handleCancel}
-              className="flex items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 sm:px-6 py-2.5 sm:py-3 font-roboto text-[14px] sm:text-[16px] font-medium leading-[20px] text-[#032746] transition hover:bg-[#F9FAFB] w-full sm:w-auto"
+              className="flex items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 sm:px-6 py-2.5 sm:py-3 font-roboto text-[14px] sm:text-[16px] font-medium leading-[20px] text-oxford-blue transition hover:bg-[#F9FAFB] w-full sm:w-auto"
             >
-              Cancel
+              {t('admin.exportReports.buttons.cancel')}
             </button>
             <button
               type="button"
               onClick={handleExport}
               className="flex items-center justify-center rounded-[8px] bg-[#ED4122] px-4 sm:px-6 py-2.5 sm:py-3 font-roboto text-[14px] sm:text-[16px] font-semibold leading-[20px] text-white transition hover:bg-[#d43a1f] w-full sm:w-auto"
             >
-              Export Report
+              {t('admin.exportReports.buttons.exportReport')}
             </button>
           </div>
         </div>

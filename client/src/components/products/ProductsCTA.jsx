@@ -2,7 +2,7 @@ import React from 'react';
 
 const ProductsCTA = () => {
   return (
-    <section className="py-20 bg-[#032746]">
+    <section className="py-20 bg-oxford-blue">
       <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 lg:px-12 text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
           Ready to Transform Your Learning?
@@ -14,7 +14,7 @@ const ProductsCTA = () => {
           <button className="bg-gradient-to-r from-[#ED4122] to-[#FF8B67] hover:from-[#d6341f] hover:to-[#e67a5a] text-white px-8 py-3 rounded-lg font-semibold text-lg transition duration-200 transform hover:scale-105">
             Schedule Demo
           </button>
-          <button className="border-2 border-white text-white hover:bg-white hover:text-[#032746] px-8 py-3 rounded-lg font-semibold text-lg transition duration-200">
+          <button className="border-2 border-white text-white hover:bg-white hover:text-oxford-blue px-8 py-3 rounded-lg font-semibold text-lg transition duration-200">
             Contact Sales
           </button>
         </div>

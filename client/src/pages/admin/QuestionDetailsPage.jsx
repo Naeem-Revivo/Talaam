@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 
 const QuestionDetailsPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [comments, setComments] = useState("");
 
   // Rich Text Editor Component using contentEditable (React 19 compatible)
@@ -319,7 +321,7 @@ const QuestionDetailsPage = () => {
           onInput={handleInput}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          className={`w-full p-4 font-roboto text-[16px] leading-[100%] text-[#032746] focus:outline-none ${
+          className={`w-full p-4 font-roboto text-[16px] leading-[100%] text-oxford-blue focus:outline-none ${
             !value && !isFocused ? "text-[#9CA3AF]" : ""
           }`}
           style={{
@@ -365,8 +367,8 @@ const QuestionDetailsPage = () => {
       <div className="mx-auto flex max-w-[1400px] flex-col gap-6">
         {/* Header */}
         <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-[#032746]">
-            Question Details
+          <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
+            {t('admin.questionDetails.hero.title')}
           </h1>
           <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
             <button
@@ -377,7 +379,7 @@ const QuestionDetailsPage = () => {
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M13.4615 2.15385H10.9064C10.2595 2.15385 10.2322 2.072 10.0549 1.54072L9.90984 1.10492C9.68943 0.444411 9.07416 0 8.37775 0H5.62225C4.92584 0 4.30984 0.443693 4.09015 1.10492L3.94513 1.54072C3.7678 2.07272 3.74051 2.15385 3.09364 2.15385H0.538462C0.241231 2.15385 0 2.39508 0 2.69231C0 2.98954 0.241231 3.23077 0.538462 3.23077H1.47036L2.02103 11.4865C2.12728 13.0839 3.10657 14 4.70759 14H9.29313C10.8934 14 11.8727 13.0839 11.9797 11.4865L12.5304 3.23077H13.4615C13.7588 3.23077 14 2.98954 14 2.69231C14 2.39508 13.7588 2.15385 13.4615 2.15385ZM5.11179 1.44523C5.18574 1.22482 5.39035 1.07692 5.62225 1.07692H8.37775C8.60965 1.07692 8.81498 1.22482 8.88821 1.44523L9.03323 1.88102C9.06482 1.97507 9.09641 2.06626 9.13087 2.15385H4.86769C4.90215 2.06554 4.93447 1.97436 4.96606 1.88102L5.11179 1.44523ZM10.9042 11.4147C10.836 12.4435 10.3234 12.9231 9.29241 12.9231H4.70687C3.6759 12.9231 3.164 12.4442 3.09507 11.4147L2.54944 3.23077H3.09292C3.18267 3.23077 3.25733 3.22144 3.33775 3.2157C3.36216 3.21929 3.38441 3.23077 3.40954 3.23077H10.589C10.6149 3.23077 10.6364 3.21929 10.6608 3.2157C10.7412 3.22144 10.8159 3.23077 10.9056 3.23077H11.4491L10.9042 11.4147ZM8.97436 6.28205V9.87179C8.97436 10.169 8.73313 10.4103 8.4359 10.4103C8.13867 10.4103 7.89744 10.169 7.89744 9.87179V6.28205C7.89744 5.98482 8.13867 5.74359 8.4359 5.74359C8.73313 5.74359 8.97436 5.98482 8.97436 6.28205ZM6.10256 6.28205V9.87179C6.10256 10.169 5.86133 10.4103 5.5641 10.4103C5.26687 10.4103 5.02564 10.169 5.02564 9.87179V6.28205C5.02564 5.98482 5.26687 5.74359 5.5641 5.74359C5.86133 5.74359 6.10256 5.98482 6.10256 6.28205Z" fill="#032746"/>
               </svg>
-              Delete
+              {t('admin.questionDetails.buttons.delete')}
             </button>
             <button
               type="button"
@@ -387,14 +389,14 @@ const QuestionDetailsPage = () => {
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M11.3967 6.00174C11.2376 6.00174 11.085 6.06493 10.9726 6.17742C10.8601 6.28991 10.7969 6.44248 10.7969 6.60157V10.2005C10.7969 10.3596 10.7337 10.5122 10.6212 10.6247C10.5087 10.7372 10.3561 10.8003 10.197 10.8003H1.79948C1.64039 10.8003 1.48783 10.7372 1.37534 10.6247C1.26285 10.5122 1.19965 10.3596 1.19965 10.2005V1.80296C1.19965 1.64387 1.26285 1.4913 1.37534 1.37882C1.48783 1.26633 1.64039 1.20313 1.79948 1.20313H5.39843C5.55752 1.20313 5.71009 1.13993 5.82258 1.02745C5.93507 0.914956 5.99826 0.762388 5.99826 0.603304C5.99826 0.44422 5.93507 0.291652 5.82258 0.179163C5.71009 0.0666738 5.55752 0.003478 5.39843 0.003478H1.79948C1.32223 0.003478 0.864523 0.193065 0.527055 0.530533C0.189587 0.868001 0 1.3257 0 1.80296V10.2005C0 10.6778 0.189587 11.1355 0.527055 11.4729C0.864523 11.8104 1.32223 12 1.79948 12H10.197C10.6743 12 11.132 11.8104 11.4695 11.4729C11.8069 11.1355 11.9965 10.6778 11.9965 10.2005V6.60157C11.9965 6.44248 11.9333 6.28991 11.8208 6.17742C11.7083 6.06493 11.5558 6.00174 11.3967 6.00174ZM2.3993 6.45761V9.00087C2.3993 9.15995 2.4625 9.31252 2.57499 9.42501C2.68748 9.5375 2.84005 9.6007 2.99913 9.6007H5.54239C5.62133 9.60115 5.69959 9.58602 5.77267 9.55617C5.84575 9.52632 5.91222 9.48234 5.96827 9.42675L10.1191 5.26995L11.8226 3.60243C11.8788 3.54667 11.9234 3.48033 11.9539 3.40724C11.9843 3.33414 12 3.25574 12 3.17656C12 3.09737 11.9843 3.01897 11.9539 2.94588C11.9234 2.87278 11.8788 2.80644 11.8226 2.75068L9.27931 0.177428C9.22355 0.121207 9.15721 0.0765832 9.08411 0.0461308C9.01102 0.0156784 8.93262 0 8.85343 0C8.77425 0 8.69585 0.0156784 8.62275 0.0461308C8.54966 0.0765832 8.48332 0.121207 8.42756 0.177428L6.73605 1.87494L2.57325 6.03173C2.51766 6.08778 2.47368 6.15425 2.44383 6.22733C2.41398 6.30041 2.39885 6.37867 2.3993 6.45761ZM8.85343 1.44906L10.5509 3.14657L9.69919 3.99832L8.00168 2.30081L8.85343 1.44906ZM3.59896 6.70354L7.15593 3.14657L8.85343 4.84407L5.29646 8.40104H3.59896V6.70354Z" fill="#032746"/>
               </svg>
-              Edit
+              {t('admin.questionDetails.buttons.edit')}
             </button>
             <button
               type="button"
               onClick={handleCreateVariant}
               className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 md:px-6 text-[14px] md:text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
-              + Create Variant
+              {t('admin.questionDetails.buttons.createVariant')}
             </button>
           </div>
         </header>
@@ -407,24 +409,23 @@ const QuestionDetailsPage = () => {
             <div
               className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[720px] h-auto lg:h-[472px]"
               style={{
-                boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)",
               }}
             >
-              <h2 className="mb-2 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-                Question Info
+              <h2 className="mb-2 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+                {t('admin.questionDetails.sections.questionInfo')}
               </h2>
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
+                  <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
                     ID:Q-GEO-0012
                   </span>
                   <div className="flex items-center gap-2">
-                    <span className="font-roboto text-[18px] font-normal leading-[20px] text-[#032746]">
-                      Status:
+                    <span className="font-roboto text-[18px] font-normal leading-[20px] text-oxford-blue">
+                      {t('admin.questionDetails.fields.status')}:
                     </span>
                     <span className="font-roboto text-[18px] font-normal leading-[20px] text-[#ED4122]">
-                      In Review
+                      {t('admin.questionDetails.status.inReview')}
                     </span>
                   </div>
                 </div>
@@ -432,7 +433,7 @@ const QuestionDetailsPage = () => {
                 <div className="border-t border-[#E5E7EB] pt-4"></div>
 
                 <div>
-                  <p className="pb-7 font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                  <p className="pb-7 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                     Which of the following mountain ranges is the longest in the world?
                   </p>
 
@@ -446,7 +447,7 @@ const QuestionDetailsPage = () => {
                         className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
                         disabled
                       />
-                      <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
+                      <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
                         A. The Himalayas
                       </span>
                     </label>
@@ -458,7 +459,7 @@ const QuestionDetailsPage = () => {
                         className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
                         disabled
                       />
-                      <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
+                      <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
                         B. The Rocky Mountains
                       </span>
                     </label>
@@ -471,7 +472,7 @@ const QuestionDetailsPage = () => {
                         className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
                         disabled
                       />
-                      <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
+                      <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
                         C. The Andes
                       </span>
                     </label>
@@ -483,15 +484,15 @@ const QuestionDetailsPage = () => {
                         className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
                         disabled
                       />
-                      <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
+                      <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
                         D. The Great Dividing Range
                       </span>
                     </label>
                   </div>
 
                   <div className="border-t border-[#E5E7EB] mt-10 pt-4">
-                    <p className="font-archivo text-[20px] font-bold leading-[20px] text-[#032746] mb-2">
-                      Correct Answer
+                    <p className="font-archivo text-[20px] font-bold leading-[20px] text-oxford-blue mb-2">
+                      {t('admin.questionDetails.fields.correctAnswer')}
                     </p>
                     <label className="flex items-center gap-3 pt-2 cursor-pointer">
                       <input
@@ -515,14 +516,13 @@ const QuestionDetailsPage = () => {
             <div
               className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[720px] h-auto lg:h-[199px]"
               style={{
-                boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)",
               }}
             >
-              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-                Explanation
-              </h2>
+            <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.questionDetails.sections.explanation')}
+            </h2>
               <div className="border-t border-[#E5E7EB] pt-4">
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                   The Andes Mountains, running along the western coast of south America, are the longest continental mountain range in the world, stretching for approximately 7,000 kilometers (4,300 miles).
                 </p>
               </div>
@@ -532,25 +532,24 @@ const QuestionDetailsPage = () => {
             <div
               className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 relative w-full lg:w-[720px] h-auto lg:h-[271px]"
               style={{
-                boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)",
               }}
             >
-              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-                Comments
+              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+                {t('admin.questionDetails.sections.comments')}
               </h2>
               <div className="flex flex-col gap-3 items-end ">
                 <textarea
                   value={comments}
                   onChange={(e) => setComments(e.target.value)}
-                  placeholder="add comments"
-                  className="w-full rounded-[8px] border border-[#03274633] bg-white py-3 px-4 font-roboto text-[16px] leading-[20px] text-[#032746] placeholder:text-[#9CA3AF] outline-none lg:w-[678px] lg:h-[143px] min-h-[100px]"
+                  placeholder={t('admin.questionDetails.placeholders.addComments')}
+                  className="w-full rounded-[8px] border border-[#03274633] bg-white py-3 px-4 font-roboto text-[16px] leading-[20px] text-oxford-blue placeholder:text-[#9CA3AF] outline-none lg:w-[678px] lg:h-[143px] min-h-[100px]"
                 />
                 <button
                   type="button"
                   onClick={handleAddComment}
                   className=" flex  h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 text-[16px] font-roboto font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
                 >
-                  Add Comment
+                  {t('admin.questionDetails.buttons.addComment')}
                 </button>
               </div>
             </div>
@@ -559,12 +558,11 @@ const QuestionDetailsPage = () => {
             <div
               className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[720px] h-auto lg:h-[351px]"
               style={{
-                boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)",
               }}
             >
-              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-                Activity Log
-              </h2>
+            <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.questionDetails.sections.activityLog')}
+            </h2>
               <div className="space-y-4">
                 <div
                   className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4"
@@ -580,10 +578,10 @@ const QuestionDetailsPage = () => {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                       Question Created by Sarah Ahmad
                     </p>
-                    <p className="font-roboto text-[12px] font-normal leading-[20px] text-[#6B7280]">
+                    <p className="font-roboto text-[12px] font-normal leading-[20px] text-dark-gray">
                       Jan 15, 2024
                     </p>
                   </div>
@@ -602,10 +600,10 @@ const QuestionDetailsPage = () => {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                       Question Edited by David Chen
                     </p>
-                    <p className="font-roboto text-[12px] font-normal leading-[20px] text-[#6B7280]">
+                    <p className="font-roboto text-[12px] font-normal leading-[20px] text-dark-gray">
                       Jan 12, 2024
                     </p>
                   </div>
@@ -624,10 +622,10 @@ const QuestionDetailsPage = () => {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                       Question Approved by Emily Wong
                     </p>
-                    <p className="font-roboto text-[12px] font-normal leading-[20px] text-[#6B7280]">
+                    <p className="font-roboto text-[12px] font-normal leading-[20px] text-dark-gray">
                       Jan 25, 2024
                     </p>
                   </div>
@@ -642,11 +640,10 @@ const QuestionDetailsPage = () => {
             <div
               className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[376px] h-auto lg:h-[338px]"
               style={{
-                boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)",
               }}
             >
-              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-                Classification
+              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+                {t('admin.questionDetails.sections.classification')}
               </h2>
 
               <div className="border-t border-[#E5E7EB] pt-4"></div>
@@ -654,30 +651,30 @@ const QuestionDetailsPage = () => {
               <div className="space-y-6 mt-4">
                 {/* Subject */}
                 <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
-                    Subject
+                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                    {t('admin.questionDetails.fields.subject')}
                   </label>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                     Geography
                   </p>
                 </div>
 
                 {/* Topic */}
                 <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
-                    Topic
+                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                    {t('admin.questionDetails.fields.topic')}
                   </label>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                     European Capitals
                   </p>
                 </div>
 
                 {/* Cognitive Level */}
                 <div>
-                    <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
-                    Cognitive Level
+                    <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                    {t('admin.questionDetails.fields.cognitiveLevel')}
                   </label>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                     Recall
                   </p>
                 </div>
@@ -688,37 +685,36 @@ const QuestionDetailsPage = () => {
             <div
               className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[376px] h-auto lg:h-[338px]"
               style={{
-                boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)",
               }}
             >
-              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-                Workflow Information
+              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+                {t('admin.questionDetails.sections.workflowInformation')}
               </h2>
 
               <div className="border-t border-[#E5E7EB] pt-4"></div>
 
               <div className="space-y-6 mt-4">
                 <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
-                    Created by
+                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                    {t('admin.questionDetails.fields.createdBy')}
                   </label>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                     Alice Johnson
                   </p>
                 </div>
                 <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
-                    Submitted on
+                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                    {t('admin.questionDetails.fields.submittedOn')}
                   </label>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                     14-03-2024
                   </p>
                 </div>
                 <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
-                    Last Update
+                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                    {t('admin.questionDetails.fields.lastUpdate')}
                   </label>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                     15-03-2024
                   </p>
                 </div>
@@ -729,29 +725,28 @@ const QuestionDetailsPage = () => {
             <div
               className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[376px] h-auto lg:h-[271px]"
               style={{
-                boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)",
               }}
             >
-              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-                Variants
+              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+                {t('admin.questionDetails.sections.variants')}
               </h2>
 
               <div className="border-t border-[#E5E7EB] pt-4"></div>
 
               <div className="space-y-6 mt-4">
                 <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
-                    Variant ID
+                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                    {t('admin.questionDetails.fields.variantId')}
                   </label>
-                  <p className="font-roboto text-[16px] font-bold leading-[20px] text-[#032746]">
+                  <p className="font-roboto text-[16px] font-bold leading-[20px] text-oxford-blue">
                     Variant #1
                   </p>
                 </div>
                 <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
-                    Created By
+                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                    {t('admin.questionDetails.fields.createdByVariant')}
                   </label>
-                  <p className="font-roboto text-[16px] font-bold leading-[20px] text-[#032746]">
+                  <p className="font-roboto text-[16px] font-bold leading-[20px] text-oxford-blue">
                     Sarah
                   </p>
                 </div>

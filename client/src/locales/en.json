@@ -435,7 +435,10 @@
   },
   "dashboard": {
     "header": {
-      "title": "Dashboard"
+      "title": "Dashboard",
+      "settings": "Settings",
+      "myProfile": "My Profile",
+      "logout": "Logout"
     },
     "sidebar": {
       "dashboard": "Dashboard",
@@ -444,7 +447,18 @@
       "reviewSessions": "Review Sessions"
     },
     "overview": {
-      "subtitle": "Your QBank progress at a glance."
+      "title": "Overview",
+      "subtitle": "Your QBank progress at a glance.",
+      "progress": "Progress",
+      "accuracy": "Accuracy",
+      "overall": "Overall",
+      "questionsCompleted": "Questions Completed",
+      "sectionBreakdown": "Section Breakdown",
+      "legend": {
+        "normal": "Normal",
+        "hovered": "Hovered",
+        "selected": "Selected"
+      }
     },
     "performance": {
       "title": "Performance - Last 10 Sessions"
@@ -453,6 +467,1655 @@
       "title": "Quick Actions",
       "startNewSession": "Start New Session",
       "reviewSessions": "Review Previous Sessions"
+    },
+    "practice": {
+      "hero": {
+        "title": "Start a Practice Session",
+        "subtitle": "Pick your mode, choose topics, and begin."
+      },
+      "sessionMode": {
+        "title": "Session Mode",
+        "testMode": "Test Mode",
+        "testModeDescription": "Timed practice scoring",
+        "studyMode": "Study Mode",
+        "studyModeDescription": "Learn with explanations",
+        "timeLimitNote": "Time limits are available in Test Mode"
+      },
+      "questionStatus": {
+        "title": "Question Status",
+        "new": "New",
+        "solved": "Solved",
+        "incorrect": "Incorrect",
+        "flagged": "Flagged",
+        "correct": "Correct"
+      },
+      "questionPool": {
+        "title": "Question Pool",
+        "allQuestions": "All Questions",
+        "domains": "Domains",
+        "subtopics": "Subtopics",
+        "noQuestionsMatch": "No questions match your filters. Clear filters to continue."
+      },
+      "sessionSize": {
+        "title": "Session Size",
+        "numberOfQuestions": "Number of Questions",
+        "enterRange": "Enter between 1-50.",
+        "onlyQuestionsAvailable": "Only 0 questions available with current filters."
+      },
+      "beginSession": "Begin Session"
+    },
+    "analytics": {
+      "hero": {
+        "title": "Performance Analytics",
+        "subtitle": "Deep insights into your learning progress."
+      },
+      "metrics": {
+        "overallAccuracy": "Overall Accuracy",
+        "avgTimePerQuestion": "Avg Time / Question",
+        "perQuestion": "Per question",
+        "questionsCompleted": "Questions Completed"
+      },
+      "accuracyTrend": {
+        "title": "Accuracy Trend",
+        "all": "All",
+        "30Days": "30 Days",
+        "7Days": "7 Days"
+      },
+      "yourPercentile": {
+        "title": "Your Percentile",
+        "basedOn": "Based on all users in this Taalam QBank"
+      },
+      "accuracyByTopic": {
+        "title": "Accuracy by Topic",
+        "quantitative": "Quantitative",
+        "language": "Language"
+      },
+      "focusAreas": {
+        "title": "Focus Areas"
+      }
+    },
+    "review": {
+      "hero": {
+        "title": "Review Previous Sessions",
+        "subtitle": "Revisit any past practice set to reinforce your learning."
+      },
+      "filters": {
+        "all": "All",
+        "testMode": "Test Mode",
+        "studyMode": "Study Mode"
+      },
+      "table": {
+        "columns": {
+          "number": "#",
+          "date": "DATE",
+          "mode": "MODE",
+          "questions": "#QS",
+          "correct": "% CORRECT",
+          "avgTime": "AVG TIME",
+          "actions": "ACTIONS"
+        },
+        "mobile": {
+          "questions": "Qs:",
+          "correct": "Correct:",
+          "avgTime": "Avg Time:"
+        },
+        "actions": {
+          "reviewAll": "Review All",
+          "reviewIncorrect": "Review Incorrect"
+        }
+      },
+      "pagination": {
+        "showing": "Showing {{from}} to {{to}} of {{total}} results",
+        "previous": "Previous",
+        "next": "Next",
+        "loadMore": "Load More Results"
+      }
+    },
+    "reviewIncorrect": {
+      "item": "Item {{current}} of {{total}}",
+      "questionId": "Question Id:",
+      "title": "Review Incorrect",
+      "incorrectAnswer": "Incorrect Answer",
+      "feedback": {
+        "incorrect": "Incorrect",
+        "correctAnswer": "Correct answer:",
+        "answeredCorrectly": "Answered correctly",
+        "timeSpent": "Time spent"
+      },
+      "explanation": {
+        "title": "Explanation",
+        "show": "Show",
+        "hide": "Hide",
+        "correctAnswerExplanation": "Correct Answer Explanation",
+        "wrongAnswerExplanation": "Wrong Answer Explanation",
+        "answer": "Answer:",
+        "explanationLabel": "Explanation:"
+      },
+      "actions": {
+        "previous": "< Previous",
+        "next": "Next >",
+        "studyMode": "Study Mode",
+        "reviewAll": "Review All",
+        "exitSession": "Exit Session"
+      },
+      "formulaSheet": "Formula Sheet",
+      "timeRemaining": "Time Remaining",
+      "mark": "Mark",
+      "questions": "Questions"
+    },
+    "reviewAll": {
+      "item": "Item {{current}} of {{total}}",
+      "questionId": "Question Id:",
+      "title": "Review Full Session",
+      "subtitle": "Revisit any past practice set to reinforce your learning",
+      "nextQuestion": "Next Question",
+      "newQuestion": "New Question",
+      "actions": {
+        "previous": "< Previous",
+        "next": "Next >",
+        "studyMode": "Study Mode",
+        "reviewIncorrect": "Review Incorrect",
+        "exitSession": "Exit Session"
+      },
+      "formulaSheet": "Formula Sheet",
+      "timeRemaining": "Time Remaining",
+      "mark": "Mark",
+      "questions": "Questions"
+    },
+    "questionSession": {
+      "item": "Item {{current}} of {{total}}",
+      "questionId": "Question Id:",
+      "formulaSheet": "Formula Sheet",
+      "timeRemaining": "Time Remaining",
+      "mark": "Mark",
+      "questions": "Questions",
+      "title": "Question Solving Page",
+      "submitAnswer": "Submit Answer",
+      "correctAnswer": "Correct Answer",
+      "incorrectAnswer": "Incorrect Answer",
+      "correctAnswerLabel": "Correct answer:",
+      "answeredCorrectly": "Answered correctly",
+      "timeSpent": "Time spent",
+      "yourAnswer": "Your Answer",
+      "yourAnswerExplanation": "Your Answer Explanation",
+      "consider": "Consider:",
+      "hints": "Hints",
+      "showHints": "Show hints",
+      "hideHints": "Hide hints",
+      "revealHints": "Reveal hints to get strategic nudges before reattempting the question.",
+      "submitToView": "Submit your answer to view the full explanation and hints.",
+      "submitToSee": "Submit your answer to see explanations and hints.",
+      "actions": {
+        "previous": "< Previous",
+        "next": "Next >",
+        "submit": "Submit",
+        "exit": "Exit",
+        "exitSession": "Exit Session",
+        "showHint": "Show Hint",
+        "hideHint": "Hide Hint"
+      },
+      "explanation": {
+        "title": "Explanation",
+        "show": "Show",
+        "hide": "Hide",
+        "correctAnswerExplanation": "Correct Answer Explanation",
+        "answer": "Answer:",
+        "explanationLabel": "Explanation:"
+      }
+    },
+    "sessionCompletion": {
+      "title": "Session Complete",
+      "description": "You have reached the end of this {{mode}} session. Review your performance or head back to the practice dashboard to start another set.",
+      "test": "test",
+      "study": "study",
+      "viewSummary": "View Summary",
+      "reviewAnswers": "Review Answers",
+      "exitSession": "Exit Session"
+    },
+    "sessionSummary": {
+      "item": "Item {{current}} of {{total}}",
+      "questionId": "Question Id:",
+      "hero": {
+        "title": "Session Complete",
+        "subtitle": "Here's how you performed in this session."
+      },
+      "accuracySnapshot": {
+        "title": "Accuracy snapshot",
+        "description": "Keep the momentum going—your accuracy curve stayed strong across this session.",
+        "correct": "Correct",
+        "questions": "questions",
+        "incorrect": "Incorrect",
+        "questionsAnswered": "Questions answered",
+        "averagePace": "Average pace"
+      },
+      "sessionOverview": {
+        "testMode": "Test mode",
+        "studyMode": "Study mode",
+        "title": "Get to know your session at a glace",
+        "description": "Feedback unlocks now that the timer has ended. Dive into every explanation or focus on the questions you missed.",
+        "questionsCompleted": "Questions completed",
+        "total": "total",
+        "overall": "overall",
+        "average": "average"
+      },
+      "metrics": {
+        "accuracy": {
+          "title": "Accuracy",
+          "description": "Percentage of correct answer in this session."
+        },
+        "questionOutcome": {
+          "title": "Question outcome",
+          "description": "Questions completed"
+        },
+        "timeTaken": {
+          "title": "Time taken",
+          "description": "Average {{pace}} question"
+        }
+      },
+      "actions": {
+        "goToDashboard": "Go to Dashboard"
+      },
+      "formulaSheet": "Formula Sheet",
+      "timeRemaining": "Time Remaining",
+      "mark": "Mark"
+    }
+  },
+  "admin": {
+    "sidebar": {
+      "dashboard": "Dashboard",
+      "userManagement": "User Management",
+      "questionBank": "Question Bank",
+      "classification": "Classification",
+      "subscriptions": "Subscriptions & Billing",
+      "reports": "Reports & Analytics",
+      "moderation": "Content Moderation",
+      "settings": "System Settings",
+      "security": "Security & Permissions"
+    },
+    "dashboard": {
+      "hero": {
+        "title": "Dashboard Overview",
+        "subtitle": "Monitor system activity and key metrics"
+      },
+      "stats": {
+        "totalUsers": "Total Users",
+        "verifiedUsers": "Verified Users",
+        "activeSubscriptions": "Active Subscriptions",
+        "revenue": "Revenue",
+        "fromLastMonth": "+12% from last month",
+        "verificationRate": "72% verification rate",
+        "thisWeek": "+8% this week",
+        "thisMonth": "+15% this month"
+      },
+      "charts": {
+        "userGrowthTrend": {
+          "title": "User Growth Trend",
+          "subtitle": "Monthly active users"
+        },
+        "subscriptionPlans": {
+          "title": "Subscription Plans",
+          "subtitle": "Plan distribution"
+        },
+        "planLabels": {
+          "free": "Free",
+          "premium": "Premium",
+          "organization": "Organization"
+        }
+      },
+      "sections": {
+        "latestSignups": "Latest Sign-ups",
+        "systemNotifications": "System Notifications"
+      },
+      "notifications": {
+        "highServerLoad": {
+          "title": "High Server Load",
+          "description": "CPU usage above 85%"
+        },
+        "scheduledMaintenance": {
+          "title": "Scheduled Maintenance",
+          "description": "Database backup at 2 AM",
+          "time": "Tomorrow"
+        },
+        "backupCompleted": {
+          "title": "Backup Completed",
+          "description": "Daily backup successful",
+          "time": "1 hour ago"
+        }
+      },
+      "time": {
+        "minAgo": "{{count}} min ago",
+        "hourAgo": "{{count}} hour ago"
+      }
+    },
+    "userManagement": {
+      "hero": {
+        "title": "User Management",
+        "subtitle": "Manage user accounts and workflow roles."
+      },
+      "actions": {
+        "addNewUser": "+ Add New User",
+        "export": "Export"
+      },
+      "roles": {
+        "questionGatherer": "Question Gatherer",
+        "questionCreator": "Question Creator",
+        "processor": "Processor",
+        "questionExplainer": "Question Explainer"
+      },
+      "status": {
+        "active": "Active",
+        "suspended": "Suspended",
+        "all": "All"
+      },
+      "filters": {
+        "searchPlaceholder": "Search by name / Email",
+        "filter": "Filter",
+        "status": "Status",
+        "role": "Role",
+        "refresh": "Refresh",
+        "applyFilters": "Apply Filters"
+      },
+      "table": {
+        "headers": {
+          "userName": "User Name",
+          "email": "Email",
+          "workflowRole": "Workflow Role",
+          "systemRole": "System Role",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "emptyState": "No users match the current filters.",
+        "pagination": {
+          "showing": "Showing {{first}} to {{last}} of {{total}} results",
+          "previous": "Previous",
+          "next": "Next"
+        },
+        "ariaLabels": {
+          "view": "View {{name}}",
+          "edit": "Edit {{name}}"
+        }
+      },
+      "export": {
+        "headers": {
+          "name": "Name",
+          "email": "Email",
+          "workflowRole": "Workflow Role",
+          "systemRole": "System Role",
+          "status": "Status"
+        },
+        "fileName": "user-management.csv"
+      }
+    },
+    "addUser": {
+      "hero": {
+        "title": "Add New User",
+        "subtitle": "Create a new user account with the necessary details."
+      },
+      "form": {
+        "title": "Add New User",
+        "fields": {
+          "userName": "User Name",
+          "emailAddress": "Email Address",
+          "password": "Password",
+          "status": "Status",
+          "systemRole": "System Role",
+          "workflowRole": "Workflow Role"
+        },
+        "placeholders": {
+          "enterName": "Enter name",
+          "enterEmail": "Enter your email address",
+          "autoGenerated": "Auto generated (Optional)",
+          "selectSystemRole": "Select a system role",
+          "selectWorkflowRole": "Select a workflow role"
+        },
+        "systemRoles": {
+          "admin": "Admin",
+          "editor": "Editor",
+          "viewer": "Viewer"
+        },
+        "buttons": {
+          "saveUser": "Save User",
+          "saveChanges": "Save Changes",
+          "cancel": "Cancel"
+        }
+      }
+    },
+    "editUser": {
+      "hero": {
+        "title": "Edit User",
+        "subtitle": "Modify user details or change workflow access."
+      },
+      "form": {
+        "title": "Edit User"
+      },
+      "errors": {
+        "notFound": "User not found",
+        "notFoundDescription": "We could not locate the requested user. Please return to the user management screen.",
+        "goBack": "Go back to User Management"
+      }
+    },
+    "viewUser": {
+      "backToUsers": "Back to Users",
+      "editUser": "Edit User",
+      "sections": {
+        "personalInformation": "Personal Information",
+        "accountDetails": "Account Details",
+        "activityLog": "Activity Log"
+      },
+      "fields": {
+        "fullName": "Full Name",
+        "email": "Email",
+        "systemRole": "System Role",
+        "workflowRole": "Workflow Role",
+        "status": "Status",
+        "lastLogin": "Last Login",
+        "dateCreated": "Date Created"
+      },
+      "activity": {
+        "noRecentActivity": "No recent activity recorded."
+      },
+      "errors": {
+        "notFound": "User not found",
+        "notFoundDescription": "We could not locate the requested user. Please return to the user management screen.",
+        "backToManagement": "Back to User Management"
+      }
+    },
+    "questionBank": {
+      "hero": {
+        "title": "Question Bank",
+        "subtitle": "Manage, filter, and review all questions by subject, topic, or role."
+      },
+      "actions": {
+        "questionManagement": "Question Management",
+        "users": "Users",
+        "addNewQuestion": "+ Add New Question",
+        "import": "Import",
+        "export": "Export"
+      },
+      "tabs": {
+        "all": "All Questions",
+        "rawPending": "Raw Questions Pending",
+        "variantPending": "Variant Pending",
+        "rejected": "Rejected"
+      },
+      "stats": {
+        "totalQuestions": "Total Questions",
+        "pending": "Pending",
+        "approved": "Approved"
+      },
+      "filters": {
+        "searchPlaceholder": "Search Questions...",
+        "resetFilter": "Reset Filter",
+        "exam": "Exam",
+        "subject": "Subject",
+        "topic": "Topic",
+        "cognitiveLevel": "Cognitive Level",
+        "status": "Status"
+      },
+      "table": {
+        "headers": {
+          "question": "Question",
+          "subject": "Subject",
+          "topic": "Topic",
+          "level": "Level",
+          "createdBy": "Created By",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "type": "Type",
+        "pagination": {
+          "showing": "Showing {{first}} to {{last}} of {{total}} results",
+          "previous": "Previous",
+          "next": "Next"
+        },
+        "emptyState": "No questions match the current filters.",
+        "ariaLabels": {
+          "view": "View {{prompt}}"
+        }
+      }
+    },
+    "addNewQuestion": {
+      "hero": {
+        "title": "Add New Question"
+      },
+      "buttons": {
+        "saveDraft": "Save Draft",
+        "submit": "Submit",
+        "cancel": "Cancel",
+        "saveQuestion": "Save Question"
+      },
+      "sections": {
+        "questionDetails": "Question Details",
+        "classification": "Classification",
+        "explanation": "Explanation"
+      },
+      "fields": {
+        "questionText": "Question Text",
+        "questionType": "Question Type",
+        "optionA": "Option A",
+        "optionB": "Option B",
+        "optionC": "Option C",
+        "optionD": "Option D",
+        "correctAnswer": "Correct Answer",
+        "subject": "Subject",
+        "topic": "Topic",
+        "cognitiveLevel": "Cognitive Level",
+        "source": "Source (Optional)"
+      },
+      "placeholders": {
+        "questionText": "Enter your question text here...",
+        "explanation": "Enter explanation here...",
+        "selectSubject": "Select Subject",
+        "selectTopic": "Select Topic",
+        "selectLevel": "Select Level",
+        "selectSource": "Select Source"
+      },
+      "questionTypes": {
+        "multipleChoice": "Multiple Choice (MCQ)",
+        "trueFalse": "True/False",
+        "shortAnswer": "Short Answer",
+        "essay": "Essay"
+      },
+      "correctAnswerOptions": {
+        "optionA": "Option A",
+        "optionB": "Option B",
+        "optionC": "Option C",
+        "optionD": "Option D"
+      },
+      "cognitiveLevels": {
+        "remember": "Remember",
+        "understand": "Understand",
+        "apply": "Apply",
+        "analyze": "Analyze",
+        "evaluate": "Evaluate",
+        "create": "Create"
+      },
+      "sources": {
+        "textbook": "Textbook",
+        "pastExam": "Past Exam",
+        "custom": "Custom"
+      }
+    },
+    "questionDetails": {
+      "hero": {
+        "title": "Question Details"
+      },
+      "buttons": {
+        "delete": "Delete",
+        "edit": "Edit",
+        "createVariant": "+ Create Variant"
+      },
+      "sections": {
+        "questionInfo": "Question Info",
+        "explanation": "Explanation",
+        "comments": "Comments",
+        "activityLog": "Activity Log",
+        "classification": "Classification",
+        "workflowInformation": "Workflow Information",
+        "variants": "Variants"
+      },
+      "fields": {
+        "status": "Status",
+        "correctAnswer": "Correct Answer",
+        "subject": "Subject",
+        "topic": "Topic",
+        "cognitiveLevel": "Cognitive Level",
+        "createdBy": "Created by",
+        "submittedOn": "Submitted on",
+        "lastUpdate": "Last Update",
+        "variantId": "Variant ID",
+        "createdByVariant": "Created By"
+      },
+      "status": {
+        "inReview": "In Review"
+      },
+      "placeholders": {
+        "addComments": "add comments"
+      },
+      "buttons": {
+        "addComment": "Add Comment"
+      }
+    },
+    "createVariant": {
+      "hero": {
+        "title": "Create Variant",
+        "subtitle": "Create a variant on an existing approved question."
+      },
+      "tip": "Tip: Edit the question below as a new variant. Do not cite the original or add explanation yet.",
+      "buttons": {
+        "cancel": "Cancel",
+        "saveVariant": "Save Variant",
+        "createVariant": "Create Variant"
+      },
+      "sections": {
+        "questionDetails": "Question Details",
+        "explanation": "Explanation",
+        "classification": "Classification",
+        "sourceQuestionOverview": "Source Question Overview"
+      },
+      "fields": {
+        "question": "Question",
+        "optionA": "Option A",
+        "optionB": "Option B",
+        "optionC": "Option C",
+        "optionD": "Option D",
+        "correctAnswer": "Correct Answer",
+        "subject": "Subject",
+        "topic": "Topic",
+        "subtopic": "Subtopic",
+        "cognitiveLevel": "Cognitive Level"
+      },
+      "placeholders": {
+        "questionText": "Enter question text here...",
+        "explanation": "Enter explanation here...",
+        "enterOptionA": "Enter option A",
+        "enterOptionB": "Enter option B",
+        "enterOptionC": "Enter option C",
+        "enterOptionD": "Enter option D",
+        "selectCorrectAnswer": "Select correct answer",
+        "selectSubject": "Select Subject",
+        "selectTopic": "Select Topic",
+        "selectSubtopic": "Select Subtopic",
+        "selectCognitiveLevel": "Select Cognitive level"
+      },
+      "correctAnswerOptions": {
+        "optionA": "Option A",
+        "optionB": "Option B",
+        "optionC": "Option C",
+        "optionD": "Option D"
+      },
+      "sourceQuestion": {
+        "correctAnswer": "Correct Answer:",
+        "source": "Source:",
+        "creator": "Creator",
+        "createdOn": "Created on"
+      }
+    },
+    "createNewQuestionBank": {
+      "hero": {
+        "title": "Create New Question Bank",
+        "subtitle": "Upload question and define Subscription plans for this product"
+      },
+      "sections": {
+        "productDetails": "Create New Question Bank",
+        "uploadQuestions": "Upload Questions",
+        "subscriptionPlan": "Subscription Plan"
+      },
+      "fields": {
+        "productName": "Product Name",
+        "description": "Description"
+      },
+      "placeholders": {
+        "productName": "E.g advance Math Question Bank",
+        "dragAndDrop": "drag and drop",
+        "orClickToBrowse": "or click to browse"
+      },
+      "buttons": {
+        "addPlan": "Add Plan",
+        "cancel": "Cancel",
+        "createProduct": "Create Product"
+      },
+      "table": {
+        "headers": {
+          "planName": "PLAN NAME",
+          "price": "PRICE",
+          "duration": "DURATION",
+          "integrationDetails": "INTEGRATION DETAILS",
+          "actions": "ACTIONS"
+        },
+        "integrationDetails": "Product ID: {{productId}}, Price ID: {{priceId}}"
+      },
+      "ariaLabels": {
+        "editPlan": "Edit {{planName}}"
+      }
+    },
+    "questionManagement": {
+      "sections": {
+        "myTasks": "My Tasks",
+        "publicPool": "Public Pool",
+        "availableQuestions": "Available Questions",
+        "createNewVariant": "Create New Variant"
+      },
+      "fields": {
+        "sourceQuestion": "Source Question"
+      },
+      "placeholders": {
+        "searchQuestions": "Search Questions...",
+        "selectClaimedQuestion": "Select a claimed question"
+      },
+      "buttons": {
+        "claim": "Claim",
+        "createVariant": "Create Variant"
+      },
+      "variantOf": "Variant of: {{question}}",
+      "question": "Question {{id}}",
+      "subject": "Subject: {{subject}}"
+    },
+    "variantQuestionReview": {
+      "hero": {
+        "title": "Variant Question Review",
+        "subtitle": "Review and take action on a submitted variant"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "refresh": "Refresh",
+        "export": "Export",
+        "sendToExplainer": "Send to Explainer",
+        "reject": "Reject",
+        "approve": "Approve",
+        "addComment": "Add Comment",
+        "createVariant": "Create Variant"
+      },
+      "sections": {
+        "sourceQuestionReference": "Source Question Reference",
+        "variantQuestion": "Variant Question",
+        "explanation": "Explanation",
+        "classification": "Classification",
+        "internalComments": "Internal Comments",
+        "activityLog": "Activity Log"
+      },
+      "fields": {
+        "questionId": "Question ID:",
+        "question": "Question",
+        "options": "Options",
+        "correctAnswer": "Correct Answer",
+        "type": "Type",
+        "creator": "Creator",
+        "status": "Status",
+        "subject": "Subject",
+        "topic": "Topic",
+        "cognitiveLevel": "Cognitive Level",
+        "sourceQuestion": "Source Question",
+        "workflowStage": "Workflow Stage",
+        "lastUpdate": "Last Update"
+      },
+      "placeholders": {
+        "explanation": "Enter explanation...",
+        "addComment": "Add a comment...."
+      },
+      "status": {
+        "inReview": "In Review"
+      },
+      "types": {
+        "multipleChoice": "Multiple Choice"
+      }
+    },
+    "subscriptionPlans": {
+      "hero": {
+        "title": "Subscription Plans",
+        "subtitle": "Manage available plans and their pricing"
+      },
+      "actions": {
+        "export": "Export",
+        "addNewPlan": "+ Add New Plan",
+        "newPlan": "New Plan",
+        "manageUser": "Manage User",
+        "paymentHistory": "Payment History",
+        "newQuestion": "New Question"
+      },
+      "filters": {
+        "status": "Status",
+        "all": "All",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "table": {
+        "columns": {
+          "planName": "PLAN NAME",
+          "price": "PRICE",
+          "duration": "DURATION",
+          "subscriber": "SUBSCRIBER",
+          "status": "STATUS",
+          "actions": "ACTIONS"
+        },
+        "emptyState": "No plans match the current filters.",
+        "deleteConfirm": "Are you sure you want to delete {{planName}}?",
+        "exportFileName": "subscription-plans.csv"
+      }
+    },
+    "addNewPlan": {
+      "hero": {
+        "title": "Add New Plans",
+        "subtitle": "Manage available plans and their pricing"
+      },
+      "sections": {
+        "addNewPlan": "Add New Plan"
+      },
+      "fields": {
+        "planName": "Plan Name",
+        "price": "Price ($)",
+        "duration": "Duration",
+        "description": "Description",
+        "status": "Status"
+      },
+      "placeholders": {
+        "planName": "Add plan name",
+        "price": "Add Price",
+        "description": "Short description of the plan"
+      },
+      "options": {
+        "status": "Status",
+        "active": "Active",
+        "inactive": "Inactive",
+        "monthly": "Monthly",
+        "quarterly": "Quarterly",
+        "yearly": "Yearly"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "save": "Save"
+      }
+    },
+    "paymentHistory": {
+      "hero": {
+        "title": "Payment History"
+      }
+    },
+    "manageUserSubscriptions": {
+      "hero": {
+        "title": "Manage User Subscriptions"
+      },
+      "actions": {
+        "exportBillingReports": "Export Billing Reports"
+      },
+      "filters": {
+        "plan": "Plan: All",
+        "all": "All",
+        "active": "Active",
+        "expire": "Expire",
+        "pending": "Pending"
+      },
+      "table": {
+        "columns": {
+          "user": "USER",
+          "email": "EMAIL",
+          "plan": "PLAN",
+          "startDate": "START DATE",
+          "expiryDate": "EXPIRY DATE",
+          "paymentStatus": "PAYMENT STATUS"
+        },
+        "emptyState": "No subscriptions match the current filters.",
+        "mobileLabels": {
+          "user": "User:",
+          "email": "Email:",
+          "plan": "Plan:",
+          "startDate": "Start Date:",
+          "expiryDate": "Expiry Date:",
+          "paymentStatus": "Payment Status:"
+        },
+        "exportFileName": "billing-reports.csv",
+        "ariaLabels": {
+          "view": "View {{user}}"
+        }
+      }
+    },
+    "subscriptionDetails": {
+      "hero": {
+        "title": "Subscription Details"
+      },
+      "sections": {
+        "userInfo": "User Info",
+        "planInfo": "Plan Info",
+        "billingInfo": "Billing Info"
+      },
+      "fields": {
+        "name": "Name",
+        "email": "Email",
+        "currentPlan": "Current Plan",
+        "duration": "Duration",
+        "renewalDate": "Renewal Date",
+        "status": "Status",
+        "lastPayment": "Last payment",
+        "nextDueDate": "Next Due Date",
+        "paymentMethod": "Payment Method"
+      },
+      "actions": {
+        "upgradeDowngrade": "Upgrade / Downgrade Plan",
+        "cancelSubscription": "Cancel Subscription",
+        "renewalManually": "Renewal Manually"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "saveChanges": "Save Changes"
+      }
+    },
+    "subscriptionTrends": {
+      "hero": {
+        "title": "Subscription Trend"
+      },
+      "actions": {
+        "comparePeriod": "Compare period",
+        "exportReport": "Export Report"
+      },
+      "filters": {
+        "planType": "Plan Type",
+        "dateRange": "Date range",
+        "last30Days": "Last 30 Days",
+        "last7Days": "Last 7 Days",
+        "last90Days": "Last 90 Days",
+        "lastYear": "Last Year"
+      },
+      "kpi": {
+        "totalSubscribers": "Total Subscribers",
+        "totalRevenue": "Total Revenue",
+        "renewalRate": "Renewal Rate",
+        "churnRate": "Churn Rate"
+      },
+      "charts": {
+        "revenueTrend": "Revenue Trend",
+        "planDistribution": "Plan Distribution"
+      },
+      "table": {
+        "title": "Plan-Wise Breakdown",
+        "columns": {
+          "planType": "PLAN TYPE",
+          "subscribers": "SUBSCRIBERS",
+          "active": "ACTIVE",
+          "expired": "EXPIRED",
+          "revenue": "REVENUE",
+          "avgDuration": "AVG DURATION"
+        },
+        "emptyState": "No data available",
+        "pagination": {
+          "showing": "Showing {{first}} to {{last}} of {{total}} results",
+          "previous": "Previous",
+          "next": "Next"
+        }
+      }
+    },
+    "reportsAndAnalytics": {
+      "hero": {
+        "title": "Reports & Analytics",
+        "subtitle": "Monitor student performance, question usage, and test activity."
+      },
+      "actions": {
+        "comparePeriod": "Compare period",
+        "exportReport": "Export Report"
+      },
+      "filters": {
+        "exam": "Exam",
+        "subject": "Subject",
+        "cognitiveLevel": "Cognitive Level",
+        "dateRange": "Date Range",
+        "lastWeek": "Last Week",
+        "lastMonth": "Last Month",
+        "lastYear": "Last Year",
+        "viewDetails": "View Details",
+        "applyFilter": "Apply Filter"
+      },
+      "tabs": {
+        "userGrowthAnalytics": "User Growth Analytics",
+        "subscriptionTrends": "Subscription Trends",
+        "performanceAnalytics": "Performance Analytics",
+        "exportReports": "Export Reports"
+      },
+      "kpi": {
+        "totalQuestions": "Total Questions",
+        "averageAccuracy": "Average Accuracy",
+        "mostAttemptedSubject": "Most Attempted Subject",
+        "averageTimePerQuestion": "Average Time/Question"
+      },
+      "charts": {
+        "performanceTrend": "Performance Trend (Accuracy over Time)",
+        "practiceDistribution": "Practice Distribution by subject",
+        "kpiSummary": "KPI Summary Cards"
+      },
+      "table": {
+        "topPerformanceUser": "Top Performance User",
+        "columns": {
+          "number": "#",
+          "user": "USER",
+          "email": "EMAIL",
+          "attempts": "ATTEMPTS",
+          "accuracy": "ACCURACY %",
+          "averageTime": "AVERAGE TIME / QUESTION",
+          "lastActive": "LAST ACTIVE"
+        }
+      },
+      "sections": {
+        "recentReports": "Recent Reports Generated",
+        "systemInsights": "System Insights",
+        "generated": "Generated {{date}}"
+      },
+      "insights": {
+        "mostDifficultCognitiveLevel": "Most Difficult Cognitive Level:",
+        "peakActivity": "Peak Activity:",
+        "lowAccuracy": "Low Accuracy in Chemistry ("
+      }
+    },
+    "exportReports": {
+      "hero": {
+        "title": "Export Reports",
+        "subtitle": "Select your desired report options below."
+      },
+      "fields": {
+        "selectReportType": "Select Report Type",
+        "selectFormat": "Select Format",
+        "dateRange": "Date Range",
+        "includeCharts": "Include Charts",
+        "scheduleRecurring": "Schedule Recurring Export",
+        "frequency": "Frequency",
+        "deliveryMethod": "Delivery Method",
+        "recipients": "Recipients"
+      },
+      "options": {
+        "reportType": {
+          "userGrowth": "User Growth",
+          "subscriptionTrends": "Subscription Trends",
+          "performanceAnalytics": "Performance Analytics"
+        },
+        "format": {
+          "excel": "Excel",
+          "pdf": "PDF",
+          "csv": "CSV"
+        },
+        "frequency": {
+          "daily": "Daily",
+          "weekly": "Weekly",
+          "monthly": "Monthly"
+        },
+        "deliveryMethod": {
+          "email": "Email",
+          "download": "Download"
+        }
+      },
+      "placeholders": {
+        "recipients": "Enter email address"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "exportReport": "Export Report"
+      }
+    },
+    "performanceAnalytics": {
+      "hero": {
+        "title": "Performance Analytics",
+        "subtitle": "Analyze user performance across various metrics."
+      },
+      "actions": {
+        "comparePeriod": "Compare period",
+        "exportReport": "Export Report"
+      },
+      "filters": {
+        "exam": "Exam",
+        "subject": "Subject",
+        "cognitiveLevel": "Cognitive Level",
+        "dateRange": "Date range",
+        "last30Days": "Last 30 Days",
+        "last7Days": "Last 7 Days",
+        "last90Days": "Last 90 Days",
+        "lastYear": "Last Year",
+        "recall": "Recall",
+        "analysis": "Analysis",
+        "synthesis": "Synthesis"
+      },
+      "kpi": {
+        "averageAccuracy": "Average Accuracy",
+        "averageTimePerQuestion": "Average Time/ Question",
+        "improvementPercent": "Improvement %",
+        "totalAttempt": "Total Attempt"
+      },
+      "charts": {
+        "accuracyOverTime": "Accuracy over Time",
+        "subjectDistribution": "Subject Distribution",
+        "last30Days": "Last 30 days",
+        "improvement": "+5%"
+      },
+      "tables": {
+        "topPerformer": "Top Performer",
+        "weakAreas": "Weak Areas",
+        "columns": {
+          "name": "NAME",
+          "accuracy": "Accuracy",
+          "timePerQ": "Time/Q",
+          "subject": "Subject",
+          "avgAccuracy": "Avg.Accuracy",
+          "attempted": "Attempted"
+        }
+      }
+    },
+    "userGrowthAnalytics": {
+      "hero": {
+        "title": "User Growth Analytics"
+      },
+      "actions": {
+        "comparePeriod": "Compare period",
+        "exportReport": "Export Report"
+      },
+      "filters": {
+        "dateRange": "Date range",
+        "userType": "User Type",
+        "allRoles": "All Roles",
+        "allPlans": "All Plans",
+        "last30Days": "Last 30 Days",
+        "last7Days": "Last 7 Days",
+        "last90Days": "Last 90 Days",
+        "lastYear": "Last Year",
+        "student": "Student",
+        "teacher": "Teacher",
+        "admin": "Admin",
+        "parent": "Parent",
+        "free": "Free",
+        "premium": "Premium",
+        "organization": "Organization"
+      },
+      "kpi": {
+        "newSignups": "New Sign-ups",
+        "activeUsers": "Active Users",
+        "retentionRate": "Retention Rate",
+        "verificationRate": "Verification Rate"
+      },
+      "charts": {
+        "overallUserGrowth": "Overall User Growth",
+        "newUsersOverLast30Days": "New users over the last 30 days",
+        "signupsByRole": "Sign-ups by Role",
+        "categorizationOfNewUsers": "Categorization of new users"
+      }
+    },
+    "security": {
+      "hero": {
+        "title": "Security Settings"
+      }
+    },
+    "classificationManagement": {
+      "hero": {
+        "title": "Classification Management",
+        "subtitle": "Organize questions by subject, topic, subtopic, and concept"
+      },
+      "actions": {
+        "export": "Export",
+        "addNewSubject": "+ Add New Subject",
+        "addNewTopic": "+ Add New Topic",
+        "addNewSubtopic": "+ Add New Subtopic",
+        "addNewConcept": "+ Add New Concept"
+      },
+      "tabs": {
+        "subject": "Subject",
+        "topics": "Topics",
+        "subtopics": "Subtopics",
+        "concepts": "Concepts"
+      },
+      "stats": {
+        "subjects": "Subjects",
+        "topics": "Topics",
+        "subtopics": "Subtopics",
+        "concepts": "Concepts"
+      },
+      "table": {
+        "columns": {
+          "subjectName": "Subject Name",
+          "topicName": "Topic Name",
+          "subtopicName": "Subtopic Name",
+          "conceptName": "Concept Name",
+          "description": "Description",
+          "createdBy": "Created By",
+          "date": "Date",
+          "linkedSubtopic": "Linked Subtopic",
+          "actions": "Actions"
+        },
+        "emptyState": {
+          "subjects": "No subjects match the current filters.",
+          "topics": "No topics match the current filters.",
+          "subtopics": "No subtopics match the current filters.",
+          "concepts": "No concepts match the current filters."
+        },
+        "pagination": {
+          "showing": "Showing {{first}} to {{last}} of {{total}} results",
+          "previous": "Previous",
+          "next": "Next"
+        },
+        "ariaLabels": {
+          "view": "View {{name}}",
+          "edit": "Edit {{name}}"
+        }
+      },
+      "filters": {
+        "searchPlaceholder": "Search...",
+        "selectSubject": "Select Subject",
+        "selectTopic": "Select Topic",
+        "selectSubtopic": "Select Subtopic",
+        "allSubjects": "All Subjects",
+        "allTopics": "All Topics",
+        "allSubtopics": "All Subtopics"
+      },
+      "headings": {
+        "subject": "Classification Management",
+        "topics": "Topics Management",
+        "subtopics": "Subtopics Management",
+        "concepts": "Concepts Management"
+      },
+      "subheadings": {
+        "subject": "Organize questions by subject, topic, subtopic, and concept",
+        "topics": "Manage and organize topics within subjects",
+        "subtopics": "Manage and organize subtopics within topics",
+        "concepts": "Manage and organize concepts within subtopics"
+      },
+      "hierarchy": {
+        "title": "Hierarchy",
+        "subject": "Subject",
+        "topic": "Topic",
+        "subtopic": "Subtopic",
+        "concept": "Concept"
+      }
+    },
+    "addSubject": {
+      "hero": {
+        "title": "Create Subject"
+      },
+      "sections": {
+        "createSubject": "Create Subject"
+      },
+      "fields": {
+        "subjectName": "Subject Name",
+        "description": "Description",
+        "code": "Code (optional)"
+      },
+      "placeholders": {
+        "subjectName": "Enter subject name",
+        "description": "A brief description of the subject",
+        "code": "Enter subject code"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "create": "Create"
+      }
+    },
+    "addTopic": {
+      "hero": {
+        "title": "Add New Topic",
+        "subtitle": "Organize questions by subject, topic, subtopic, and concept"
+      },
+      "sections": {
+        "addNewTopic": "Add New Topic"
+      },
+      "fields": {
+        "parentSubject": "Parent Subject",
+        "topicName": "Topic Name",
+        "description": "Description"
+      },
+      "placeholders": {
+        "subjectName": "Enter subject name",
+        "topicName": "Enter topic name",
+        "description": "A brief description of the subject"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "create": "Create"
+      }
+    },
+    "addSubtopic": {
+      "hero": {
+        "title": "Add Subtopic"
+      },
+      "sections": {
+        "addNewSubtopic": "Add New Subtopic"
+      },
+      "fields": {
+        "subtopicName": "Subtopic Name",
+        "description": "Description",
+        "selectSubject": "Select Subject",
+        "selectTopic": "Select Topic"
+      },
+      "placeholders": {
+        "subtopicName": "e.g. Advanced SEO Techniques",
+        "description": "A brief description of the subject",
+        "subjectName": "Enter subject name",
+        "selectTopic": "Select a Topic"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "saveSubtopic": "Save Subtopic"
+      }
+    },
+    "addConcept": {
+      "hero": {
+        "title": "Add Concepts"
+      },
+      "sections": {
+        "addNewConcept": "Add New Concept"
+      },
+      "fields": {
+        "conceptName": "Concept Name",
+        "description": "Description",
+        "selectSubject": "Select Subject",
+        "selectTopic": "Select Topic",
+        "selectSubtopic": "Select Subtopic"
+      },
+      "placeholders": {
+        "conceptName": "Enter concept name",
+        "description": "A brief description of the subject",
+        "subjectName": "Enter subject name",
+        "selectTopic": "Select a Topic",
+        "selectSubtopic": "e.g. Advanced SEO Techniques"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "saveConcepts": "Save Concepts"
+      }
+    },
+    "auditLogs": {
+      "hero": {
+        "title": "Audit Logs"
+      }
+    },
+    "rolesPermissions": {
+      "hero": {
+        "title": "Roles & Permissions"
+      }
+    },
+    "adminRolePermissions": {
+      "hero": {
+        "title": "Admin Roles & Permissions"
+      },
+      "buttons": {
+        "addNewRole": "+ Add New Role",
+        "cancel": "Cancel",
+        "saveChanges": "Save Changes"
+      },
+      "badges": {
+        "allPermissions": "All Permissions",
+        "limitedPermissions": "Limited Permissions"
+      },
+      "sections": {
+        "permissionSettings": "Permission Settings",
+        "dashboard": "Dashboard",
+        "userManagement": "User Management",
+        "questionBank": "Question Bank"
+      },
+      "permissions": {
+        "viewAnalytics": "View Analytics",
+        "viewReports": "View Reports",
+        "createUsers": "Create Users",
+        "editUsers": "Edit Users",
+        "deleteUsers": "Delete Users",
+        "assignRoles": "Assign Roles",
+        "createQuestions": "Create Questions",
+        "editQuestions": "Edit Questions",
+        "deleteQuestions": "Delete Questions"
+      }
+    },
+    "systemSettings": {
+      "hero": {
+        "title": "System Settings",
+        "subtitle": "Manage System-wide configurations, languages, announcements, and templates."
+      },
+      "cards": {
+        "languageManagement": {
+          "title": "Language Management",
+          "description": "Add, Edit, or remove supported languages across the application.",
+          "linkText": "Manage Language"
+        },
+        "announcements": {
+          "title": "Announcements",
+          "description": "Create and publish system-wide announcements for all users.",
+          "linkText": "Manage Announcements"
+        },
+        "emailTemplates": {
+          "title": "Email Templates",
+          "description": "Customize automate email notifications sent by the system.",
+          "linkText": "Manage Templates"
+        },
+        "rolesPermissions": {
+          "title": "Roles & Permissions",
+          "description": "Define user roles and control access to features and data.",
+          "linkText": "Manage Roles"
+        }
+      }
+    },
+    "siteWideAnnouncements": {
+      "hero": {
+        "title": "Site-wide Announcements"
+      },
+      "buttons": {
+        "previewAnnouncements": "Preview Announcements",
+        "addNewAnnouncements": "+ Add New Announcements"
+      },
+      "table": {
+        "columns": {
+          "title": "Title",
+          "message": "Message",
+          "schedule": "Schedule",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "emptyMessage": "No notifications found"
+      }
+    },
+    "languageManagement": {
+      "hero": {
+        "title": "Language Management",
+        "subtitle": "Manage available languages,set default and update translations."
+      },
+      "buttons": {
+        "addLanguage": "Add Language"
+      },
+      "table": {
+        "columns": {
+          "languageName": "Language Name",
+          "code": "Code",
+          "default": "Default",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "emptyMessage": "No languages found"
+      }
+    },
+    "emailTemplates": {
+      "hero": {
+        "title": "Email Templates",
+        "subtitle": "Manage and customize the email template used by the system"
+      },
+      "forms": {
+        "welcomeEmail": {
+          "title": "Welcome Email",
+          "subjectPlaceholder": "Welcome to Acme Co!",
+          "bodyPlaceholder": "Hi {Name} Thanks for joining us..."
+        },
+        "resetPasswordEmail": {
+          "title": "Reset Password Email",
+          "subjectPlaceholder": "Reset your password",
+          "bodyPlaceholder": "Click the link below to reset your password..."
+        },
+        "subscriptionReminderEmail": {
+          "title": "Subscription Reminder Email",
+          "subjectPlaceholder": "Your subscription is ending soon",
+          "bodyPlaceholder": "Dear {Name} of {Company} your subscription..."
+        }
+      },
+      "fields": {
+        "subject": "Subject",
+        "body": "Body"
+      },
+      "buttons": {
+        "preview": "Preview",
+        "save": "Save"
+      }
+    },
+    "addNewAnnouncements": {
+      "hero": {
+        "title": "Add New Announcement"
+      },
+      "fields": {
+        "title": "Title",
+        "message": "Message",
+        "targetAudience": "Target Audience",
+        "type": "Type",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "status": "Status:"
+      },
+      "placeholders": {
+        "title": "Enter announcement title",
+        "message": "Type your message here"
+      },
+      "options": {
+        "targetAudience": {
+          "allUsers": "All users",
+          "administrators": "Administrators",
+          "members": "Members",
+          "guests": "Guests"
+        },
+        "type": {
+          "info": "Info",
+          "warning": "Warning",
+          "alert": "Alert",
+          "success": "Success"
+        }
+      },
+      "labels": {
+        "published": "Published",
+        "statusDescription": "Set the announcement active or Inactive"
+      },
+      "upload": {
+        "clickToUpload": "Click to upload",
+        "dragAndDrop": "or drag and drop",
+        "fileTypes": "PNG ,JPG, PDF (Max 5mb)",
+        "uploaded": "Uploaded:"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "saveAnnouncement": "Save Announcement"
+      }
+    },
+    "editAnnouncement": {
+      "hero": {
+        "title": "Edit Announcement"
+      },
+      "fields": {
+        "title": "Title",
+        "message": "Message",
+        "targetAudience": "Target Audience",
+        "type": "Type",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "status": "Status:"
+      },
+      "placeholders": {
+        "title": "Enter announcement title",
+        "message": "Type your message here"
+      },
+      "options": {
+        "targetAudience": {
+          "allUsers": "All users",
+          "administrators": "Administrators",
+          "members": "Members",
+          "guests": "Guests"
+        },
+        "type": {
+          "info": "Info",
+          "warning": "Warning",
+          "alert": "Alert",
+          "success": "Success"
+        }
+      },
+      "labels": {
+        "published": "Published",
+        "statusDescription": "Set the announcement active or Inactive"
+      },
+      "upload": {
+        "clickToUpload": "Click to upload",
+        "dragAndDrop": "or drag and drop",
+        "fileTypes": "PNG ,JPG, PDF (Max 5mb)",
+        "uploaded": "Uploaded:"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "saveAnnouncement": "Save Announcement"
+      }
+    },
+    "viewLogDetails": {
+      "hero": {
+        "title": "View Log Details"
+      }
+    },
+    "contentModeration": {
+      "hero": {
+        "title": "Content Moderation",
+        "subtitle": "Review and take action on flagged questions and answers."
+      },
+      "actions": {
+        "refresh": "Refresh",
+        "filter": "Filter",
+        "export": "Export"
+      },
+      "tabs": {
+        "flaggedContent": "Flagged Content",
+        "pendingApproval": "Pending Approval",
+        "userReports": "User Reports"
+      },
+      "filters": {
+        "status": "Status",
+        "contentType": "Content Type",
+        "dateRange": "Date Range",
+        "flagged": "Flagged",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "video": "Video",
+        "image": "Image",
+        "text": "Text",
+        "today": "Today",
+        "thisWeek": "This Week",
+        "thisMonth": "This Month"
+      },
+      "table": {
+        "columns": {
+          "number": "#",
+          "contentType": "CONTENT TYPE",
+          "submittedBy": "SUBMITTED BY",
+          "flagReason": "FLAG REASON",
+          "dateReported": "DATE REPORTED",
+          "status": "STATUS",
+          "actions": "ACTIONS"
+        },
+        "actions": {
+          "view": "View",
+          "approve": "Approve",
+          "reject": "Reject"
+        }
+      },
+      "mobile": {
+        "submittedBy": "Submitted By:",
+        "flagReason": "Flag Reason:",
+        "dateReported": "Date Reported:"
+      },
+      "pagination": {
+        "showing": "Showing {{from}} to {{to}} of {{total}} results",
+        "previous": "Previous",
+        "next": "Next"
+      }
+    },
+    "contentDetails": {
+      "hero": {
+        "title": "Content Details"
+      },
+      "sections": {
+        "reportInformation": "Report Information",
+        "content": "Content",
+        "usersModerationRecord": "User's Moderation Record",
+        "moderationActions": "Moderation Actions"
+      },
+      "fields": {
+        "contentType": "Content Type",
+        "dateReported": "Date Reported",
+        "reportedBy": "Reported By",
+        "flagReason": "Flag Reason",
+        "question": "Question:",
+        "explanation": "Explanation:",
+        "moderatorComments": "Moderator Comments"
+      },
+      "labels": {
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "buttons": {
+        "revisionHistory": "Revision History",
+        "approve": "Approve",
+        "reject": "Reject",
+        "requestChange": "Request Change"
+      },
+      "placeholders": {
+        "moderatorComments": "Add optional comments.."
+      }
     }
   }
 }

@@ -1,3 +1,3 @@
-import ideas from './ideas.svg';
+import ideas from './about-ideas.svg';
 
 export { ideas };

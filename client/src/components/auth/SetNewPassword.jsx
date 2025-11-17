@@ -43,7 +43,7 @@ const SetNewPassword = () => {
           </h1>
 
           {/* Description Text */}
-          <p className="font-roboto font-normal text-base leading-[100%] tracking-normal text-[#6B7280] mb-6 lg:mb-8 text-center">
+          <p className="font-roboto font-normal text-base leading-[100%] tracking-normal text-dark-gray mb-6 lg:mb-8 text-center">
             {t('setNewPassword.description')}
           </p>
 
@@ -60,7 +60,7 @@ const SetNewPassword = () => {
                   value={formData.newPassword}
                   onChange={handleInputChange}
                   placeholder={t('setNewPassword.newPasswordPlaceholder')}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-none placeholder:tracking-normal placeholder:text-[#6B7280] font-roboto shadow-input"
+                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-none placeholder:tracking-normal placeholder:text-dark-gray font-roboto shadow-input"
                 />
                 <button
                   type="button"
@@ -84,7 +84,7 @@ const SetNewPassword = () => {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   placeholder={t('setNewPassword.confirmPasswordPlaceholder')}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-none placeholder:tracking-normal placeholder:text-[#6B7280] font-roboto shadow-input"
+                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-none placeholder:tracking-normal placeholder:text-dark-gray font-roboto shadow-input"
                 />
                 <button
                   type="button"

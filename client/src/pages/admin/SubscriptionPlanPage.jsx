@@ -1,36 +1,15 @@
 
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 import { DataTable } from "../../components/admin/SystemSetting/Table";
+import basePlansData from "../../data/subscriptionPlansData.json";
 
 // Mock data for subscription plans
 // DataTable converts column names to keys by: columnName.toLowerCase().replace(/ /g, "")
 // So "PLAN NAME" becomes "planname", "PRICE" becomes "price", etc.
 const allPlans = [
-    {
-      id: 1,
-      planname: "Basic Plan",
-      price: "$9.99",
-      duration: "Monthly",
-      subscriber: 120,
-      status: "Active",
-    },
-    {
-      id: 2,
-      planname: "Premium Plan",
-      price: "$19.99",
-      duration: "Monthly",
-      subscriber: 250,
-      status: "Active",
-    },
-    {
-      id: 3,
-      planname: "Annual Plan",
-      price: "$99.99",
-      duration: "Yearly",
-      subscriber: 50,
-      status: "Inactive",
-    },
+    ...basePlansData,
     // Add more mock data to reach 25 total
     ...Array.from({ length: 22 }, (_, i) => ({
       id: i + 4,
@@ -44,6 +23,7 @@ const allPlans = [
 
 const SubscriptionPlan = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 10;
@@ -60,12 +40,25 @@ const SubscriptionPlan = () => {
     return filteredPlans.slice(start, start + pageSize);
   }, [filteredPlans, page]);
 
-  const columns = ["PLAN NAME", "PRICE", "DURATION", "SUBSCRIBER", "STATUS", "ACTIONS"];
+  const columns = [
+    t('admin.subscriptionPlans.table.columns.planName'),
+    t('admin.subscriptionPlans.table.columns.price'),
+    t('admin.subscriptionPlans.table.columns.duration'),
+    t('admin.subscriptionPlans.table.columns.subscriber'),
+    t('admin.subscriptionPlans.table.columns.status'),
+    t('admin.subscriptionPlans.table.columns.actions')
+  ];
 
   const handleExport = () => {
     if (typeof window === "undefined") return;
     const csvRows = [
-      ["Plan Name", "Price", "Duration", "Subscribers", "Status"].join(","),
+      [
+        t('admin.subscriptionPlans.table.columns.planName'),
+        t('admin.subscriptionPlans.table.columns.price'),
+        t('admin.subscriptionPlans.table.columns.duration'),
+        t('admin.subscriptionPlans.table.columns.subscriber'),
+        t('admin.subscriptionPlans.table.columns.status')
+      ].join(","),
       ...filteredPlans.map((plan) =>
         [
           plan.planname,
@@ -80,7 +73,7 @@ const SubscriptionPlan = () => {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "subscription-plans.csv";
+    link.download = t('admin.subscriptionPlans.table.exportFileName');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -97,7 +90,7 @@ const SubscriptionPlan = () => {
 
   const handleDelete = (plan) => {
     // Handle delete plan (using onView prop from DataTable)
-    if (window.confirm(`Are you sure you want to delete ${plan.planname}?`)) {
+    if (window.confirm(t('admin.subscriptionPlans.table.deleteConfirm').replace('{{planName}}', plan.planname))) {
       console.log("Delete plan:", plan);
     }
   };
@@ -107,18 +100,18 @@ const SubscriptionPlan = () => {
       <div className="mx-auto flex max-w-[1200px] flex-col gap-5">
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-[#032746]">
-              Subscription Plans
+            <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
+              {t('admin.subscriptionPlans.hero.title')}
             </h1>
-            <p className="font-roboto text-[18px] leading-[28px] text-[#6B7280]">
-              Manage available plans and their pricing
+            <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
+              {t('admin.subscriptionPlans.hero.subtitle')}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
               onClick={handleExport}
-              className="h-[36px] w-[124px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6] flex items-center justify-center gap-2"
+              className="h-[36px] w-[124px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6] flex items-center justify-center gap-2"
             >
               <svg
                 width="16"
@@ -132,42 +125,42 @@ const SubscriptionPlan = () => {
                   fill="#032746"
                 />
               </svg>
-              Export
+              {t('admin.subscriptionPlans.actions.export')}
             </button>
             <button
               type="button"
               onClick={handleAddNew}
               className="h-[36px] w-[180px] rounded-[10px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
-              + Add New Plan
+              {t('admin.subscriptionPlans.actions.addNewPlan')}
             </button>
             <button
               type="button"
               onClick={() => navigate("/admin/subscriptions/new-plan")}
-              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6]"
+              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
             >
-              New Plan
+              {t('admin.subscriptionPlans.actions.newPlan')}
             </button>
             <button
               type="button"
               onClick={() => navigate("/admin/subscriptions/manage-users")}
-              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6]"
+              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
             >
-              Manage User
+              {t('admin.subscriptionPlans.actions.manageUser')}
             </button>
             <button
               type="button"
               onClick={() => navigate("/admin/subscriptions/payment-history")}
-              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6]"
+              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
             >
-              Payment History
+              {t('admin.subscriptionPlans.actions.paymentHistory')}
             </button>
             <button
               type="button"
               onClick={() => navigate("/admin/subscriptions/new-question-bank")}
-              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6]"
+              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
             >
-              New Question
+              {t('admin.subscriptionPlans.actions.newQuestion')}
             </button>
           </div>
         </header>
@@ -184,14 +177,14 @@ const SubscriptionPlan = () => {
             className="appearance-none h-[50px] w-[165px] rounded-[8px] border border-[#E5E7EB] bg-white px-4 pr-8 font-roboto text-[14px] font-normal leading-[20px] text-[#374151] outline-none cursor-pointer hover:border-[#D1D5DB] transition"
           >
             <option value="placeholder" disabled>
-              Status
+              {t('admin.subscriptionPlans.filters.status')}
             </option>
-            <option value="">All</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
+            <option value="">{t('admin.subscriptionPlans.filters.all')}</option>
+            <option value="Active">{t('admin.subscriptionPlans.filters.active')}</option>
+            <option value="Inactive">{t('admin.subscriptionPlans.filters.inactive')}</option>
           </select>
           <svg
-            className="pointer-events-none absolute left-32 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]"
+            className="pointer-events-none absolute left-32 top-1/2 h-4 w-4 -translate-y-1/2 text-dark-gray"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -215,7 +208,7 @@ const SubscriptionPlan = () => {
           onPageChange={setPage}
           onEdit={handleEdit}
           onView={handleDelete}
-          emptyMessage="No plans match the current filters."
+          emptyMessage={t('admin.subscriptionPlans.table.emptyState')}
         />
       </div>
     </div>

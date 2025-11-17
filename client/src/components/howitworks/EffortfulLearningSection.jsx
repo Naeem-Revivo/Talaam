@@ -1,5 +1,5 @@
 import React from "react";
-import { learningcard1, learningcard2 } from "../../assets/svg";
+import { learningcard1, learningcard2, chevronDownSmall } from "../../assets/svg";
 import { useLanguage } from "../../context/LanguageContext";
 
 const EffortfulLearningSection = () => {
@@ -55,17 +55,11 @@ const EffortfulLearningSection = () => {
                       </h3>
                       </div>
                       <div className="md:block hidden">
-                        <svg
+                        <img 
+                          src={chevronDownSmall} 
+                          alt=""
                           className="w-5 h-5 text-gray-500"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                        />
                       </div>
                     </div>
                     <p className="font-roboto px-3 font-normal text-[16px] md:text-[18px] leading-[100%] tracking-[0] text-oxford-blue">

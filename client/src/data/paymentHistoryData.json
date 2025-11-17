@@ -1,0 +1,53 @@
+[
+  {
+    "id": 1,
+    "invoiceid": "Inv-001",
+    "user": "John Due",
+    "plan": "Premium",
+    "amount": "$99.99",
+    "date": "12-06-2023",
+    "paymentmethod": "Credit Card",
+    "status": "Paid"
+  },
+  {
+    "id": 2,
+    "invoiceid": "Inv-002",
+    "user": "Ali Raza",
+    "plan": "Organization",
+    "amount": "$49.99",
+    "date": "12-06-2023",
+    "paymentmethod": "Bank Transfer",
+    "status": "Pending"
+  },
+  {
+    "id": 3,
+    "invoiceid": "Inv-003",
+    "user": "Sarah khan",
+    "plan": "Basic",
+    "amount": "$19.99",
+    "date": "20-01-2025",
+    "paymentmethod": "Paypal",
+    "status": "Paid"
+  },
+  {
+    "id": 4,
+    "invoiceid": "Inv-004",
+    "user": "Sofia Clark",
+    "plan": "Premium",
+    "amount": "$9.99",
+    "date": "01-07-2024",
+    "paymentmethod": "Bank Transfer",
+    "status": "Pending"
+  },
+  {
+    "id": 5,
+    "invoiceid": "Inv-005",
+    "user": "Laim Harper",
+    "plan": "Organization",
+    "amount": "$19.99",
+    "date": "15-12-2024",
+    "paymentmethod": "Credit Card",
+    "status": "Paid"
+  }
+]
+

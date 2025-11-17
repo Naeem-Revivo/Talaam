@@ -58,7 +58,7 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder={t('login.emailPlaceholder')}
-                className="px-4 py-3 border border-[#03274633] rounded-lg text-[14px] outline-none w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] font-roboto font-normal leading-[100%] tracking-[0] text-oxford-blue shadow-input"
+                className="px-4 py-3 border border-[#03274633] rounded-lg text-[14px] outline-none w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray font-roboto font-normal leading-[100%] tracking-[0] text-oxford-blue shadow-input"
               />
             </div>
             <div className="flex flex-col gap-5">
@@ -74,7 +74,7 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder={t('login.passwordPlaceholder')}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] font-roboto font-normal text-[14px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
+                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray font-roboto font-normal text-[14px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
                 />
                 <button
                   type="button"

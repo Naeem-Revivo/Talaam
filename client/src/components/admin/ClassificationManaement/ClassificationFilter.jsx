@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 
-const subjectOptions = ["All Subjects", "Math", "Science", "History"];
-const topicOptions = ["All Topics", "Algebra", "Geometry", "Biology", "Physics"];
-const subtopicOptions = ["All Subtopics", "Equations", "Triangles", "Cells", "Motion"];
+const getSubjectOptions = (t) => [t('admin.classificationManagement.filters.allSubjects'), "Math", "Science", "History"];
+const getTopicOptions = (t) => [t('admin.classificationManagement.filters.allTopics'), "Algebra", "Geometry", "Biology", "Physics"];
+const getSubtopicOptions = (t) => [t('admin.classificationManagement.filters.allSubtopics'), "Equations", "Triangles", "Cells", "Motion"];
 
 const Dropdown = ({ label, value, options, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,12 +25,12 @@ const Dropdown = ({ label, value, options, onChange }) => {
   return (
     <div className="w-full lg:w-[180px]" ref={dropdownRef}>
       {/* Label only on small screens */}
-      <p className="text-[16px] leading-[100%] font-semibold text-[#032746] mb-3 block lg:hidden">{label}</p>
+      <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3 block lg:hidden">{label}</p>
 
       {/* Dropdown Box */}
       <div
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative flex h-[48px] cursor-pointer items-center justify-between rounded-lg border border-transparent bg-white px-4 text-sm font-semibold text-[#032746] shadow-[0_8px_20px_rgba(3,39,70,0.08)]"
+        className="relative flex h-[48px] cursor-pointer items-center justify-between rounded-lg border border-transparent bg-white px-4 text-sm font-semibold text-oxford-blue shadow-filter-hover"
       >
         <span>{displayValue}</span>
         <svg
@@ -58,7 +59,7 @@ const Dropdown = ({ label, value, options, onChange }) => {
                   setIsOpen(false);
                 }}
                 className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                  displayValue === option ? "font-semibold text-[#032746]" : "text-gray-700"
+                  displayValue === option ? "font-semibold text-oxford-blue" : "text-gray-700"
                 }`}
               >
                 {option}
@@ -80,14 +81,20 @@ const ClassificationFilter = ({
   onSubjectChange,
   onTopicChange,
   onSubtopicChange,
-  searchPlaceholder = "Search...",
+  searchPlaceholder,
 }) => {
+  const { t } = useLanguage();
+  const placeholder = searchPlaceholder || t('admin.classificationManagement.filters.searchPlaceholder');
+  const subjectOptions = getSubjectOptions(t);
+  const topicOptions = getTopicOptions(t);
+  const subtopicOptions = getSubtopicOptions(t);
+
   return (
     <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-5 w-full">
         {/* Subject Dropdown */}
         <Dropdown
-          label="Select Subject"
+          label={t('admin.classificationManagement.filters.selectSubject')}
           value={subjectValue}
           options={subjectOptions}
           onChange={onSubjectChange}
@@ -95,7 +102,7 @@ const ClassificationFilter = ({
 
         {/* Topic Dropdown */}
         <Dropdown
-          label="Select Topic"
+          label={t('admin.classificationManagement.filters.selectTopic')}
           value={topicValue}
           options={topicOptions}
           onChange={onTopicChange}
@@ -103,7 +110,7 @@ const ClassificationFilter = ({
 
         {/* Subtopic Dropdown */}
         <Dropdown
-          label="Select Subtopic"
+          label={t('admin.classificationManagement.filters.selectSubtopic')}
           value={subtopicValue}
           options={subtopicOptions}
           onChange={onSubtopicChange}
@@ -111,11 +118,11 @@ const ClassificationFilter = ({
 
         {/* Search Input */}
         <div className="w-full lg:w-[580px]">
-          <p className="text-sm font-medium text-[#032746] mb-1 block lg:hidden">
-            {searchPlaceholder}
+          <p className="text-sm font-medium text-oxford-blue mb-1 block lg:hidden">
+            {placeholder}
           </p>
 
-          <div className="relative flex items-center h-[48px] rounded-lg bg-white shadow-[0_8px_20px_rgba(3,39,70,0.05)] focus-within:border-[#032746] focus-within:ring-2 focus-within:ring-[#D6E3F0] border border-transparent transition-all duration-150">
+          <div className="relative flex items-center h-[48px] rounded-lg bg-white shadow-filter focus-within:border-[#032746] focus-within:ring-2 focus-within:ring-[#D6E3F0] border border-transparent transition-all duration-150">
             <span className="pl-3 flex items-center justify-center">
               <svg
                 width="20"
@@ -137,8 +144,8 @@ const ClassificationFilter = ({
               type="text"
               value={searchValue}
               onChange={(e) => onSearchChange?.(e.target.value)}
-              placeholder={searchPlaceholder}
-              className="flex-1 h-full rounded-lg bg-transparent px-3 text-sm font-roboto text-[#032746] placeholder:text-[#9CA3AF] focus:outline-none"
+              placeholder={placeholder}
+              className="flex-1 h-full rounded-lg bg-transparent px-3 text-sm font-roboto text-oxford-blue placeholder:text-[#9CA3AF] focus:outline-none"
             />
           </div>
         </div>
