@@ -575,10 +575,10 @@
       "item": "Item {{current}} of {{total}}",
       "questionId": "Question Id:",
       "title": "Review Incorrect",
-      "incorrectAnswer": "Incorrect Answer",
+      "incorrectAnswer": "Incorrect",
       "feedback": {
         "incorrect": "Incorrect",
-        "correctAnswer": "Correct answer:",
+        "correctAnswer": "Correct",
         "answeredCorrectly": "Answered correctly",
         "timeSpent": "Time spent"
       },
@@ -631,8 +631,8 @@
       "questions": "Questions",
       "title": "Question Solving Page",
       "submitAnswer": "Submit Answer",
-      "correctAnswer": "Correct Answer",
-      "incorrectAnswer": "Incorrect Answer",
+      "correctAnswer": "Correct",
+      "incorrectAnswer": "Incorrect",
       "correctAnswerLabel": "Correct answer:",
       "answeredCorrectly": "Answered correctly",
       "timeSpent": "Time spent",
@@ -923,7 +923,7 @@
     "questionBank": {
       "hero": {
         "title": "Question Bank",
-        "subtitle": "Manage, filter, and review all questions by subject, topic, or role."
+        "subtitle": "Manage filter and review all questions by subject topic or role."
       },
       "actions": {
         "questionManagement": "Question Management",

@@ -12,4 +12,5 @@ import cross from './dashboard-cross.svg';
 import analytics from './dashboard-analytics.svg';
 import watch from './dashboard-watch.svg';
 import flag from './dashboard-flag.svg';
-export { vedio, timer, setting, profile, logout, accuracy, time, target, trend, tick, cross, analytics, watch, flag };
+import listcheck from './listcheck.svg'
+export { vedio, timer, setting, profile, logout, accuracy, time, target, trend, tick, cross, analytics, watch, flag, listcheck };

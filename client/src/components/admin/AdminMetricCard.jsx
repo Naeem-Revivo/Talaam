@@ -20,7 +20,7 @@ const AdminMetricCard = ({
       <div className="flex items-center justify-between">
         <div className="space-y-1.5 px-2">
           {title && (
-            <p className="font-roboto text-[16px] text-dark-gray">{title}</p>
+            <p className="font-roboto text-[16px] leading-[20px] font-normal text-[#6B7280]">{title}</p>
           )}
           {hasValue && (
             <p className="font-archivo text-[30px] leading-[28px] font-semibold text-oxford-blue">

@@ -48,12 +48,12 @@ const StudyQuestionNavigator = ({
     )}
 
     <div className="hidden lg:flex w-[110px] h-full bg-white overflow-y-auto flex-col border-r border-[#E5E7EB]">
-      <div className="flex-1 py-2">
+      <div className="flex-1">
         {questions.map((_, index) => (
           <button
             key={index}
             onClick={() => onGoToIndex(index)}
-            className={`w-full py-2 text-[14px] font-medium font-roboto transition-colors text-center border border-[#B9C9C5] ${
+            className={`w-full py-2 text-base font-normal font-roboto transition-colors text-center border border-[#B9C9C5] ${
               index === currentIndex
                 ? 'bg-[#EF4444] text-white border-[#EF4444]'
                 : visitedIndices.has(index)

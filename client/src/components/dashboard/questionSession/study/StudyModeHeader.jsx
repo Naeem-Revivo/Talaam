@@ -1,5 +1,5 @@
 import React from 'react';
-import { flag, setting } from '../icons';
+import { flag, setting, listcheck } from '../icons';
 import { useLanguage } from '../../../../context/LanguageContext';
 
 const StudyModeHeader = ({
@@ -17,7 +17,7 @@ const StudyModeHeader = ({
           <div className="text-[20px] font-bold text-oxford-blue font-archivo leading-[28px] tracking-[0%]">
             {t('dashboard.questionSession.item').replace('{{current}}', (currentIndex + 1).toString()).replace('{{total}}', totalQuestions.toString())}
           </div>
-          <div className="hidden lg:block text-[14px] md:text-[16px] font-normal text-dark-gray font-roboto">
+          <div className="hidden lg:block text-[14px] md:text-[16px] leading-[100%] font-normal text-oxford-blue font-roboto">
             {t('dashboard.questionSession.questionId')} {currentQuestion.id}
           </div>
         <button className="hidden lg:block text-oxford-blue hover:opacity-70">
@@ -68,17 +68,18 @@ const StudyModeHeader = ({
       </div>
 
       <div className="hidden lg:flex items-center gap-2 md:gap-4 w-full lg:w-auto justify-between lg:justify-end">
-        <button className="hidden lg:block px-2 md:px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[12px] md:text-[14px] font-normal font-roboto hover:opacity-70">
+        <button className="hidden lg:block px-2 md:px-4 py-3 border-[0.5px] text-oxford-blue rounded text-[10px] md:text-[100%] font-normal font-roboto hover:opacity-70">
+          {/* <img src={listcheck} alt="Mark" className='w-5 h-5'/> */}
           <span className="hidden sm:inline">{t('dashboard.questionSession.formulaSheet')}</span>
           <span className="sm:hidden">{t('dashboard.questionSession.formulaSheet')}</span>
         </button>
         <div className="hidden lg:flex items-center gap-2">
-          <span className="text-[12px] md:text-[14px] font-normal text-oxford-blue font-roboto">
-            <span className="hidden sm:inline">{t('dashboard.questionSession.timeRemaining')} </span>
+          <span className="text-[12px] md:text-[14px] leading-[24px ]font-normal text-black font-roboto border py-2 px-4 border-[#E5E7EB] rounded-lg flex flex-col">
+            <span className="hidden sm:inline text-[12px] leading-[20px] font-normal text-[#4B5563]">{t('dashboard.questionSession.timeRemaining')} </span>
             {currentQuestion.timeRemaining || '--:--'}
           </span>
           <button className="text-oxford-blue hover:opacity-70">
-            <img src={setting} alt="Settings" className="w-4 h-4 md:w-5 md:h-5" />
+            <img src={setting} alt="Settings" className="w-4 h-4" />
           </button>
         </div>
       </div>

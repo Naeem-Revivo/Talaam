@@ -127,8 +127,8 @@ const DashboardPage = () => {
                 }`}
               >
                 <div className="flex justify-between items-center mb-3">
-                  <span className="font-roboto text-[14px] leading-[20px] text-oxford-blue font-medium">{section.name}</span>
-                  <span className="font-roboto text-[14px] leading-[20px] text-oxford-blue font-semibold">{section.progress}%</span>
+                  <span className="font-roboto text-[16px] leading-[24px] text-[#374151] font-medium">{section.name}</span>
+                  <span className="font-roboto text-[16px] leading-[24px] text-[#4B5563] font-semibold">{section.progress}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-[12px]">
                   <div
@@ -260,15 +260,15 @@ const DashboardPage = () => {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: '#6CA6C1' }} />
-                <span className="font-roboto text-[14px] leading-[20px] text-dark-gray">{t('dashboard.overview.legend.normal')}</span>
+                <span className="font-roboto text-[14px] leading-[20px] font-normal text-[#6B7280]">{t('dashboard.overview.legend.normal')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: '#032746' }} />
-                <span className="font-roboto text-[14px] leading-[20px] text-dark-gray">{t('dashboard.overview.legend.hovered')}</span>
+                <span className="font-roboto text-[14px] leading-[20px] font-normal text-[#6B7280]">{t('dashboard.overview.legend.hovered')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ED4122' }} />
-                <span className="font-roboto text-[14px] leading-[20px] text-dark-gray">{t('dashboard.overview.legend.selected')}</span>
+                <span className="font-roboto text-[14px] leading-[20px] font-normal text-[#6B7280]">{t('dashboard.overview.legend.selected')}</span>
               </div>
             </div>
           </div>

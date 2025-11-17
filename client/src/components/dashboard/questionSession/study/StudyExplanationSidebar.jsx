@@ -16,7 +16,7 @@ const StudyExplanationSidebar = ({
     <div className="hidden lg:flex w-[256px] h-full bg-[#F9FAFB] border-l border-[#E5E7EB] overflow-y-auto">
       <div className="p-4 md:p-6 w-full">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[18px] md:text-[20px] font-bold text-oxford-blue font-archivo">{t('dashboard.questionSession.explanation.title')}</h3>
+          <h3 className="text-[18px] leading-[24px] font-bold text-oxford-blue font-archivo">{t('dashboard.questionSession.explanation.title')}</h3>
           <button onClick={onToggleExplanation} className="text-[14px] font-normal text-oxford-blue font-roboto hover:opacity-70">
             {showExplanation ? t('dashboard.questionSession.explanation.hide') : t('dashboard.questionSession.explanation.show')}
           </button>
