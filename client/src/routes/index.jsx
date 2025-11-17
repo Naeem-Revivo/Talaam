@@ -137,7 +137,6 @@ export const AppRoutes = () => {
           <Route path="reports/subscription-trends" element={<SubscriptionTrendsPage />} />
           <Route path="reports/performance-analytics" element={<PerformanceAnalyticsPage />} />
           <Route path="reports/export" element={<ExportReportsPage />} />
-          <Route path="subscriptions" element={<AdminDashboardPage />} />
           <Route path="reports" element={<ReportsAndAnalyticsPage />} />
           <Route path="moderation" element={<ContentModerationPage />} />
           <Route path="moderation/details" element={<ContentDetailsPage />} />
