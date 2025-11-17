@@ -45,7 +45,7 @@ const ScienceStrategiesSection = () => {
                     <div className='flex flex-col mobile:gap-2 laptop:gap-4'>
                       <div className="flex items-center justify-between">
                         <h3 className="font-archivo font-semibold text-[22px] leading-[100%] tracking-[0] text-oxford-blue">{strategy.title}</h3>
-                        <img src={downarrow} alt="down arrow" style={{ width: '12.64px', height: '5.99px' }} />
+                        <img src={downarrow} alt="down arrow" className="w-[12.64px] h-[5.99px]" />
                       </div>
                       <p className="font-roboto font-normal text-[16px] leading-[21px] tracking-[0] text-oxford-blue">{strategy.description}</p>
                     </div>

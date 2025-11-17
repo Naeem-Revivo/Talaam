@@ -167,7 +167,7 @@ const SubscriptionPlan = () => {
         </header>
 
         {/* Status Filter */}
-        <div style={{ width: "165px" }}>
+        <div className="w-[165px]">
           <Dropdown
             value={statusFilter || ""}
             options={[

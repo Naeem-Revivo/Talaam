@@ -137,7 +137,7 @@ const UserGrowthAnalyticsPage = () => {
         {/* User Growth Filters */}
         <div className="flex flex-wrap items-center gap-3 md:gap-6">
           {/* Date Range Filter */}
-          <div style={{ width: "184px" }}>
+          <div className="w-[184px]">
             <Dropdown
               value={userGrowthDateRange}
               options={[
@@ -155,7 +155,7 @@ const UserGrowthAnalyticsPage = () => {
           </div>
 
           {/* User Type Filter */}
-          <div className="relative xl:ml-[320px]" style={{ width: "184px" }}>
+          <div className="relative xl:ml-[320px] w-[184px]">
             <Dropdown
               value={userType || ""}
               options={[
@@ -173,7 +173,7 @@ const UserGrowthAnalyticsPage = () => {
           </div>
 
           {/* All Roles Filter */}
-          <div style={{ width: "184px" }}>
+          <div className="w-[184px]">
             <Dropdown
               value={userRole}
               options={[
@@ -192,7 +192,7 @@ const UserGrowthAnalyticsPage = () => {
           </div>
 
           {/* All Plans Filter */}
-          <div style={{ width: "184px" }}>
+          <div className="w-[184px]">
             <Dropdown
               value={userPlan}
               options={[

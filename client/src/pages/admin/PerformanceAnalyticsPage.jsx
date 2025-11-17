@@ -192,7 +192,7 @@ const PerformanceAnalyticsPage = () => {
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 md:gap-3">
           {/* Exam Dropdown */}
-          <div style={{ width: "135px" }}>
+          <div className="w-[135px]">
             <Dropdown
               value={exam || ""}
               options={[
@@ -208,7 +208,7 @@ const PerformanceAnalyticsPage = () => {
           </div>
 
           {/* Subject Dropdown */}
-          <div style={{ width: "184px" }}>
+          <div className="w-[184px]">
             <Dropdown
               value={subject || ""}
               options={[
@@ -225,7 +225,7 @@ const PerformanceAnalyticsPage = () => {
           </div>
 
           {/* Date Range Dropdown */}
-          <div style={{ width: "184px" }}>
+          <div className="w-[184px]">
             <Dropdown
               value={dateRange || ""}
               options={[
@@ -243,7 +243,7 @@ const PerformanceAnalyticsPage = () => {
           </div>
 
           {/* Cognitive Level Dropdown */}
-          <div style={{ width: "206px" }}>
+          <div className="w-[206px]">
             <Dropdown
               value={cognitiveLevel || ""}
               options={[

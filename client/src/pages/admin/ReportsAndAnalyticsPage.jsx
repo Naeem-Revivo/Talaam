@@ -6,13 +6,7 @@ import Dropdown from "../../components/shared/Dropdown";
 // Reusable KPI Card Component
 const KPICard = ({ title, value, icon, titleSize = "text-[16px]", valueSize = "text-[30px]", valueWeight = "font-semibold", marginBottom = "mb-1" }) => {
   return (
-    <div
-      className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-4 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]"
-      style={{
-        width: "262px",
-        height: "106px",
-      }}
-    >
+    <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-4 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-[262px] h-[106px]">
       <div className={`flex items-center justify-between ${marginBottom}`}>
         <h3 className={`font-roboto ${titleSize} font-normal leading-[20px] text-dark-gray`}>
           {title}
@@ -379,11 +373,7 @@ const ReportsAndAnalyticsPage = () => {
           <div className="flex gap-5 md:ml-auto md:flex-shrink-0">
             <button
               type="button"
-              className="flex items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] font-medium leading-[20px] text-oxford-blue transition hover:bg-[#F9FAFB] whitespace-nowrap"
-              style={{
-                width: "130px",
-                height: "36px",
-              }}
+              className="flex items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] font-medium leading-[20px] text-oxford-blue transition hover:bg-[#F9FAFB] whitespace-nowrap w-[130px] h-9"
             >
               {t('admin.reportsAndAnalytics.filters.viewDetails')}
             </button>
@@ -391,11 +381,7 @@ const ReportsAndAnalyticsPage = () => {
             {/* Apply Filter Button */}
             <button
               type="button"
-              className="flex items-center justify-center gap-2 rounded-[8px] bg-[#ED4122] px-4 font-roboto text-[16px] font-medium leading-[20px] text-white transition hover:bg-[#d43a1f] whitespace-nowrap"
-              style={{
-                width: "157px",
-                height: "36px",
-              }}
+              className="flex items-center justify-center gap-2 rounded-[8px] bg-[#ED4122] px-4 font-roboto text-[16px] font-medium leading-[20px] text-white transition hover:bg-[#d43a1f] whitespace-nowrap w-[157px] h-9"
             >
               <svg
                 width="14"
@@ -419,48 +405,28 @@ const ReportsAndAnalyticsPage = () => {
           <button
             type="button"
             onClick={() => navigate("/admin/reports/user-growth")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB]"
-            style={{
-              width: "211px",
-              height: "44px",
-              borderRadius: "30px",
-            }}
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB] w-[211px] h-11 rounded-[30px]"
           >
             {t('admin.reportsAndAnalytics.tabs.userGrowthAnalytics')}
           </button>
           <button
             type="button"
             onClick={() => navigate("/admin/reports/subscription-trends")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB]"
-            style={{
-              width: "211px",
-              height: "44px",
-              borderRadius: "30px",
-            }}
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB] w-[211px] h-11 rounded-[30px]"
           >
             {t('admin.reportsAndAnalytics.tabs.subscriptionTrends')}
           </button>
           <button
             type="button"
             onClick={() => navigate("/admin/reports/performance-analytics")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB]"
-            style={{
-              width: "211px",
-              height: "44px",
-              borderRadius: "30px",
-            }}
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB] w-[211px] h-11 rounded-[30px]"
           >
             {t('admin.reportsAndAnalytics.tabs.performanceAnalytics')}
           </button>
           <button
             type="button"
             onClick={() => navigate("/admin/reports/export")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB]"
-            style={{
-              width: "211px",
-              height: "44px",
-              borderRadius: "30px",
-            }}
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB] w-[211px] h-11 rounded-[30px]"
           >
             {t('admin.reportsAndAnalytics.tabs.exportReports')}
           </button>
@@ -594,13 +560,7 @@ const ReportsAndAnalyticsPage = () => {
           </h2>
         <div className="rounded-[12px] border border-[#03274633] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
           <div className="rounded-[12px]">
-            <table
-              className="w-full border-collapse "
-              style={{
-                width: "1130px",
-                height: "298px",
-              }}
-            >
+            <table className="w-full border-collapse w-[1130px] h-[298px]">
               <thead>
                 <tr className="bg-oxford-blue">
                   <th className="text-left py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
@@ -671,12 +631,7 @@ const ReportsAndAnalyticsPage = () => {
               {recentReports.map((report, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between rounded-[8px] border border-[#6CA6C1] bg-[#F9FAFB]"
-                  style={{
-                    width: "500px",
-                    height: "86px",
-                    padding: "16px",
-                  }}
+                  className="flex items-center justify-between rounded-[8px] border border-[#6CA6C1] bg-[#F9FAFB] w-[500px] h-[86px] p-4"
                 >
                   <div className="flex flex-col justify-center">
                     <h3 className="font-roboto text-[14px] font-semibold leading-[20px] text-oxford-blue">
@@ -709,13 +664,7 @@ const ReportsAndAnalyticsPage = () => {
           </div>
 
           {/* System Insights */}
-          <div
-            className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]"
-            style={{
-              width: "548px",
-              height: "410px",
-            }}
-          >
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-[548px] h-[410px]">
             <h2 className="mb-6 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
               {t('admin.reportsAndAnalytics.sections.systemInsights')}
             </h2>
@@ -748,12 +697,7 @@ const ReportsAndAnalyticsPage = () => {
                 return (
                   <div
                     key={index}
-                    className="flex items-center rounded-[8px] border border-[#ED4122] bg-[#FEF2F2]"
-                    style={{
-                      width: "500px",
-                      height: "86px",
-                      padding: "16px",
-                    }}
+                    className="flex items-center rounded-[8px] border border-[#ED4122] bg-[#FEF2F2] w-[500px] h-[86px] p-4"
                   >
                     <p className="font-roboto text-[16px] font-normal leading-[16px] text-oxford-blue flex items-center">
                       {formattedText}

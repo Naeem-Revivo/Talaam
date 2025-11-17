@@ -716,7 +716,6 @@ const VariantQuestionReviewPage = () => {
           }`}
           style={{
             minHeight: minHeight,
-            lineHeight: "100%",
           }}
           data-placeholder={placeholder}
           suppressContentEditableWarning
@@ -824,11 +823,7 @@ const VariantQuestionReviewPage = () => {
 
         <div className="flex flex-col gap-6">
           {/* Source Question Reference Card */}
-          <div
-            className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[296px]"
-            style={{
-            }}
-          >
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[296px]">
             <h2 className="p-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
               {t('admin.variantQuestionReview.sections.sourceQuestionReference')}
             </h2>
@@ -849,11 +844,7 @@ const VariantQuestionReviewPage = () => {
           </div>
 
           {/* Variant Question Card */}
-          <div
-            className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[686px]"
-            style={{
-            }}
-          >
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[686px]">
             <h2 className="p-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
               {t('admin.variantQuestionReview.sections.variantQuestion')}
             </h2>
@@ -963,9 +954,7 @@ const VariantQuestionReviewPage = () => {
           </div>
 
           {/* Classification Card */}
-          <div
-            className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[263px] shadow-card"
-          >
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[263px] shadow-card">
             <h2 className="py-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
               {t('admin.variantQuestionReview.sections.classification')}
             </h2>
@@ -1022,11 +1011,7 @@ const VariantQuestionReviewPage = () => {
           </div>
 
           {/* Internal Comments Card */}
-          <div
-            className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[308px]"
-            style={{
-            }}
-          >
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[308px]">
             <h2 className="py-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
               {t('admin.variantQuestionReview.sections.internalComments')}
             </h2>
@@ -1077,9 +1062,7 @@ const VariantQuestionReviewPage = () => {
           </div>
 
           {/* Activity Log Card */}
-          <div
-            className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[874px] shadow-card"
-          >
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[874px] shadow-card">
             <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
               {t('admin.variantQuestionReview.sections.activityLog')}
             </h2>

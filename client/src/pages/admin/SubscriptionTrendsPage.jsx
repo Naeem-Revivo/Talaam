@@ -201,7 +201,7 @@ const SubscriptionTrendsPage = () => {
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 md:gap-6">
           {/* Plan Type Filter */}
-          <div style={{ width: "184px" }}>
+          <div className="w-[184px]">
             <Dropdown
               value={planType || ""}
               options={[
@@ -219,7 +219,7 @@ const SubscriptionTrendsPage = () => {
           </div>
 
           {/* Date Range Filter */}
-          <div style={{ width: "184px" }}>
+          <div className="w-[184px]">
             <Dropdown
               value={dateRange || ""}
               options={[

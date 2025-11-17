@@ -340,17 +340,7 @@ const ContentModerationPage = () => {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
-                        className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] border text-center"
-                        style={{
-                          width: "70px",
-                          height: "20px",
-                          borderRadius: "6px",
-                          borderWidth: "0.5px",
-                          borderColor: "#ED4122",
-                          backgroundColor: "#FEF2F2",
-                          fontSize: "10px",
-                          color: "#ED4122",
-                        }}
+                        className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] border text-center w-[70px] h-5 rounded-[6px] border-[0.5px] border-[#ED4122] bg-[#FEF2F2] text-[10px] text-[#ED4122]"
                       >
                         {item.status}
                       </span>
@@ -360,39 +350,21 @@ const ContentModerationPage = () => {
                         <button
                           type="button"
                           onClick={() => handleView(item.id)}
-                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition"
-                          style={{
-                            padding: "4px 10px",
-                            backgroundColor: "#C6D8D3",
-                            color: "#032746",
-                            height: "22px",
-                          }}
+                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition py-1 px-[10px] bg-[#C6D8D3] text-[#032746] h-[22px]"
                         >
                           {t('admin.contentModeration.table.actions.view')}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleApprove(item.id)}
-                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition"
-                          style={{
-                            padding: "4px 10px",
-                            backgroundColor: "#FDF0D5",
-                            color: "#ED4122",
-                            height: "22px",
-                          }}
+                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition py-1 px-[10px] bg-[#FDF0D5] text-[#ED4122] h-[22px]"
                         >
                           {t('admin.contentModeration.table.actions.approve')}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleReject(item.id)}
-                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition"
-                          style={{
-                            padding: "4px 10px",
-                            backgroundColor: "#ED4122",
-                            color: "#FFFFFF",
-                            height: "22px",
-                          }}
+                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition py-1 px-[10px] bg-[#ED4122] text-white h-[22px]"
                         >
                           {t('admin.contentModeration.table.actions.reject')}
                         </button>
@@ -422,17 +394,7 @@ const ContentModerationPage = () => {
                   </p>
                 </div>
                 <span
-                  className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] border text-center"
-                  style={{
-                    width: "70px",
-                    height: "20px",
-                    borderRadius: "6px",
-                    borderWidth: "0.5px",
-                    borderColor: "#ED4122",
-                    backgroundColor: "#FEF2F2",
-                    fontSize: "10px",
-                    color: "#ED4122",
-                  }}
+                  className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] border text-center w-[70px] h-5 rounded-[6px] border-[0.5px] border-[#ED4122] bg-[#FEF2F2] text-[10px] text-[#ED4122]"
                 >
                   {item.status}
                 </span>
@@ -469,36 +431,21 @@ const ContentModerationPage = () => {
                 <button
                   type="button"
                   onClick={() => handleView(item.id)}
-                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2"
-                  style={{
-                    backgroundColor: "#C6D8D3",
-                    color: "#032746",
-                    minHeight: "32px",
-                  }}
+                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2 bg-[#C6D8D3] text-[#032746] min-h-[32px]"
                 >
                   {t('admin.contentModeration.table.actions.view')}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleApprove(item.id)}
-                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2"
-                  style={{
-                    backgroundColor: "#FDF0D5",
-                    color: "#ED4122",
-                    minHeight: "32px",
-                  }}
+                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2 bg-[#FDF0D5] text-[#ED4122] min-h-[32px]"
                 >
                   {t('admin.contentModeration.table.actions.approve')}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleReject(item.id)}
-                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2"
-                  style={{
-                    backgroundColor: "#ED4122",
-                    color: "#FFFFFF",
-                    minHeight: "32px",
-                  }}
+                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2 bg-[#ED4122] text-white min-h-[32px]"
                 >
                   {t('admin.contentModeration.table.actions.reject')}
                 </button>

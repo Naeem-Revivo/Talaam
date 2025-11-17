@@ -50,8 +50,7 @@ const SubscriptionTableRow = ({ item, onView, t }) => {
       </td>
       <td className="px-6 py-4 text-center">
         <span
-          className={`inline-flex h-[26px] items-center justify-center rounded-[6px] py-[5px] px-[10px] font-roboto text-[14px] font-normal leading-[100%] tracking-[0%] ${planBadge.bg} ${planBadge.text}`}
-          style={{ textTransform: 'capitalize' }}
+          className={`inline-flex h-[26px] items-center justify-center rounded-[6px] py-[5px] px-[10px] font-roboto text-[14px] font-normal leading-[100%] tracking-[0%] capitalize ${planBadge.bg} ${planBadge.text}`}
         >
           {item.plan}
         </span>
@@ -65,8 +64,7 @@ const SubscriptionTableRow = ({ item, onView, t }) => {
       <td className="px-6 py-4 text-center">
         <div className="flex items-center justify-center gap-[10px]">
           <span
-            className={`inline-flex h-[26px] items-center justify-center rounded-[6px] py-[5px] px-[10px] font-roboto text-[14px] font-normal leading-[100%] tracking-[0%] ${paymentBadge.bg} ${paymentBadge.text}`}
-            style={{ textTransform: 'capitalize' }}
+            className={`inline-flex h-[26px] items-center justify-center rounded-[6px] py-[5px] px-[10px] font-roboto text-[14px] font-normal leading-[100%] tracking-[0%] capitalize ${paymentBadge.bg} ${paymentBadge.text}`}
           >
             {item.paymentstatus}
           </span>
@@ -286,7 +284,7 @@ const ManageUserSubscriptionsPage = () => {
         {/* Filters */}
         <div className="flex flex-col gap-5">
           {/* Plan Filter */}
-          <div style={{ width: "165px" }}>
+          <div className="w-[165px]">
             <Dropdown
               value={planFilter}
               options={uniquePlans.map((plan) => ({
