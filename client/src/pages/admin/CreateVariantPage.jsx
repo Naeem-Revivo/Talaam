@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 
 const CreateVariantPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [questionText, setQuestionText] = useState("");
   const [options, setOptions] = useState({ A: "", B: "", C: "", D: "" });
   const [correctAnswer, setCorrectAnswer] = useState("");
@@ -344,7 +346,7 @@ const CreateVariantPage = () => {
           onInput={handleInput}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          className={`w-full p-4 font-roboto text-[16px] leading-[100%] text-[#032746] focus:outline-none ${
+          className={`w-full p-4 font-roboto text-[16px] leading-[100%] text-oxford-blue focus:outline-none ${
             !value && !isFocused ? "text-[#9CA3AF]" : ""
           }`}
           style={{
@@ -371,11 +373,11 @@ const CreateVariantPage = () => {
         {/* Header */}
         <header className="flex flex-col md:flex-row items-start justify-between gap-4">
           <div>
-            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-[#032746]">
-              Create Variant
+            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
+              {t('admin.createVariant.hero.title')}
             </h1>
-            <p className="mt-2 font-roboto text-[14px] md:text-[18px] font-normal leading-[18px] md:leading-[20px] text-[#6B7280]">
-              Create a variant on an existing approved question.
+            <p className="mt-2 font-roboto text-[14px] md:text-[18px] font-normal leading-[18px] md:leading-[20px] text-dark-gray">
+              {t('admin.createVariant.hero.subtitle')}
             </p>
           </div>
           <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
@@ -384,14 +386,14 @@ const CreateVariantPage = () => {
               onClick={handleCancel}
               className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 text-[16px] font-archivo font-semibold leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
             >
-              Cancel
+              {t('admin.createVariant.buttons.cancel')}
             </button>
             <button
               type="button"
               onClick={handleSaveVariant}
               className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
-              Save Variant
+              {t('admin.createVariant.buttons.saveVariant')}
             </button>
           </div>
         </header>
@@ -401,14 +403,13 @@ const CreateVariantPage = () => {
           className="rounded-[14px] border border-[#ED4122] p-3 md:p-4 flex items-center gap-2 md:gap-3 w-full lg:w-[1116px] h-auto lg:h-[61px]"
           style={{
             backgroundColor: "#FDF0D5",
-            boxShadow: "0px 0px 5px 0px rgba(0, 0, 0, 0.1)",
           }}
         >
           <svg width="18" height="24" viewBox="0 0 18 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
             <path d="M9.2643 0.00461342C6.79519 -0.0729218 4.48514 0.829341 2.72734 2.52404C0.968305 4.21874 0 6.49181 0 8.92371C0 11.0836 0.922343 13.2028 2.81918 15.4009C3.74028 16.4692 4.34484 17.2655 4.34484 18.5504V19.3848C4.34484 22.1453 6.21682 24 9.00124 24C11.7857 24 13.6564 22.1453 13.6564 19.3848V18.5441C13.6564 17.242 14.266 16.4421 15.1275 15.4514C16.5737 13.7875 18.0473 11.7013 17.9988 8.83868C17.9206 4.10288 14.0014 0.138762 9.2643 0.00461342ZM9.00003 22.1539C7.25092 22.1539 6.20691 21.1189 6.20691 19.3848V19.0771H11.7943V19.3848C11.7943 21.1189 10.7491 22.1539 9.00003 22.1539ZM13.7161 14.2465C12.9552 15.1215 12.2536 16.02 11.9507 17.2311H9.93106V13.614L12.1408 11.4233C12.5045 11.0627 12.5045 10.4781 12.1408 10.1175C11.777 9.75687 11.1873 9.75687 10.8236 10.1175L8.99881 11.9266L7.17402 10.1175C6.81029 9.75687 6.22059 9.75687 5.85687 10.1175C5.49314 10.4781 5.49314 11.0627 5.85687 11.4233L8.06656 13.614V17.2311H6.04416C5.74127 16.0385 5.03991 15.1365 4.23301 14.2011C2.63535 12.3514 1.85965 10.6246 1.85965 8.92371C1.85965 6.99518 2.62797 5.19215 4.02328 3.8482C5.3677 2.55349 7.12562 1.84708 8.99639 1.84708C9.06715 1.84708 9.13778 1.84826 9.20854 1.84949C12.9637 1.95656 16.071 5.10489 16.1343 8.86842C16.1741 11.112 14.9339 12.8459 13.7161 14.2465Z" fill="#ED4122"/>
           </svg>
           <p className="font-roboto text-[14px] md:text-[16px] font-normal leading-[18px] md:leading-[20px] text-[#ED4122]">
-            Tip: Edit the question below as a new variant. Do not cite the original or add explanation yet.
+            {t('admin.createVariant.tip')}
           </p>
         </div>
 
@@ -419,22 +420,22 @@ const CreateVariantPage = () => {
             {/* Question Details Section */}
             <div
               className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6"
-              style={{ boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)" }}
+              className="shadow-card"
             >
-              <h2 className="mb-4 md:mb-6 font-archivo text-[18px] md:text-[20px] font-bold leading-[28px] text-[#032746]">
-                Question Details
+              <h2 className="mb-4 md:mb-6 font-archivo text-[18px] md:text-[20px] font-bold leading-[28px] text-oxford-blue">
+                {t('admin.createVariant.sections.questionDetails')}
               </h2>
 
               <div className="space-y-6">
                 {/* Question Field */}
                 <div>
                   <label className="my-5 block font-archivo text-[20px] font-bold leading-[20px] text-[#374151]">
-                    Question
+                    {t('admin.createVariant.fields.question')}
                   </label>
                   <RichTextEditor
                     value={questionText}
                     onChange={setQuestionText}
-                    placeholder="Enter question text here..."
+                    placeholder={t('admin.createVariant.placeholders.questionText')}
                     minHeight="150px"
                   />
                 </div>
@@ -443,63 +444,63 @@ const CreateVariantPage = () => {
                 <div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
-                        Option A
+                      <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                        {t('admin.createVariant.fields.optionA')}
                       </label>
                       <input
                         type="text"
                         value={options.A}
                         onChange={(e) => handleOptionChange("A", e.target.value)}
-                        className="w-full rounded-[12px] border border-[#03274633] bg-white py-3 px-4 font-roboto text-[16px] leading-[100%] text-[#032746] outline-none placeholder:text-[#9CA3AF] lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
+                        className="w-full rounded-[12px] border border-[#03274633] bg-white py-3 px-4 font-roboto text-[16px] leading-[100%] text-oxford-blue outline-none placeholder:text-[#9CA3AF] lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
                         style={{
                           lineHeight: "100%",
                         }}
-                        placeholder="Enter option A"
+                        placeholder={t('admin.createVariant.placeholders.enterOptionA')}
                       />
                     </div>
                     <div>
-                      <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
-                        Option B
+                      <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                        {t('admin.createVariant.fields.optionB')}
                       </label>
                       <input
                         type="text"
                         value={options.B}
                         onChange={(e) => handleOptionChange("B", e.target.value)}
-                        className="w-full rounded-[12px] border border-[#03274633] bg-white py-3 px-4 font-roboto text-[16px] leading-[100%] text-[#032746] outline-none placeholder:text-[#9CA3AF] lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
+                        className="w-full rounded-[12px] border border-[#03274633] bg-white py-3 px-4 font-roboto text-[16px] leading-[100%] text-oxford-blue outline-none placeholder:text-[#9CA3AF] lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
                         style={{
                           lineHeight: "100%",
                         }}
-                        placeholder="Enter option B"
+                        placeholder={t('admin.createVariant.placeholders.enterOptionB')}
                       />
                     </div>
                     <div>
-                      <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
-                        Option C
+                      <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                        {t('admin.createVariant.fields.optionC')}
                       </label>
                       <input
                         type="text"
                         value={options.C}
                         onChange={(e) => handleOptionChange("C", e.target.value)}
-                        className="w-full rounded-[12px] border border-[#03274633] bg-white py-3 px-4 font-roboto text-[16px] leading-[100%] text-[#032746] outline-none placeholder:text-[#9CA3AF] lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
+                        className="w-full rounded-[12px] border border-[#03274633] bg-white py-3 px-4 font-roboto text-[16px] leading-[100%] text-oxford-blue outline-none placeholder:text-[#9CA3AF] lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
                         style={{
                           lineHeight: "100%",
                         }}
-                        placeholder="Enter option C"
+                        placeholder={t('admin.createVariant.placeholders.enterOptionC')}
                       />
                     </div>
                     <div>
-                      <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
-                        Option D
+                      <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                        {t('admin.createVariant.fields.optionD')}
                       </label>
                       <input
                         type="text"
                         value={options.D}
                         onChange={(e) => handleOptionChange("D", e.target.value)}
-                        className="w-full rounded-[12px] border border-[#03274633] bg-white py-3 px-4 font-roboto text-[16px] leading-[100%] text-[#032746] outline-none placeholder:text-[#9CA3AF] lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
+                        className="w-full rounded-[12px] border border-[#03274633] bg-white py-3 px-4 font-roboto text-[16px] leading-[100%] text-oxford-blue outline-none placeholder:text-[#9CA3AF] lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
                         style={{
                           lineHeight: "100%",
                         }}
-                        placeholder="Enter option D"
+                        placeholder={t('admin.createVariant.placeholders.enterOptionD')}
                       />
                     </div>
                   </div>
@@ -508,19 +509,19 @@ const CreateVariantPage = () => {
                 {/* Correct Answer */}
                 <div>
                   <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#374151]">
-                    Correct Answer
+                    {t('admin.createVariant.fields.correctAnswer')}
                   </label>
                   <div className="relative">
                     <select
                       value={correctAnswer}
                       onChange={(e) => setCorrectAnswer(e.target.value)}
-                      className="w-full appearance-none rounded-[8px] border border-[#03274633] bg-white py-3 pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-[#032746] outline-none lg:w-[660px] lg:h-[50px] h-[45px] md:h-[50px]"
+                      className="w-full appearance-none rounded-[8px] border border-[#03274633] bg-white py-3 pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-oxford-blue outline-none lg:w-[660px] lg:h-[50px] h-[45px] md:h-[50px]"
                     >
-                      <option value="">Select correct answer</option>
-                      <option value="A">Option A</option>
-                      <option value="B">Option B</option>
-                      <option value="C">Option C</option>
-                      <option value="D">Option D</option>
+                      <option value="">{t('admin.createVariant.placeholders.selectCorrectAnswer')}</option>
+                      <option value="A">{t('admin.createVariant.correctAnswerOptions.optionA')}</option>
+                      <option value="B">{t('admin.createVariant.correctAnswerOptions.optionB')}</option>
+                      <option value="C">{t('admin.createVariant.correctAnswerOptions.optionC')}</option>
+                      <option value="D">{t('admin.createVariant.correctAnswerOptions.optionD')}</option>
                     </select>
                     <svg
                       className="pointer-events-none absolute right-10 top-1/2 -translate-y-1/2"
@@ -545,16 +546,15 @@ const CreateVariantPage = () => {
             <div
               className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[720px]"
               style={{
-                boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)",
               }}
             >
-              <h2 className="mb-6 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-                Explanation
+              <h2 className="mb-6 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+                {t('admin.createVariant.sections.explanation')}
               </h2>
               <RichTextEditor
                 value={explanation}
                 onChange={setExplanation}
-                placeholder="Enter explanation here..."
+                placeholder={t('admin.createVariant.placeholders.explanation')}
                 minHeight="150px"
               />
             </div>
@@ -562,29 +562,29 @@ const CreateVariantPage = () => {
             {/* Classification Section */}
             <div
               className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6"
-              style={{ boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)" }}
+              className="shadow-card"
             >
-              <h2 className="mb-4 md:mb-6 pt-4 font-archivo text-[18px] md:text-[20px] font-bold leading-[28px] text-[#032746]">
-                Classification
+              <h2 className="mb-4 md:mb-6 pt-4 font-archivo text-[18px] md:text-[20px] font-bold leading-[28px] text-oxford-blue">
+                {t('admin.createVariant.sections.classification')}
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-5">
                 {/* Subject */}
                 <div >
                   <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#374151]">
-                    Subject
+                    {t('admin.createVariant.fields.subject')}
                   </label>
                   <div className="relative">
                     <select
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
-                      className="w-full appearance-none rounded-[8px] border border-[#03274633] bg-white py-3 pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-[#032746] outline-none"
+                      className="w-full appearance-none rounded-[8px] border border-[#03274633] bg-white py-3 pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-oxford-blue outline-none"
                       style={{ height: "50px" }}
                     >
-                      <option value="">Select Subject</option>
+                      <option value="">{t('admin.createVariant.placeholders.selectSubject')}</option>
                     </select>
                     <svg
-                      className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6B7280]"
+                      className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-dark-gray"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -602,19 +602,19 @@ const CreateVariantPage = () => {
                 {/* Topic */}
                 <div>
                   <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#374151]">
-                    Topic
+                    {t('admin.createVariant.fields.topic')}
                   </label>
                   <div className="relative">
                     <select
                       value={topic}
                       onChange={(e) => setTopic(e.target.value)}
-                      className="w-full appearance-none rounded-[8px] border border-[#03274633] bg-white py-3 pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-[#032746] outline-none"
+                      className="w-full appearance-none rounded-[8px] border border-[#03274633] bg-white py-3 pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-oxford-blue outline-none"
                       style={{ height: "50px" }}
                     >
-                      <option value="">Select Topic</option>
+                      <option value="">{t('admin.createVariant.placeholders.selectTopic')}</option>
                     </select>
                     <svg
-                      className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6B7280]"
+                      className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-dark-gray"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -632,19 +632,19 @@ const CreateVariantPage = () => {
                 {/* Subtopic */}
                 <div>
                   <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#374151]">
-                    Subtopic
+                    {t('admin.createVariant.fields.subtopic')}
                   </label>
                   <div className="relative">
                     <select
                       value={subtopic}
                       onChange={(e) => setSubtopic(e.target.value)}
-                      className="w-full appearance-none rounded-[8px] border border-[#03274633] bg-white py-3 pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-[#032746] outline-none"
+                      className="w-full appearance-none rounded-[8px] border border-[#03274633] bg-white py-3 pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-oxford-blue outline-none"
                       style={{ height: "50px" }}
                     >
-                      <option value="">Select Subtopic</option>
+                      <option value="">{t('admin.createVariant.placeholders.selectSubtopic')}</option>
                     </select>
                     <svg
-                      className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6B7280]"
+                      className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-dark-gray"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -662,19 +662,19 @@ const CreateVariantPage = () => {
                 {/* Cognitive Level */}
                 <div>
                   <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#374151]">
-                    Cognitive Level
+                    {t('admin.createVariant.fields.cognitiveLevel')}
                   </label>
                   <div className="relative">
                     <select
                       value={cognitiveLevel}
                       onChange={(e) => setCognitiveLevel(e.target.value)}
-                      className="w-full appearance-none rounded-[8px] border border-[#03274633] bg-white py-3 pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-[#032746] outline-none"
+                      className="w-full appearance-none rounded-[8px] border border-[#03274633] bg-white py-3 pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-oxford-blue outline-none"
                       style={{ height: "50px" }}
                     >
-                      <option value="">Select Cognitive level</option>
+                      <option value="">{t('admin.createVariant.placeholders.selectCognitiveLevel')}</option>
                     </select>
                     <svg
-                      className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6B7280]"
+                      className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-dark-gray"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -697,11 +697,10 @@ const CreateVariantPage = () => {
             <div
               className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[376px] h-auto lg:h-[651px]"
               style={{
-                boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)",
               }}
             >
-              <h2 className="mb-4 py-2 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-                Source Question Overview
+              <h2 className="mb-4 py-2 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+                {t('admin.createVariant.sections.sourceQuestionOverview')}
               </h2>
 
               <div className="border-t border-[#E5E7EB] pt-4"></div>
@@ -709,7 +708,7 @@ const CreateVariantPage = () => {
               <div className="space-y-4 mt-4">
                 {/* Question Text */}
                 <div>
-                  <p className="font-roboto text-[16px] py-2 font-normal leading-[20px] text-[#032746]">
+                  <p className="font-roboto text-[16px] py-2 font-normal leading-[20px] text-oxford-blue">
                     What is the primary function of a router in a computer network?
                   </p>
                 </div>
@@ -737,7 +736,7 @@ const CreateVariantPage = () => {
                       className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
                       disabled
                     />
-                    <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                    <span className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                       B. Managing network security protocols
                     </span>
                   </label>
@@ -749,7 +748,7 @@ const CreateVariantPage = () => {
                       className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
                       disabled
                     />
-                    <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                    <span className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                       C. Providing wireless access points
                     </span>
                   </label>
@@ -761,7 +760,7 @@ const CreateVariantPage = () => {
                       className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
                       disabled
                     />
-                    <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                    <span className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                       D. Assigning IP address to devices
                     </span>
                   </label>
@@ -769,8 +768,8 @@ const CreateVariantPage = () => {
 
                 {/* Correct Answer */}
                 <div>
-                  <p className="font-roboto py-2 pt-3 text-[16px] font-medium leading-[20px] text-[#032746]">
-                    <span className="font-medium text-[#ED4122]">Correct Answer:</span>{" "}
+                  <p className="font-roboto py-2 pt-3 text-[16px] font-medium leading-[20px] text-oxford-blue">
+                    <span className="font-medium text-[#ED4122]">{t('admin.createVariant.sourceQuestion.correctAnswer')}</span>{" "}
                     <span className="text-[#ED4122]">A</span>
                   </p>
                 </div>
@@ -778,26 +777,26 @@ const CreateVariantPage = () => {
                 {/* Metadata */}
                 <div className="pt-10 border-t border-[#E5E7EB] space-y-4 mt-4">
                   <div className="flex gap-[80px] px-1">
-                    <label className="block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280] mb-1">
-                      Source:
+                    <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-1">
+                      {t('admin.createVariant.sourceQuestion.source')}
                     </label>
-                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                       Network Fundamentals
                     </p>
                   </div>
                   <div className="flex gap-[80px] px-1">
-                    <label className="block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280] mb-1">
-                      Creator
+                    <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-1">
+                      {t('admin.createVariant.sourceQuestion.creator')}
                     </label>
-                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                       Alex Turner
                     </p>
                   </div>
                   <div className="flex gap-[54px] px-1">
-                    <label className="block font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280] mb-1">
-                      Created on
+                    <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-1">
+                      {t('admin.createVariant.sourceQuestion.createdOn')}
                     </label>
-                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                       15-01-2024
                     </p>
                   </div>
@@ -814,14 +813,14 @@ const CreateVariantPage = () => {
             onClick={handleCancel}
             className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 md:px-7 text-[14px] md:text-[16px] font-archivo font-semibold leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
           >
-            Cancel
+            {t('admin.createVariant.buttons.cancel')}
           </button>
           <button
             type="button"
             onClick={handleCreateVariant}
             className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 md:px-7 text-[14px] md:text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
           >
-            Create Variant
+            {t('admin.createVariant.buttons.createVariant')}
           </button>
         </div>
       </div>

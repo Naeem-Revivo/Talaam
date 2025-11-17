@@ -1,10 +1,11 @@
 import React from "react";
+import { useLanguage } from "../../../context/LanguageContext";
 
 const selectClasses =
-  "h-[44px] w-full rounded-[12px] border border-[#E5E7EB] bg-white px-4 text-[16px] font-archivo font-semibold leading-[16px] text-[#032746] transition focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#032746]/10";
+  "h-[44px] w-full rounded-[12px] border border-[#E5E7EB] bg-white px-4 text-[16px] font-archivo font-semibold leading-[16px] text-oxford-blue transition focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#032746]/10";
 
 const inputClasses =
-  "h-[50px] w-full rounded-[12px] border border-[#E5E7EB] bg-white pl-[52px] pr-[112px] text-[14px] font-roboto leading-[16px] text-[#032746] transition placeholder:text-[#9CA3AF] focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#032746]/10 md:w-[537px]";
+  "h-[50px] w-full rounded-[12px] border border-[#E5E7EB] bg-white pl-[52px] pr-[112px] text-[14px] font-roboto leading-[16px] text-oxford-blue transition placeholder:text-[#9CA3AF] focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#032746]/10 md:w-[537px]";
 
 const QuestionBankFilters = ({
   searchValue,
@@ -19,10 +20,12 @@ const QuestionBankFilters = ({
   statusOptions,
   children,
 }) => {
+  const { t } = useLanguage();
+  
   return (
-    <section className="mx-auto flex w-full max-w-[1120px] flex-col gap-5 rounded-[16px] border border-[#E5E7EB] bg-white p-6 shadow-[0_10px_40px_rgba(0,0,0,0.06)] md:gap-6 min-h-[326px]">
+    <section className="mx-auto flex w-full max-w-[1120px] flex-col gap-5 rounded-[16px] border border-[#E5E7EB] bg-white p-6 shadow-filter-lg md:gap-6 min-h-[326px]">
       <div className="relative flex justify-start">
-        <span className="pointer-events-none absolute left-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-[#032746]">
+        <span className="pointer-events-none absolute left-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-oxford-blue">
           <svg
             width="21"
             height="21"
@@ -42,15 +45,15 @@ const QuestionBankFilters = ({
           type="search"
           value={searchValue}
           onChange={(event) => onSearchChange?.(event.target.value)}
-          placeholder="Search Questions..."
+          placeholder={t('admin.questionBank.filters.searchPlaceholder')}
           className={inputClasses}
         />
         <button
           type="button"
           onClick={onReset}
-          className="absolute right-3 top-1/2 hidden h-[38px] w-[104px] -translate-y-1/2 items-center justify-center rounded-[12px] border border-[#E5E7EB] bg-white text-[14px] font-roboto font-medium leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6] md:flex"
+          className="absolute right-3 top-1/2 hidden h-[38px] w-[104px] -translate-y-1/2 items-center justify-center rounded-[12px] border border-[#E5E7EB] bg-white text-[14px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6] md:flex"
         >
-          Reset Filter
+          {t('admin.questionBank.filters.resetFilter')}
         </button>
       </div>
 
@@ -61,7 +64,7 @@ const QuestionBankFilters = ({
             onChange={(event) => onFilterChange?.("exam", event.target.value)}
             className={`${selectClasses} h-[50px]`}
           >
-            <option value="" >Exam</option>
+            <option value="" >{t('admin.questionBank.filters.exam')}</option>
             {examOptions.map((exam) => (
               <option key={exam} value={exam}>
                 {exam}
@@ -75,7 +78,7 @@ const QuestionBankFilters = ({
             onChange={(event) => onFilterChange?.("subject", event.target.value)}
             className={`${selectClasses} h-[50px]`}
           >
-            <option value="">Subject</option>
+            <option value="">{t('admin.questionBank.filters.subject')}</option>
             {subjectOptions.map((subject) => (
               <option key={subject} value={subject}>
                 {subject}
@@ -89,7 +92,7 @@ const QuestionBankFilters = ({
             onChange={(event) => onFilterChange?.("topic", event.target.value)}
             className={`${selectClasses} h-[50px]`}
           >
-            <option value="">Topic</option>
+            <option value="">{t('admin.questionBank.filters.topic')}</option>
             {topicOptions.map((topic) => (
               <option key={topic} value={topic}>
                 {topic}
@@ -103,7 +106,7 @@ const QuestionBankFilters = ({
             onChange={(event) => onFilterChange?.("level", event.target.value)}
             className={`${selectClasses} h-[50px]`}
           >
-            <option value="">Cognitive Level</option>
+            <option value="">{t('admin.questionBank.filters.cognitiveLevel')}</option>
             {levelOptions.map((level) => (
               <option key={level} value={level}>
                 {level}
@@ -117,7 +120,7 @@ const QuestionBankFilters = ({
             onChange={(event) => onFilterChange?.("status", event.target.value)}
             className={`${selectClasses} h-[50px]`}
           >
-            <option value="">Status</option>
+            <option value="">{t('admin.questionBank.filters.status')}</option>
             {statusOptions.map((status) => (
               <option key={status} value={status}>
                 {status}
@@ -129,9 +132,9 @@ const QuestionBankFilters = ({
       <button
         type="button"
         onClick={onReset}
-        className="flex h-[44px] items-center justify-center rounded-[12px] border border-[#E5E7EB] bg-white text-[14px] font-roboto font-medium leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6] md:hidden"
+        className="flex h-[44px] items-center justify-center rounded-[12px] border border-[#E5E7EB] bg-white text-[14px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6] md:hidden"
       >
-        Reset Filter
+        {t('admin.questionBank.filters.resetFilter')}
       </button>
       {children}
     </section>

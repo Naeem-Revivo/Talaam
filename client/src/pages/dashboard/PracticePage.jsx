@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 
 const PracticePage = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [sessionMode, setSessionMode] = useState('study'); // 'test' or 'study'
   const [questionStatus, setQuestionStatus] = useState('new'); 
@@ -92,19 +94,19 @@ const PracticePage = () => {
       {/* Title and Subtitle */}
       <div className="mb-8">
         <h1 className="font-archivo font-bold text-[32px] md:text-[36px] leading-[36px] md:leading-[40px] text-oxford-blue mb-1 md:mb-2">
-          Start a Practice Session
+          {t('dashboard.practice.hero.title')}
         </h1>
-        <p className="font-roboto font-normal text-[18px] leading-[28px] tracking-[0%] text-[#6B7280]">
-          Pick your mode, choose topics, and begin.
+        <p className="font-roboto font-normal text-[18px] leading-[28px] tracking-[0%] text-dark-gray">
+          {t('dashboard.practice.hero.subtitle')}
         </p>
       </div>
 
       {/* Session Mode and Question Status Cards - Flexed */}
       <div className="flex flex-col lg:flex-row  flex-wrap justify-start gap-2 mb-6">
         {/* Session Mode Card */}
-        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 md:p-6 w-full lg:w-[594px] lg:h-[266px]">
+        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:w-[594px] lg:h-[266px]">
         <h2 className="font-archivo font-bold text-lg md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-4">
-          Session Mode
+          {t('dashboard.practice.sessionMode.title')}
         </h2>
           <div className="flex flex-row gap-2 md:gap-4 mb-4">
             <button
@@ -118,12 +120,12 @@ const PracticePage = () => {
               <p className={`font-archivo font-bold text-[16px] leading-[24px] tracking-[0%] mb-1 md:mb-2 text-center ${
                 sessionMode === 'test' ? 'text-white' : 'text-black'
               }`}>
-                Test Mode
+                {t('dashboard.practice.sessionMode.testMode')}
               </p>
               <p className={`font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-center ${
                 sessionMode === 'test' ? 'text-white' : 'text-gray-600'
               }`}>
-                Timed practice scoring
+                {t('dashboard.practice.sessionMode.testModeDescription')}
               </p>
             </button>
             <button
@@ -137,12 +139,12 @@ const PracticePage = () => {
               <p className={`font-archivo font-bold text-[16px] leading-[24px] tracking-[0%] mb-1 md:mb-2 text-center ${
                 sessionMode === 'study' ? 'text-white' : 'text-black'
               }`}>
-                Study Mode
+                {t('dashboard.practice.sessionMode.studyMode')}
               </p>
               <p className={`font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-center ${
                 sessionMode === 'study' ? 'text-white' : 'text-gray-600'
               }`}>
-                Learn with explanations
+                {t('dashboard.practice.sessionMode.studyModeDescription')}
               </p>
             </button>
           </div>
@@ -151,36 +153,36 @@ const PracticePage = () => {
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
             </svg>
             <p className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-oxford-blue">
-              Time limits are available in Test Mode
+              {t('dashboard.practice.sessionMode.timeLimitNote')}
             </p>
           </div>
         </div>
 
         {/* Question Status Card */}
-        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 md:p-6 w-full lg:w-[506px] lg:h-[266px]">
+        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:w-[506px] lg:h-[266px]">
         <h2 className="font-archivo font-bold text-[18px] md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-4">
-          Question Status
+          {t('dashboard.practice.questionStatus.title')}
         </h2>
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setQuestionStatus('new')}
-            className={`px-4 py-2 rounded-lg font-roboto font-normal text-[16px] leading-[24px] text-center transition-all duration-200 ${
+            className={`px-4 py-2 rounded-full font-roboto font-normal text-[16px] leading-[24px] text-center transition-all duration-200 ${
               questionStatus === 'new'
                 ? 'bg-cinnebar-red text-white'
-                : 'bg-white text-gray-700 border border-[#E5E7EB]'
+                : 'bg-white text-oxford-blue border border-[#E5E7EB]'
             }`}
           >
-            New
+            {t('dashboard.practice.questionStatus.new')}
           </button>
           <button
             onClick={() => setQuestionStatus('solved')}
-            className={`px-4 py-2 rounded-lg font-roboto font-normal text-[16px] leading-[24px] text-center transition-all duration-200 ${
+            className={`px-4 py-2 rounded-full font-roboto font-normal text-[16px] leading-[24px] text-center transition-all duration-200 ${
               questionStatus === 'solved'
                 ? 'bg-cinnebar-red text-white'
-                : 'bg-white text-gray-700 border border-[#E5E7EB]'
+                : 'bg-white text-oxford-blue border border-[#E5E7EB]'
             }`}
           >
-            Solved
+            {t('dashboard.practice.questionStatus.solved')}
           </button>
         </div>
         {questionStatus === 'solved' && (
@@ -193,7 +195,7 @@ const PracticePage = () => {
                 className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red"
               />
               <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
-                Incorrect
+                {t('dashboard.practice.questionStatus.incorrect')}
               </span>
               <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
                 45
@@ -207,7 +209,7 @@ const PracticePage = () => {
                 className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red"
               />
               <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
-                Flagged
+                {t('dashboard.practice.questionStatus.flagged')}
               </span>
               <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
                 12
@@ -221,7 +223,7 @@ const PracticePage = () => {
                 className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red"
               />
               <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
-                Correct
+                {t('dashboard.practice.questionStatus.correct')}
               </span>
               <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
                 128
@@ -233,9 +235,9 @@ const PracticePage = () => {
       </div>
 
       {/* Question Pool Section */}
-      <div className="mb-6 bg-white rounded-xl border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 md:p-6 w-full lg:w-[1120px]">
+      <div className="mb-6 bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:w-[1120px]">
         <h2 className="font-archivo font-bold text-[18px] md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-4">
-          Question Pool
+          {t('dashboard.practice.questionPool.title')}
         </h2>
         
         <div className="mb-4">
@@ -247,7 +249,7 @@ const PracticePage = () => {
               className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red"
             />
             <span className="font-archivo font-bold text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
-              All Questions
+              {t('dashboard.practice.questionPool.allQuestions')}
             </span>
           </label>
         </div>
@@ -256,7 +258,7 @@ const PracticePage = () => {
           {/* Domains */}
           <div>
             <h3 className="font-archivo font-semibold text-[16px] leading-[24px] tracking-[0%] text-oxford-blue mb-3">
-              Domains
+              {t('dashboard.practice.questionPool.domains')}
             </h3>
             <div className="space-y-2">
               {domains.map((domain) => (
@@ -286,7 +288,7 @@ const PracticePage = () => {
           {/* Subtopics */}
           <div>
             <h3 className="font-archivo font-semibold text-[16px] leading-[24px] tracking-[0%] text-oxford-blue mb-3">
-              Subtopics
+              {t('dashboard.practice.questionPool.subtopics')}
             </h3>
             <div className="space-y-2">
               {subtopics.map((subtopic) => (
@@ -315,19 +317,19 @@ const PracticePage = () => {
         {/* Warning Message */}
         <div className="mt-4 flex items-center gap-2 rounded-lg w-full bg-papaya-whip border border-[#FFE5B0] p-3">
           <p className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue text-center">
-            No questions match your filters. Clear filters to continue.
+            {t('dashboard.practice.questionPool.noQuestionsMatch')}
           </p>
         </div>
       </div>
 
       {/* Session Size Section */}
-      <div className="mb-8 bg-white rounded-xl border border-[#E5E7EB] shadow-[0px_6px_54px_0px_rgba(0,0,0,0.05)] p-4 md:p-6">
+      <div className="mb-8 bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6">
         <h2 className="font-archivo font-bold text-[18px] md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-4">
-          Session Size
+          {t('dashboard.practice.sessionSize.title')}
         </h2>
         <div className="mb-2">
           <label className="block font-archivo font-bold text-[16px] leading-[24px] text-oxford-blue mb-2">
-            Number of Questions
+            {t('dashboard.practice.sessionSize.numberOfQuestions')}
           </label>
           <input
             type="number"
@@ -335,18 +337,18 @@ const PracticePage = () => {
             onChange={(e) => setSessionSize(e.target.value)}
             min="1"
             max="50"
-            className="w-full max-w-[200px] px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-cinnebar-red focus:border-transparent font-roboto font-medium text-[16px] leading-[24px] text-black"
+            className="w-full max-w-[200px] px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-cinnebar-red focus:border-transparent font-roboto font-medium text-[16px] leading-[24px] text-black placeholder:text-[16px] placeholder:text-black"
           />
         </div>
         <p className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-gray-500 mb-4">
-          Enter between 1-50.
+          {t('dashboard.practice.sessionSize.enterRange')}
         </p>
         <div className="rounded-lg flex items-center gap-2 w-full lg:w-[1072px] h-auto lg:h-[47px] bg-papaya-whip border border-cinnebar-red px-4 py-3">
           <svg className="w-5 h-5 text-cinnebar-red flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>
           <p className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-cinnebar-red">
-            Only 0 questions available with current filters.
+            {t('dashboard.practice.sessionSize.onlyQuestionsAvailable')}
           </p>
         </div>
       </div>
@@ -354,13 +356,13 @@ const PracticePage = () => {
       {/* Begin Session Button */}
       <div className="flex justify-center">
         <button
-          disabled={!canStartSession}
+          // disabled={!canStartSession}
           onClick={handleStartSession}
           className={`font-archivo font-bold text-[20px] leading-[28px] tracking-[0%] text-oxford-blue text-center rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 w-full lg:w-[1120px] h-[50px] md:h-[60px] ${
-            canStartSession ? 'bg-cinnebar-red text-white' : 'bg-ash-gray text-oxford-blue'
+            canStartSession ? 'bg-cinnebar-red text-white' : 'bg-ash-gray text-oxford-blue cursor-not-allowed'
           }`}
         >
-          Begin Session
+          {t('dashboard.practice.beginSession')}
         </button>
       </div>
     </div>

@@ -4,6 +4,7 @@ import UserSummaryCards from "../../components/admin/userManagement/UserSummaryC
 import UserFilterBar from "../../components/admin/userManagement/UserFilterBar";
 import UserTable from "../../components/admin/userManagement/UserTable";
 import { useAdminUsers } from "../../context/AdminUsersContext";
+import { useLanguage } from "../../context/LanguageContext";
 import {
   usermanage1,
   usermanage2,
@@ -23,6 +24,7 @@ const pageSize = 5;
 const UserManagementPage = () => {
   const { users } = useAdminUsers();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
@@ -46,15 +48,15 @@ const UserManagementPage = () => {
 
   const summaries = useMemo(() => {
     const roles = [
-      "Question Gatherer",
-      "Question Creator",
-      "Processor",
-      "Question Explainer",
+      { key: "Question Gatherer", translationKey: "questionGatherer" },
+      { key: "Question Creator", translationKey: "questionCreator" },
+      { key: "Processor", translationKey: "processor" },
+      { key: "Question Explainer", translationKey: "questionExplainer" },
     ];
 
     return roles.map((role) => {
       const usersByRole = users.filter(
-        (user) => user.workflowRole === role
+        (user) => user.workflowRole === role.key
       );
       const totalCount = usersByRole.length;
       const activeCount = usersByRole.filter(
@@ -62,14 +64,14 @@ const UserManagementPage = () => {
       ).length;
       const badgeTone = activeCount ? "active" : "suspended";
       return {
-        label: role,
+        label: t(`admin.userManagement.roles.${role.translationKey}`),
         value: totalCount,
-        badgeText: badgeTone === "active" ? "Active" : "Suspended",
+        badgeText: badgeTone === "active" ? t('admin.userManagement.status.active') : t('admin.userManagement.status.suspended'),
         badgeTone,
-        icon: roleIcons[role],
+        icon: roleIcons[role.key],
       };
     });
-  }, [users]);
+  }, [users, t]);
 
   const handleAddUser = () => {
     navigate("/admin/users/add");
@@ -86,7 +88,13 @@ const UserManagementPage = () => {
   const handleExport = () => {
     if (typeof window === "undefined") return;
     const csvRows = [
-      ["Name", "Email", "Workflow Role", "System Role", "Status"].join(","),
+      [
+        t('admin.userManagement.export.headers.name'),
+        t('admin.userManagement.export.headers.email'),
+        t('admin.userManagement.export.headers.workflowRole'),
+        t('admin.userManagement.export.headers.systemRole'),
+        t('admin.userManagement.export.headers.status')
+      ].join(","),
       ...users.map((user) =>
         [user.name, user.email, user.workflowRole, user.systemRole, user.status].join(",")
       ),
@@ -95,7 +103,7 @@ const UserManagementPage = () => {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "user-management.csv";
+    link.download = t('admin.userManagement.export.fileName');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -107,18 +115,18 @@ const UserManagementPage = () => {
       <div className="mx-auto flex max-w-[1200px] flex-col gap-6">
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-[#032746]">
-              User Management
+            <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
+              {t('admin.userManagement.hero.title')}
             </h1>
-            <p className="font-roboto text-[18px] leading-[28px] text-[#6B7280]">
-              Manage user accounts and workflow roles.
+            <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
+              {t('admin.userManagement.hero.subtitle')}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
               onClick={handleExport}
-              className="h-[36px] w-[124px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6] flex items-center justify-center gap-2"
+              className="h-[36px] w-[124px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6] flex items-center justify-center gap-2"
             >
               <svg
                 width="16"
@@ -132,14 +140,14 @@ const UserManagementPage = () => {
                   fill="#032746"
                 />
               </svg>
-              Export
+              {t('admin.userManagement.actions.export')}
             </button>
             <button
               type="button"
               onClick={handleAddUser}
               className="h-[36px] w-[180px] rounded-[10px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
-              + Add New User
+              {t('admin.userManagement.actions.addNewUser')}
             </button>
           </div>
         </header>

@@ -1,0 +1,39 @@
+[
+  {
+    "id": 1,
+    "name": "Learning Management System",
+    "description": "Comprehensive platform for managing and delivering educational content with advanced analytics and reporting.",
+    "features": ["Course Management", "Student Tracking", "Assessment Tools", "Analytics Dashboard"],
+    "price": "Starting at $99/month",
+    "popular": true,
+    "iconName": "bookIcon"
+  },
+  {
+    "id": 2,
+    "name": "Virtual Classroom",
+    "description": "Interactive online classroom solution with real-time collaboration tools and video conferencing.",
+    "features": ["Live Streaming", "Screen Sharing", "Interactive Whiteboard", "Breakout Rooms"],
+    "price": "Starting at $149/month",
+    "popular": false,
+    "iconName": "videoIcon"
+  },
+  {
+    "id": 3,
+    "name": "Assessment Platform",
+    "description": "Advanced testing and assessment platform with AI-powered grading and detailed performance analytics.",
+    "features": ["Auto Grading", "Plagiarism Detection", "Performance Analytics", "Custom Tests"],
+    "price": "Starting at $79/month",
+    "popular": false,
+    "iconName": "checkCircleIcon"
+  },
+  {
+    "id": 4,
+    "name": "Mobile Learning App",
+    "description": "Native mobile applications for iOS and Android with offline learning capabilities and push notifications.",
+    "features": ["Offline Access", "Push Notifications", "Progress Sync", "Mobile Optimized"],
+    "price": "Starting at $199/month",
+    "popular": false,
+    "iconName": "phoneIcon"
+  }
+]
+

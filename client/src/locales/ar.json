@@ -435,7 +435,10 @@
   },
   "dashboard": {
     "header": {
-      "title": "لوحة التحكم"
+      "title": "لوحة التحكم",
+      "settings": "الإعدادات",
+      "myProfile": "ملفي الشخصي",
+      "logout": "تسجيل الخروج"
     },
     "sidebar": {
       "dashboard": "لوحة التحكم",
@@ -444,7 +447,18 @@
       "reviewSessions": "مراجعة الجلسات"
     },
     "overview": {
-      "subtitle": "تقدمك في بنك الأسئلة بلمحة سريعة."
+      "title": "نظرة عامة",
+      "subtitle": "تقدمك في بنك الأسئلة بلمحة سريعة.",
+      "progress": "التقدم",
+      "accuracy": "الدقة",
+      "overall": "الإجمالي",
+      "questionsCompleted": "الأسئلة المكتملة",
+      "sectionBreakdown": "تفصيل الأقسام",
+      "legend": {
+        "normal": "عادي",
+        "hovered": "عند التمرير",
+        "selected": "محدد"
+      }
     },
     "performance": {
       "title": "الأداء - آخر 10 جلسات"
@@ -453,6 +467,1655 @@
       "title": "إجراءات سريعة",
       "startNewSession": "بدء جلسة جديدة",
       "reviewSessions": "مراجعة الجلسات السابقة"
+    },
+    "practice": {
+      "hero": {
+        "title": "بدء جلسة تدريبية",
+        "subtitle": "اختر وضعك ومواضيعك وابدأ."
+      },
+      "sessionMode": {
+        "title": "وضع الجلسة",
+        "testMode": "وضع الاختبار",
+        "testModeDescription": "تدريب مؤقت مع تسجيل",
+        "studyMode": "وضع الدراسة",
+        "studyModeDescription": "تعلم مع الشروحات",
+        "timeLimitNote": "الحدود الزمنية متاحة في وضع الاختبار"
+      },
+      "questionStatus": {
+        "title": "حالة السؤال",
+        "new": "جديد",
+        "solved": "محلول",
+        "incorrect": "غير صحيح",
+        "flagged": "مميز",
+        "correct": "صحيح"
+      },
+      "questionPool": {
+        "title": "مجموعة الأسئلة",
+        "allQuestions": "جميع الأسئلة",
+        "domains": "المجالات",
+        "subtopics": "المواضيع الفرعية",
+        "noQuestionsMatch": "لا توجد أسئلة تطابق المرشحات الخاصة بك. امسح المرشحات للمتابعة."
+      },
+      "sessionSize": {
+        "title": "حجم الجلسة",
+        "numberOfQuestions": "عدد الأسئلة",
+        "enterRange": "أدخل بين 1-50.",
+        "onlyQuestionsAvailable": "0 أسئلة فقط متاحة مع المرشحات الحالية."
+      },
+      "beginSession": "بدء الجلسة"
+    },
+    "analytics": {
+      "hero": {
+        "title": "تحليلات الأداء",
+        "subtitle": "رؤى عميقة في تقدمك التعليمي."
+      },
+      "metrics": {
+        "overallAccuracy": "الدقة الإجمالية",
+        "avgTimePerQuestion": "متوسط الوقت / السؤال",
+        "perQuestion": "لكل سؤال",
+        "questionsCompleted": "الأسئلة المكتملة"
+      },
+      "accuracyTrend": {
+        "title": "اتجاه الدقة",
+        "all": "الكل",
+        "30Days": "30 يوم",
+        "7Days": "7 أيام"
+      },
+      "yourPercentile": {
+        "title": "النسبة المئوية الخاصة بك",
+        "basedOn": "بناءً على جميع المستخدمين في بنك الأسئلة هذا"
+      },
+      "accuracyByTopic": {
+        "title": "الدقة حسب الموضوع",
+        "quantitative": "الكمي",
+        "language": "اللغة"
+      },
+      "focusAreas": {
+        "title": "مجالات التركيز"
+      }
+    },
+    "review": {
+      "hero": {
+        "title": "مراجعة الجلسات السابقة",
+        "subtitle": "راجع أي مجموعة تدريبية سابقة لتعزيز تعلمك."
+      },
+      "filters": {
+        "all": "الكل",
+        "testMode": "وضع الاختبار",
+        "studyMode": "وضع الدراسة"
+      },
+      "table": {
+        "columns": {
+          "number": "#",
+          "date": "التاريخ",
+          "mode": "الوضع",
+          "questions": "#أسئلة",
+          "correct": "% صحيح",
+          "avgTime": "متوسط الوقت",
+          "actions": "الإجراءات"
+        },
+        "mobile": {
+          "questions": "أسئلة:",
+          "correct": "صحيح:",
+          "avgTime": "متوسط الوقت:"
+        },
+        "actions": {
+          "reviewAll": "مراجعة الكل",
+          "reviewIncorrect": "مراجعة غير الصحيح"
+        }
+      },
+      "pagination": {
+        "showing": "عرض {{from}} إلى {{to}} من {{total}} نتيجة",
+        "previous": "السابق",
+        "next": "التالي",
+        "loadMore": "تحميل المزيد من النتائج"
+      }
+    },
+    "reviewIncorrect": {
+      "item": "عنصر {{current}} من {{total}}",
+      "questionId": "معرف السؤال:",
+      "title": "مراجعة غير الصحيح",
+      "incorrectAnswer": "إجابة غير صحيحة",
+      "feedback": {
+        "incorrect": "غير صحيح",
+        "correctAnswer": "الإجابة الصحيحة:",
+        "answeredCorrectly": "تم الإجابة بشكل صحيح",
+        "timeSpent": "الوقت المستغرق"
+      },
+      "explanation": {
+        "title": "الشرح",
+        "show": "إظهار",
+        "hide": "إخفاء",
+        "correctAnswerExplanation": "شرح الإجابة الصحيحة",
+        "wrongAnswerExplanation": "شرح الإجابة الخاطئة",
+        "answer": "الإجابة:",
+        "explanationLabel": "الشرح:"
+      },
+      "actions": {
+        "previous": "< السابق",
+        "next": "التالي >",
+        "studyMode": "وضع الدراسة",
+        "reviewAll": "مراجعة الكل",
+        "exitSession": "إنهاء الجلسة"
+      },
+      "formulaSheet": "ورقة الصيغ",
+      "timeRemaining": "الوقت المتبقي",
+      "mark": "علامة",
+      "questions": "الأسئلة"
+    },
+    "reviewAll": {
+      "item": "عنصر {{current}} من {{total}}",
+      "questionId": "معرف السؤال:",
+      "title": "مراجعة الجلسة الكاملة",
+      "subtitle": "راجع أي مجموعة تدريبية سابقة لتعزيز تعلمك",
+      "nextQuestion": "السؤال التالي",
+      "newQuestion": "سؤال جديد",
+      "actions": {
+        "previous": "< السابق",
+        "next": "التالي >",
+        "studyMode": "وضع الدراسة",
+        "reviewIncorrect": "مراجعة غير الصحيح",
+        "exitSession": "إنهاء الجلسة"
+      },
+      "formulaSheet": "ورقة الصيغ",
+      "timeRemaining": "الوقت المتبقي",
+      "mark": "علامة",
+      "questions": "الأسئلة"
+    },
+    "questionSession": {
+      "item": "عنصر {{current}} من {{total}}",
+      "questionId": "معرف السؤال:",
+      "formulaSheet": "ورقة الصيغ",
+      "timeRemaining": "الوقت المتبقي",
+      "mark": "علامة",
+      "questions": "الأسئلة",
+      "title": "صفحة حل السؤال",
+      "submitAnswer": "إرسال الإجابة",
+      "correctAnswer": "إجابة صحيحة",
+      "incorrectAnswer": "إجابة غير صحيحة",
+      "correctAnswerLabel": "الإجابة الصحيحة:",
+      "answeredCorrectly": "تم الإجابة بشكل صحيح",
+      "timeSpent": "الوقت المستغرق",
+      "yourAnswer": "إجابتك",
+      "yourAnswerExplanation": "شرح إجابتك",
+      "consider": "فكر في:",
+      "hints": "تلميحات",
+      "showHints": "إظهار التلميحات",
+      "hideHints": "إخفاء التلميحات",
+      "revealHints": "كشف التلميحات للحصول على تلميحات استراتيجية قبل إعادة محاولة السؤال.",
+      "submitToView": "أرسل إجابتك لعرض الشرح الكامل والتلميحات.",
+      "submitToSee": "أرسل إجابتك لرؤية الشروحات والتلميحات.",
+      "actions": {
+        "previous": "< السابق",
+        "next": "التالي >",
+        "submit": "إرسال",
+        "exit": "خروج",
+        "exitSession": "إنهاء الجلسة",
+        "showHint": "إظهار تلميح",
+        "hideHint": "إخفاء تلميح"
+      },
+      "explanation": {
+        "title": "الشرح",
+        "show": "إظهار",
+        "hide": "إخفاء",
+        "correctAnswerExplanation": "شرح الإجابة الصحيحة",
+        "answer": "الإجابة:",
+        "explanationLabel": "الشرح:"
+      }
+    },
+    "sessionCompletion": {
+      "title": "اكتملت الجلسة",
+      "description": "لقد وصلت إلى نهاية جلسة {{mode}} هذه. راجع أداءك أو ارجع إلى لوحة التحكم للتدريب لبدء مجموعة أخرى.",
+      "test": "اختبار",
+      "study": "دراسة",
+      "viewSummary": "عرض الملخص",
+      "reviewAnswers": "مراجعة الإجابات",
+      "exitSession": "إنهاء الجلسة"
+    },
+    "sessionSummary": {
+      "item": "عنصر {{current}} من {{total}}",
+      "questionId": "معرف السؤال:",
+      "hero": {
+        "title": "اكتملت الجلسة",
+        "subtitle": "إليك كيف أديت في هذه الجلسة."
+      },
+      "accuracySnapshot": {
+        "title": "لقطة الدقة",
+        "description": "استمر في الزخم—منحنى دقتك بقي قوياً عبر هذه الجلسة.",
+        "correct": "صحيح",
+        "questions": "أسئلة",
+        "incorrect": "غير صحيح",
+        "questionsAnswered": "الأسئلة المجابة",
+        "averagePace": "متوسط الوتيرة"
+      },
+      "sessionOverview": {
+        "testMode": "وضع الاختبار",
+        "studyMode": "وضع الدراسة",
+        "title": "تعرف على جلستك في لمحة",
+        "description": "تفتح الملاحظات الآن بعد انتهاء المؤقت. انغمس في كل شرح أو ركز على الأسئلة التي فاتتك.",
+        "questionsCompleted": "الأسئلة المكتملة",
+        "total": "إجمالي",
+        "overall": "الإجمالي",
+        "average": "متوسط"
+      },
+      "metrics": {
+        "accuracy": {
+          "title": "الدقة",
+          "description": "نسبة الإجابة الصحيحة في هذه الجلسة."
+        },
+        "questionOutcome": {
+          "title": "نتيجة السؤال",
+          "description": "الأسئلة المكتملة"
+        },
+        "timeTaken": {
+          "title": "الوقت المستغرق",
+          "description": "متوسط {{pace}} سؤال"
+        }
+      },
+      "actions": {
+        "goToDashboard": "الذهاب إلى لوحة التحكم"
+      },
+      "formulaSheet": "ورقة الصيغ",
+      "timeRemaining": "الوقت المتبقي",
+      "mark": "علامة"
+    }
+  },
+  "admin": {
+    "sidebar": {
+      "dashboard": "لوحة التحكم",
+      "userManagement": "إدارة المستخدمين",
+      "questionBank": "بنك الأسئلة",
+      "classification": "التصنيف",
+      "subscriptions": "الاشتراكات والفوترة",
+      "reports": "التقارير والتحليلات",
+      "moderation": "إدارة المحتوى",
+      "settings": "إعدادات النظام",
+      "security": "الأمان والصلاحيات"
+    },
+    "dashboard": {
+      "hero": {
+        "title": "نظرة عامة على لوحة التحكم",
+        "subtitle": "راقب نشاط النظام والمقاييس الرئيسية"
+      },
+      "stats": {
+        "totalUsers": "إجمالي المستخدمين",
+        "verifiedUsers": "المستخدمون المؤكدون",
+        "activeSubscriptions": "الاشتراكات النشطة",
+        "revenue": "الإيرادات",
+        "fromLastMonth": "+12% من الشهر الماضي",
+        "verificationRate": "معدل التحقق 72%",
+        "thisWeek": "+8% هذا الأسبوع",
+        "thisMonth": "+15% هذا الشهر"
+      },
+      "charts": {
+        "userGrowthTrend": {
+          "title": "اتجاه نمو المستخدمين",
+          "subtitle": "المستخدمون النشطون شهرياً"
+        },
+        "subscriptionPlans": {
+          "title": "خطط الاشتراك",
+          "subtitle": "توزيع الخطط"
+        },
+        "planLabels": {
+          "free": "مجاني",
+          "premium": "مميز",
+          "organization": "منظمة"
+        }
+      },
+      "sections": {
+        "latestSignups": "أحدث التسجيلات",
+        "systemNotifications": "إشعارات النظام"
+      },
+      "notifications": {
+        "highServerLoad": {
+          "title": "حمل الخادم مرتفع",
+          "description": "استخدام المعالج أعلى من 85%"
+        },
+        "scheduledMaintenance": {
+          "title": "صيانة مجدولة",
+          "description": "نسخ احتياطي لقاعدة البيانات الساعة 2 صباحاً",
+          "time": "غداً"
+        },
+        "backupCompleted": {
+          "title": "اكتمل النسخ الاحتياطي",
+          "description": "النسخ الاحتياطي اليومي ناجح",
+          "time": "منذ ساعة واحدة"
+        }
+      },
+      "time": {
+        "minAgo": "منذ {{count}} دقيقة",
+        "hourAgo": "منذ {{count}} ساعة"
+      }
+    },
+    "userManagement": {
+      "hero": {
+        "title": "إدارة المستخدمين",
+        "subtitle": "إدارة حسابات المستخدمين وأدوار سير العمل."
+      },
+      "actions": {
+        "addNewUser": "+ إضافة مستخدم جديد",
+        "export": "تصدير"
+      },
+      "roles": {
+        "questionGatherer": "جامع الأسئلة",
+        "questionCreator": "منشئ الأسئلة",
+        "processor": "المعالج",
+        "questionExplainer": "شارح الأسئلة"
+      },
+      "status": {
+        "active": "نشط",
+        "suspended": "معلق",
+        "all": "الكل"
+      },
+      "filters": {
+        "searchPlaceholder": "البحث بالاسم / البريد الإلكتروني",
+        "filter": "تصفية",
+        "status": "الحالة",
+        "role": "الدور",
+        "refresh": "تحديث",
+        "applyFilters": "تطبيق المرشحات"
+      },
+      "table": {
+        "headers": {
+          "userName": "اسم المستخدم",
+          "email": "البريد الإلكتروني",
+          "workflowRole": "دور سير العمل",
+          "systemRole": "دور النظام",
+          "status": "الحالة",
+          "actions": "الإجراءات"
+        },
+        "emptyState": "لا يوجد مستخدمون يطابقون المرشحات الحالية.",
+        "pagination": {
+          "showing": "عرض {{first}} إلى {{last}} من {{total}} نتيجة",
+          "previous": "السابق",
+          "next": "التالي"
+        },
+        "ariaLabels": {
+          "view": "عرض {{name}}",
+          "edit": "تعديل {{name}}"
+        }
+      },
+      "export": {
+        "headers": {
+          "name": "الاسم",
+          "email": "البريد الإلكتروني",
+          "workflowRole": "دور سير العمل",
+          "systemRole": "دور النظام",
+          "status": "الحالة"
+        },
+        "fileName": "إدارة-المستخدمين.csv"
+      }
+    },
+    "addUser": {
+      "hero": {
+        "title": "إضافة مستخدم جديد",
+        "subtitle": "إنشاء حساب مستخدم جديد بالتفاصيل اللازمة."
+      },
+      "form": {
+        "title": "إضافة مستخدم جديد",
+        "fields": {
+          "userName": "اسم المستخدم",
+          "emailAddress": "عنوان البريد الإلكتروني",
+          "password": "كلمة المرور",
+          "status": "الحالة",
+          "systemRole": "دور النظام",
+          "workflowRole": "دور سير العمل"
+        },
+        "placeholders": {
+          "enterName": "أدخل الاسم",
+          "enterEmail": "أدخل عنوان بريدك الإلكتروني",
+          "autoGenerated": "يتم إنشاؤه تلقائياً (اختياري)",
+          "selectSystemRole": "اختر دور النظام",
+          "selectWorkflowRole": "اختر دور سير العمل"
+        },
+        "systemRoles": {
+          "admin": "مسؤول",
+          "editor": "محرر",
+          "viewer": "عارض"
+        },
+        "buttons": {
+          "saveUser": "حفظ المستخدم",
+          "saveChanges": "حفظ التغييرات",
+          "cancel": "إلغاء"
+        }
+      }
+    },
+    "editUser": {
+      "hero": {
+        "title": "تعديل المستخدم",
+        "subtitle": "تعديل تفاصيل المستخدم أو تغيير وصول سير العمل."
+      },
+      "form": {
+        "title": "تعديل المستخدم"
+      },
+      "errors": {
+        "notFound": "المستخدم غير موجود",
+        "notFoundDescription": "لم نتمكن من العثور على المستخدم المطلوب. يرجى العودة إلى شاشة إدارة المستخدمين.",
+        "goBack": "العودة إلى إدارة المستخدمين"
+      }
+    },
+    "viewUser": {
+      "backToUsers": "العودة إلى المستخدمين",
+      "editUser": "تعديل المستخدم",
+      "sections": {
+        "personalInformation": "المعلومات الشخصية",
+        "accountDetails": "تفاصيل الحساب",
+        "activityLog": "سجل النشاط"
+      },
+      "fields": {
+        "fullName": "الاسم الكامل",
+        "email": "البريد الإلكتروني",
+        "systemRole": "دور النظام",
+        "workflowRole": "دور سير العمل",
+        "status": "الحالة",
+        "lastLogin": "آخر تسجيل دخول",
+        "dateCreated": "تاريخ الإنشاء"
+      },
+      "activity": {
+        "noRecentActivity": "لا يوجد نشاط حديث مسجل."
+      },
+      "errors": {
+        "notFound": "المستخدم غير موجود",
+        "notFoundDescription": "لم نتمكن من العثور على المستخدم المطلوب. يرجى العودة إلى شاشة إدارة المستخدمين.",
+        "backToManagement": "العودة إلى إدارة المستخدمين"
+      }
+    },
+    "questionBank": {
+      "hero": {
+        "title": "بنك الأسئلة",
+        "subtitle": "إدارة وتصفية ومراجعة جميع الأسئلة حسب الموضوع أو الموضوع أو الدور."
+      },
+      "actions": {
+        "questionManagement": "إدارة الأسئلة",
+        "users": "المستخدمون",
+        "addNewQuestion": "+ إضافة سؤال جديد",
+        "import": "استيراد",
+        "export": "تصدير"
+      },
+      "tabs": {
+        "all": "جميع الأسئلة",
+        "rawPending": "أسئلة خام معلقة",
+        "variantPending": "متغير معلق",
+        "rejected": "مرفوض"
+      },
+      "stats": {
+        "totalQuestions": "إجمالي الأسئلة",
+        "pending": "معلق",
+        "approved": "موافق عليه"
+      },
+      "filters": {
+        "searchPlaceholder": "البحث عن الأسئلة...",
+        "resetFilter": "إعادة تعيين المرشح",
+        "exam": "الامتحان",
+        "subject": "الموضوع",
+        "topic": "الموضوع",
+        "cognitiveLevel": "المستوى المعرفي",
+        "status": "الحالة"
+      },
+      "table": {
+        "headers": {
+          "question": "السؤال",
+          "subject": "الموضوع",
+          "topic": "الموضوع",
+          "level": "المستوى",
+          "createdBy": "تم الإنشاء بواسطة",
+          "status": "الحالة",
+          "actions": "الإجراءات"
+        },
+        "type": "النوع",
+        "pagination": {
+          "showing": "عرض {{first}} إلى {{last}} من {{total}} نتيجة",
+          "previous": "السابق",
+          "next": "التالي"
+        },
+        "emptyState": "لا توجد أسئلة تطابق المرشحات الحالية.",
+        "ariaLabels": {
+          "view": "عرض {{prompt}}"
+        }
+      }
+    },
+    "addNewQuestion": {
+      "hero": {
+        "title": "إضافة سؤال جديد"
+      },
+      "buttons": {
+        "saveDraft": "حفظ المسودة",
+        "submit": "إرسال",
+        "cancel": "إلغاء",
+        "saveQuestion": "حفظ السؤال"
+      },
+      "sections": {
+        "questionDetails": "تفاصيل السؤال",
+        "classification": "التصنيف",
+        "explanation": "التفسير"
+      },
+      "fields": {
+        "questionText": "نص السؤال",
+        "questionType": "نوع السؤال",
+        "optionA": "الخيار أ",
+        "optionB": "الخيار ب",
+        "optionC": "الخيار ج",
+        "optionD": "الخيار د",
+        "correctAnswer": "الإجابة الصحيحة",
+        "subject": "الموضوع",
+        "topic": "الموضوع",
+        "cognitiveLevel": "المستوى المعرفي",
+        "source": "المصدر (اختياري)"
+      },
+      "placeholders": {
+        "questionText": "أدخل نص السؤال هنا...",
+        "explanation": "أدخل التفسير هنا...",
+        "selectSubject": "اختر الموضوع",
+        "selectTopic": "اختر الموضوع",
+        "selectLevel": "اختر المستوى",
+        "selectSource": "اختر المصدر"
+      },
+      "questionTypes": {
+        "multipleChoice": "اختيار متعدد (MCQ)",
+        "trueFalse": "صحيح/خطأ",
+        "shortAnswer": "إجابة قصيرة",
+        "essay": "مقال"
+      },
+      "correctAnswerOptions": {
+        "optionA": "الخيار أ",
+        "optionB": "الخيار ب",
+        "optionC": "الخيار ج",
+        "optionD": "الخيار د"
+      },
+      "cognitiveLevels": {
+        "remember": "تذكر",
+        "understand": "فهم",
+        "apply": "تطبيق",
+        "analyze": "تحليل",
+        "evaluate": "تقييم",
+        "create": "إنشاء"
+      },
+      "sources": {
+        "textbook": "كتاب مدرسي",
+        "pastExam": "امتحان سابق",
+        "custom": "مخصص"
+      }
+    },
+    "questionDetails": {
+      "hero": {
+        "title": "تفاصيل السؤال"
+      },
+      "buttons": {
+        "delete": "حذف",
+        "edit": "تعديل",
+        "createVariant": "+ إنشاء متغير"
+      },
+      "sections": {
+        "questionInfo": "معلومات السؤال",
+        "explanation": "التفسير",
+        "comments": "التعليقات",
+        "activityLog": "سجل النشاط",
+        "classification": "التصنيف",
+        "workflowInformation": "معلومات سير العمل",
+        "variants": "المتغيرات"
+      },
+      "fields": {
+        "status": "الحالة",
+        "correctAnswer": "الإجابة الصحيحة",
+        "subject": "الموضوع",
+        "topic": "الموضوع",
+        "cognitiveLevel": "المستوى المعرفي",
+        "createdBy": "تم الإنشاء بواسطة",
+        "submittedOn": "تم الإرسال في",
+        "lastUpdate": "آخر تحديث",
+        "variantId": "معرف المتغير",
+        "createdByVariant": "تم الإنشاء بواسطة"
+      },
+      "status": {
+        "inReview": "قيد المراجعة"
+      },
+      "placeholders": {
+        "addComments": "إضافة تعليقات"
+      },
+      "buttons": {
+        "addComment": "إضافة تعليق"
+      }
+    },
+    "createVariant": {
+      "hero": {
+        "title": "إنشاء متغير",
+        "subtitle": "إنشاء متغير على سؤال معتمد موجود."
+      },
+      "tip": "نصيحة: قم بتحرير السؤال أدناه كمتغير جديد. لا تقم باقتباس الأصل أو إضافة تفسير بعد.",
+      "buttons": {
+        "cancel": "إلغاء",
+        "saveVariant": "حفظ المتغير",
+        "createVariant": "إنشاء متغير"
+      },
+      "sections": {
+        "questionDetails": "تفاصيل السؤال",
+        "explanation": "التفسير",
+        "classification": "التصنيف",
+        "sourceQuestionOverview": "نظرة عامة على السؤال المصدر"
+      },
+      "fields": {
+        "question": "السؤال",
+        "optionA": "الخيار أ",
+        "optionB": "الخيار ب",
+        "optionC": "الخيار ج",
+        "optionD": "الخيار د",
+        "correctAnswer": "الإجابة الصحيحة",
+        "subject": "الموضوع",
+        "topic": "الموضوع",
+        "subtopic": "الموضوع الفرعي",
+        "cognitiveLevel": "المستوى المعرفي"
+      },
+      "placeholders": {
+        "questionText": "أدخل نص السؤال هنا...",
+        "explanation": "أدخل التفسير هنا...",
+        "enterOptionA": "أدخل الخيار أ",
+        "enterOptionB": "أدخل الخيار ب",
+        "enterOptionC": "أدخل الخيار ج",
+        "enterOptionD": "أدخل الخيار د",
+        "selectCorrectAnswer": "اختر الإجابة الصحيحة",
+        "selectSubject": "اختر الموضوع",
+        "selectTopic": "اختر الموضوع",
+        "selectSubtopic": "اختر الموضوع الفرعي",
+        "selectCognitiveLevel": "اختر المستوى المعرفي"
+      },
+      "correctAnswerOptions": {
+        "optionA": "الخيار أ",
+        "optionB": "الخيار ب",
+        "optionC": "الخيار ج",
+        "optionD": "الخيار د"
+      },
+      "sourceQuestion": {
+        "correctAnswer": "الإجابة الصحيحة:",
+        "source": "المصدر:",
+        "creator": "المنشئ",
+        "createdOn": "تم الإنشاء في"
+      }
+    },
+    "createNewQuestionBank": {
+      "hero": {
+        "title": "إنشاء بنك أسئلة جديد",
+        "subtitle": "تحميل الأسئلة وتحديد خطط الاشتراك لهذا المنتج"
+      },
+      "sections": {
+        "productDetails": "إنشاء بنك أسئلة جديد",
+        "uploadQuestions": "تحميل الأسئلة",
+        "subscriptionPlan": "خطة الاشتراك"
+      },
+      "fields": {
+        "productName": "اسم المنتج",
+        "description": "الوصف"
+      },
+      "placeholders": {
+        "productName": "مثال: بنك أسئلة الرياضيات المتقدم",
+        "dragAndDrop": "سحب وإفلات",
+        "orClickToBrowse": "أو انقر للتصفح"
+      },
+      "buttons": {
+        "addPlan": "إضافة خطة",
+        "cancel": "إلغاء",
+        "createProduct": "إنشاء منتج"
+      },
+      "table": {
+        "headers": {
+          "planName": "اسم الخطة",
+          "price": "السعر",
+          "duration": "المدة",
+          "integrationDetails": "تفاصيل التكامل",
+          "actions": "الإجراءات"
+        },
+        "integrationDetails": "معرف المنتج: {{productId}}، معرف السعر: {{priceId}}"
+      },
+      "ariaLabels": {
+        "editPlan": "تعديل {{planName}}"
+      }
+    },
+    "questionManagement": {
+      "sections": {
+        "myTasks": "مهامي",
+        "publicPool": "المجمع العام",
+        "availableQuestions": "الأسئلة المتاحة",
+        "createNewVariant": "إنشاء متغير جديد"
+      },
+      "fields": {
+        "sourceQuestion": "السؤال المصدر"
+      },
+      "placeholders": {
+        "searchQuestions": "البحث عن الأسئلة...",
+        "selectClaimedQuestion": "اختر سؤالاً مطلوباً"
+      },
+      "buttons": {
+        "claim": "المطالبة",
+        "createVariant": "إنشاء متغير"
+      },
+      "variantOf": "متغير من: {{question}}",
+      "question": "السؤال {{id}}",
+      "subject": "الموضوع: {{subject}}"
+    },
+    "variantQuestionReview": {
+      "hero": {
+        "title": "مراجعة متغير السؤال",
+        "subtitle": "مراجعة واتخاذ إجراء على متغير مقدم"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "refresh": "تحديث",
+        "export": "تصدير",
+        "sendToExplainer": "إرسال إلى المفسر",
+        "reject": "رفض",
+        "approve": "موافقة",
+        "addComment": "إضافة تعليق",
+        "createVariant": "إنشاء متغير"
+      },
+      "sections": {
+        "sourceQuestionReference": "مرجع السؤال المصدر",
+        "variantQuestion": "متغير السؤال",
+        "explanation": "التفسير",
+        "classification": "التصنيف",
+        "internalComments": "التعليقات الداخلية",
+        "activityLog": "سجل النشاط"
+      },
+      "fields": {
+        "questionId": "معرف السؤال:",
+        "question": "السؤال",
+        "options": "الخيارات",
+        "correctAnswer": "الإجابة الصحيحة",
+        "type": "النوع",
+        "creator": "المنشئ",
+        "status": "الحالة",
+        "subject": "الموضوع",
+        "topic": "الموضوع",
+        "cognitiveLevel": "المستوى المعرفي",
+        "sourceQuestion": "السؤال المصدر",
+        "workflowStage": "مرحلة سير العمل",
+        "lastUpdate": "آخر تحديث"
+      },
+      "placeholders": {
+        "explanation": "أدخل التفسير...",
+        "addComment": "إضافة تعليق...."
+      },
+      "status": {
+        "inReview": "قيد المراجعة"
+      },
+      "types": {
+        "multipleChoice": "اختيار متعدد"
+      }
+    },
+    "subscriptionPlans": {
+      "hero": {
+        "title": "خطط الاشتراك",
+        "subtitle": "إدارة الخطط المتاحة وأسعارها"
+      },
+      "actions": {
+        "export": "تصدير",
+        "addNewPlan": "+ إضافة خطة جديدة",
+        "newPlan": "خطة جديدة",
+        "manageUser": "إدارة المستخدم",
+        "paymentHistory": "سجل المدفوعات",
+        "newQuestion": "سؤال جديد"
+      },
+      "filters": {
+        "status": "الحالة",
+        "all": "الكل",
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "table": {
+        "columns": {
+          "planName": "اسم الخطة",
+          "price": "السعر",
+          "duration": "المدة",
+          "subscriber": "المشترك",
+          "status": "الحالة",
+          "actions": "الإجراءات"
+        },
+        "emptyState": "لا توجد خطط تطابق المرشحات الحالية.",
+        "deleteConfirm": "هل أنت متأكد أنك تريد حذف {{planName}}؟",
+        "exportFileName": "خطط-الاشتراك.csv"
+      }
+    },
+    "addNewPlan": {
+      "hero": {
+        "title": "إضافة خطط جديدة",
+        "subtitle": "إدارة الخطط المتاحة وأسعارها"
+      },
+      "sections": {
+        "addNewPlan": "إضافة خطة جديدة"
+      },
+      "fields": {
+        "planName": "اسم الخطة",
+        "price": "السعر ($)",
+        "duration": "المدة",
+        "description": "الوصف",
+        "status": "الحالة"
+      },
+      "placeholders": {
+        "planName": "أضف اسم الخطة",
+        "price": "أضف السعر",
+        "description": "وصف موجز للخطة"
+      },
+      "options": {
+        "status": "الحالة",
+        "active": "نشط",
+        "inactive": "غير نشط",
+        "monthly": "شهري",
+        "quarterly": "ربع سنوي",
+        "yearly": "سنوي"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "save": "حفظ"
+      }
+    },
+    "paymentHistory": {
+      "hero": {
+        "title": "سجل المدفوعات"
+      }
+    },
+    "manageUserSubscriptions": {
+      "hero": {
+        "title": "إدارة اشتراكات المستخدمين"
+      },
+      "actions": {
+        "exportBillingReports": "تصدير تقارير الفوترة"
+      },
+      "filters": {
+        "plan": "الخطة: الكل",
+        "all": "الكل",
+        "active": "نشط",
+        "expire": "منتهي",
+        "pending": "قيد الانتظار"
+      },
+      "table": {
+        "columns": {
+          "user": "المستخدم",
+          "email": "البريد الإلكتروني",
+          "plan": "الخطة",
+          "startDate": "تاريخ البدء",
+          "expiryDate": "تاريخ الانتهاء",
+          "paymentStatus": "حالة الدفع"
+        },
+        "emptyState": "لا توجد اشتراكات تطابق المرشحات الحالية.",
+        "mobileLabels": {
+          "user": "المستخدم:",
+          "email": "البريد الإلكتروني:",
+          "plan": "الخطة:",
+          "startDate": "تاريخ البدء:",
+          "expiryDate": "تاريخ الانتهاء:",
+          "paymentStatus": "حالة الدفع:"
+        },
+        "exportFileName": "تقارير-الفوترة.csv",
+        "ariaLabels": {
+          "view": "عرض {{user}}"
+        }
+      }
+    },
+    "subscriptionDetails": {
+      "hero": {
+        "title": "تفاصيل الاشتراك"
+      },
+      "sections": {
+        "userInfo": "معلومات المستخدم",
+        "planInfo": "معلومات الخطة",
+        "billingInfo": "معلومات الفوترة"
+      },
+      "fields": {
+        "name": "الاسم",
+        "email": "البريد الإلكتروني",
+        "currentPlan": "الخطة الحالية",
+        "duration": "المدة",
+        "renewalDate": "تاريخ التجديد",
+        "status": "الحالة",
+        "lastPayment": "آخر دفعة",
+        "nextDueDate": "تاريخ الاستحقاق القادم",
+        "paymentMethod": "طريقة الدفع"
+      },
+      "actions": {
+        "upgradeDowngrade": "ترقية / تخفيض الخطة",
+        "cancelSubscription": "إلغاء الاشتراك",
+        "renewalManually": "تجديد يدوي"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "saveChanges": "حفظ التغييرات"
+      }
+    },
+    "subscriptionTrends": {
+      "hero": {
+        "title": "اتجاه الاشتراك"
+      },
+      "actions": {
+        "comparePeriod": "مقارنة الفترة",
+        "exportReport": "تصدير التقرير"
+      },
+      "filters": {
+        "planType": "نوع الخطة",
+        "dateRange": "نطاق التاريخ",
+        "last30Days": "آخر 30 يوم",
+        "last7Days": "آخر 7 أيام",
+        "last90Days": "آخر 90 يوم",
+        "lastYear": "العام الماضي"
+      },
+      "kpi": {
+        "totalSubscribers": "إجمالي المشتركين",
+        "totalRevenue": "إجمالي الإيرادات",
+        "renewalRate": "معدل التجديد",
+        "churnRate": "معدل الفقد"
+      },
+      "charts": {
+        "revenueTrend": "اتجاه الإيرادات",
+        "planDistribution": "توزيع الخطة"
+      },
+      "table": {
+        "title": "التحليل حسب الخطة",
+        "columns": {
+          "planType": "نوع الخطة",
+          "subscribers": "المشتركون",
+          "active": "نشط",
+          "expired": "منتهي",
+          "revenue": "الإيرادات",
+          "avgDuration": "متوسط المدة"
+        },
+        "emptyState": "لا توجد بيانات متاحة",
+        "pagination": {
+          "showing": "عرض {{first}} إلى {{last}} من {{total}} نتيجة",
+          "previous": "السابق",
+          "next": "التالي"
+        }
+      }
+    },
+    "reportsAndAnalytics": {
+      "hero": {
+        "title": "التقارير والتحليلات",
+        "subtitle": "راقب أداء الطلاب واستخدام الأسئلة ونشاط الاختبارات."
+      },
+      "actions": {
+        "comparePeriod": "مقارنة الفترة",
+        "exportReport": "تصدير التقرير"
+      },
+      "filters": {
+        "exam": "الامتحان",
+        "subject": "الموضوع",
+        "cognitiveLevel": "المستوى المعرفي",
+        "dateRange": "نطاق التاريخ",
+        "lastWeek": "الأسبوع الماضي",
+        "lastMonth": "الشهر الماضي",
+        "lastYear": "العام الماضي",
+        "viewDetails": "عرض التفاصيل",
+        "applyFilter": "تطبيق المرشح"
+      },
+      "tabs": {
+        "userGrowthAnalytics": "تحليلات نمو المستخدمين",
+        "subscriptionTrends": "اتجاهات الاشتراك",
+        "performanceAnalytics": "تحليلات الأداء",
+        "exportReports": "تصدير التقارير"
+      },
+      "kpi": {
+        "totalQuestions": "إجمالي الأسئلة",
+        "averageAccuracy": "متوسط الدقة",
+        "mostAttemptedSubject": "الموضوع الأكثر محاولة",
+        "averageTimePerQuestion": "متوسط الوقت/السؤال"
+      },
+      "charts": {
+        "performanceTrend": "اتجاه الأداء (الدقة بمرور الوقت)",
+        "practiceDistribution": "توزيع الممارسة حسب الموضوع",
+        "kpiSummary": "بطاقات ملخص مؤشرات الأداء"
+      },
+      "table": {
+        "topPerformanceUser": "أفضل مستخدم أداء",
+        "columns": {
+          "number": "#",
+          "user": "المستخدم",
+          "email": "البريد الإلكتروني",
+          "attempts": "المحاولات",
+          "accuracy": "نسبة الدقة",
+          "averageTime": "متوسط الوقت / السؤال",
+          "lastActive": "آخر نشاط"
+        }
+      },
+      "sections": {
+        "recentReports": "التقارير المولدة مؤخراً",
+        "systemInsights": "رؤى النظام",
+        "generated": "تم الإنشاء {{date}}"
+      },
+      "insights": {
+        "mostDifficultCognitiveLevel": "أصعب مستوى معرفي:",
+        "peakActivity": "نشاط الذروة:",
+        "lowAccuracy": "دقة منخفضة في الكيمياء ("
+      }
+    },
+    "exportReports": {
+      "hero": {
+        "title": "تصدير التقارير",
+        "subtitle": "اختر خيارات التقرير المطلوبة أدناه."
+      },
+      "fields": {
+        "selectReportType": "اختر نوع التقرير",
+        "selectFormat": "اختر التنسيق",
+        "dateRange": "نطاق التاريخ",
+        "includeCharts": "تضمين الرسوم البيانية",
+        "scheduleRecurring": "جدولة التصدير المتكرر",
+        "frequency": "التكرار",
+        "deliveryMethod": "طريقة التسليم",
+        "recipients": "المستلمون"
+      },
+      "options": {
+        "reportType": {
+          "userGrowth": "نمو المستخدمين",
+          "subscriptionTrends": "اتجاهات الاشتراك",
+          "performanceAnalytics": "تحليلات الأداء"
+        },
+        "format": {
+          "excel": "Excel",
+          "pdf": "PDF",
+          "csv": "CSV"
+        },
+        "frequency": {
+          "daily": "يومي",
+          "weekly": "أسبوعي",
+          "monthly": "شهري"
+        },
+        "deliveryMethod": {
+          "email": "البريد الإلكتروني",
+          "download": "تحميل"
+        }
+      },
+      "placeholders": {
+        "recipients": "أدخل عنوان البريد الإلكتروني"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "exportReport": "تصدير التقرير"
+      }
+    },
+    "performanceAnalytics": {
+      "hero": {
+        "title": "تحليلات الأداء",
+        "subtitle": "تحليل أداء المستخدمين عبر مقاييس مختلفة."
+      },
+      "actions": {
+        "comparePeriod": "مقارنة الفترة",
+        "exportReport": "تصدير التقرير"
+      },
+      "filters": {
+        "exam": "الامتحان",
+        "subject": "الموضوع",
+        "cognitiveLevel": "المستوى المعرفي",
+        "dateRange": "نطاق التاريخ",
+        "last30Days": "آخر 30 يوم",
+        "last7Days": "آخر 7 أيام",
+        "last90Days": "آخر 90 يوم",
+        "lastYear": "العام الماضي",
+        "recall": "استدعاء",
+        "analysis": "تحليل",
+        "synthesis": "تركيب"
+      },
+      "kpi": {
+        "averageAccuracy": "متوسط الدقة",
+        "averageTimePerQuestion": "متوسط الوقت/السؤال",
+        "improvementPercent": "نسبة التحسن",
+        "totalAttempt": "إجمالي المحاولات"
+      },
+      "charts": {
+        "accuracyOverTime": "الدقة بمرور الوقت",
+        "subjectDistribution": "توزيع الموضوع",
+        "last30Days": "آخر 30 يوم",
+        "improvement": "+5%"
+      },
+      "tables": {
+        "topPerformer": "أفضل أداء",
+        "weakAreas": "المناطق الضعيفة",
+        "columns": {
+          "name": "الاسم",
+          "accuracy": "الدقة",
+          "timePerQ": "الوقت/س",
+          "subject": "الموضوع",
+          "avgAccuracy": "متوسط الدقة",
+          "attempted": "تمت المحاولة"
+        }
+      }
+    },
+    "userGrowthAnalytics": {
+      "hero": {
+        "title": "تحليلات نمو المستخدمين"
+      },
+      "actions": {
+        "comparePeriod": "مقارنة الفترة",
+        "exportReport": "تصدير التقرير"
+      },
+      "filters": {
+        "dateRange": "نطاق التاريخ",
+        "userType": "نوع المستخدم",
+        "allRoles": "جميع الأدوار",
+        "allPlans": "جميع الخطط",
+        "last30Days": "آخر 30 يوم",
+        "last7Days": "آخر 7 أيام",
+        "last90Days": "آخر 90 يوم",
+        "lastYear": "العام الماضي",
+        "student": "طالب",
+        "teacher": "معلم",
+        "admin": "مدير",
+        "parent": "والد",
+        "free": "مجاني",
+        "premium": "مميز",
+        "organization": "منظمة"
+      },
+      "kpi": {
+        "newSignups": "التسجيلات الجديدة",
+        "activeUsers": "المستخدمون النشطون",
+        "retentionRate": "معدل الاحتفاظ",
+        "verificationRate": "معدل التحقق"
+      },
+      "charts": {
+        "overallUserGrowth": "نمو المستخدمين الإجمالي",
+        "newUsersOverLast30Days": "مستخدمون جدد خلال آخر 30 يوم",
+        "signupsByRole": "التسجيلات حسب الدور",
+        "categorizationOfNewUsers": "تصنيف المستخدمين الجدد"
+      }
+    },
+    "security": {
+      "hero": {
+        "title": "إعدادات الأمان"
+      }
+    },
+    "classificationManagement": {
+      "hero": {
+        "title": "إدارة التصنيف",
+        "subtitle": "تنظيم الأسئلة حسب الموضوع والموضوع والموضوع الفرعي والمفهوم"
+      },
+      "actions": {
+        "export": "تصدير",
+        "addNewSubject": "+ إضافة موضوع جديد",
+        "addNewTopic": "+ إضافة موضوع جديد",
+        "addNewSubtopic": "+ إضافة موضوع فرعي جديد",
+        "addNewConcept": "+ إضافة مفهوم جديد"
+      },
+      "tabs": {
+        "subject": "الموضوع",
+        "topics": "المواضيع",
+        "subtopics": "المواضيع الفرعية",
+        "concepts": "المفاهيم"
+      },
+      "stats": {
+        "subjects": "المواضيع",
+        "topics": "المواضيع",
+        "subtopics": "المواضيع الفرعية",
+        "concepts": "المفاهيم"
+      },
+      "table": {
+        "columns": {
+          "subjectName": "اسم الموضوع",
+          "topicName": "اسم الموضوع",
+          "subtopicName": "اسم الموضوع الفرعي",
+          "conceptName": "اسم المفهوم",
+          "description": "الوصف",
+          "createdBy": "تم الإنشاء بواسطة",
+          "date": "التاريخ",
+          "linkedSubtopic": "الموضوع الفرعي المرتبط",
+          "actions": "الإجراءات"
+        },
+        "emptyState": {
+          "subjects": "لا توجد مواضيع تطابق المرشحات الحالية.",
+          "topics": "لا توجد مواضيع تطابق المرشحات الحالية.",
+          "subtopics": "لا توجد مواضيع فرعية تطابق المرشحات الحالية.",
+          "concepts": "لا توجد مفاهيم تطابق المرشحات الحالية."
+        },
+        "pagination": {
+          "showing": "عرض {{first}} إلى {{last}} من {{total}} نتيجة",
+          "previous": "السابق",
+          "next": "التالي"
+        },
+        "ariaLabels": {
+          "view": "عرض {{name}}",
+          "edit": "تعديل {{name}}"
+        }
+      },
+      "filters": {
+        "searchPlaceholder": "البحث...",
+        "selectSubject": "اختر الموضوع",
+        "selectTopic": "اختر الموضوع",
+        "selectSubtopic": "اختر الموضوع الفرعي",
+        "allSubjects": "جميع المواضيع",
+        "allTopics": "جميع المواضيع",
+        "allSubtopics": "جميع المواضيع الفرعية"
+      },
+      "headings": {
+        "subject": "إدارة التصنيف",
+        "topics": "إدارة المواضيع",
+        "subtopics": "إدارة المواضيع الفرعية",
+        "concepts": "إدارة المفاهيم"
+      },
+      "subheadings": {
+        "subject": "تنظيم الأسئلة حسب الموضوع والموضوع والموضوع الفرعي والمفهوم",
+        "topics": "إدارة وتنظيم المواضيع ضمن المواضيع",
+        "subtopics": "إدارة وتنظيم المواضيع الفرعية ضمن المواضيع",
+        "concepts": "إدارة وتنظيم المفاهيم ضمن المواضيع الفرعية"
+      },
+      "hierarchy": {
+        "title": "التسلسل الهرمي",
+        "subject": "الموضوع",
+        "topic": "الموضوع",
+        "subtopic": "الموضوع الفرعي",
+        "concept": "المفهوم"
+      }
+    },
+    "addSubject": {
+      "hero": {
+        "title": "إنشاء موضوع"
+      },
+      "sections": {
+        "createSubject": "إنشاء موضوع"
+      },
+      "fields": {
+        "subjectName": "اسم الموضوع",
+        "description": "الوصف",
+        "code": "الكود (اختياري)"
+      },
+      "placeholders": {
+        "subjectName": "أدخل اسم الموضوع",
+        "description": "وصف موجز للموضوع",
+        "code": "أدخل كود الموضوع"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "create": "إنشاء"
+      }
+    },
+    "addTopic": {
+      "hero": {
+        "title": "إضافة موضوع جديد",
+        "subtitle": "تنظيم الأسئلة حسب الموضوع والموضوع والموضوع الفرعي والمفهوم"
+      },
+      "sections": {
+        "addNewTopic": "إضافة موضوع جديد"
+      },
+      "fields": {
+        "parentSubject": "الموضوع الأصلي",
+        "topicName": "اسم الموضوع",
+        "description": "الوصف"
+      },
+      "placeholders": {
+        "subjectName": "أدخل اسم الموضوع",
+        "topicName": "أدخل اسم الموضوع",
+        "description": "وصف موجز للموضوع"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "create": "إنشاء"
+      }
+    },
+    "addSubtopic": {
+      "hero": {
+        "title": "إضافة موضوع فرعي"
+      },
+      "sections": {
+        "addNewSubtopic": "إضافة موضوع فرعي جديد"
+      },
+      "fields": {
+        "subtopicName": "اسم الموضوع الفرعي",
+        "description": "الوصف",
+        "selectSubject": "اختر الموضوع",
+        "selectTopic": "اختر الموضوع"
+      },
+      "placeholders": {
+        "subtopicName": "مثال: تقنيات SEO المتقدمة",
+        "description": "وصف موجز للموضوع",
+        "subjectName": "أدخل اسم الموضوع",
+        "selectTopic": "اختر موضوعاً"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "saveSubtopic": "حفظ الموضوع الفرعي"
+      }
+    },
+    "addConcept": {
+      "hero": {
+        "title": "إضافة مفاهيم"
+      },
+      "sections": {
+        "addNewConcept": "إضافة مفهوم جديد"
+      },
+      "fields": {
+        "conceptName": "اسم المفهوم",
+        "description": "الوصف",
+        "selectSubject": "اختر الموضوع",
+        "selectTopic": "اختر الموضوع",
+        "selectSubtopic": "اختر الموضوع الفرعي"
+      },
+      "placeholders": {
+        "conceptName": "أدخل اسم المفهوم",
+        "description": "وصف موجز للموضوع",
+        "subjectName": "أدخل اسم الموضوع",
+        "selectTopic": "اختر موضوعاً",
+        "selectSubtopic": "مثال: تقنيات SEO المتقدمة"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "saveConcepts": "حفظ المفاهيم"
+      }
+    },
+    "auditLogs": {
+      "hero": {
+        "title": "سجلات التدقيق"
+      }
+    },
+    "rolesPermissions": {
+      "hero": {
+        "title": "الأدوار والصلاحيات"
+      }
+    },
+    "adminRolePermissions": {
+      "hero": {
+        "title": "أدوار وصلاحيات المسؤول"
+      },
+      "buttons": {
+        "addNewRole": "+ إضافة دور جديد",
+        "cancel": "إلغاء",
+        "saveChanges": "حفظ التغييرات"
+      },
+      "badges": {
+        "allPermissions": "جميع الصلاحيات",
+        "limitedPermissions": "صلاحيات محدودة"
+      },
+      "sections": {
+        "permissionSettings": "إعدادات الصلاحيات",
+        "dashboard": "لوحة التحكم",
+        "userManagement": "إدارة المستخدمين",
+        "questionBank": "بنك الأسئلة"
+      },
+      "permissions": {
+        "viewAnalytics": "عرض التحليلات",
+        "viewReports": "عرض التقارير",
+        "createUsers": "إنشاء مستخدمين",
+        "editUsers": "تعديل المستخدمين",
+        "deleteUsers": "حذف المستخدمين",
+        "assignRoles": "تعيين الأدوار",
+        "createQuestions": "إنشاء أسئلة",
+        "editQuestions": "تعديل الأسئلة",
+        "deleteQuestions": "حذف الأسئلة"
+      }
+    },
+    "systemSettings": {
+      "hero": {
+        "title": "إعدادات النظام",
+        "subtitle": "إدارة التكوينات على مستوى النظام واللغات والإعلانات والقوالب."
+      },
+      "cards": {
+        "languageManagement": {
+          "title": "إدارة اللغة",
+          "description": "إضافة أو تعديل أو إزالة اللغات المدعومة عبر التطبيق.",
+          "linkText": "إدارة اللغة"
+        },
+        "announcements": {
+          "title": "الإعلانات",
+          "description": "إنشاء ونشر إعلانات على مستوى النظام لجميع المستخدمين.",
+          "linkText": "إدارة الإعلانات"
+        },
+        "emailTemplates": {
+          "title": "قوالب البريد الإلكتروني",
+          "description": "تخصيص إشعارات البريد الإلكتروني التلقائية المرسلة من قبل النظام.",
+          "linkText": "إدارة القوالب"
+        },
+        "rolesPermissions": {
+          "title": "الأدوار والصلاحيات",
+          "description": "تحديد أدوار المستخدمين والتحكم في الوصول إلى الميزات والبيانات.",
+          "linkText": "إدارة الأدوار"
+        }
+      }
+    },
+    "siteWideAnnouncements": {
+      "hero": {
+        "title": "الإعلانات على مستوى الموقع"
+      },
+      "buttons": {
+        "previewAnnouncements": "معاينة الإعلانات",
+        "addNewAnnouncements": "+ إضافة إعلانات جديدة"
+      },
+      "table": {
+        "columns": {
+          "title": "العنوان",
+          "message": "الرسالة",
+          "schedule": "الجدول الزمني",
+          "status": "الحالة",
+          "actions": "الإجراءات"
+        },
+        "emptyMessage": "لم يتم العثور على إشعارات"
+      }
+    },
+    "languageManagement": {
+      "hero": {
+        "title": "إدارة اللغة",
+        "subtitle": "إدارة اللغات المتاحة وتعيين الافتراضي وتحديث الترجمات."
+      },
+      "buttons": {
+        "addLanguage": "إضافة لغة"
+      },
+      "table": {
+        "columns": {
+          "languageName": "اسم اللغة",
+          "code": "الرمز",
+          "default": "افتراضي",
+          "status": "الحالة",
+          "actions": "الإجراءات"
+        },
+        "emptyMessage": "لم يتم العثور على لغات"
+      }
+    },
+    "emailTemplates": {
+      "hero": {
+        "title": "قوالب البريد الإلكتروني",
+        "subtitle": "إدارة وتخصيص قالب البريد الإلكتروني المستخدم من قبل النظام"
+      },
+      "forms": {
+        "welcomeEmail": {
+          "title": "بريد الترحيب",
+          "subjectPlaceholder": "مرحباً بك في Acme Co!",
+          "bodyPlaceholder": "مرحباً {Name} شكراً لانضمامك إلينا..."
+        },
+        "resetPasswordEmail": {
+          "title": "بريد إعادة تعيين كلمة المرور",
+          "subjectPlaceholder": "إعادة تعيين كلمة المرور الخاصة بك",
+          "bodyPlaceholder": "انقر على الرابط أدناه لإعادة تعيين كلمة المرور..."
+        },
+        "subscriptionReminderEmail": {
+          "title": "بريد تذكير الاشتراك",
+          "subjectPlaceholder": "اشتراكك على وشك الانتهاء",
+          "bodyPlaceholder": "عزيزي {Name} من {Company} اشتراكك..."
+        }
+      },
+      "fields": {
+        "subject": "الموضوع",
+        "body": "المحتوى"
+      },
+      "buttons": {
+        "preview": "معاينة",
+        "save": "حفظ"
+      }
+    },
+    "addNewAnnouncements": {
+      "hero": {
+        "title": "إضافة إعلان جديد"
+      },
+      "fields": {
+        "title": "العنوان",
+        "message": "الرسالة",
+        "targetAudience": "الجمهور المستهدف",
+        "type": "النوع",
+        "startDate": "تاريخ البدء",
+        "endDate": "تاريخ الانتهاء",
+        "status": "الحالة:"
+      },
+      "placeholders": {
+        "title": "أدخل عنوان الإعلان",
+        "message": "اكتب رسالتك هنا"
+      },
+      "options": {
+        "targetAudience": {
+          "allUsers": "جميع المستخدمين",
+          "administrators": "المسؤولون",
+          "members": "الأعضاء",
+          "guests": "الضيوف"
+        },
+        "type": {
+          "info": "معلومات",
+          "warning": "تحذير",
+          "alert": "تنبيه",
+          "success": "نجاح"
+        }
+      },
+      "labels": {
+        "published": "منشور",
+        "statusDescription": "تعيين الإعلان نشطاً أو غير نشط"
+      },
+      "upload": {
+        "clickToUpload": "انقر للتحميل",
+        "dragAndDrop": "أو اسحب وأفلت",
+        "fileTypes": "PNG، JPG، PDF (الحد الأقصى 5 ميجابايت)",
+        "uploaded": "تم التحميل:"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "saveAnnouncement": "حفظ الإعلان"
+      }
+    },
+    "editAnnouncement": {
+      "hero": {
+        "title": "تعديل الإعلان"
+      },
+      "fields": {
+        "title": "العنوان",
+        "message": "الرسالة",
+        "targetAudience": "الجمهور المستهدف",
+        "type": "النوع",
+        "startDate": "تاريخ البدء",
+        "endDate": "تاريخ الانتهاء",
+        "status": "الحالة:"
+      },
+      "placeholders": {
+        "title": "أدخل عنوان الإعلان",
+        "message": "اكتب رسالتك هنا"
+      },
+      "options": {
+        "targetAudience": {
+          "allUsers": "جميع المستخدمين",
+          "administrators": "المسؤولون",
+          "members": "الأعضاء",
+          "guests": "الضيوف"
+        },
+        "type": {
+          "info": "معلومات",
+          "warning": "تحذير",
+          "alert": "تنبيه",
+          "success": "نجاح"
+        }
+      },
+      "labels": {
+        "published": "منشور",
+        "statusDescription": "تعيين الإعلان نشطاً أو غير نشط"
+      },
+      "upload": {
+        "clickToUpload": "انقر للتحميل",
+        "dragAndDrop": "أو اسحب وأفلت",
+        "fileTypes": "PNG، JPG، PDF (الحد الأقصى 5 ميجابايت)",
+        "uploaded": "تم التحميل:"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "saveAnnouncement": "حفظ الإعلان"
+      }
+    },
+    "viewLogDetails": {
+      "hero": {
+        "title": "عرض تفاصيل السجل"
+      }
+    },
+    "contentModeration": {
+      "hero": {
+        "title": "إدارة المحتوى",
+        "subtitle": "مراجعة واتخاذ إجراءات بشأن الأسئلة والإجابات المبلغ عنها."
+      },
+      "actions": {
+        "refresh": "تحديث",
+        "filter": "تصفية",
+        "export": "تصدير"
+      },
+      "tabs": {
+        "flaggedContent": "المحتوى المبلغ عنه",
+        "pendingApproval": "في انتظار الموافقة",
+        "userReports": "تقارير المستخدمين"
+      },
+      "filters": {
+        "status": "الحالة",
+        "contentType": "نوع المحتوى",
+        "dateRange": "نطاق التاريخ",
+        "flagged": "مبلغ عنه",
+        "approved": "موافق عليه",
+        "rejected": "مرفوض",
+        "video": "فيديو",
+        "image": "صورة",
+        "text": "نص",
+        "today": "اليوم",
+        "thisWeek": "هذا الأسبوع",
+        "thisMonth": "هذا الشهر"
+      },
+      "table": {
+        "columns": {
+          "number": "#",
+          "contentType": "نوع المحتوى",
+          "submittedBy": "تم الإرسال بواسطة",
+          "flagReason": "سبب الإبلاغ",
+          "dateReported": "تاريخ الإبلاغ",
+          "status": "الحالة",
+          "actions": "الإجراءات"
+        },
+        "actions": {
+          "view": "عرض",
+          "approve": "موافقة",
+          "reject": "رفض"
+        }
+      },
+      "mobile": {
+        "submittedBy": "تم الإرسال بواسطة:",
+        "flagReason": "سبب الإبلاغ:",
+        "dateReported": "تاريخ الإبلاغ:"
+      },
+      "pagination": {
+        "showing": "عرض {{from}} إلى {{to}} من {{total}} نتيجة",
+        "previous": "السابق",
+        "next": "التالي"
+      }
+    },
+    "contentDetails": {
+      "hero": {
+        "title": "تفاصيل المحتوى"
+      },
+      "sections": {
+        "reportInformation": "معلومات التقرير",
+        "content": "المحتوى",
+        "usersModerationRecord": "سجل إدارة المستخدم",
+        "moderationActions": "إجراءات الإدارة"
+      },
+      "fields": {
+        "contentType": "نوع المحتوى",
+        "dateReported": "تاريخ الإبلاغ",
+        "reportedBy": "تم الإبلاغ بواسطة",
+        "flagReason": "سبب الإبلاغ",
+        "question": "السؤال:",
+        "explanation": "الشرح:",
+        "moderatorComments": "تعليقات المشرف"
+      },
+      "labels": {
+        "approved": "موافق عليه",
+        "rejected": "مرفوض"
+      },
+      "buttons": {
+        "revisionHistory": "تاريخ المراجعة",
+        "approve": "موافقة",
+        "reject": "رفض",
+        "requestChange": "طلب تغيير"
+      },
+      "placeholders": {
+        "moderatorComments": "أضف تعليقات اختيارية.."
+      }
     }
   }
 }

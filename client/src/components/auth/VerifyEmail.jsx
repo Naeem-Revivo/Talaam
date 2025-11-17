@@ -104,7 +104,7 @@ const VerifyEmail = () => {
           </h1>
 
           {/* Instructions */}
-          <p className="font-roboto font-normal text-[16px] leading-[22px] tracking-normal text-[#6B7280] mb-7 lg:mb-8">
+          <p className="font-roboto font-normal text-[16px] leading-[22px] tracking-normal text-dark-gray mb-7 lg:mb-8">
             {t('verifyEmail.instructions.text')}{' '}
             <span className="font-roboto font-medium text-[16px] leading-[22px] tracking-normal">email@xyz.com</span>
             {'. '}{t('verifyEmail.instructions.expiry')}
@@ -137,7 +137,7 @@ const VerifyEmail = () => {
 
           {/* Resend Code Section */}
           <div className="flex justify-between sm:flex-row sm:justify-between items-start sm:items-center gap-3 mb-6 lg:mb-8">
-            <span className="font-roboto font-normal text-[16px] leading-none tracking-normal text-[#6B7280]">
+            <span className="font-roboto font-normal text-[16px] leading-none tracking-normal text-dark-gray">
               {t('verifyEmail.dontReceive')}
             </span>
             <button
@@ -172,7 +172,7 @@ const VerifyEmail = () => {
           <div className="text-center">
             <button 
               onClick={handleSkip}
-              className="font-roboto font-normal pt-6 lg:pt-0 text-[16px] leading-none tracking-normal text-[#6B7280] hover:text-gray-700 hover:underline"
+              className="font-roboto font-normal pt-6 lg:pt-0 text-[16px] leading-none tracking-normal text-dark-gray hover:text-gray-700 hover:underline"
             >
               {t('verifyEmail.skipForNow')}
             </button>

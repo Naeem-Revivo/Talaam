@@ -42,6 +42,7 @@ const Header = ({ onToggleSidebar }) => {
       if (pathname === '/admin') return 'Admin Dashboard';
       if (pathname.startsWith('/admin/users')) return 'User Management';
       if (pathname.startsWith('/admin/question-bank')) return 'Question Bank';
+      if (pathname.startsWith('/admin/classification')) return 'Classification Management';
       if (pathname.startsWith('/admin/subscriptions')) return 'Subscriptions & Billing';
       if (pathname.startsWith('/admin/reports')) return 'Reports & Analytics';
       if (pathname.startsWith('/admin/moderation')) return 'Content Moderation';
@@ -127,14 +128,14 @@ const Header = ({ onToggleSidebar }) => {
               <p className="text-[14px] text-oxford-blue leading-[100%] tracking-[0px] font-archivo font-[700]">
                 {authUser?.name || 'User'}
               </p>
-              <p className="text-[12px] leading-[100%] tracking-[0px] text-left pt-1 pl-1 font-roboto font-[400] text-[#6B7280]">
+              <p className="text-[12px] leading-[100%] tracking-[0px] text-left pt-1 pl-1 font-roboto font-[400] text-dark-gray">
                 {role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User'}
               </p>
             </div>
 
             {/* User Dropdown Menu */}
             {isUserMenuOpen && (
-              <div className="absolute top-full right-0 mt-2 w-[192px] h-[154.4px] bg-white border border-[#E5E7EB] rounded-lg shadow-[0px_4px_6px_-4px_rgba(0,0,0,0.10),0px_10px_15px_-3px_rgba(0,0,0,0.10)] z-50">
+              <div className="absolute top-full right-0 mt-2 w-[192px] h-[154.4px] bg-white border border-[#E5E7EB] rounded-lg shadow-header-dropdown z-50">
                 <div className="p-2">
                   <button
                     onClick={() => handleMenuItemClick('Settings')}

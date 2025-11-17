@@ -37,6 +37,16 @@
       padding-right: 3rem;
     }
   }
+  
+  /* Hide scrollbar for better mobile UX */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 * {

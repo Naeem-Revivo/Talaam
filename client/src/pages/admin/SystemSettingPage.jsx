@@ -1,8 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 
 const SystemSettingPlan = () => {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const handleLanguageManagement = () => {
         navigate('/admin/settings/language-management')
     };
@@ -52,30 +54,30 @@ const SystemSettingPlan = () => {
     const cards = [
         {
             icon: GlobeIcon,
-            title: 'Language Management',
-            description: 'Add, Edit, or remove supported languages across the application.',
-            linkText: 'Manage Language',
+            title: t('admin.systemSettings.cards.languageManagement.title'),
+            description: t('admin.systemSettings.cards.languageManagement.description'),
+            linkText: t('admin.systemSettings.cards.languageManagement.linkText'),
             onClick: handleLanguageManagement
         },
         {
             icon: MegaphoneIcon,
-            title: 'Announcements',
-            description: 'Create and publish system-wide announcements for all users.',
-            linkText: 'Manage Announcements',
+            title: t('admin.systemSettings.cards.announcements.title'),
+            description: t('admin.systemSettings.cards.announcements.description'),
+            linkText: t('admin.systemSettings.cards.announcements.linkText'),
             onClick: handleAnnouncements
         },
         {
             icon: MailIcon,
-            title: 'Email Templates',
-            description: 'Customize automate email notifications sent by the system.',
-            linkText: 'Manage Templates',
+            title: t('admin.systemSettings.cards.emailTemplates.title'),
+            description: t('admin.systemSettings.cards.emailTemplates.description'),
+            linkText: t('admin.systemSettings.cards.emailTemplates.linkText'),
             onClick: handleEmailTemplates
         },
         {
             icon: ShieldIcon,
-            title: 'Roles & Permissions',
-            description: 'Define user roles and control access to features and data.',
-            linkText: 'Manage Roles',
+            title: t('admin.systemSettings.cards.rolesPermissions.title'),
+            description: t('admin.systemSettings.cards.rolesPermissions.description'),
+            linkText: t('admin.systemSettings.cards.rolesPermissions.linkText'),
             onClick: handleRolesPermissions
         }
     ];
@@ -85,11 +87,11 @@ const SystemSettingPlan = () => {
             <div className="mx-auto flex max-w-[1200px] flex-col gap-8">
                 <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-[#032746]">
-                            System Settings
+                        <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
+                            {t('admin.systemSettings.hero.title')}
                         </h1>
-                        <p className="font-roboto text-[18px] leading-[28px] text-[#6B7280]">
-                            Manage System-wide configurations, languages, announcements, and templates.
+                        <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
+                            {t('admin.systemSettings.hero.subtitle')}
                         </p>
                     </div>
                 </header>
@@ -107,12 +109,12 @@ const SystemSettingPlan = () => {
                                     <div className="flex-shrink-0 w-10 h-10 bg-[#ED4122] rounded-lg flex items-center justify-center">
                                         <card.icon />
                                     </div>
-                                    <h2 className="font-archivo text-[20px] leading-[100%] font-bold text-[#032746]">
+                                    <h2 className="font-archivo text-[20px] leading-[100%] font-bold text-oxford-blue">
                                         {card.title}
                                     </h2>
                                 </div>
                                 <div className="flex-1">
-                                    <p className="font-roboto text-[14px] leading-[20px] text-[#6B7280] mb-3">
+                                    <p className="font-roboto text-[14px] leading-[20px] text-dark-gray mb-3">
                                         {card.description}
                                     </p>
                                     <button

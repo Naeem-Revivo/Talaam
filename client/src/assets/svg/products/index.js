@@ -1,7 +1,11 @@
-import computer from './computer.svg';
-import minding from './minding.svg';
-import performance from './performance.svg';
-import study from './study.svg';
-import teach from './teach.svg';
-import science from './science.svg';
-export { computer, minding, performance, study, teach, science };
+import computer from './products-computer.svg';
+import minding from './products-minding.svg';
+import performance from './products-performance.svg';
+import study from './products-study.svg';
+import teach from './products-teach.svg';
+import science from './products-science.svg';
+import bookIcon from './products-book-icon.svg';
+import videoIcon from './products-video-icon.svg';
+import checkCircleIcon from './products-check-circle-icon.svg';
+import phoneIcon from './products-phone-icon.svg';
+export { computer, minding, performance, study, teach, science, bookIcon, videoIcon, checkCircleIcon, phoneIcon };

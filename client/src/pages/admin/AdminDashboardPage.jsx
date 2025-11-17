@@ -10,37 +10,7 @@ import {
   blacktick,
 } from "../../assets/svg/dashboard/admin";
 import AdminMetricCard from "../../components/admin/AdminMetricCard";
-
-const stats = [
-  {
-    title: "Total Users",
-    value: "12,800",
-    delta: "+12% from last month",
-    deltaColor: "text-[#ED4122]",
-    icon: headcard1,
-  },
-  {
-    title: "Verified Users",
-    value: "9,234",
-    delta: "72% verification rate",
-    deltaColor: "text-[#6B7280]",
-    icon: headcard2,
-  },
-  {
-    title: "Active Subscriptions",
-    value: "3,456",
-    delta: "+8% this week",
-    deltaColor: "text-[#6B7280]",
-    icon: headcard3,
-  },
-  {
-    title: "Revenue",
-    value: "$89,432",
-    delta: "+15% this month",
-    deltaColor: "text-[#6B7280]",
-    icon: headcard4,
-  },
-];
+import { useLanguage } from "../../context/LanguageContext";
 
 const growthMonths = [
   "Jan",
@@ -61,82 +31,114 @@ const growthValues = [
 ];
 const growthYAxis = [0, 2.5, 5, 7.5, 10, 12.5, 15];
 
-const subscriptionSegments = [
-  { label: "Free", value: 70.8, color: "#E5E7EB", isBase: true },
-  { label: "Premium", value: 21.1, color: "#ED4122" },
-  { label: "Organization", value: 5.1, color: "#6CA6C1" },
-];
-
-const latestSignups = [
-  {
-    name: "Sarah Ahmad",
-    email: "sarah.ahmad@gmail.com",
-    time: "2 min ago",
-    avatarColor: "bg-[#FDE68A]",
-  },
-  {
-    name: "Emily Davis",
-    email: "emilydavis@gmail.com",
-    time: "15 min ago",
-    avatarColor: "bg-[#BFDBFE]",
-  },
-  {
-    name: "Emily Davis",
-    email: "emilydavis@gmail.com",
-    time: "30 min ago",
-    avatarColor: "bg-[#C4B5FD]",
-  },
-];
-
-const notifications = [
-  {
-    title: "High Server Load",
-    description: "CPU usage above 85%",
-    time: "CPU usage above 85%",
-    bg: "bg-[#FEF2F2]",
-    border: "border-[#F97316]",
-    iconBg: "bg-[#EF4444]",
-    titleColor: "text-[#EF4444]",
-    descriptionColor: "text-[#EF4444]",
-    timeColor: "text-[#EF4444]",
-    icon: alert,
-    titleClass: "text-[16px] leading-[16px]",
-    descriptionClass: "text-[12px] leading-[16px]",
-    timeClass: "text-[8px] leading-[12px]",
-  },
-  {
-    title: "Scheduled Maintenance",
-    description: "Database backup at 2 AM",
-    time: "Tomorrow",
-    bg: "bg-[#FEFCE8]",
-    border: "border-[#FAFF70]",
-    iconBg: "bg-[#60A5FA]",
-    titleColor: "text-[#6CA6C1]",
-    descriptionColor: "text-[#6CA6C1]",
-    timeColor: "text-[#6CA6C1]",
-    icon: sclock,
-    titleClass: "text-[16px] leading-[16px]",
-    descriptionClass: "text-[12px] leading-[16px]",
-    timeClass: "text-[8px] leading-[14px]",
-  },
-  {
-    title: "Backup Completed",
-    description: "Daily backup successful",
-    time: "1 hour ago",
-    bg: "bg-[#F0FDF4]",
-    border: "border-[#BAFFCB]",
-    iconBg: "bg-[#0F172A]",
-    titleColor: "text-[#032746]",
-    descriptionColor: "text-[#032746]",
-    timeColor: "text-[#032746]",
-    icon: blacktick,
-    titleClass: "text-[16px] leading-[16px]",
-    descriptionClass: "text-[12px] leading-[16px]",
-    timeClass: "text-[8px] leading-[14px]",
-  },
-];
-
 const AdminDashboardPage = () => {
+  const { t } = useLanguage();
+
+  const stats = [
+    {
+      title: t('admin.dashboard.stats.totalUsers'),
+      value: "12,800",
+      delta: t('admin.dashboard.stats.fromLastMonth'),
+      deltaColor: "text-[#ED4122]",
+      icon: headcard1,
+    },
+    {
+      title: t('admin.dashboard.stats.verifiedUsers'),
+      value: "9,234",
+      delta: t('admin.dashboard.stats.verificationRate'),
+      deltaColor: "text-dark-gray",
+      icon: headcard2,
+    },
+    {
+      title: t('admin.dashboard.stats.activeSubscriptions'),
+      value: "3,456",
+      delta: t('admin.dashboard.stats.thisWeek'),
+      deltaColor: "text-dark-gray",
+      icon: headcard3,
+    },
+    {
+      title: t('admin.dashboard.stats.revenue'),
+      value: "$89,432",
+      delta: t('admin.dashboard.stats.thisMonth'),
+      deltaColor: "text-dark-gray",
+      icon: headcard4,
+    },
+  ];
+
+  const subscriptionSegments = [
+    { label: t('admin.dashboard.charts.planLabels.free'), value: 70.8, color: "#E5E7EB", isBase: true },
+    { label: t('admin.dashboard.charts.planLabels.premium'), value: 21.1, color: "#ED4122" },
+    { label: t('admin.dashboard.charts.planLabels.organization'), value: 5.1, color: "#6CA6C1" },
+  ];
+
+  const latestSignups = [
+    {
+      name: "Sarah Ahmad",
+      email: "sarah.ahmad@gmail.com",
+      time: t('admin.dashboard.time.minAgo').replace('{{count}}', '2'),
+      avatarColor: "bg-[#FDE68A]",
+    },
+    {
+      name: "Emily Davis",
+      email: "emilydavis@gmail.com",
+      time: t('admin.dashboard.time.minAgo').replace('{{count}}', '15'),
+      avatarColor: "bg-[#BFDBFE]",
+    },
+    {
+      name: "Emily Davis",
+      email: "emilydavis@gmail.com",
+      time: t('admin.dashboard.time.minAgo').replace('{{count}}', '30'),
+      avatarColor: "bg-[#C4B5FD]",
+    },
+  ];
+
+  const notifications = [
+    {
+      title: t('admin.dashboard.notifications.highServerLoad.title'),
+      description: t('admin.dashboard.notifications.highServerLoad.description'),
+      time: t('admin.dashboard.notifications.highServerLoad.description'),
+      bg: "bg-[#FEF2F2]",
+      border: "border-[#F97316]",
+      iconBg: "bg-[#EF4444]",
+      titleColor: "text-[#EF4444]",
+      descriptionColor: "text-[#EF4444]",
+      timeColor: "text-[#EF4444]",
+      icon: alert,
+      titleClass: "text-[16px] leading-[16px]",
+      descriptionClass: "text-[12px] leading-[16px]",
+      timeClass: "text-[8px] leading-[12px]",
+    },
+    {
+      title: t('admin.dashboard.notifications.scheduledMaintenance.title'),
+      description: t('admin.dashboard.notifications.scheduledMaintenance.description'),
+      time: t('admin.dashboard.notifications.scheduledMaintenance.time'),
+      bg: "bg-[#FEFCE8]",
+      border: "border-[#FAFF70]",
+      iconBg: "bg-[#60A5FA]",
+      titleColor: "text-[#6CA6C1]",
+      descriptionColor: "text-[#6CA6C1]",
+      timeColor: "text-[#6CA6C1]",
+      icon: sclock,
+      titleClass: "text-[16px] leading-[16px]",
+      descriptionClass: "text-[12px] leading-[16px]",
+      timeClass: "text-[8px] leading-[14px]",
+    },
+    {
+      title: t('admin.dashboard.notifications.backupCompleted.title'),
+      description: t('admin.dashboard.notifications.backupCompleted.description'),
+      time: t('admin.dashboard.notifications.backupCompleted.time'),
+      bg: "bg-[#F0FDF4]",
+      border: "border-[#BAFFCB]",
+      iconBg: "bg-[#0F172A]",
+      titleColor: "text-oxford-blue",
+      descriptionColor: "text-oxford-blue",
+      timeColor: "text-oxford-blue",
+      icon: blacktick,
+      titleClass: "text-[16px] leading-[16px]",
+      descriptionClass: "text-[12px] leading-[16px]",
+      timeClass: "text-[8px] leading-[14px]",
+    },
+  ];
   const { linePath, points } = useMemo(() => {
     const chartWidth = 460;
     const chartHeight = 240;
@@ -209,11 +211,11 @@ const AdminDashboardPage = () => {
     <div className="min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-8 2xl:px-16">
       <div className="max-w-[1200px] mx-auto space-y-6 sm:space-y-8">
         <header className="space-y-1 text-center sm:text-left">
-          <h1 className="font-archivo font-bold text-[28px] leading-[32px] text-[#032746] sm:text-[36px] sm:leading-[40px]">
-            Dashboard Overview
+          <h1 className="font-archivo font-bold text-[28px] leading-[32px] text-oxford-blue sm:text-[36px] sm:leading-[40px]">
+            {t('admin.dashboard.hero.title')}
           </h1>
-          <p className="font-roboto text-[16px] leading-[24px] text-[#6B7280] sm:text-[18px] sm:leading-[28px]">
-            Monitor system activity and key metrics
+          <p className="font-roboto text-[16px] leading-[24px] text-dark-gray sm:text-[18px] sm:leading-[28px]">
+            {t('admin.dashboard.hero.subtitle')}
           </p>
         </header>
 
@@ -235,14 +237,14 @@ const AdminDashboardPage = () => {
 
         {/* Charts */}
         <section className="flex flex-col lg:flex-row gap-10 w-full justify-between">
-          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-full lg:w-[639px] xl:w-full lg:h-[462px]">
+          <div className="rounded-[8px] bg-white shadow-dashboard border border-[#E5E7EB] p-6 w-full lg:w-[639px] xl:w-full lg:h-[462px]">
             <div className="flex items-start justify-between flex-col gap-4 sm:flex-row sm:gap-0">
               <div>
                 <h3 className="text-lg font-archivo font-semibold text-oxford-blue">
-                  User Growth Trend
+                  {t('admin.dashboard.charts.userGrowthTrend.title')}
                 </h3>
-                <p className="text-sm text-[#6B7280] font-roboto">
-                  Monthly active users
+                <p className="text-sm text-dark-gray font-roboto">
+                  {t('admin.dashboard.charts.userGrowthTrend.subtitle')}
                 </p>
               </div>
               <button className="w-10 h-10 flex items-center justify-center rounded-xl transition">
@@ -337,7 +339,6 @@ const AdminDashboardPage = () => {
                       strokeWidth="2"
                     />
                   ))}
-
                   {/* Month Labels */}
                   {growthMonths.map((label, idx) => (
                     <text
@@ -356,14 +357,14 @@ const AdminDashboardPage = () => {
               </div>
             </div>
           </div>
-          <div className="rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 flex flex-col w-full lg:w-[455px] lg:h-[462px]">
+          <div className="rounded-[8px] bg-white shadow-dashboard border border-[#E5E7EB] p-6 flex flex-col w-full lg:w-[455px] lg:h-[462px]">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-lg font-archivo font-semibold text-oxford-blue">
-                  Subscription Plans
+                  {t('admin.dashboard.charts.subscriptionPlans.title')}
                 </h3>
-                <p className="text-sm text-[#6B7280] font-roboto">
-                  Plan distribution
+                <p className="text-sm text-dark-gray font-roboto">
+                  {t('admin.dashboard.charts.subscriptionPlans.subtitle')}
                 </p>
               </div>
               <button className="w-10 h-10 flex items-center justify-center rounded-xl transition">
@@ -371,7 +372,6 @@ const AdminDashboardPage = () => {
                 <img src={threebar} alt="menu" />
               </button>
             </div>
-
             <div className="flex flex-1 items-center justify-center">
               <div className="relative">
                 <svg width="260" height="260" viewBox="0 0 260 260">
@@ -407,16 +407,15 @@ const AdminDashboardPage = () => {
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                  <p className="font-archivo font-semibold text-[32px] leading-[36px] text-[#032746]">
+                  <p className="font-archivo font-semibold text-[32px] leading-[36px] text-oxford-blue">
                     {donutData.highlighted.value.toFixed(1)}%
                   </p>
-                  <p className="text-sm font-roboto text-[#6B7280]">
+                  <p className="text-sm font-roboto text-dark-gray">
                     {donutData.highlighted.label}
                   </p>
                 </div>
               </div>
             </div>
-
             <div className="grid grid-cols-1 gap-3 sm:gap-4">
               {subscriptionSegments.map((segment) => (
                 <div
@@ -428,11 +427,11 @@ const AdminDashboardPage = () => {
                       className="w-3.5 h-3.5 rounded-full"
                       style={{ backgroundColor: segment.color }}
                     />
-                    <span className="text-sm text-[#6B7280] font-roboto">
+                    <span className="text-sm text-dark-gray font-roboto">
                       {segment.label}
                     </span>
                   </div>
-                  <span className="text-sm font-medium text-[#032746] font-roboto">
+                  <span className="text-sm font-medium text-oxford-blue font-roboto">
                     {segment.value.toFixed(1)}%
                   </span>
                 </div>
@@ -443,10 +442,10 @@ const AdminDashboardPage = () => {
 
         {/* Bottom panels */}
         <section className="flex flex-col lg:flex-row gap-6 lg:gap-4 justify-between">
-          <div className="flex-wrap rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-full lg:w-[558px] xl:w-full lg:h-[410px]">
+          <div className="flex-wrap rounded-[8px] bg-white shadow-dashboard border border-[#E5E7EB] p-6 w-full lg:w-[558px] xl:w-full lg:h-[410px]">
             <div className="mb-4 flex items-center justify-between sm:mb-6">
-              <h3 className="font-archivo font-semibold text-[20px] leading-[28px] text-[#032746]">
-                Latest Sign-ups
+              <h3 className="font-archivo font-semibold text-[20px] leading-[28px] text-oxford-blue">
+                {t('admin.dashboard.sections.latestSignups')}
               </h3>
             </div>
             <div className="space-y-3 sm:space-y-4">
@@ -454,14 +453,12 @@ const AdminDashboardPage = () => {
                 <div
                   key={`${user.email}-${index}-${user.time}`}
                   className="flex w-full flex-col gap-3 rounded-xl border border-[#6CA6C1] bg-[#E5E7EB] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0 lg:w-[500px] lg:h-[86px]"
-                  key={user.email}
-                  className="flex w-full flex-col gap-3 rounded-xl border border-[#6CA6C1] bg-[#E5E7EB] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0  lg:h-[86px]"
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className={`${user.avatarColor} flex h-10 w-10 items-center justify-center rounded-full`}
                     >
-                      <span className="font-roboto text-[16px] leading-[20px] text-[#032746] font-normal">
+                      <span className="font-roboto text-[16px] leading-[20px] text-oxford-blue font-normal">
                         {user.name.charAt(0)}
                       </span>
                     </div>
@@ -481,10 +478,10 @@ const AdminDashboardPage = () => {
               ))}
             </div>
           </div>
-          <div className="flex-wrap rounded-[8px] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6 w-full lg:w-[558px] xl:w-full lg:h-[410px]">
+          <div className="flex-wrap rounded-[8px] bg-white shadow-dashboard border border-[#E5E7EB] p-6 w-full lg:w-[558px] xl:w-full lg:h-[410px]">
             <div className="mb-4 flex items-center justify-between sm:mb-6">
-              <h3 className="font-archivo font-semibold text-[20px] leading-[28px] text-[#032746]">
-                System Notifications
+              <h3 className="font-archivo font-semibold text-[20px] leading-[28px] text-oxford-blue">
+                {t('admin.dashboard.sections.systemNotifications')}
               </h3>
             </div>
             <div className="space-y-3 sm:space-y-4">

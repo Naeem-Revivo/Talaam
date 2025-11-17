@@ -28,7 +28,7 @@ const PasswordReset = () => {
         </h2>
 
         {/* Description */}
-        <p className="font-roboto font-normal text-base leading-[100%] tracking-normal text-[#6B7280] mb-8 text-start">
+        <p className="font-roboto font-normal text-base leading-[100%] tracking-normal text-dark-gray mb-8 text-start">
           {t('passwordReset.description')}
         </p>
 

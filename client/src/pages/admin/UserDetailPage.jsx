@@ -1,18 +1,19 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAdminUsers } from "../../context/AdminUsersContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 const statusBadgeStyles = {
   Active: "bg-[#FDF0D5] text-[#ED4122]",
-  Suspended: "bg-[#C6D8D3] text-[#032746]",
+  Suspended: "bg-[#C6D8D3] text-oxford-blue",
 };
 
 const InfoField = ({ label, value }) => (
   <div className="flex flex-col gap-2">
-    <span className="text-[16px] font-roboto font-normal leading-[100%] text-[#6B7280]">
+    <span className="text-[16px] font-roboto font-normal leading-[100%] text-dark-gray">
       {label}
     </span>
-    <span className="text-[16px] font-roboto font-normal leading-[100%] text-[#032746]">
+    <span className="text-[16px] font-roboto font-normal leading-[100%] text-oxford-blue">
       {value || "—"}
     </span>
   </div>
@@ -119,7 +120,7 @@ const ActivityItem = ({ icon, title, timestamp }) => {
   };
 
   return (
-    <div className="flex items-start gap-4 rounded-[16px] border border-[#E4E7EC] bg-white px-5 py-4 shadow-[0_4px_18px_rgba(3,39,70,0.05)]">
+    <div className="flex items-start gap-4 rounded-[16px] border border-[#E4E7EC] bg-white px-5 py-4 shadow-user-card">
       <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center">
         {icon}
       </div>
@@ -127,7 +128,7 @@ const ActivityItem = ({ icon, title, timestamp }) => {
         <p className="font-roboto font-normal text-sm text-black">
           {renderTitle()}
         </p>
-        <span className="text-xs font-normal font-roboto text-[#6B7280]">
+        <span className="text-xs font-normal font-roboto text-dark-gray">
           {timestamp}
         </span>
       </div>
@@ -158,25 +159,50 @@ const UserDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { getUserById } = useAdminUsers();
+  const { t } = useLanguage();
   const user = getUserById(id);
+  
+  const getStatusLabel = (status) => {
+    if (status === "Active") return t('admin.userManagement.status.active');
+    if (status === "Suspended") return t('admin.userManagement.status.suspended');
+    return status;
+  };
+  
+  const getRoleLabel = (role) => {
+    const roleMap = {
+      "Question Gatherer": t('admin.userManagement.roles.questionGatherer'),
+      "Question Creator": t('admin.userManagement.roles.questionCreator'),
+      "Processor": t('admin.userManagement.roles.processor'),
+      "Question Explainer": t('admin.userManagement.roles.questionExplainer'),
+    };
+    return roleMap[role] || role;
+  };
+  
+  const getSystemRoleLabel = (role) => {
+    const roleMap = {
+      "Admin": t('admin.addUser.form.systemRoles.admin'),
+      "Editor": t('admin.addUser.form.systemRoles.editor'),
+      "Viewer": t('admin.addUser.form.systemRoles.viewer'),
+    };
+    return roleMap[role] || role;
+  };
 
   if (!user) {
     return (
       <div className="flex min-h-full items-center justify-center bg-[#F5F7FB] px-4 py-12">
-        <div className="rounded-[16px] border border-[#E5E7EB] bg-white p-12 text-center shadow-[0_6px_54px_rgba(0,0,0,0.05)]">
-          <h1 className="font-archivo text-[28px] font-semibold text-[#032746]">
-            User not found
+        <div className="rounded-[16px] border border-[#E5E7EB] bg-white p-12 text-center shadow-dashboard">
+          <h1 className="font-archivo text-[28px] font-semibold text-oxford-blue">
+            {t('admin.viewUser.errors.notFound')}
           </h1>
-          <p className="mt-4 text-[16px] font-roboto text-[#6B7280]">
-            We could not locate the requested user. Please return to the user
-            management screen.
+          <p className="mt-4 text-[16px] font-roboto text-dark-gray">
+            {t('admin.viewUser.errors.notFoundDescription')}
           </p>
           <button
             type="button"
             onClick={() => navigate("/admin/users")}
             className="mt-6 rounded-[10px] bg-[#ED4122] px-6 py-3 text-[16px] font-roboto font-medium text-white transition hover:bg-[#d43a1f]"
           >
-            Back to User Management
+            {t('admin.viewUser.errors.backToManagement')}
           </button>
         </div>
       </div>
@@ -190,7 +216,7 @@ const UserDetailPage = () => {
       ? user.activityLog
       : [
           {
-            description: "No recent activity recorded.",
+            description: t('admin.viewUser.activity.noRecentActivity'),
             timestamp: "",
             icon: "•",
             color: "#6B7280",
@@ -201,15 +227,15 @@ const UserDetailPage = () => {
     <div className="min-h-full bg-[#F5F7FB] px-4 py-8 lg:px-10">
       <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-6">
         <section className="flex flex-col gap-5">
-          <div className="rounded-[24px] border border-[#032746]/10 bg-white px-8 py-6 shadow-[0_24px_60px_rgba(3,39,70,0.08)]">
+          <div className="rounded-[24px] border border-[#032746]/10 bg-white px-8 py-6 shadow-modal">
             <div className="flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="inline-flex items-center gap-2 rounded-[10px] border border-[#E5E7EB] px-4 py-2 text-[14px] font-roboto font-medium text-[#032746] transition hover:border-[#032746]/30 hover:text-[#ED4122]"
+                className="inline-flex items-center gap-2 rounded-[10px] border border-[#E5E7EB] px-4 py-2 text-[14px] font-roboto font-medium text-oxford-blue transition hover:border-[#032746]/30 hover:text-[#ED4122]"
               >
                 <span aria-hidden="true">←</span>
-                Back to Users
+                {t('admin.viewUser.backToUsers')}
               </button>
             </div>
 
@@ -231,13 +257,13 @@ const UserDetailPage = () => {
                 )}
                 <div className="flex flex-col gap-2">
                   <div className="flex flex-wrap items-center gap-3">
-                    <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-[#032746]">
+                    <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
                       {user.name}
                     </h1>
                     <span
                       className={`inline-flex h-[26px] min-w-[59px] items-center justify-center rounded-md px-3 text-sm font-roboto font-normal ${badgeClass}`}
                     >
-                      {user.status}
+                      {getStatusLabel(user.status)}
                     </span>
                   </div>
                 </div>
@@ -248,39 +274,39 @@ const UserDetailPage = () => {
                 onClick={() => navigate(`/admin/users/${user.id}/edit`)}
                 className="self-start rounded-[12px] bg-[#ED4122] px-6 py-3 text-[16px] font-roboto font-medium text-white transition hover:bg-[#d43a1f]"
               >
-                Edit User
+                {t('admin.viewUser.editUser')}
               </button>
             </div>
 
             <div className="mt-5 border-t border-[#E2E2E2] pt-8">
-              <h2 className="text-[20px] font-archivo font-bold leading-[100%] text-[#032746]">
-                Personal Information
+              <h2 className="text-[20px] font-archivo font-bold leading-[100%] text-oxford-blue">
+                {t('admin.viewUser.sections.personalInformation')}
               </h2>
               <div className="mt-8 grid gap-6 sm:grid-cols-2">
-                <InfoField label="Full Name" value={user.name} />
-                <InfoField label="Email" value={user.email} />
+                <InfoField label={t('admin.viewUser.fields.fullName')} value={user.name} />
+                <InfoField label={t('admin.viewUser.fields.email')} value={user.email} />
               </div>
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-[#032746]/10 bg-white px-8 py-6 shadow-[0_24px_60px_rgba(3,39,70,0.08)]">
+          <div className="rounded-[24px] border border-[#032746]/10 bg-white px-8 py-6 shadow-modal">
           <div className=" border-[#E2E2E2]">
-                <h2 className="text-[20px] font-archivo font-bold leading-[100%] text-[#032746]">
-                  Account Details
+                <h2 className="text-[20px] font-archivo font-bold leading-[100%] text-oxford-blue">
+                  {t('admin.viewUser.sections.accountDetails')}
                 </h2>
                 <div className="mt-8 grid gap-6 sm:grid-cols-2">
-                  <InfoField label="System Role" value={user.systemRole} />
-                  <InfoField label="Workflow Role" value={user.workflowRole} />
-                  <InfoField label="Status" value={user.status} />
-                  <InfoField label="Last Login" value={user.lastLogin} />
-                  <InfoField label="Date Created" value={user.dateCreated} />
+                  <InfoField label={t('admin.viewUser.fields.systemRole')} value={getSystemRoleLabel(user.systemRole)} />
+                  <InfoField label={t('admin.viewUser.fields.workflowRole')} value={getRoleLabel(user.workflowRole)} />
+                  <InfoField label={t('admin.viewUser.fields.status')} value={getStatusLabel(user.status)} />
+                  <InfoField label={t('admin.viewUser.fields.lastLogin')} value={user.lastLogin} />
+                  <InfoField label={t('admin.viewUser.fields.dateCreated')} value={user.dateCreated} />
                 </div>
               </div>
               </div>
 
-          <div className="rounded-[24px] border border-[#032746]/10 bg-white px-8 py-6 shadow-[0_24px_60px_rgba(3,39,70,0.08)]">
-            <h2 className="border-b border-[#E2E2E2] pb-5 text-[20px] font-archivo font-bold leading-[100%] text-[#032746]">
-              Activity Log
+          <div className="rounded-[24px] border border-[#032746]/10 bg-white px-8 py-6 shadow-modal">
+            <h2 className="border-b border-[#E2E2E2] pb-5 text-[20px] font-archivo font-bold leading-[100%] text-oxford-blue">
+              {t('admin.viewUser.sections.activityLog')}
             </h2>
             <div className="mt-6 flex flex-col gap-4">
               {activityLog.map((item, index) => {

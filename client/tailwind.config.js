@@ -8,6 +8,7 @@ module.exports = {
     extend: {
       colors: {
         'oxford-blue': '#032746',
+        'dark-gray': '#6B7280',
         'orange-dark': '#ED4122',
         'orange-light': '#FF8B67',
         'blue-dark': '#032746',
@@ -34,6 +35,23 @@ module.exports = {
       },
       boxShadow: {
         'input': '0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)',
+        'card': '6px 6px 54px 0px rgba(0, 0, 0, 0.05)',
+        'card-sm': '0px 6px 54px 0px rgba(0, 0, 0, 0.05)',
+        'summary': '0px 6px 40px rgba(3, 39, 70, 0.08)',
+        'dashboard': '0px 6px 54px 0px rgba(0, 0, 0, 0.05)',
+        'filter': '0px 8px 20px rgba(3, 39, 70, 0.05)',
+        'filter-hover': '0px 8px 20px rgba(3, 39, 70, 0.08)',
+        'filter-lg': '0px 10px 40px rgba(3, 39, 70, 0.08)',
+        'small': '0px 0px 5px 0px rgba(0, 0, 0, 0.1)',
+        'hover': '0px 12px 34px rgba(3, 39, 70, 0.08)',
+        'empty': '0px 6px 24px rgba(0, 0, 0, 0.05)',
+        'user-card': '0px 4px 18px rgba(3, 39, 70, 0.05)',
+        'modal': '0px 24px 60px rgba(3, 39, 70, 0.08)',
+        'dropdown': '0px 18px 45px rgba(3, 39, 70, 0.18)',
+        'content': '2px 2px 10px 0px rgba(0, 0, 0, 0.05)',
+        'button': '0px 6px 20px rgba(3, 39, 70, 0.08)',
+        'footer': '0px -2px 10px 0px rgba(0, 0, 0, 0.05)',
+        'header-dropdown': '0px 4px 6px -4px rgba(0, 0, 0, 0.10), 0px 10px 15px -3px rgba(0, 0, 0, 0.10)',
       },
       screens: {
         'mobile': '320px',

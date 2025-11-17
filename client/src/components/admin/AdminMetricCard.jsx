@@ -4,7 +4,7 @@ const AdminMetricCard = ({
   title,
   value,
   subtext,
-  subtextClassName = "text-[#6B7280]",
+  subtextClassName = "text-dark-gray",
   icon,
   iconWrapperClassName = "",
   badgeText,
@@ -15,15 +15,15 @@ const AdminMetricCard = ({
 
   return (
     <article
-      className={`rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_54px_0_rgba(0,0,0,0.05)] p-5 flex flex-col gap-3 transition hover:shadow-[0_12px_34px_rgba(3,39,70,0.08)] ${className}`}
+      className={`rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard p-5 flex flex-col gap-3 transition hover:shadow-hover ${className}`}
     >
       <div className="flex items-center justify-between">
         <div className="space-y-1.5 px-2">
           {title && (
-            <p className="font-roboto text-[16px] text-[#6B7280]">{title}</p>
+            <p className="font-roboto text-[16px] text-dark-gray">{title}</p>
           )}
           {hasValue && (
-            <p className="font-archivo text-[30px] leading-[28px] font-semibold text-[#032746]">
+            <p className="font-archivo text-[30px] leading-[28px] font-semibold text-oxford-blue">
               {value}
             </p>
           )}
@@ -34,8 +34,12 @@ const AdminMetricCard = ({
           )}
         </div>
         {icon && (
-          <div className={`flex items-center justify-center rounded-full ${iconWrapperClassName}`}>
-            <img src={icon} alt={title} />
+          <div className={`flex items-center justify-center ${iconWrapperClassName}`}>
+            {typeof icon === 'string' ? (
+              <img src={icon} alt={title} />
+            ) : (
+              icon
+            )}
           </div>
         )}
       </div>

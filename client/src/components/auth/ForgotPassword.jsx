@@ -30,7 +30,7 @@ const ForgotPassword = () => {
           </h1>
 
           {/* Instructional Text */}
-          <p className="font-roboto font-normal pt-5 text-[16px] leading-[140%] tracking-[0] text-[#6B7280] text-center mb-6 lg:mb-8">
+          <p className="font-roboto font-normal pt-5 text-[16px] leading-[140%] tracking-[0] text-dark-gray text-center mb-6 lg:mb-8">
             {t('forgotPassword.instruction')}
           </p>
 
@@ -46,7 +46,7 @@ const ForgotPassword = () => {
                 value={email}
                 onChange={handleInputChange}
                 placeholder={t('forgotPassword.emailPlaceholder')}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[16px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-[#6B7280] shadow-input"
+                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[16px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input"
               />
             </div>
 
@@ -60,7 +60,7 @@ const ForgotPassword = () => {
           </div>
 
           {/* Back to Login Link */}
-          <p className="font-roboto font-normal text-[14px] lg:text-[16px] leading-[140%] tracking-[0] text-center text-[#6B7280] mt-6 lg:mt-8">
+          <p className="font-roboto font-normal text-[14px] lg:text-[16px] leading-[140%] tracking-[0] text-center text-dark-gray mt-6 lg:mt-8">
             <Link to="/login" className="hover:underline">
               {t('forgotPassword.backToLogin')}
             </Link>

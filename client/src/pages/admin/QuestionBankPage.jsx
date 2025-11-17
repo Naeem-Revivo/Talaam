@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 import QuestionBankTabs from "../../components/admin/questionBank/QuestionBankTabs";
 import QuestionBankFilters from "../../components/admin/questionBank/QuestionBankFilters";
 import QuestionBankSummaryCards from "../../components/admin/questionBank/QuestionBankSummaryCards";
@@ -7,11 +8,11 @@ import QuestionBankTable from "../../components/admin/questionBank/QuestionBankT
 
 const pageSize = 5;
 
-const tabs = [
-  { label: "All Questions", value: "all" },
-  { label: "Raw Questions Pending", value: "rawPending" },
-  { label: "Variant Pending", value: "variantPending" },
-  { label: "Rejected", value: "rejected" },
+const getTabs = (t) => [
+  { label: t('admin.questionBank.tabs.all'), value: "all" },
+  { label: t('admin.questionBank.tabs.rawPending'), value: "rawPending" },
+  { label: t('admin.questionBank.tabs.variantPending'), value: "variantPending" },
+  { label: t('admin.questionBank.tabs.rejected'), value: "rejected" },
 ];
 
 const mockQuestions = [
@@ -113,7 +114,8 @@ const mockQuestions = [
   },
 ];
 
-const getTabCounts = (questions) => {
+const getTabCounts = (questions, t) => {
+  const tabs = getTabs(t);
   const baseCounts = {
     all: questions.length,
     rawPending: questions.filter((item) => item.stage === "rawPending").length,
@@ -129,6 +131,7 @@ const getTabCounts = (questions) => {
 
 const QuestionBankPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({
@@ -195,7 +198,7 @@ const QuestionBankPage = () => {
   const stats = useMemo(
     () => [
       {
-        label: "Total Questions",
+        label: t('admin.questionBank.stats.totalQuestions'),
         value: 8,
         iconBg: "#FFF1E6",
       icon: (
@@ -209,7 +212,7 @@ const QuestionBankPage = () => {
       ),
       },
       {
-        label: "Pending",
+        label: t('admin.questionBank.stats.pending'),
         value: 4,
         iconBg: "#E8F3FF",
       icon: (
@@ -223,7 +226,7 @@ const QuestionBankPage = () => {
       ),
       },
       {
-        label: "Approved",
+        label: t('admin.questionBank.stats.approved'),
         value: 0,
         iconBg: "#E8F7F0",
       labelClassName: "text-[#ED4122]",
@@ -238,10 +241,10 @@ const QuestionBankPage = () => {
       ),
       },
     ],
-    []
+    [t]
   );
 
-  const tabDefinitions = useMemo(() => getTabCounts(mockQuestions), []);
+  const tabDefinitions = useMemo(() => getTabCounts(mockQuestions, t), [t]);
 
   const handleTabChange = (value) => {
     setActiveTab(value);
@@ -283,11 +286,11 @@ const QuestionBankPage = () => {
       <div className="mx-auto flex max-w-[1200px] flex-col gap-6">
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div className="space-y-2">
-            <h1 className="font-archivo text-[36px] font-bold leading-[40px] text-[#032746]">
-              Question Bank
+            <h1 className="font-archivo text-[36px] font-bold leading-[40px] text-oxford-blue">
+              {t('admin.questionBank.hero.title')}
             </h1>
-            <p className="font-roboto text-[18px] leading-[28px] text-[#6B7280]">
-              Manage, filter, and review all questions by subject, topic, or role.
+            <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
+              {t('admin.questionBank.hero.subtitle')}
             </p>
           </div>
           <div className="flex flex-wrap gap-4">
@@ -296,20 +299,20 @@ const QuestionBankPage = () => {
               onClick={() => navigate("/admin/question-management")}
               className="flex h-[36px] w-[195px] items-center justify-center rounded-[8px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
-              Question Management
+              {t('admin.questionBank.actions.questionManagement')}
             </button>
             <button
               type="button"
               className="flex h-[36px] w-[124px] items-center justify-center rounded-[8px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
-              Users
+              {t('admin.questionBank.actions.users')}
             </button>
             <button
               type="button"
               onClick={() => navigate("/admin/add-question")}
               className="flex h-[36px] items-center justify-center rounded-[10px] bg-[#ED4122] px-4 text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
-              + Add New Question
+              {t('admin.questionBank.actions.addNewQuestion')}
             </button>
           </div>
         </header>
@@ -320,7 +323,7 @@ const QuestionBankPage = () => {
             <button
               type="button"
               onClick={handleImport}
-              className="flex h-[36px] items-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 text-[16px] font-roboto font-semibold leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6]"
+              className="flex h-[36px] items-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 text-[16px] font-roboto font-semibold leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -328,12 +331,12 @@ const QuestionBankPage = () => {
                   fill="#032746"
                 />
               </svg>
-              Import
+              {t('admin.questionBank.actions.import')}
             </button>
             <button
               type="button"
               onClick={handleExport}
-              className="flex h-[36px] items-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 text-[16px] font-roboto font-semibold leading-[16px] text-[#032746] transition hover:bg-[#F3F4F6]"
+              className="flex h-[36px] items-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 text-[16px] font-roboto font-semibold leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -341,7 +344,7 @@ const QuestionBankPage = () => {
                   fill="#032746"
                 />
               </svg>
-              Export
+              {t('admin.questionBank.actions.export')}
             </button>
           </div>
         </div>
@@ -367,6 +370,7 @@ const QuestionBankPage = () => {
           pageSize={pageSize}
           total={filteredQuestions.length}
           onPageChange={setPage}
+          onView={(question) => navigate(`/admin/question-details?id=${question.id}`)}
         />
       </div>
     </div>
