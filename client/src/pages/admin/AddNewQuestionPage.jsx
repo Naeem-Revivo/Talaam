@@ -756,7 +756,6 @@ const AddNewQuestionPage = () => {
           }`}
           style={{
             minHeight: minHeight,
-            lineHeight: "100%",
           }}
           data-placeholder={placeholder}
           suppressContentEditableWarning
@@ -868,8 +867,7 @@ const AddNewQuestionPage = () => {
           <div className="flex flex-col gap-6 lg:flex-row">
             {/* Left Column - Question Details */}
             <div
-              className="flex-1 rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 lg:p-8"
-              className="shadow-card"
+              className="flex-1 rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 lg:p-8 shadow-card"
             >
               <h2 className="my-4 md:my-6 font-archivo text-[20px] md:text-[24px] font-bold leading-[28px] text-oxford-blue">
                 {t('admin.addNewQuestion.sections.questionDetails')}
@@ -899,9 +897,6 @@ const AddNewQuestionPage = () => {
                       value={questionType}
                       onChange={(e) => setQuestionType(e.target.value)}
                       className="w-full appearance-none rounded-[12px] border border-[#03274633] bg-white py-3 pl-4 pr-10 font-roboto text-[16px] leading-[100%] text-oxford-blue outline-none lg:w-[660px] lg:h-[59px] h-[50px] md:h-[59px]"
-                      style={{
-                        lineHeight: "100%",
-                      }}
                     >
                       <option>{t('admin.addNewQuestion.questionTypes.multipleChoice')}</option>
                       <option>{t('admin.addNewQuestion.questionTypes.trueFalse')}</option>
@@ -940,10 +935,6 @@ const AddNewQuestionPage = () => {
                           handleOptionChange("A", e.target.value)
                         }
                         className="w-full rounded-[12px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] leading-[100%] text-oxford-blue outline-none lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
-                        style={{
-                          lineHeight: "100%",
-                          letterSpacing: "0%",
-                        }}
                       />
                     </div>
                     <div>
@@ -957,10 +948,6 @@ const AddNewQuestionPage = () => {
                           handleOptionChange("C", e.target.value)
                         }
                         className="w-full rounded-[12px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] leading-[100%] text-oxford-blue outline-none lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
-                        style={{
-                          lineHeight: "100%",
-                          letterSpacing: "0%",
-                        }}
                       />
                     </div>
                   </div>
@@ -977,10 +964,6 @@ const AddNewQuestionPage = () => {
                           handleOptionChange("B", e.target.value)
                         }
                         className="w-full rounded-[12px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] leading-[100%] text-oxford-blue outline-none lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
-                        style={{
-                          lineHeight: "100%",
-                          letterSpacing: "0%",
-                        }}
                       />
                     </div>
                     <div>
@@ -994,10 +977,6 @@ const AddNewQuestionPage = () => {
                           handleOptionChange("D", e.target.value)
                         }
                         className="w-full rounded-[12px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] leading-[100%] text-oxford-blue outline-none lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
-                        style={{
-                          lineHeight: "100%",
-                          letterSpacing: "0%",
-                        }}
                       />
                     </div>
                   </div>
@@ -1038,11 +1017,7 @@ const AddNewQuestionPage = () => {
             </div>
 
             {/* Right Column - Classification */}
-            <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[376px] h-auto lg:h-[674px]"
-              style={{
-              }}
-            >
+            <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[376px] h-auto lg:h-[674px]">
               <h2 className="my-6 mt-10  font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
                 {t('admin.addNewQuestion.sections.classification')}
               </h2>
@@ -1184,12 +1159,7 @@ const AddNewQuestionPage = () => {
           </div>
           {/* Bottom Section - Explanation */}
           <div className="flex justify-between items-end">
-          <div
-            className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[720px] h-auto lg:h-[321px]"
-            style={{
-              boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)",
-            }}
-          >
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[720px] h-auto lg:h-[321px] shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
             <h2 className="mb-6 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
               {t('admin.addNewQuestion.sections.explanation')}
             </h2>

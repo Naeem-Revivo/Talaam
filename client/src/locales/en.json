@@ -1615,6 +1615,46 @@
     "security": {
       "hero": {
         "title": "Security Settings"
+      },
+      "buttons": {
+        "rolesAndPermissions": "+ Roles and Permissions",
+        "auditLogs": "Audit Logs"
+      },
+      "sections": {
+        "securityAndAuthentication": {
+          "title": "Security & Authentication",
+          "description": "Manage password rules, two-factor authentication, and sensitive action controls."
+        },
+        "passwordPolicy": {
+          "title": "Password Policy",
+          "minimum8Chars": "Minimum 8 characters",
+          "atLeast1Uppercase": "At least 1 uppercase",
+          "atLeast1Lowercase": "At least 1 lowercase",
+          "atLeast1Number": "At least 1 number",
+          "atLeast1SpecialChar": "At least 1 special character",
+          "forcePasswordChange": "Force password change every 90 days"
+        },
+        "twoFactorAuth": {
+          "title": "Two Factor Authentication (2FA)",
+          "enable2FA": "Enable 2FA (Email / Authenticator App)",
+          "viewOrResetDevices": "View or reset trusted devices",
+          "manage": "Manage"
+        },
+        "sensitiveOperations": {
+          "title": "Sensitive Operations Confirmation",
+          "description": "Require Super Admin confirmation for billing, deletions, and role changes.",
+          "preventionNote": "This prevents unauthorized changes."
+        },
+        "loginHistory": {
+          "title": "Login History",
+          "filter": "Filter",
+          "filterByUser": "Filter by User",
+          "datePlaceholder": "mm/dd/yyyy"
+        }
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "saveChanges": "Save Changes"
       }
     },
     "classificationManagement": {

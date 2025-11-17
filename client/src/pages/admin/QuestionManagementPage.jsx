@@ -41,8 +41,7 @@ const QuestionManagementPage = () => {
         <div className="flex flex-col gap-6 md:flex-row lg:flex-row">
           {/* Left Panel: My Tasks */}
           <div 
-            className="w-full rounded-[12px] border border-[#E5E7EB] bg-white p-4 md:p-6 lg:w-[400px]"
-            className="shadow-card"
+            className="w-full rounded-[12px] border border-[#E5E7EB] bg-white p-4 md:p-6 lg:w-[400px] shadow-card"
           >
             <h2 className="mb-4 md:mb-6 font-archivo text-[20px] md:text-[24px] font-bold leading-[28px] text-oxford-blue">
               {t('admin.questionManagement.sections.myTasks')}
@@ -83,8 +82,7 @@ const QuestionManagementPage = () => {
 
           {/* Right Panel: Public Pool */}
           <div 
-            className="flex-1 rounded-[12px] border border-[#E5E7EB] bg-white p-4 md:p-6"
-            className="shadow-card"
+            className="flex-1 rounded-[12px] border border-[#E5E7EB] bg-white p-4 md:p-6 shadow-card"
           >
             <h2 className="mb-4 md:mb-6 font-archivo text-[20px] md:text-[24px] font-bold leading-[28px] text-oxford-blue">
               {t('admin.questionManagement.sections.publicPool')}

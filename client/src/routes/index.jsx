@@ -137,7 +137,6 @@ export const AppRoutes = () => {
           <Route path="reports/subscription-trends" element={<SubscriptionTrendsPage />} />
           <Route path="reports/performance-analytics" element={<PerformanceAnalyticsPage />} />
           <Route path="reports/export" element={<ExportReportsPage />} />
-          <Route path="subscriptions" element={<AdminDashboardPage />} />
           <Route path="reports" element={<ReportsAndAnalyticsPage />} />
           <Route path="moderation" element={<ContentModerationPage />} />
           <Route path="moderation/details" element={<ContentDetailsPage />} />
@@ -150,7 +149,6 @@ export const AppRoutes = () => {
           <Route path="settings/add-announcements" element={<AddNewAnnouncements />} />
           <Route path="settings/edit-announcements" element={<EditAnnouncementPage />} />
           <Route path="settings/email-template" element={<EmailTemplatePage />} />
-          <Route path="security" element={<AdminDashboardPage />} />
           <Route path="security" element={<SecuritySettingsPage />} />
           <Route path="security/audit-logs" element={<AuditLogsPage />} />
           <Route path="security/view-logs" element={<ViewLogDetails />} />
