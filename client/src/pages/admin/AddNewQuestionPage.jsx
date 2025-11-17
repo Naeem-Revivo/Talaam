@@ -868,8 +868,7 @@ const AddNewQuestionPage = () => {
           <div className="flex flex-col gap-6 lg:flex-row">
             {/* Left Column - Question Details */}
             <div
-              className="flex-1 rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 lg:p-8"
-              className="shadow-card"
+              className="flex-1 rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 lg:p-8 shadow-card"
             >
               <h2 className="my-4 md:my-6 font-archivo text-[20px] md:text-[24px] font-bold leading-[28px] text-oxford-blue">
                 {t('admin.addNewQuestion.sections.questionDetails')}

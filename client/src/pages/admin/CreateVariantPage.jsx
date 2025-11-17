@@ -419,8 +419,7 @@ const CreateVariantPage = () => {
           <div className="flex-1 flex flex-col gap-6">
             {/* Question Details Section */}
             <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6"
-              className="shadow-card"
+              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-card"
             >
               <h2 className="mb-4 md:mb-6 font-archivo text-[18px] md:text-[20px] font-bold leading-[28px] text-oxford-blue">
                 {t('admin.createVariant.sections.questionDetails')}
@@ -561,8 +560,7 @@ const CreateVariantPage = () => {
 
             {/* Classification Section */}
             <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6"
-              className="shadow-card"
+              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-card"
             >
               <h2 className="mb-4 md:mb-6 pt-4 font-archivo text-[18px] md:text-[20px] font-bold leading-[28px] text-oxford-blue">
                 {t('admin.createVariant.sections.classification')}
