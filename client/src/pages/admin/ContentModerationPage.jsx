@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
+import Dropdown from "../../components/shared/Dropdown";
 
 const ContentModerationPage = () => {
   const navigate = useNavigate();
@@ -239,86 +240,50 @@ const ContentModerationPage = () => {
 
           {/* Filter Dropdowns */}
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-4 md:mb-6">
-            <div className="relative w-full sm:w-[184px]">
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue appearance-none cursor-pointer "
-              >
-                <option value="">{t('admin.contentModeration.filters.status')}</option>
-                <option value="flagged">{t('admin.contentModeration.filters.flagged')}</option>
-                <option value="approved">{t('admin.contentModeration.filters.approved')}</option>
-                <option value="rejected">{t('admin.contentModeration.filters.rejected')}</option>
-              </select>
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <svg
-                  width="15"
-                  height="9"
-                  viewBox="0 0 15 9"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M0.687592 0.726562L7.00857 6.71211L13.3296 0.726562"
-                    stroke="#032746"
-                    strokeWidth="2"
-                  />
-                </svg>
-              </div>
+            <div className="w-full sm:w-[184px]">
+              <Dropdown
+                value={status || ""}
+                options={[
+                  { value: "flagged", label: t('admin.contentModeration.filters.flagged') },
+                  { value: "approved", label: t('admin.contentModeration.filters.approved') },
+                  { value: "rejected", label: t('admin.contentModeration.filters.rejected') },
+                ]}
+                onChange={(value) => setStatus(value)}
+                placeholder={t('admin.contentModeration.filters.status')}
+                showDefaultOnEmpty={false}
+                className="w-full"
+                height="h-[50px]"
+              />
             </div>
-            <div className="relative w-full sm:w-[184px]">
-              <select
-                value={contentType}
-                onChange={(e) => setContentType(e.target.value)}
-                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue appearance-none cursor-pointer "
-              >
-                <option value="">{t('admin.contentModeration.filters.contentType')}</option>
-                <option value="video">{t('admin.contentModeration.filters.video')}</option>
-                <option value="image">{t('admin.contentModeration.filters.image')}</option>
-                <option value="text">{t('admin.contentModeration.filters.text')}</option>
-              </select>
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <svg
-                  width="15"
-                  height="9"
-                  viewBox="0 0 15 9"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M0.687592 0.726562L7.00857 6.71211L13.3296 0.726562"
-                    stroke="#032746"
-                    strokeWidth="2"
-                  />
-                </svg>
-              </div>
+            <div className="w-full sm:w-[184px]">
+              <Dropdown
+                value={contentType || ""}
+                options={[
+                  { value: "video", label: t('admin.contentModeration.filters.video') },
+                  { value: "image", label: t('admin.contentModeration.filters.image') },
+                  { value: "text", label: t('admin.contentModeration.filters.text') },
+                ]}
+                onChange={(value) => setContentType(value)}
+                placeholder={t('admin.contentModeration.filters.contentType')}
+                showDefaultOnEmpty={false}
+                className="w-full"
+                height="h-[50px]"
+              />
             </div>
-            <div className="relative w-full sm:w-[184px]">
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue appearance-none cursor-pointer "
-              >
-                <option value="">{t('admin.contentModeration.filters.dateRange')}</option>
-                <option value="today">{t('admin.contentModeration.filters.today')}</option>
-                <option value="week">{t('admin.contentModeration.filters.thisWeek')}</option>
-                <option value="month">{t('admin.contentModeration.filters.thisMonth')}</option>
-              </select>
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <svg
-                  width="15"
-                  height="9"
-                  viewBox="0 0 15 9"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M0.687592 0.726562L7.00857 6.71211L13.3296 0.726562"
-                    stroke="#032746"
-                    strokeWidth="2"
-                  />
-                </svg>
-              </div>
+            <div className="w-full sm:w-[184px]">
+              <Dropdown
+                value={dateRange || ""}
+                options={[
+                  { value: "today", label: t('admin.contentModeration.filters.today') },
+                  { value: "week", label: t('admin.contentModeration.filters.thisWeek') },
+                  { value: "month", label: t('admin.contentModeration.filters.thisMonth') },
+                ]}
+                onChange={(value) => setDateRange(value)}
+                placeholder={t('admin.contentModeration.filters.dateRange')}
+                showDefaultOnEmpty={false}
+                className="w-full"
+                height="h-[50px]"
+              />
             </div>
           </div>
         </div>

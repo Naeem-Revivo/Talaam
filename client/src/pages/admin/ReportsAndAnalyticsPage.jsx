@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
+import Dropdown from "../../components/shared/Dropdown";
 
 // Reusable KPI Card Component
 const KPICard = ({ title, value, icon, titleSize = "text-[16px]", valueSize = "text-[30px]", valueWeight = "font-semibold", marginBottom = "mb-1" }) => {
@@ -308,164 +309,108 @@ const ReportsAndAnalyticsPage = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3 md:gap-3">
+        <div className="flex flex-wrap items-center gap-3 md:flex-nowrap md:gap-3">
           {/* Exam Dropdown */}
-          <div className="relative">
-            <select
-              value={exam}
-              onChange={(e) => setExam(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue outline-none"
-              style={{
-                width: "135px",
-                height: "50px",
-              }}
-            >
-              <option value="">{t('admin.reportsAndAnalytics.filters.exam')}</option>
-              <option value="exam1">Exam 1</option>
-              <option value="exam2">Exam 2</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="w-full md:w-[135px] md:flex-shrink-0 md:max-w-[135px]">
+            <Dropdown
+              value={exam || ""}
+              options={[
+                { value: "exam1", label: "Exam 1" },
+                { value: "exam2", label: "Exam 2" },
+              ]}
+              onChange={(value) => setExam(value)}
+              placeholder={t('admin.reportsAndAnalytics.filters.exam')}
+              showDefaultOnEmpty={false}
+              className="!w-full md:!w-[135px]"
+              height="h-[50px]"
+            />
           </div>
 
           {/* Subject Dropdown */}
-          <div className="relative">
-            <select
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue outline-none"
-              style={{
-                width: "184px",
-                height: "50px",
-              }}
-            >
-              <option value="">{t('admin.reportsAndAnalytics.filters.subject')}</option>
-              <option value="math">Mathematics</option>
-              <option value="science">Science</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="w-full md:w-[184px] md:flex-shrink-0 md:max-w-[184px]">
+            <Dropdown
+              value={subject || ""}
+              options={[
+                { value: "math", label: "Mathematics" },
+                { value: "science", label: "Science" },
+              ]}
+              onChange={(value) => setSubject(value)}
+              placeholder={t('admin.reportsAndAnalytics.filters.subject')}
+              showDefaultOnEmpty={false}
+              className="!w-full md:!w-[184px]"
+              height="h-[50px]"
+            />
           </div>
 
           {/* Cognitive Level Dropdown */}
-          <div className="relative">
-            <select
-              value={cognitiveLevel}
-              onChange={(e) => setCognitiveLevel(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue outline-none"
-              style={{
-                width: "206px",
-                height: "50px",
-              }}
-            >
-              <option value="">{t('admin.reportsAndAnalytics.filters.cognitiveLevel')}</option>
-              <option value="recall">Recall</option>
-              <option value="analysis">Analysis</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="w-full md:w-[206px] md:flex-shrink-0 md:max-w-[206px]">
+            <Dropdown
+              value={cognitiveLevel || ""}
+              options={[
+                { value: "recall", label: "Recall" },
+                { value: "analysis", label: "Analysis" },
+              ]}
+              onChange={(value) => setCognitiveLevel(value)}
+              placeholder={t('admin.reportsAndAnalytics.filters.cognitiveLevel')}
+              showDefaultOnEmpty={false}
+              className="!w-full md:!w-[206px]"
+              height="h-[50px]"
+            />
           </div>
 
           {/* Date Range Dropdown */}
-          <div className="relative">
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue outline-none"
-              style={{
-                width: "206px",
-                height: "50px",
-              }}
-            >
-              <option value="">{t('admin.reportsAndAnalytics.filters.dateRange')}</option>
-              <option value="week">{t('admin.reportsAndAnalytics.filters.lastWeek')}</option>
-              <option value="month">{t('admin.reportsAndAnalytics.filters.lastMonth')}</option>
-              <option value="year">{t('admin.reportsAndAnalytics.filters.lastYear')}</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="w-full md:w-[206px] md:flex-shrink-0 md:max-w-[206px]">
+            <Dropdown
+              value={dateRange || ""}
+              options={[
+                { value: "week", label: t('admin.reportsAndAnalytics.filters.lastWeek') },
+                { value: "month", label: t('admin.reportsAndAnalytics.filters.lastMonth') },
+                { value: "year", label: t('admin.reportsAndAnalytics.filters.lastYear') },
+              ]}
+              onChange={(value) => setDateRange(value)}
+              placeholder={t('admin.reportsAndAnalytics.filters.dateRange')}
+              showDefaultOnEmpty={false}
+              className="!w-full md:!w-[206px]"
+              height="h-[50px]"
+            />
           </div>
 
           {/* View Details Button */}
-          <div className="flex gap-5 ml-8">
-          <button
-            type="button"
-            className="flex items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] font-medium leading-[20px] text-oxford-blue transition hover:bg-[#F9FAFB]"
-            style={{
-              width: "130px",
-              height: "36px",
-            }}
-          >
-            {t('admin.reportsAndAnalytics.filters.viewDetails')}
-          </button>
-
-          {/* Apply Filter Button */}
-          <button
-            type="button"
-            className="flex items-center justify-center gap-2 rounded-[8px] bg-[#ED4122] px-4 font-roboto text-[16px] font-medium leading-[20px] text-white transition hover:bg-[#d43a1f]"
-            style={{
-              width: "157px",
-              height: "36px",
-            }}
-          >
-            <svg
-              width="14"
-              height="16"
-              viewBox="0 0 14 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+          <div className="flex gap-5 md:ml-auto md:flex-shrink-0">
+            <button
+              type="button"
+              className="flex items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] font-medium leading-[20px] text-oxford-blue transition hover:bg-[#F9FAFB] whitespace-nowrap"
+              style={{
+                width: "130px",
+                height: "36px",
+              }}
             >
-              <path
-                d="M8.6 16C8.4728 16 8.34644 15.9582 8.24004 15.8769L5.04004 13.4154C4.88964 13.2989 4.8 13.1167 4.8 12.9231V9.64103C4.8 9.47692 4.73762 9.32184 4.62402 9.20533L0.527246 5.00348C0.187246 4.65394 0 4.19117 0 3.69804V1.84615C0 0.827897 0.808 0 1.8 0H12.2C13.192 0 14 0.827897 14 1.84615V3.69804C14 4.19117 13.8128 4.65476 13.4728 5.00348L9.37598 9.20533C9.26238 9.32184 9.2 9.4761 9.2 9.64103V15.3846C9.2 15.6176 9.07197 15.831 8.86797 15.9352C8.78317 15.9787 8.6912 16 8.6 16ZM6 12.6154L8 14.1538V9.64103C8 9.1479 8.18725 8.68431 8.52725 8.33559L12.624 4.13374C12.7376 4.01723 12.8 3.86297 12.8 3.69804V1.84615C12.8 1.50646 12.5304 1.23077 12.2 1.23077H1.8C1.4696 1.23077 1.2 1.50646 1.2 1.84615V3.69804C1.2 3.86214 1.26238 4.01723 1.37598 4.13374L5.47275 8.33559C5.81275 8.68513 6 9.1479 6 9.64103V12.6154Z"
-                fill="white"
-              />
-            </svg>
-            {t('admin.reportsAndAnalytics.filters.applyFilter')}
-          </button>
+              {t('admin.reportsAndAnalytics.filters.viewDetails')}
+            </button>
+
+            {/* Apply Filter Button */}
+            <button
+              type="button"
+              className="flex items-center justify-center gap-2 rounded-[8px] bg-[#ED4122] px-4 font-roboto text-[16px] font-medium leading-[20px] text-white transition hover:bg-[#d43a1f] whitespace-nowrap"
+              style={{
+                width: "157px",
+                height: "36px",
+              }}
+            >
+              <svg
+                width="14"
+                height="16"
+                viewBox="0 0 14 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8.6 16C8.4728 16 8.34644 15.9582 8.24004 15.8769L5.04004 13.4154C4.88964 13.2989 4.8 13.1167 4.8 12.9231V9.64103C4.8 9.47692 4.73762 9.32184 4.62402 9.20533L0.527246 5.00348C0.187246 4.65394 0 4.19117 0 3.69804V1.84615C0 0.827897 0.808 0 1.8 0H12.2C13.192 0 14 0.827897 14 1.84615V3.69804C14 4.19117 13.8128 4.65476 13.4728 5.00348L9.37598 9.20533C9.26238 9.32184 9.2 9.4761 9.2 9.64103V15.3846C9.2 15.6176 9.07197 15.831 8.86797 15.9352C8.78317 15.9787 8.6912 16 8.6 16ZM6 12.6154L8 14.1538V9.64103C8 9.1479 8.18725 8.68431 8.52725 8.33559L12.624 4.13374C12.7376 4.01723 12.8 3.86297 12.8 3.69804V1.84615C12.8 1.50646 12.5304 1.23077 12.2 1.23077H1.8C1.4696 1.23077 1.2 1.50646 1.2 1.84615V3.69804C1.2 3.86214 1.26238 4.01723 1.37598 4.13374L5.47275 8.33559C5.81275 8.68513 6 9.1479 6 9.64103V12.6154Z"
+                  fill="white"
+                />
+              </svg>
+              {t('admin.reportsAndAnalytics.filters.applyFilter')}
+            </button>
           </div>
         </div>
 

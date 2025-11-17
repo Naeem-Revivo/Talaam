@@ -149,7 +149,6 @@ export const AppRoutes = () => {
           <Route path="settings/add-announcements" element={<AddNewAnnouncements />} />
           <Route path="settings/edit-announcements" element={<EditAnnouncementPage />} />
           <Route path="settings/email-template" element={<EmailTemplatePage />} />
-          <Route path="security" element={<AdminDashboardPage />} />
           <Route path="security" element={<SecuritySettingsPage />} />
           <Route path="security/audit-logs" element={<AuditLogsPage />} />
           <Route path="security/view-logs" element={<ViewLogDetails />} />

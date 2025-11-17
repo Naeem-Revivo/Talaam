@@ -135,24 +135,36 @@ const Header = ({ onToggleSidebar }) => {
 
             {/* User Dropdown Menu */}
             {isUserMenuOpen && (
-              <div className="absolute top-full right-0 mt-2 w-[192px] h-[154.4px] bg-white border border-[#E5E7EB] rounded-lg shadow-header-dropdown z-50">
+              <div 
+                className="absolute top-full right-0 mt-2 w-[192px] h-[154.4px] bg-white border border-[#E5E7EB] rounded-lg shadow-header-dropdown z-50"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="p-2">
                   <button
-                    onClick={() => handleMenuItemClick('Settings')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMenuItemClick('Settings');
+                    }}
                     className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-md transition-colors"
                   >
                     <img src={settings} alt="Settings" className="w-5 h-5" />
                     <span className="text-[14px] text-gray-700 font-roboto font-[400]">Settings</span>
                   </button>
                   <button
-                    onClick={() => handleMenuItemClick('My Profile')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMenuItemClick('My Profile');
+                    }}
                     className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-md transition-colors"
                   >
                     <img src={profile} alt="My Profile" className="w-5 h-5" />
                     <span className="text-[14px] text-gray-700 font-roboto font-[400]">My Profile</span>
                   </button>
                   <button
-                    onClick={() => handleMenuItemClick('Logout')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMenuItemClick('Logout');
+                    }}
                     className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-md transition-colors"
                   >
                     <img src={logout} alt="Logout" className="w-5 h-5" />

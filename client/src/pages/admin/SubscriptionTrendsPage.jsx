@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AdminMetricCard from "../../components/admin/AdminMetricCard";
 import { useLanguage } from "../../context/LanguageContext";
+import Dropdown from "../../components/shared/Dropdown";
 
 const SubscriptionTrendsPage = () => {
   const { t } = useLanguage();
@@ -200,67 +201,39 @@ const SubscriptionTrendsPage = () => {
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 md:gap-6">
           {/* Plan Type Filter */}
-          <div className="relative">
-            <select
-              value={planType}
-              onChange={(e) => setPlanType(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
-              style={{
-                width: "184px",
-                height: "50px",
-              }}
-            >
-              <option value="" disabled>{t('admin.subscriptionTrends.filters.planType')}</option>
-              <option value="Basic">Basic</option>
-              <option value="Premium">Premium</option>
-              <option value="Enterprise">Enterprise</option>
-              <option value="Trial">Trial</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div style={{ width: "184px" }}>
+            <Dropdown
+              value={planType || ""}
+              options={[
+                { value: "Basic", label: "Basic" },
+                { value: "Premium", label: "Premium" },
+                { value: "Enterprise", label: "Enterprise" },
+                { value: "Trial", label: "Trial" },
+              ]}
+              onChange={(value) => setPlanType(value)}
+              placeholder={t('admin.subscriptionTrends.filters.planType')}
+              showDefaultOnEmpty={false}
+              className="w-full"
+              height="h-[50px]"
+            />
           </div>
 
           {/* Date Range Filter */}
-          <div className="relative">
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
-              style={{
-                width: "184px",
-                height: "50px",
-              }}
-            >
-              <option value="" disabled>{t('admin.subscriptionTrends.filters.dateRange')}</option>
-              <option value="Last 30 Days">{t('admin.subscriptionTrends.filters.last30Days')}</option>
-              <option value="Last 7 Days">{t('admin.subscriptionTrends.filters.last7Days')}</option>
-              <option value="Last 90 Days">{t('admin.subscriptionTrends.filters.last90Days')}</option>
-              <option value="Last Year">{t('admin.subscriptionTrends.filters.lastYear')}</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div style={{ width: "184px" }}>
+            <Dropdown
+              value={dateRange || ""}
+              options={[
+                { value: "Last 30 Days", label: t('admin.subscriptionTrends.filters.last30Days') },
+                { value: "Last 7 Days", label: t('admin.subscriptionTrends.filters.last7Days') },
+                { value: "Last 90 Days", label: t('admin.subscriptionTrends.filters.last90Days') },
+                { value: "Last Year", label: t('admin.subscriptionTrends.filters.lastYear') },
+              ]}
+              onChange={(value) => setDateRange(value)}
+              placeholder={t('admin.subscriptionTrends.filters.dateRange')}
+              showDefaultOnEmpty={false}
+              className="w-full"
+              height="h-[50px]"
+            />
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AdminMetricCard from "../../components/admin/AdminMetricCard";
 import { useLanguage } from "../../context/LanguageContext";
+import Dropdown from "../../components/shared/Dropdown";
 
 const UserGrowthAnalyticsPage = () => {
   const { t } = useLanguage();
@@ -134,132 +135,78 @@ const UserGrowthAnalyticsPage = () => {
         </div>
 
         {/* User Growth Filters */}
-        <div className="flex flex-wrap items-center gap-3  md:gap-6">
+        <div className="flex flex-wrap items-center gap-3 md:gap-6">
           {/* Date Range Filter */}
-          <div className="relative">
-            <select
+          <div style={{ width: "184px" }}>
+            <Dropdown
               value={userGrowthDateRange}
-              onChange={(e) => setUserGrowthDateRange(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
-              style={{
-                width: "184px",
-                height: "50px",
-              }}
-            >
-              <option value="" disabled>{t('admin.userGrowthAnalytics.filters.dateRange')}</option>
-              <option value="Last 30 Days">{t('admin.userGrowthAnalytics.filters.last30Days')}</option>
-              <option value="Last 7 Days">{t('admin.userGrowthAnalytics.filters.last7Days')}</option>
-              <option value="Last 90 Days">{t('admin.userGrowthAnalytics.filters.last90Days')}</option>
-              <option value="Last Year">{t('admin.userGrowthAnalytics.filters.lastYear')}</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+              options={[
+                { value: "Last 30 Days", label: t('admin.userGrowthAnalytics.filters.last30Days') },
+                { value: "Last 7 Days", label: t('admin.userGrowthAnalytics.filters.last7Days') },
+                { value: "Last 90 Days", label: t('admin.userGrowthAnalytics.filters.last90Days') },
+                { value: "Last Year", label: t('admin.userGrowthAnalytics.filters.lastYear') },
+              ]}
+              onChange={(value) => setUserGrowthDateRange(value)}
+              placeholder={t('admin.userGrowthAnalytics.filters.dateRange')}
+              showDefaultOnEmpty={false}
+              className="w-full"
+              height="h-[50px]"
+            />
           </div>
 
           {/* User Type Filter */}
-          <div className="relative xl:ml-[320px]">
-            <select
-              value={userType}
-              onChange={(e) => setUserType(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
-              style={{
-                width: "184px",
-                height: "50px",
-              }}
-            >
-              <option value="" disabled>{t('admin.userGrowthAnalytics.filters.userType')}</option>
-              <option value="Student">{t('admin.userGrowthAnalytics.filters.student')}</option>
-              <option value="Teacher">{t('admin.userGrowthAnalytics.filters.teacher')}</option>
-              <option value="Admin">{t('admin.userGrowthAnalytics.filters.admin')}</option>
-              <option value="Parent">{t('admin.userGrowthAnalytics.filters.parent')}</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="relative xl:ml-[320px]" style={{ width: "184px" }}>
+            <Dropdown
+              value={userType || ""}
+              options={[
+                { value: "Student", label: t('admin.userGrowthAnalytics.filters.student') },
+                { value: "Teacher", label: t('admin.userGrowthAnalytics.filters.teacher') },
+                { value: "Admin", label: t('admin.userGrowthAnalytics.filters.admin') },
+                { value: "Parent", label: t('admin.userGrowthAnalytics.filters.parent') },
+              ]}
+              onChange={(value) => setUserType(value)}
+              placeholder={t('admin.userGrowthAnalytics.filters.userType')}
+              showDefaultOnEmpty={false}
+              className="w-full"
+              height="h-[50px]"
+            />
           </div>
 
           {/* All Roles Filter */}
-          <div className="relative">
-            <select
+          <div style={{ width: "184px" }}>
+            <Dropdown
               value={userRole}
-              onChange={(e) => setUserRole(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
-              style={{
-                width: "184px",
-                height: "50px",
-              }}
-            >
-              <option value="All Roles">{t('admin.userGrowthAnalytics.filters.allRoles')}</option>
-              <option value="Student">{t('admin.userGrowthAnalytics.filters.student')}</option>
-              <option value="Teacher">{t('admin.userGrowthAnalytics.filters.teacher')}</option>
-              <option value="Admin">{t('admin.userGrowthAnalytics.filters.admin')}</option>
-              <option value="Parent">{t('admin.userGrowthAnalytics.filters.parent')}</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+              options={[
+                { value: "All Roles", label: t('admin.userGrowthAnalytics.filters.allRoles') },
+                { value: "Student", label: t('admin.userGrowthAnalytics.filters.student') },
+                { value: "Teacher", label: t('admin.userGrowthAnalytics.filters.teacher') },
+                { value: "Admin", label: t('admin.userGrowthAnalytics.filters.admin') },
+                { value: "Parent", label: t('admin.userGrowthAnalytics.filters.parent') },
+              ]}
+              onChange={(value) => setUserRole(value)}
+              placeholder={t('admin.userGrowthAnalytics.filters.allRoles')}
+              showDefaultOnEmpty={true}
+              className="w-full"
+              height="h-[50px]"
+            />
           </div>
 
           {/* All Plans Filter */}
-          <div className="relative">
-            <select
+          <div style={{ width: "184px" }}>
+            <Dropdown
               value={userPlan}
-              onChange={(e) => setUserPlan(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
-              style={{
-                width: "184px",
-                height: "50px",
-              }}
-            >
-              <option value="All Plans">{t('admin.userGrowthAnalytics.filters.allPlans')}</option>
-              <option value="Free">{t('admin.userGrowthAnalytics.filters.free')}</option>
-              <option value="Premium">{t('admin.userGrowthAnalytics.filters.premium')}</option>
-              <option value="Organization">{t('admin.userGrowthAnalytics.filters.organization')}</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+              options={[
+                { value: "All Plans", label: t('admin.userGrowthAnalytics.filters.allPlans') },
+                { value: "Free", label: t('admin.userGrowthAnalytics.filters.free') },
+                { value: "Premium", label: t('admin.userGrowthAnalytics.filters.premium') },
+                { value: "Organization", label: t('admin.userGrowthAnalytics.filters.organization') },
+              ]}
+              onChange={(value) => setUserPlan(value)}
+              placeholder={t('admin.userGrowthAnalytics.filters.allPlans')}
+              showDefaultOnEmpty={true}
+              className="w-full"
+              height="h-[50px]"
+            />
           </div>
         </div>
 

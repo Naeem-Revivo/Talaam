@@ -1,76 +1,9 @@
-import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
+import Dropdown from "../../shared/Dropdown";
 
 const getSubjectOptions = (t) => [t('admin.classificationManagement.filters.allSubjects'), "Math", "Science", "History"];
 const getTopicOptions = (t) => [t('admin.classificationManagement.filters.allTopics'), "Algebra", "Geometry", "Biology", "Physics"];
 const getSubtopicOptions = (t) => [t('admin.classificationManagement.filters.allSubtopics'), "Equations", "Triangles", "Cells", "Motion"];
-
-const Dropdown = ({ label, value, options, onChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  // Automatically show default if value is empty
-  const displayValue = value && value.trim() !== "" ? value : options[0];
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  return (
-    <div className="w-full lg:w-[180px]" ref={dropdownRef}>
-      {/* Label only on small screens */}
-      <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3 block lg:hidden">{label}</p>
-
-      {/* Dropdown Box */}
-      <div
-        onClick={() => setIsOpen((prev) => !prev)}
-        className="relative flex h-[48px] cursor-pointer items-center justify-between rounded-lg border border-transparent bg-white px-4 text-sm font-semibold text-oxford-blue shadow-filter-hover"
-      >
-        <span>{displayValue}</span>
-        <svg
-          width="15"
-          height="9"
-          viewBox="0 0 15 9"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-        >
-          <path
-            d="M0.6875 0.726562L7.00848 6.71211L13.3295 0.726562"
-            stroke="#032746"
-            strokeWidth="2"
-          />
-        </svg>
-
-        {/* Dropdown Menu */}
-        {isOpen && (
-          <ul className="absolute left-0 top-full z-10 mt-1 w-full rounded-lg border border-gray-100 bg-white shadow-lg">
-            {options.map((option) => (
-              <li
-                key={option}
-                onClick={() => {
-                  onChange(option);
-                  setIsOpen(false);
-                }}
-                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                  displayValue === option ? "font-semibold text-oxford-blue" : "text-gray-700"
-                }`}
-              >
-                {option}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
-};
 
 const ClassificationFilter = ({
   searchValue,

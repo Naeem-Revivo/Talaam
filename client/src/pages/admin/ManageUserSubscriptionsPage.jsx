@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { DataTable } from "../../components/admin/SystemSetting/Table";
 import baseSubscriptionsData from "../../data/userSubscriptionsData.json";
+import Dropdown from "../../components/shared/Dropdown";
 
 // Mock data for user subscriptions
 // DataTable converts column names to keys by: columnName.toLowerCase().replace(/ /g, "")
@@ -285,31 +286,19 @@ const ManageUserSubscriptionsPage = () => {
         {/* Filters */}
         <div className="flex flex-col gap-5">
           {/* Plan Filter */}
-          <div className="relative">
-            <select
+          <div style={{ width: "165px" }}>
+            <Dropdown
               value={planFilter}
-              onChange={(e) => setPlanFilter(e.target.value)}
-              className="appearance-none h-[50px] w-[165px] rounded-[8px] border border-[#E5E7EB] bg-white px-4 pr-8 font-roboto text-[14px] font-normal leading-[20px] text-[#374151] outline-none cursor-pointer hover:border-[#D1D5DB] transition"
-            >
-              {uniquePlans.map((plan) => (
-                <option key={plan} value={plan}>
-                  {plan === "All" ? t('admin.manageUserSubscriptions.filters.plan') : plan}
-                </option>
-              ))}
-            </select>
-            <svg
-              className="pointer-events-none absolute left-32 top-1/2 h-4 w-4 -translate-y-1/2 text-dark-gray"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+              options={uniquePlans.map((plan) => ({
+                value: plan,
+                label: plan === "All" ? t('admin.manageUserSubscriptions.filters.plan') : plan,
+              }))}
+              onChange={(value) => setPlanFilter(value)}
+              placeholder={t('admin.manageUserSubscriptions.filters.plan')}
+              showDefaultOnEmpty={true}
+              className="w-full"
+              height="h-[50px]"
+            />
           </div>
 
           {/* Status Filter Buttons */}

@@ -1615,6 +1615,46 @@
     "security": {
       "hero": {
         "title": "إعدادات الأمان"
+      },
+      "buttons": {
+        "rolesAndPermissions": "+ الأدوار والصلاحيات",
+        "auditLogs": "سجلات التدقيق"
+      },
+      "sections": {
+        "securityAndAuthentication": {
+          "title": "الأمان والمصادقة",
+          "description": "إدارة قواعد كلمة المرور والمصادقة الثنائية وضوابط الإجراءات الحساسة."
+        },
+        "passwordPolicy": {
+          "title": "سياسة كلمة المرور",
+          "minimum8Chars": "الحد الأدنى 8 أحرف",
+          "atLeast1Uppercase": "حرف كبير واحد على الأقل",
+          "atLeast1Lowercase": "حرف صغير واحد على الأقل",
+          "atLeast1Number": "رقم واحد على الأقل",
+          "atLeast1SpecialChar": "رمز خاص واحد على الأقل",
+          "forcePasswordChange": "إجبار تغيير كلمة المرور كل 90 يوماً"
+        },
+        "twoFactorAuth": {
+          "title": "المصادقة الثنائية (2FA)",
+          "enable2FA": "تفعيل 2FA (البريد الإلكتروني / تطبيق المصادقة)",
+          "viewOrResetDevices": "عرض أو إعادة تعيين الأجهزة الموثوقة",
+          "manage": "إدارة"
+        },
+        "sensitiveOperations": {
+          "title": "تأكيد العمليات الحساسة",
+          "description": "يتطلب تأكيد المسؤول الأعلى للفوترة والحذف وتغييرات الأدوار.",
+          "preventionNote": "هذا يمنع التغييرات غير المصرح بها."
+        },
+        "loginHistory": {
+          "title": "سجل تسجيل الدخول",
+          "filter": "تصفية",
+          "filterByUser": "تصفية حسب المستخدم",
+          "datePlaceholder": "شهر/يوم/سنة"
+        }
+      },
+      "actions": {
+        "cancel": "إلغاء",
+        "saveChanges": "حفظ التغييرات"
       }
     },
     "classificationManagement": {

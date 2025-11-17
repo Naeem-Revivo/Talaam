@@ -127,8 +127,8 @@ const DashboardPage = () => {
                 }`}
               >
                 <div className="flex justify-between items-center mb-3">
-                  <span className="font-roboto text-[14px] leading-[20px] text-oxford-blue font-medium">{section.name}</span>
-                  <span className="font-roboto text-[14px] leading-[20px] text-oxford-blue font-semibold">{section.progress}%</span>
+                  <span className="font-roboto text-[16px] leading-[20px] text-oxford-blue font-medium">{section.name}</span>
+                  <span className="font-archivo text-[16px] leading-[20px] text-oxford-blue font-semibold">{section.progress}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-[12px]">
                   <div
