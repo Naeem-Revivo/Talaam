@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 import { RolesTable } from '../../components/admin/SecurityAndPermissions/RolesTable';
 
 // ============= DROPDOWN COMPONENT =============
@@ -20,10 +21,10 @@ const Dropdown = ({ label, value, options, onChange }) => {
 
   return (
     <div className="w-full lg:w-[206px]" ref={dropdownRef}>
-      <p className="text-[16px] leading-[100%] font-semibold text-[#032746] mb-3 block lg:hidden">{label}</p>
+      <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3 block lg:hidden">{label}</p>
       <div
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative flex h-[48px] cursor-pointer items-center justify-between rounded-lg border border-transparent bg-white px-4 text-sm font-semibold text-[#032746] shadow-[0_8px_20px_rgba(3,39,70,0.08)]"
+        className="relative flex h-[48px] cursor-pointer items-center justify-between rounded-lg border border-transparent bg-white px-4 text-sm font-semibold text-oxford-blue shadow-filter-hover"
       >
         <span>{displayValue}</span>
         <svg
@@ -50,7 +51,7 @@ const Dropdown = ({ label, value, options, onChange }) => {
                   setIsOpen(false);
                 }}
                 className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                  displayValue === option ? "font-semibold text-[#032746]" : "text-gray-700"
+                  displayValue === option ? "font-semibold text-oxford-blue" : "text-gray-700"
                 }`}
               >
                 {option}
@@ -65,6 +66,7 @@ const Dropdown = ({ label, value, options, onChange }) => {
 
 // ============= MAIN PAGE COMPONENT =============
 export default function RolesPermissionsPage() {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [permissions, setPermissions] = useState('');
   const [status, setStatus] = useState('');
@@ -133,7 +135,7 @@ export default function RolesPermissionsPage() {
       <div className="mx-auto max-w-[1400px]">
         {/* Header */}
         <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-[36px] leading-[40px] font-bold text-[#032746]">Roles & Permissions</h1>
+          <h1 className="text-[36px] leading-[40px] font-bold text-oxford-blue">{t('admin.rolesPermissions.hero.title')}</h1>
           <button
             onClick={handleAddNewRole}
             className="flex items-center justify-center gap-2 rounded-lg bg-[#ED4122] px-5 py-2.5 text-[14px] font-semibold text-white shadow-sm transition-all hover:bg-[#DC2626] active:scale-95"
@@ -178,7 +180,7 @@ export default function RolesPermissionsPage() {
                 placeholder="Search by role name"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-[48px] w-full rounded-lg border border-[#E5E7EB] bg-white pl-12 pr-4 text-[14px] text-[#032746] placeholder-[#9CA3AF] shadow-[0_8px_20px_rgba(3,39,70,0.08)] focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
+                className="h-[48px] w-full rounded-lg border border-[#E5E7EB] bg-white pl-12 pr-4 text-[14px] text-oxford-blue placeholder-[#9CA3AF] shadow-filter-hover focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
               />
             </div>
           </div>

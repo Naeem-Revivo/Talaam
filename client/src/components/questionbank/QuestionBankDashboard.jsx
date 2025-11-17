@@ -19,7 +19,7 @@ const QuestionBankDashboard = () => {
       id: 2,
       name: "Tahseely",
       icon: book,
-      iconBgColor: "bg-[#032746]",
+      iconBgColor: "bg-oxford-blue",
       status: "Not Subscribed",
       statusColor: "bg-[#FDF0D5]",
       textColor: "text-orange-dark",
@@ -43,7 +43,7 @@ const QuestionBankDashboard = () => {
       id: 4,
       name: "TOEFL",
       icon: toefl,
-      iconBgColor: "bg-[#032746]",
+      iconBgColor: "bg-oxford-blue",
       status: "Not Subscribed",
       statusColor: "bg-[#FDF0D5]",
       textColor: "text-orange-dark",
@@ -101,7 +101,7 @@ const QuestionBankDashboard = () => {
                       </div>
                     </div>
                     {/* Title */}
-                    <h3 className="font-archivo font-semibold text-[20px] md:text-[24px] lg:text-[26px] leading-[100%] tracking-[0] text-[#6B7280] text-center">
+                    <h3 className="font-archivo font-semibold text-[20px] md:text-[24px] lg:text-[26px] leading-[100%] tracking-[0] text-dark-gray text-center">
                       {exam.name}
                     </h3>
                   </>

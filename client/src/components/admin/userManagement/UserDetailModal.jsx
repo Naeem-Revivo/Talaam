@@ -8,7 +8,7 @@ const statusBadgeStyles = {
 const DetailItem = ({ label, value }) => (
   <div>
     <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">{label}</p>
-    <p className="text-sm font-medium text-[#032746]">{value || "—"}</p>
+    <p className="text-sm font-medium text-oxford-blue">{value || "—"}</p>
   </div>
 );
 
@@ -19,7 +19,7 @@ const UserDetailModal = ({ isOpen, user, onClose, onEdit }) => {
     statusBadgeStyles[user.status] ?? statusBadgeStyles.Active;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#032746]/40 px-4 py-8 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-oxford-blue/40 px-4 py-8 backdrop-blur-sm">
       <div className="flex w-full max-w-5xl flex-col gap-6 rounded-[16px] border border-[#E5E7EB] bg-white p-8 shadow-2xl">
         <header className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-4">
@@ -39,7 +39,7 @@ const UserDetailModal = ({ isOpen, user, onClose, onEdit }) => {
             )}
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="font-archivo text-[28px] leading-[32px] text-[#032746]">
+                <h2 className="font-archivo text-[28px] leading-[32px] text-oxford-blue">
                   {user.name}
                 </h2>
                 <span
@@ -48,7 +48,7 @@ const UserDetailModal = ({ isOpen, user, onClose, onEdit }) => {
                   {user.status}
                 </span>
               </div>
-              <p className="font-roboto text-sm text-[#6B7280]">
+              <p className="font-roboto text-sm text-dark-gray">
                 {user.workflowRole}
               </p>
             </div>
@@ -65,7 +65,7 @@ const UserDetailModal = ({ isOpen, user, onClose, onEdit }) => {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-[10px] border border-[#E5E7EB] px-5 py-2.5 text-sm font-semibold text-[#032746] transition hover:bg-[#F3F4F6]"
+              className="rounded-[10px] border border-[#E5E7EB] px-5 py-2.5 text-sm font-semibold text-oxford-blue transition hover:bg-[#F3F4F6]"
             >
               Close
             </button>
@@ -75,7 +75,7 @@ const UserDetailModal = ({ isOpen, user, onClose, onEdit }) => {
         <section className="grid gap-6 lg:grid-cols-[1.2fr_minmax(0,1fr)]">
           <div className="space-y-6">
             <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold text-[#032746]">
+              <h3 className="mb-4 text-lg font-semibold text-oxford-blue">
                 Personal Information
               </h3>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -83,7 +83,7 @@ const UserDetailModal = ({ isOpen, user, onClose, onEdit }) => {
                   <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">
                     Full Name
                   </p>
-                  <p className="text-sm font-medium text-[#032746]">
+                  <p className="text-sm font-medium text-oxford-blue">
                     {user.name}
                   </p>
                 </div>
@@ -91,7 +91,7 @@ const UserDetailModal = ({ isOpen, user, onClose, onEdit }) => {
                   <p className="text-xs uppercase tracking-wide text-[#9CA3AF]">
                     Email
                   </p>
-                  <p className="text-sm font-medium text-[#032746]">
+                  <p className="text-sm font-medium text-oxford-blue">
                     {user.email}
                   </p>
                 </div>
@@ -99,7 +99,7 @@ const UserDetailModal = ({ isOpen, user, onClose, onEdit }) => {
             </div>
 
             <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold text-[#032746]">
+              <h3 className="mb-4 text-lg font-semibold text-oxford-blue">
                 Account Details
               </h3>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -114,7 +114,7 @@ const UserDetailModal = ({ isOpen, user, onClose, onEdit }) => {
 
           <aside className="space-y-6">
             <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold text-[#032746]">
+              <h3 className="mb-4 text-lg font-semibold text-oxford-blue">
                 Notes
               </h3>
               <p className="text-sm text-[#4B5563] leading-6 whitespace-pre-line">
@@ -125,7 +125,7 @@ const UserDetailModal = ({ isOpen, user, onClose, onEdit }) => {
         </section>
 
         <section className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-semibold text-[#032746]">
+          <h3 className="mb-4 text-lg font-semibold text-oxford-blue">
             Activity Log
           </h3>
           <div className="space-y-3">
@@ -139,15 +139,15 @@ const UserDetailModal = ({ isOpen, user, onClose, onEdit }) => {
                     {index + 1}
                   </span>
                   <div>
-                    <p className="text-sm font-medium text-[#032746]">
+                    <p className="text-sm font-medium text-oxford-blue">
                       {item.description}
                     </p>
-                    <p className="text-xs text-[#6B7280]">{item.timestamp}</p>
+                    <p className="text-xs text-dark-gray">{item.timestamp}</p>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-sm text-[#6B7280]">No recent activity.</p>
+              <p className="text-sm text-dark-gray">No recent activity.</p>
             )}
           </div>
         </section>

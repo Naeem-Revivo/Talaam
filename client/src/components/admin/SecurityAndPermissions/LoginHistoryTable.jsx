@@ -1,7 +1,7 @@
 
 const LoginHistoryTableHeader = ({ columns }) => (
   <thead className="hidden md:table-header-group">
-    <tr className="bg-[#032746] text-center">
+    <tr className="bg-oxford-blue text-center">
       {columns.map((column) => (
         <th
           key={column}
@@ -20,7 +20,7 @@ const LoginHistoryTableRow = ({ item, columns }) => {
   };
 
   return (
-    <tr className="hidden border-b border-[#E5E7EB] bg-white text-[#032746] last:border-none md:table-row">
+    <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row">
       {columns.map((column) => {
         const fieldKey = getFieldKey(column);
         let value = item[fieldKey] || "—";
@@ -34,8 +34,8 @@ const LoginHistoryTableRow = ({ item, columns }) => {
             <td key={column} className="px-6 py-4 text-center">
               <span className={`inline-block px-[12px] py-[5px] rounded-md text-[14px] leading-[100%] font-normal ${
                 isSuccess ? 'bg-[#FDF0D5] text-[#ED4122]' :
-                isFailure ? 'bg-[#C6D8D3] text-[#032746]' :
-                'bg-[#C6D8D3] text-[#032746]'
+                isFailure ? 'bg-[#C6D8D3] text-oxford-blue' :
+                'bg-[#C6D8D3] text-oxford-blue'
               }`}>
                 {value}
               </span>
@@ -63,7 +63,7 @@ const LoginHistoryMobileCard = ({ item, columns }) => {
 
   return (
     <article className="flex flex-col rounded-[8px] border border-[#E5E7EB] bg-white shadow-sm md:hidden overflow-hidden">
-      <div className="flex flex-col gap-2 px-4 py-3 text-[#032746]">
+      <div className="flex flex-col gap-2 px-4 py-3 text-oxford-blue">
         {columns.map((column) => {
           const fieldKey = getFieldKey(column);
           let value = item[fieldKey] || "—";
@@ -75,8 +75,8 @@ const LoginHistoryMobileCard = ({ item, columns }) => {
 
           return (
             <div key={column} className="flex items-center gap-2">
-              <span className="text-[14px] font-normal text-[#032746]">{column}:</span>
-              <span className="text-[14px] font-normal text-[#6B7280]">{value}</span>
+              <span className="text-[14px] font-normal text-oxford-blue">{column}:</span>
+              <span className="text-[14px] font-normal text-dark-gray">{value}</span>
             </div>
           );
         })}
@@ -93,11 +93,11 @@ const LoginHistoryMobileCard = ({ item, columns }) => {
           
           return (
             <div className="flex items-center gap-2 w-full">
-              <span className="text-[14px] font-normal text-[#032746]">Status:</span>
+              <span className="text-[14px] font-normal text-oxford-blue">Status:</span>
               <span className={`inline-flex items-center px-[12px] py-[5px] rounded-md text-[14px] font-normal ${
                 isSuccess ? 'bg-[#FDF0D5] text-[#ED4122]' : 
                 isFailure ? 'bg-[#FDF0D5] text-[#ED4122]' : 
-                'bg-[#C6D8D3] text-[#032746]'
+                'bg-[#C6D8D3] text-oxford-blue'
               }`}>
                 {statusValue}
               </span>
@@ -115,7 +115,7 @@ export const LoginHistoryTable = ({
   emptyMessage = "No login history found",
 }) => {
   return (
-    <section className="w-full overflow-hidden rounded-[12px] bg-white shadow-[0_6px_54px_rgba(0,0,0,0.05)]">
+    <section className="w-full overflow-hidden rounded-[12px] bg-white shadow-dashboard">
       <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full border-collapse">
           <LoginHistoryTableHeader columns={columns} />
@@ -132,7 +132,7 @@ export const LoginHistoryTable = ({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-6 py-10 text-center text-sm text-[#6B7280]"
+                  className="px-6 py-10 text-center text-sm text-dark-gray"
                 >
                   {emptyMessage}
                 </td>
@@ -151,7 +151,7 @@ export const LoginHistoryTable = ({
             />
           ))
         ) : (
-          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-[#6B7280] shadow-[0_6px_24px_rgba(0,0,0,0.05)]">
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-dark-gray shadow-empty">
             {emptyMessage}
           </div>
         )}

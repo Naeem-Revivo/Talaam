@@ -1,6 +1,6 @@
-import navlogo from './navlogo.svg';
-import downarrow from './downarrow.svg';
-import hamburger from './hamburger.svg';
+import navlogo from './navbar-navlogo.svg';
+import downarrow from './navbar-downarrow.svg';
+import hamburger from './navbar-hamburger.svg';
 
 export {
   navlogo,

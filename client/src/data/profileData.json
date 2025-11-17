@@ -1,0 +1,22 @@
+{
+  "countries": [
+    "United States",
+    "Canada",
+    "United Kingdom",
+    "Saudi Arabia",
+    "UAE",
+    "Egypt",
+    "Jordan"
+  ],
+  "timeZones": [
+    "(GMT-08:00) Pacific Time",
+    "(GMT-05:00) Eastern Time",
+    "(GMT+00:00) GMT",
+    "(GMT+03:00) Arabia Standard Time"
+  ],
+  "languages": [
+    "English",
+    "العربية"
+  ]
+}
+

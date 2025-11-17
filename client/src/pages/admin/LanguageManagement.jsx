@@ -1,22 +1,12 @@
 import { DataTable } from "../../components/admin/SystemSetting/Table";
 import { useState } from "react";
-
-const languageData = [
-    { id: 1, languagename: 'English', code: 'EN', default: true, status: 'Inactive' },
-    { id: 2, languagename: 'Arabic', code: 'AR', default: false, status: 'Active' },
-    { id: 3, languagename: 'Spanish', code: 'ES', default: false, status: 'Inactive' },
-    { id: 4, languagename: 'French', code: 'FR', default: true, status: 'Active' },
-    { id: 5, languagename: 'German', code: 'DE', default: false, status: 'Active' },
-    { id: 6, languagename: 'Italian', code: 'IT', default: true, status: 'Inactive' },
-    { id: 7, languagename: 'Portuguese', code: 'PT', default: false, status: 'Active' },
-    { id: 8, languagename: 'Russian', code: 'RU', default: false, status: 'Inactive' },
-    { id: 9, languagename: 'Chinese', code: 'ZH', default: false, status: 'Active' },
-    { id: 10, languagename: 'Japanese', code: 'JA', default: false, status: 'Inactive' },
-];
+import { useLanguage } from "../../context/LanguageContext";
+import languageData from "../../data/languageData.json";
 
 
 // Main Component
 const LanguageManagement = () => {
+    const { t } = useLanguage();
     const [languagePage, setLanguagePage] = useState(1);
     const pageSize = 4;
 
@@ -42,11 +32,11 @@ const LanguageManagement = () => {
             <div className="mx-auto flex max-w-[1200px] flex-col gap-5">
                 <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-[#032746]">
-                            Language Management
+                        <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
+                            {t('admin.languageManagement.hero.title')}
                         </h1>
-                        <p className="font-roboto text-[18px] leading-[28px] text-[#6B7280]">
-                            Manage available languages,set default and update translations.
+                        <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
+                            {t('admin.languageManagement.hero.subtitle')}
                         </p>
                     </div>
                     <div className="flex flex-wrap gap-3">
@@ -55,21 +45,27 @@ const LanguageManagement = () => {
                             // onClick={handleAddNew}
                             className="h-[36px] w-[180px] rounded-[10px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
                         >
-                            Add Language
+                            {t('admin.languageManagement.buttons.addLanguage')}
                         </button>
                     </div>
                 </header>
 
                 <DataTable
                     items={paginatedLanguages}
-                    columns={['Language Name', 'Code', 'Default', 'Status', 'Actions']}
+                    columns={[
+                        t('admin.languageManagement.table.columns.languageName'),
+                        t('admin.languageManagement.table.columns.code'),
+                        t('admin.languageManagement.table.columns.default'),
+                        t('admin.languageManagement.table.columns.status'),
+                        t('admin.languageManagement.table.columns.actions')
+                    ]}
                     page={languagePage}
                     pageSize={pageSize}
                     total={languageData.length}
                     onPageChange={setLanguagePage}
                     onView={handleLanguageView}
                     onEdit={handleLanguageEdit}
-                    emptyMessage="No languages found"
+                    emptyMessage={t('admin.languageManagement.table.emptyMessage')}
                 />
             </div>
         </div>

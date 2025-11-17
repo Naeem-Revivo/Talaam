@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { DataTable } from '../../components/admin/SecurityAndPermissions/AuditLogsTable';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 
 // ============= DROPDOWN COMPONENT =============
 const Dropdown = ({ label, value, options, onChange }) => {
@@ -21,10 +22,10 @@ const Dropdown = ({ label, value, options, onChange }) => {
 
   return (
     <div className="w-full lg:w-[204px]" ref={dropdownRef}>
-      <p className="text-[16px] leading-[100%] font-semibold text-[#032746] mb-3 block lg:hidden">{label}</p>
+      <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3 block lg:hidden">{label}</p>
       <div
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative flex h-[48px] cursor-pointer items-center justify-between rounded-lg border border-transparent bg-white px-4 text-sm font-semibold text-[#032746] shadow-[0_8px_20px_rgba(3,39,70,0.08)]"
+        className="relative flex h-[48px] cursor-pointer items-center justify-between rounded-lg border border-transparent bg-white px-4 text-sm font-semibold text-oxford-blue shadow-filter-hover"
       >
         <span>{displayValue}</span>
         <svg
@@ -50,7 +51,7 @@ const Dropdown = ({ label, value, options, onChange }) => {
                   onChange(option);
                   setIsOpen(false);
                 }}
-                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${displayValue === option ? "font-semibold text-[#032746]" : "text-gray-700"
+                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${displayValue === option ? "font-semibold text-oxford-blue" : "text-gray-700"
                   }`}
               >
                 {option}
@@ -65,6 +66,7 @@ const Dropdown = ({ label, value, options, onChange }) => {
 
 // ============= MAIN PAGE COMPONENT =============
 export default function AuditLogsPage() {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [adminName, setAdminName] = useState('');
   const [actionType, setActionType] = useState('');
@@ -157,7 +159,7 @@ export default function AuditLogsPage() {
       <div className="mx-auto max-w-[1200px]">
         {/* Header */}
         <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-[36px] leading-[40px] font-bold text-[#032746]">Audit Logs</h1>
+          <h1 className="text-[36px] leading-[40px] font-bold text-oxford-blue">{t('admin.auditLogs.hero.title')}</h1>
           <button
             onClick={handleExportLog}
             className="flex items-center justify-center gap-2 rounded-lg bg-[#ED4122] px-5 py-2.5 text-[16px] leading-[16px] font-semibold text-white shadow-sm transition-all hover:bg-[#DC2626] active:scale-95"
@@ -176,7 +178,7 @@ export default function AuditLogsPage() {
           <div className="flex-1">
             <div className="relative">
               <svg
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6B7280]"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-gray"
                 width="18"
                 height="18"
                 viewBox="0 0 18 18"
@@ -203,7 +205,7 @@ export default function AuditLogsPage() {
                 placeholder="Search by keyword or ID"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-[48px] w-full rounded-lg border border-transparent bg-white pl-12 pr-4 text-[14px] text-[#032746] placeholder-[#9CA3AF] shadow-[0_8px_20px_rgba(3,39,70,0.08)] focus:outline-none focus:ring-2 focus:ring-[#ED4122]"
+                className="h-[48px] w-full rounded-lg border border-transparent bg-white pl-12 pr-4 text-[14px] text-oxford-blue placeholder-[#9CA3AF] shadow-filter-hover focus:outline-none focus:ring-2 focus:ring-[#ED4122]"
               />
             </div>
           </div>

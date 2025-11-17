@@ -18,14 +18,14 @@ const QuestionBankTabs = ({ tabs, activeTab, onChange }) => {
             className={`${tabBaseClasses} ${
               isActive
                 ? "bg-[#ED4122] text-white "
-                : "bg-white text-[#032746] hover:bg-[#F3F4F6] border border-[#E5E7EB]"
+                : "bg-white text-oxford-blue hover:bg-[#F3F4F6] border border-[#E5E7EB]"
             }`}
           >
             {tab.label}
             {typeof tab.count === "number" && (
               <span
                 className={`ml-2 inline-flex min-w-[28px] items-center justify-center rounded-full px-2 text-[12px] font-roboto font-medium ${
-                  isActive ? "bg-white text-[#ED4122]" : "bg-[#F3F4F6] text-[#032746]"
+                  isActive ? "bg-white text-[#ED4122]" : "bg-[#F3F4F6] text-oxford-blue"
                 }`}
               >
                 {tab.count}

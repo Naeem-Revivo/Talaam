@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import AdminMetricCard from "../../components/admin/AdminMetricCard";
+import { useLanguage } from "../../context/LanguageContext";
 
 const SubscriptionTrendsPage = () => {
+  const { t } = useLanguage();
   // Subscription Trends filters
   const [planType, setPlanType] = useState("");
   const [dateRange, setDateRange] = useState("");
@@ -10,10 +12,10 @@ const SubscriptionTrendsPage = () => {
   const subscriptionKPICards = [
     {
       id: 1,
-      title: "Total Subscribers",
+      title: t('admin.subscriptionTrends.kpi.totalSubscribers'),
       value: "1,234",
       subtext: "",
-      subtextClassName: "text-[#6B7280]",
+      subtextClassName: "text-dark-gray",
       icon: (
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect width="40" height="40" rx="6" fill="#ED4122"/>
@@ -23,10 +25,10 @@ const SubscriptionTrendsPage = () => {
     },
     {
       id: 2,
-      title: "Total Revenue",
+      title: t('admin.subscriptionTrends.kpi.totalRevenue'),
       value: "$50,432",
       subtext: "",
-      subtextClassName: "text-[#6B7280]",
+      subtextClassName: "text-dark-gray",
       icon: (
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect width="40" height="40" rx="6" fill="#ED4122"/>
@@ -36,10 +38,10 @@ const SubscriptionTrendsPage = () => {
     },
     {
       id: 3,
-      title: "Renewal Rate",
+      title: t('admin.subscriptionTrends.kpi.renewalRate'),
       value: "95%",
       subtext: "",
-      subtextClassName: "text-[#6B7280]",
+      subtextClassName: "text-dark-gray",
       icon: (
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect width="40" height="40" rx="6" fill="#ED4122"/>
@@ -49,10 +51,10 @@ const SubscriptionTrendsPage = () => {
     },
     {
       id: 4,
-      title: "Churn Rate",
+      title: t('admin.subscriptionTrends.kpi.churnRate'),
       value: "5%",
       subtext: "",
-      subtextClassName: "text-[#6B7280]",
+      subtextClassName: "text-dark-gray",
       icon: (
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect width="40" height="40" rx="6" fill="#ED4122"/>
@@ -151,8 +153,8 @@ const SubscriptionTrendsPage = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-[#032746]">
-              Subscription Trend
+            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
+              {t('admin.subscriptionTrends.hero.title')}
             </h1>
           </div>
           <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto py-8">
@@ -172,7 +174,7 @@ const SubscriptionTrendsPage = () => {
                   fill="#25314C"
                 />
               </svg>
-              Compare period
+              {t('admin.subscriptionTrends.actions.comparePeriod')}
             </button>
             <button
               type="button"
@@ -190,7 +192,7 @@ const SubscriptionTrendsPage = () => {
                   fill="white"
                 />
               </svg>
-              Export Report
+              {t('admin.subscriptionTrends.actions.exportReport')}
             </button>
           </div>
         </div>
@@ -202,20 +204,20 @@ const SubscriptionTrendsPage = () => {
             <select
               value={planType}
               onChange={(e) => setPlanType(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
               style={{
                 width: "184px",
                 height: "50px",
               }}
             >
-              <option value="" disabled>Plan Type</option>
+              <option value="" disabled>{t('admin.subscriptionTrends.filters.planType')}</option>
               <option value="Basic">Basic</option>
               <option value="Premium">Premium</option>
               <option value="Enterprise">Enterprise</option>
               <option value="Trial">Trial</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -234,20 +236,20 @@ const SubscriptionTrendsPage = () => {
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
               style={{
                 width: "184px",
                 height: "50px",
               }}
             >
-              <option value="" disabled>Date range</option>
-              <option value="Last 30 Days">Last 30 Days</option>
-              <option value="Last 7 Days">Last 7 Days</option>
-              <option value="Last 90 Days">Last 90 Days</option>
-              <option value="Last Year">Last Year</option>
+              <option value="" disabled>{t('admin.subscriptionTrends.filters.dateRange')}</option>
+              <option value="Last 30 Days">{t('admin.subscriptionTrends.filters.last30Days')}</option>
+              <option value="Last 7 Days">{t('admin.subscriptionTrends.filters.last7Days')}</option>
+              <option value="Last 90 Days">{t('admin.subscriptionTrends.filters.last90Days')}</option>
+              <option value="Last Year">{t('admin.subscriptionTrends.filters.lastYear')}</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -280,9 +282,9 @@ const SubscriptionTrendsPage = () => {
         {/* Charts Section */}
         <div className="flex justify-between gap-6 ">
           {/* Revenue Trend Chart */}
-          <div className="rounded-[12px] w-[639px] h-[462px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Revenue Trend
+          <div className="rounded-[12px] w-[639px] h-[462px] border border-[#03274633] bg-white p-4 md:p-6 shadow-card">
+            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.subscriptionTrends.charts.revenueTrend')}
             </h2>
             <div className="h-[322px] relative mt-6">
               <svg width="100%" height="100%" viewBox="0 0 599 322" preserveAspectRatio="xMidYMid meet">
@@ -371,9 +373,9 @@ const SubscriptionTrendsPage = () => {
           </div>
 
           {/* Plan Distribution Chart */}
-          <div className="rounded-[12px] border w-[455px] h-[462px] border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Plan Distribution
+          <div className="rounded-[12px] border w-[455px] h-[462px] border-[#03274633] bg-white p-4 md:p-6 shadow-card">
+            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.subscriptionTrends.charts.planDistribution')}
             </h2>
             <div className="flex flex-col items-center justify-center gap-6 mt-6">
               <div className="relative">
@@ -395,11 +397,11 @@ const SubscriptionTrendsPage = () => {
                         className="w-4 h-4 rounded"
                         style={{ backgroundColor: item.color }}
                       ></div>
-                      <span className="font-roboto text-[14px] font-normal leading-[20px] text-[#032746]">
+                      <span className="font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
                         {item.plan}
                       </span>
                     </div>
-                    <span className="font-roboto pl-1.5 text-[14px] font-medium leading-[20px] text-[#032746]">
+                    <span className="font-roboto pl-1.5 text-[14px] font-medium leading-[20px] text-oxford-blue">
                       {item.percentage}%
                     </span>
                   </div>
@@ -410,31 +412,31 @@ const SubscriptionTrendsPage = () => {
         </div>
 
         {/* Plan-Wise Breakdown Table */}
-        <h2 className="pt-6 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-          Plan-Wise Breakdown
+        <h2 className="pt-6 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+          {t('admin.subscriptionTrends.table.title')}
         </h2>
-        <section className="w-full flex flex-col overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_54px_rgba(0,0,0,0.05)]">
+        <section className="w-full flex flex-col overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard">
           <div className="hidden overflow-x-auto md:block">
             <table className="min-w-full border-collapse">
               <thead className="hidden md:table-header-group">
-                <tr className="bg-[#032746] text-center">
+                <tr className="bg-oxford-blue text-center">
                   <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
-                    PLAN TYPE
+                    {t('admin.subscriptionTrends.table.columns.planType')}
                   </th>
                   <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
-                    SUBSCRIBERS
+                    {t('admin.subscriptionTrends.table.columns.subscribers')}
                   </th>
                   <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
-                    ACTIVE
+                    {t('admin.subscriptionTrends.table.columns.active')}
                   </th>
                   <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
-                    EXPIRED
+                    {t('admin.subscriptionTrends.table.columns.expired')}
                   </th>
                   <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
-                    REVENUE
+                    {t('admin.subscriptionTrends.table.columns.revenue')}
                   </th>
                   <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
-                    AVG DURATION
+                    {t('admin.subscriptionTrends.table.columns.avgDuration')}
                   </th>
                 </tr>
               </thead>
@@ -443,7 +445,7 @@ const SubscriptionTrendsPage = () => {
                   planBreakdown.map((plan, index) => (
                     <tr
                       key={index}
-                      className="hidden border-b border-[#E5E7EB] bg-white text-[#032746] last:border-none md:table-row"
+                      className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row"
                     >
                       <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center">
                         {plan.planType}
@@ -469,9 +471,9 @@ const SubscriptionTrendsPage = () => {
                   <tr>
                     <td
                       colSpan={6}
-                      className="px-6 py-10 text-center text-sm text-[#6B7280]"
+                      className="px-6 py-10 text-center text-sm text-dark-gray"
                     >
-                      No data available
+                      {t('admin.subscriptionTrends.table.emptyState')}
                     </td>
                   </tr>
                 )}
@@ -479,16 +481,16 @@ const SubscriptionTrendsPage = () => {
             </table>
           </div>
           {/* Pagination */}
-          <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-[#032746] md:flex-row md:items-center md:justify-between md:bg-[#032746] md:px-6 md:text-white">
+          <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-oxford-blue md:flex-row md:items-center md:justify-between md:bg-oxford-blue md:px-6 md:text-white">
             <p className="text-[12px] font-roboto font-medium leading-[18px] tracking-[3%]">
-              Showing 1 to 3 of 25 results
+              {t('admin.subscriptionTrends.table.pagination.showing').replace('{{first}}', '1').replace('{{last}}', '3').replace('{{total}}', '25')}
             </p>
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#032746] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-white"
+                className="flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
               >
-                Previous
+                {t('admin.subscriptionTrends.table.pagination.previous')}
               </button>
               <button
                 type="button"
@@ -498,21 +500,21 @@ const SubscriptionTrendsPage = () => {
               </button>
               <button
                 type="button"
-                className="flex h-8 w-8 items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#E5E7EB] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-[#032746]"
+                className="flex h-8 w-8 items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
               >
                 2
               </button>
               <button
                 type="button"
-                className="flex h-8 w-8 items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#E5E7EB] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-[#032746]"
+                className="flex h-8 w-8 items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
               >
                 3
               </button>
               <button
                 type="button"
-                className="flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#032746] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-white"
+                className="flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
               >
-                Next
+                {t('admin.subscriptionTrends.table.pagination.next')}
               </button>
             </div>
           </div>

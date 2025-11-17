@@ -1,4 +1,5 @@
 import React from 'react';
+import { check, x } from '../../assets/svg';
 
 const FeaturesComparison = () => {
   return (
@@ -28,116 +29,76 @@ const FeaturesComparison = () => {
               <tr>
                 <td className="border border-gray-300 px-6 py-4 font-medium text-gray-900">Course Management</td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <img src={check} alt="" className="w-5 h-5 text-green-500 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <img src={x} alt="" className="w-5 h-5 text-gray-400 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <img src={check} alt="" className="w-5 h-5 text-green-500 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <img src={check} alt="" className="w-5 h-5 text-green-500 mx-auto" />
                 </td>
               </tr>
               <tr className="bg-gray-50">
                 <td className="border border-gray-300 px-6 py-4 font-medium text-gray-900">Live Streaming</td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <img src={x} alt="" className="w-5 h-5 text-gray-400 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <img src={check} alt="" className="w-5 h-5 text-green-500 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <img src={x} alt="" className="w-5 h-5 text-gray-400 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <img src={x} alt="" className="w-5 h-5 text-gray-400 mx-auto" />
                 </td>
               </tr>
               <tr>
                 <td className="border border-gray-300 px-6 py-4 font-medium text-gray-900">Mobile Access</td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <img src={check} alt="" className="w-5 h-5 text-green-500 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <img src={check} alt="" className="w-5 h-5 text-green-500 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <img src={check} alt="" className="w-5 h-5 text-green-500 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <img src={check} alt="" className="w-5 h-5 text-green-500 mx-auto" />
                 </td>
               </tr>
               <tr className="bg-gray-50">
                 <td className="border border-gray-300 px-6 py-4 font-medium text-gray-900">Analytics Dashboard</td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <img src={check} alt="" className="w-5 h-5 text-green-500 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <img src={x} alt="" className="w-5 h-5 text-gray-400 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <img src={check} alt="" className="w-5 h-5 text-green-500 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <img src={check} alt="" className="w-5 h-5 text-green-500 mx-auto" />
                 </td>
               </tr>
               <tr>
                 <td className="border border-gray-300 px-6 py-4 font-medium text-gray-900">Offline Access</td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <img src={x} alt="" className="w-5 h-5 text-gray-400 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <img src={x} alt="" className="w-5 h-5 text-gray-400 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <img src={x} alt="" className="w-5 h-5 text-gray-400 mx-auto" />
                 </td>
                 <td className="border border-gray-300 px-6 py-4 text-center">
-                  <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <img src={check} alt="" className="w-5 h-5 text-green-500 mx-auto" />
                 </td>
               </tr>
             </tbody>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 
 // Reusable KPI Card Component
 const KPICard = ({ title, value, icon, titleSize = "text-[16px]", valueSize = "text-[30px]", valueWeight = "font-semibold", marginBottom = "mb-1" }) => {
@@ -12,14 +13,14 @@ const KPICard = ({ title, value, icon, titleSize = "text-[16px]", valueSize = "t
       }}
     >
       <div className={`flex items-center justify-between ${marginBottom}`}>
-        <h3 className={`font-roboto ${titleSize} font-normal leading-[20px] text-[#6B7280]`}>
+        <h3 className={`font-roboto ${titleSize} font-normal leading-[20px] text-dark-gray`}>
           {title}
         </h3>
         <div className="">
         {icon}
         </div>
       </div>
-      <p className={`font-archivo ${valueSize} ${valueWeight} leading-[40px] text-[#032746]`}>
+      <p className={`font-archivo ${valueSize} ${valueWeight} leading-[40px] text-oxford-blue`}>
         {value}
       </p>
     </div>
@@ -28,6 +29,7 @@ const KPICard = ({ title, value, icon, titleSize = "text-[16px]", valueSize = "t
 
 const ReportsAndAnalyticsPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [exam, setExam] = useState("");
   const [subject, setSubject] = useState("");
   const [cognitiveLevel, setCognitiveLevel] = useState("");
@@ -61,7 +63,7 @@ const ReportsAndAnalyticsPage = () => {
   const kpiCards = [
     {
       id: 1,
-      title: "Total Questions",
+      title: t('admin.reportsAndAnalytics.kpi.totalQuestions'),
       value: "2,000",
       titleSize: "text-[16px]",
       valueSize: "text-[30px]",
@@ -85,7 +87,7 @@ const ReportsAndAnalyticsPage = () => {
     },
     {
       id: 2,
-      title: "Average Accuracy",
+      title: t('admin.reportsAndAnalytics.kpi.averageAccuracy'),
       value: "78%",
       titleSize: "text-[16px]",
       valueSize: "text-[30px]",
@@ -109,7 +111,7 @@ const ReportsAndAnalyticsPage = () => {
     },
     {
       id: 3,
-      title: "Most Attempted Subject",
+      title: t('admin.reportsAndAnalytics.kpi.mostAttemptedSubject'),
       value: "Mathematics",
       titleSize: "text-[16px]",
       valueSize: "text-[30px]",
@@ -135,7 +137,7 @@ const ReportsAndAnalyticsPage = () => {
     },
     {
       id: 4,
-      title: "Average Time/Question",
+      title: t('admin.reportsAndAnalytics.kpi.averageTimePerQuestion'),
       value: "45s",
       titleSize: "text-[16px]",
       valueSize: "text-[30px]",
@@ -257,11 +259,11 @@ const ReportsAndAnalyticsPage = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-[#032746]">
-              Reports & Analytics
+            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
+              {t('admin.reportsAndAnalytics.hero.title')}
             </h1>
-            <p className="mt-2 font-roboto text-[14px] md:text-[18px] font-normal leading-[20px] md:leading-[24px] text-[#6B7280]">
-              Monitor student performance, question usage, and test activity.
+            <p className="mt-2 font-roboto text-[14px] md:text-[18px] font-normal leading-[20px] md:leading-[24px] text-dark-gray">
+              {t('admin.reportsAndAnalytics.hero.subtitle')}
             </p>
           </div>
           <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto py-8">
@@ -281,7 +283,7 @@ const ReportsAndAnalyticsPage = () => {
                   fill="#25314C"
                 />
               </svg>
-              Compare period
+              {t('admin.reportsAndAnalytics.actions.comparePeriod')}
             </button>
             <button
               type="button"
@@ -300,7 +302,7 @@ const ReportsAndAnalyticsPage = () => {
                   fill="white"
                 />
               </svg>
-              Export Report
+              {t('admin.reportsAndAnalytics.actions.exportReport')}
             </button>
           </div>
         </div>
@@ -312,18 +314,18 @@ const ReportsAndAnalyticsPage = () => {
             <select
               value={exam}
               onChange={(e) => setExam(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-[#032746] outline-none"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue outline-none"
               style={{
                 width: "135px",
                 height: "50px",
               }}
             >
-              <option value="">Exam</option>
+              <option value="">{t('admin.reportsAndAnalytics.filters.exam')}</option>
               <option value="exam1">Exam 1</option>
               <option value="exam2">Exam 2</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -342,18 +344,18 @@ const ReportsAndAnalyticsPage = () => {
             <select
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-[#032746] outline-none"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue outline-none"
               style={{
                 width: "184px",
                 height: "50px",
               }}
             >
-              <option value="">Subject</option>
+              <option value="">{t('admin.reportsAndAnalytics.filters.subject')}</option>
               <option value="math">Mathematics</option>
               <option value="science">Science</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -372,18 +374,18 @@ const ReportsAndAnalyticsPage = () => {
             <select
               value={cognitiveLevel}
               onChange={(e) => setCognitiveLevel(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-[#032746] outline-none"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue outline-none"
               style={{
                 width: "206px",
                 height: "50px",
               }}
             >
-              <option value="">Cognitive Level</option>
+              <option value="">{t('admin.reportsAndAnalytics.filters.cognitiveLevel')}</option>
               <option value="recall">Recall</option>
               <option value="analysis">Analysis</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -402,19 +404,19 @@ const ReportsAndAnalyticsPage = () => {
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-[#032746] outline-none"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue outline-none"
               style={{
                 width: "206px",
                 height: "50px",
               }}
             >
-              <option value="">Date Range</option>
-              <option value="week">Last Week</option>
-              <option value="month">Last Month</option>
-              <option value="year">Last Year</option>
+              <option value="">{t('admin.reportsAndAnalytics.filters.dateRange')}</option>
+              <option value="week">{t('admin.reportsAndAnalytics.filters.lastWeek')}</option>
+              <option value="month">{t('admin.reportsAndAnalytics.filters.lastMonth')}</option>
+              <option value="year">{t('admin.reportsAndAnalytics.filters.lastYear')}</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -432,13 +434,13 @@ const ReportsAndAnalyticsPage = () => {
           <div className="flex gap-5 ml-8">
           <button
             type="button"
-            className="flex items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] font-medium leading-[20px] text-[#032746] transition hover:bg-[#F9FAFB]"
+            className="flex items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] font-medium leading-[20px] text-oxford-blue transition hover:bg-[#F9FAFB]"
             style={{
               width: "130px",
               height: "36px",
             }}
           >
-            View Details
+            {t('admin.reportsAndAnalytics.filters.viewDetails')}
           </button>
 
           {/* Apply Filter Button */}
@@ -462,7 +464,7 @@ const ReportsAndAnalyticsPage = () => {
                 fill="white"
               />
             </svg>
-            Apply Filter
+            {t('admin.reportsAndAnalytics.filters.applyFilter')}
           </button>
           </div>
         </div>
@@ -472,55 +474,55 @@ const ReportsAndAnalyticsPage = () => {
           <button
             type="button"
             onClick={() => navigate("/admin/reports/user-growth")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-[#032746] hover:bg-[#F9FAFB]"
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB]"
             style={{
               width: "211px",
               height: "44px",
               borderRadius: "30px",
             }}
           >
-            User Growth Analytics
+            {t('admin.reportsAndAnalytics.tabs.userGrowthAnalytics')}
           </button>
           <button
             type="button"
             onClick={() => navigate("/admin/reports/subscription-trends")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-[#032746] hover:bg-[#F9FAFB]"
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB]"
             style={{
               width: "211px",
               height: "44px",
               borderRadius: "30px",
             }}
           >
-            Subscription Trends
+            {t('admin.reportsAndAnalytics.tabs.subscriptionTrends')}
           </button>
           <button
             type="button"
             onClick={() => navigate("/admin/reports/performance-analytics")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-[#032746] hover:bg-[#F9FAFB]"
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB]"
             style={{
               width: "211px",
               height: "44px",
               borderRadius: "30px",
             }}
           >
-            Performance Analytics
+            {t('admin.reportsAndAnalytics.tabs.performanceAnalytics')}
           </button>
           <button
             type="button"
             onClick={() => navigate("/admin/reports/export")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-[#032746] hover:bg-[#F9FAFB]"
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB]"
             style={{
               width: "211px",
               height: "44px",
               borderRadius: "30px",
             }}
           >
-            Export Reports
+            {t('admin.reportsAndAnalytics.tabs.exportReports')}
           </button>
         </div>
 
         {/* KPI Summary Cards */}
-            <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-[#032746] pt-4">KPI Summary Cards</h2>
+            <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue pt-4">{t('admin.reportsAndAnalytics.charts.kpiSummary')}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {kpiCards.map((card) => (
                 <KPICard
@@ -540,8 +542,8 @@ const ReportsAndAnalyticsPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Performance Trend Chart */}
           <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Performance Trend (Accuracy over Time)
+            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.reportsAndAnalytics.charts.performanceTrend')}
             </h2>
             <div className="h-[300px] relative">
               <svg width="100%" height="100%" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid meet">
@@ -609,8 +611,8 @@ const ReportsAndAnalyticsPage = () => {
 
           {/* Practice Distribution Chart */}
           <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Practice Distribution by subject
+            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.reportsAndAnalytics.charts.practiceDistribution')}
             </h2>
             <div className="flex flex-col items-center justify-center gap-6">
               <div className="relative">
@@ -631,7 +633,7 @@ const ReportsAndAnalyticsPage = () => {
                       className="w-4 h-4 rounded-full flex-shrink-0"
                       style={{ backgroundColor: item.color }}
                     ></div>
-                    <span className="font-roboto text-[14px] font-normal leading-[20px] text-[#032746]">
+                    <span className="font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
                       {item.subject}
                     </span>
                   </div>
@@ -642,8 +644,8 @@ const ReportsAndAnalyticsPage = () => {
         </div>
 
         {/* Top Performance User Table */}
-          <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-[#032746] pt-6">
-            Top Performance User
+          <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue pt-6">
+            {t('admin.reportsAndAnalytics.table.topPerformanceUser')}
           </h2>
         <div className="rounded-[12px] border border-[#03274633] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
           <div className="rounded-[12px]">
@@ -655,27 +657,27 @@ const ReportsAndAnalyticsPage = () => {
               }}
             >
               <thead>
-                <tr className="bg-[#032746]">
+                <tr className="bg-oxford-blue">
                   <th className="text-left py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
-                    #
-                  </th>
-                  <th className="text-left py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
-                    USER
+                    {t('admin.reportsAndAnalytics.table.columns.number')}
                   </th>
                   <th className="text-left py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
-                    EMAIL
+                    {t('admin.reportsAndAnalytics.table.columns.user')}
+                  </th>
+                  <th className="text-left py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                    {t('admin.reportsAndAnalytics.table.columns.email')}
                   </th>
                   <th className="text-center py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
-                    ATTEMPTS
+                    {t('admin.reportsAndAnalytics.table.columns.attempts')}
                   </th>
                   <th className="text-center py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
-                    ACCURACY %
+                    {t('admin.reportsAndAnalytics.table.columns.accuracy')}
                   </th>
                   <th className="text-center py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
-                    AVERAGE TIME / QUESTION
+                    {t('admin.reportsAndAnalytics.table.columns.averageTime')}
                   </th>
                   <th className="text-left py-3 px-6 font-roboto text-[16px] font-semibold leading-[20px] text-white">
-                    LAST ACTIVE
+                    {t('admin.reportsAndAnalytics.table.columns.lastActive')}
                   </th>
                 </tr>
               </thead>
@@ -685,25 +687,25 @@ const ReportsAndAnalyticsPage = () => {
                     key={user.id}
                     className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition"
                   >
-                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-[#032746]">
+                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
                       {user.id}
                     </td>
-                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-[#032746]">
+                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
                       {user.name}
                     </td>
-                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-[#032746]">
+                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
                       {user.email}
                     </td>
-                    <td className="py-4 px-4 text-center font-roboto text-[14px] font-normal leading-[20px] text-[#032746]">
+                    <td className="py-4 px-4 text-center font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
                       {user.attempts}
                     </td>
-                    <td className="py-4 px-4 text-center font-roboto text-[14px] font-normal leading-[20px] text-[#032746]">
+                    <td className="py-4 px-4 text-center font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
                       {user.accuracy}%
                     </td>
-                    <td className="py-4 px-4 text-center font-roboto text-[14px] font-normal leading-[20px] text-[#032746]">
+                    <td className="py-4 px-4 text-center font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
                       {user.avgTime}s
                     </td>
-                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-[#032746]">
+                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
                       {user.lastActive}
                     </td>
                   </tr>
@@ -717,8 +719,8 @@ const ReportsAndAnalyticsPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Reports Generated */}
           <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-            <h2 className="mb-6 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Recent Reports Generated
+            <h2 className="mb-6 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.reportsAndAnalytics.sections.recentReports')}
             </h2>
             <div className="space-y-4">
               {recentReports.map((report, index) => (
@@ -732,11 +734,11 @@ const ReportsAndAnalyticsPage = () => {
                   }}
                 >
                   <div className="flex flex-col justify-center">
-                    <h3 className="font-roboto text-[14px] font-semibold leading-[20px] text-[#032746]">
+                    <h3 className="font-roboto text-[14px] font-semibold leading-[20px] text-oxford-blue">
                       {report.name}
                     </h3>
-                    <p className="font-roboto text-[12px] font-normal leading-[20px] text-[#6B7280] mt-1">
-                      Generated {report.date}
+                    <p className="font-roboto text-[12px] font-normal leading-[20px] text-dark-gray mt-1">
+                      {t('admin.reportsAndAnalytics.sections.generated').replace('{{date}}', report.date)}
                     </p>
                   </div>
                   <button
@@ -769,8 +771,8 @@ const ReportsAndAnalyticsPage = () => {
               height: "410px",
             }}
           >
-            <h2 className="mb-6 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              System Insights
+            <h2 className="mb-6 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.reportsAndAnalytics.sections.systemInsights')}
             </h2>
             <div className="space-y-4">
               {systemInsights.map((insight, index) => {
@@ -779,20 +781,20 @@ const ReportsAndAnalyticsPage = () => {
                 if (insight.includes("Analysis")) {
                   formattedText = (
                     <>
-                      Most Difficult Cognitive Level:{" "}
+                      {t('admin.reportsAndAnalytics.insights.mostDifficultCognitiveLevel')}{" "}
                       <span className="font-medium">Analysis</span>
                     </>
                   );
                 } else if (insight.includes("8-10 PM")) {
                   formattedText = (
                     <>
-                      Peak Activity: <span className="font-medium">8-10 PM</span>
+                      {t('admin.reportsAndAnalytics.insights.peakActivity')} <span className="font-medium">8-10 PM</span>
                     </>
                   );
                 } else if (insight.includes("58%")) {
                   formattedText = (
                     <>
-                      Low Accuracy in Chemistry (
+                      {t('admin.reportsAndAnalytics.insights.lowAccuracy')}
                       <span className="font-medium">58%</span>)
                     </>
                   );
@@ -808,7 +810,7 @@ const ReportsAndAnalyticsPage = () => {
                       padding: "16px",
                     }}
                   >
-                    <p className="font-roboto text-[16px] font-normal leading-[16px] text-[#032746] flex items-center">
+                    <p className="font-roboto text-[16px] font-normal leading-[16px] text-oxford-blue flex items-center">
                       {formattedText}
                     </p>
                   </div>

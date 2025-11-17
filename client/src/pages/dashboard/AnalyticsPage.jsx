@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-// import { LineChart } from '@mui/x-charts/LineChart';
+import { LineChart } from '@mui/x-charts/LineChart';
 import { accuracy, time, target } from '../../assets/svg/dashboard';
+import { useLanguage } from '../../context/LanguageContext';
 
 const AnalyticsPage = () => {
+  const { t } = useLanguage();
   const [selectedRange, setSelectedRange] = useState('all');
   const [selectedTopicTab, setSelectedTopicTab] = useState('quantitative');
 
@@ -37,10 +39,10 @@ const AnalyticsPage = () => {
       {/* Page Title and Subtitle */}
       <div className="mb-6 md:mb-8">
         <h1 className="text-[24px] md:text-[32px] font-bold text-oxford-blue mb-2 font-archivo leading-[32px] md:leading-[40px] tracking-[0%]">
-          Performance Analytics
+          {t('dashboard.analytics.hero.title')}
       </h1>
-        <p className="text-[14px] md:text-[18px] font-normal text-[#6B7280] font-roboto leading-[28px] md:leading-[28px] tracking-[0%]">
-          Deep insights into your learning progress.
+        <p className="text-[14px] md:text-[18px] font-normal text-dark-gray font-roboto leading-[28px] md:leading-[28px] tracking-[0%]">
+          {t('dashboard.analytics.hero.subtitle')}
         </p>
       </div>
 
@@ -51,7 +53,7 @@ const AnalyticsPage = () => {
           <div className="absolute top-4 right-4">
             <img src={accuracy} alt="Accuracy" className="w-4 h-4 md:w-5 md:h-5" />
           </div>
-          <p className="text-[14px] font-normal text-[#6B7280] font-roboto leading-[20px] tracking-[0%] pt-2 md:pt-0 mb-2">Overall Accuracy</p>
+          <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[20px] tracking-[0%] pt-2 md:pt-0 mb-2">{t('dashboard.analytics.metrics.overallAccuracy')}</p>
           <p className="text-[24px] md:text-[30px] font-bold text-oxford-blue font-archivo leading-[20px] md:leading-[36px] pt-2 md:pt-0 tracking-[0%]">78%</p>
         </div>
 
@@ -60,9 +62,9 @@ const AnalyticsPage = () => {
           <div className="absolute top-4 right-4">
             <img src={time} alt="Time" className="w-4 h-4 md:w-5 md:h-5" />
           </div>
-          <p className="text-[14px] font-normal text-[#6B7280] font-roboto leading-[20px] tracking-[0%] mb-2">Avg Time / Question</p>
+          <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[20px] tracking-[0%] mb-2">{t('dashboard.analytics.metrics.avgTimePerQuestion')}</p>
           <p className="text-[24px] md:text-[30px] font-bold text-oxford-blue font-archivo leading-[20px] md:leading-[36px] tracking-[0%] pt-2 md:pt-0">52s</p>
-          <p className="text-[12px] md:text-[14px] font-normal text-[#6B7280] font-roboto leading-[18px] md:leading-[20px] tracking-[0%] pt-2 md:pt-0">Per question</p>
+          <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[18px] md:leading-[20px] tracking-[0%] pt-2 md:pt-0">{t('dashboard.analytics.metrics.perQuestion')}</p>
         </div>
 
         {/* Questions Completed Card */}
@@ -70,7 +72,7 @@ const AnalyticsPage = () => {
           <div className="absolute top-4 right-4">
             <img src={target} alt="Target" className="w-4 h-4 md:w-5 md:h-5" />
           </div>
-          <p className="text-[14px] font-normal text-[#6B7280] font-roboto leading-[20px] tracking-[0%] pt-2 md:pt-0 mb-2">Questions Completed</p>
+          <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[20px] tracking-[0%] pt-2 md:pt-0 mb-2">{t('dashboard.analytics.metrics.questionsCompleted')}</p>
           <p className="text-[24px] md:text-[30px] font-bold text-oxford-blue font-archivo leading-[20px] md:leading-[36px] tracking-[0%] py-2 md:py-0 mb-2">325/1000</p>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div className="bg-[#6CA6C1] h-2 rounded-full" style={{ width: '32.5%' }}></div>
@@ -82,7 +84,7 @@ const AnalyticsPage = () => {
       <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-4 md:p-6 mb-6 md:mb-8 w-full max-w-[700px] min-h-[300px] md:min-h-[375px]" style={{ borderWidth: '1px' }}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 md:mb-6 gap-3 md:gap-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-[18px] md:text-[20px] font-bold text-oxford-blue font-archivo leading-[26px] md:leading-[32px] tracking-[0%]">Accuracy Trend</h2>
+            <h2 className="text-[18px] md:text-[20px] font-bold text-oxford-blue font-archivo leading-[26px] md:leading-[32px] tracking-[0%]">{t('dashboard.analytics.accuracyTrend.title')}</h2>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="8" cy="8" r="7" stroke="#9CA3AF" strokeWidth="1.5"/>
               <path d="M8 5V8L10 10" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round"/>
@@ -97,7 +99,7 @@ const AnalyticsPage = () => {
                   : 'bg-gray-100 text-gray-600'
               }`}
             >
-              All
+              {t('dashboard.analytics.accuracyTrend.all')}
             </button>
             <button
               onClick={() => setSelectedRange('30')}
@@ -107,7 +109,7 @@ const AnalyticsPage = () => {
                   : 'bg-gray-100 text-gray-600'
               }`}
             >
-              30 Days
+              {t('dashboard.analytics.accuracyTrend.30Days')}
             </button>
             <button
               onClick={() => setSelectedRange('7')}
@@ -117,12 +119,12 @@ const AnalyticsPage = () => {
                   : 'bg-gray-100 text-gray-600'
               }`}
             >
-              7 Days
+              {t('dashboard.analytics.accuracyTrend.7Days')}
             </button>
           </div>
         </div>
         <div className="h-[250px] md:h-[280px] w-full max-w-[650px] mx-auto overflow-x-auto">
-          {/* <LineChart
+          <LineChart
             width={undefined}
             height={250}
             series={[
@@ -180,7 +182,7 @@ const AnalyticsPage = () => {
                 r: 4,
               },
             }}
-          /> */}
+          />
         </div>
       </div>
 
@@ -188,7 +190,7 @@ const AnalyticsPage = () => {
         {/* Your Percentile Section */}
         <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-4 md:p-6 w-full max-w-[1120px] min-h-[250px] md:min-h-[267px] mb-6 md:mb-8" style={{ borderWidth: '1px' }}>
           {/* Title */}
-          <h2 className="text-[18px] md:text-[20px] font-bold text-oxford-blue font-archivo leading-[26px] md:leading-[32px] tracking-[0%] mb-4 md:mb-6">Your Percentile</h2>
+          <h2 className="text-[18px] md:text-[20px] font-bold text-oxford-blue font-archivo leading-[26px] md:leading-[32px] tracking-[0%] mb-4 md:mb-6">{t('dashboard.analytics.yourPercentile.title')}</h2>
           
           {/* Semi-circular gauge */}
           <div className="flex flex-col items-center justify-center">
@@ -237,7 +239,7 @@ const AnalyticsPage = () => {
               <text x="8" y="11.5" textAnchor="middle" fill="#9CA3AF" fontSize="11" fontWeight="600" fontFamily="Arial">i</text>
             </svg>
             <p className="text-[11px] md:text-[12px] text-gray-500 font-roboto">
-              Based on all users in this Taalam QBank
+              {t('dashboard.analytics.yourPercentile.basedOn')}
             </p>
           </div>
           </div>
@@ -245,7 +247,7 @@ const AnalyticsPage = () => {
 
         {/* Accuracy by Topic Section */}
         <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-4 md:p-6 w-full max-w-[1120px] min-h-[400px] md:min-h-[527px]" style={{ borderWidth: '1px' }}>
-          <h2 className="text-[18px] md:text-[20px] font-bold text-oxford-blue mb-4 md:mb-6 font-archivo leading-[26px] md:leading-[32px] tracking-[0%]">Accuracy by Topic</h2>
+          <h2 className="text-[18px] md:text-[20px] font-bold text-oxford-blue mb-4 md:mb-6 font-archivo leading-[26px] md:leading-[32px] tracking-[0%]">{t('dashboard.analytics.accuracyByTopic.title')}</h2>
           <div className="flex gap-2 mb-6 md:mb-9">
             <button
               onClick={() => setSelectedTopicTab('quantitative')}
@@ -255,7 +257,7 @@ const AnalyticsPage = () => {
                   : 'bg-white border border-gray-200 text-gray-600'
               }`}
             >
-              Quantitative
+              {t('dashboard.analytics.accuracyByTopic.quantitative')}
             </button>
             <button
               onClick={() => setSelectedTopicTab('language')}
@@ -265,7 +267,7 @@ const AnalyticsPage = () => {
                   : 'bg-white border border-gray-200 text-gray-600'
               }`}
             >
-              Language
+              {t('dashboard.analytics.accuracyByTopic.language')}
             </button>
           </div>
           <div className="space-y-4">
@@ -292,7 +294,7 @@ const AnalyticsPage = () => {
       {/* Focus Areas Section */}
       <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-4 md:p-6 w-full max-w-[1120px] min-h-[200px] md:min-h-[236px]" style={{ borderWidth: '1px' }}>
         <div className="flex items-center gap-2 mb-4 md:mb-6">
-          <h2 className="text-[16px] md:text-[18px] font-semibold text-gray-800 font-archivo">Focus Areas</h2>
+          <h2 className="text-[16px] md:text-[18px] font-semibold text-gray-800 font-archivo">{t('dashboard.analytics.focusAreas.title')}</h2>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="8" cy="8" r="7" stroke="#9CA3AF" strokeWidth="1.5"/>
             <path d="M8 5V8L10 10" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round"/>

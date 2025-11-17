@@ -1,37 +1,13 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 import { DataTable } from "../../components/admin/SystemSetting/Table";
+import baseSubscriptionsData from "../../data/userSubscriptionsData.json";
 
 // Mock data for user subscriptions
 // DataTable converts column names to keys by: columnName.toLowerCase().replace(/ /g, "")
 const allSubscriptions = [
-  {
-    id: 1,
-    user: "John Doe",
-    email: "johndoe@gmail.com",
-    plan: "Premium",
-    startdate: "01-15-2023",
-    expirydate: "15-01-2024",
-    paymentstatus: "Paid",
-  },
-  {
-    id: 2,
-    user: "Sarah Khan",
-    email: "sarahkhan@gmail.com",
-    plan: "Free",
-    startdate: "03-20-2024",
-    expirydate: "N/A",
-    paymentstatus: "N/A",
-  },
-  {
-    id: 3,
-    user: "Ali Raza",
-    email: "aliraza@gmail.com",
-    plan: "Organization",
-    startdate: "05-10-2023",
-    expirydate: "05-10-2024",
-    paymentstatus: "Active",
-  },
+  ...baseSubscriptionsData,
   // Add more mock data
   ...Array.from({ length: 22 }, (_, i) => ({
     id: i + 4,
@@ -45,30 +21,30 @@ const allSubscriptions = [
 ];
 
 // Custom TableRow component for subscriptions with badge support
-const SubscriptionTableRow = ({ item, onView }) => {
+const SubscriptionTableRow = ({ item, onView, t }) => {
   // Plan badge colors and styling
   const planBadgeColors = {
     Premium: { bg: "bg-[#FDF0D5]", text: "text-[#ED4122]" },
-    Free: { bg: "bg-[#C6D8D3]", text: "text-[#032746]" },
+    Free: { bg: "bg-[#C6D8D3]", text: "text-oxford-blue" },
     Organization: { bg: "bg-[#6CA6C1]", text: "text-white" },
   };
 
   // Payment status badge colors
   const paymentBadgeColors = {
-    Paid: { bg: "bg-[#C6D8D3]", text: "text-[#032746]" },
+    Paid: { bg: "bg-[#C6D8D3]", text: "text-oxford-blue" },
     Active: { bg: "bg-[#FDF0D5]", text: "text-[#ED4122]" },
-    "N/A": { bg: "bg-[#C6D8D3]", text: "text-[#032746]" },
+    "N/A": { bg: "bg-[#C6D8D3]", text: "text-oxford-blue" },
   };
 
   const planBadge = planBadgeColors[item.plan] || planBadgeColors.Free;
   const paymentBadge = paymentBadgeColors[item.paymentstatus] || paymentBadgeColors["N/A"];
 
   return (
-    <tr className="hidden border-b border-[#E5E7EB] bg-white text-[#032746] last:border-none md:table-row">
+    <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row">
       <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center">
         {item.user}
       </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746] text-center">
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-oxford-blue text-center">
         {item.email}
       </td>
       <td className="px-6 py-4 text-center">
@@ -79,10 +55,10 @@ const SubscriptionTableRow = ({ item, onView }) => {
           {item.plan}
         </span>
       </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746] text-center">
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-oxford-blue text-center">
         {item.startdate}
       </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-[#032746] text-center">
+      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-oxford-blue text-center">
         {item.expirydate}
       </td>
       <td className="px-6 py-4 text-center">
@@ -96,8 +72,8 @@ const SubscriptionTableRow = ({ item, onView }) => {
           <button
             type="button"
             onClick={() => onView?.(item)}
-            className="rounded-full p-1 text-[#032746] transition hover:bg-[#F3F4F6]"
-            aria-label={`View ${item.user}`}
+            className="rounded-full p-1 text-oxford-blue transition hover:bg-[#F3F4F6]"
+            aria-label={t('admin.manageUserSubscriptions.table.ariaLabels.view').replace('{{user}}', item.user)}
           >
             <svg
               width="16"
@@ -121,6 +97,7 @@ const SubscriptionTableRow = ({ item, onView }) => {
 
 const ManageUserSubscriptionsPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [planFilter, setPlanFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("Active");
 
@@ -151,7 +128,14 @@ const ManageUserSubscriptionsPage = () => {
   const handleExport = () => {
     if (typeof window === "undefined") return;
     const csvRows = [
-      ["User", "Email", "Plan", "Start Date", "Expiry Date", "Payment Status"].join(","),
+      [
+        t('admin.manageUserSubscriptions.table.columns.user'),
+        t('admin.manageUserSubscriptions.table.columns.email'),
+        t('admin.manageUserSubscriptions.table.columns.plan'),
+        t('admin.manageUserSubscriptions.table.columns.startDate'),
+        t('admin.manageUserSubscriptions.table.columns.expiryDate'),
+        t('admin.manageUserSubscriptions.table.columns.paymentStatus')
+      ].join(","),
       ...filteredSubscriptions.map((sub) =>
         [sub.user, sub.email, sub.plan, sub.startdate, sub.expirydate, sub.paymentstatus].join(",")
       ),
@@ -160,7 +144,7 @@ const ManageUserSubscriptionsPage = () => {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "billing-reports.csv";
+    link.download = t('admin.manageUserSubscriptions.table.exportFileName');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -172,7 +156,14 @@ const ManageUserSubscriptionsPage = () => {
     navigate("/admin/subscriptions/details", { state: { subscription } });
   };
 
-  const columns = ["USER", "EMAIL", "PLAN", "START DATE", "EXPIRY DATE", "PAYMENT STATUS"];
+  const columns = [
+    t('admin.manageUserSubscriptions.table.columns.user'),
+    t('admin.manageUserSubscriptions.table.columns.email'),
+    t('admin.manageUserSubscriptions.table.columns.plan'),
+    t('admin.manageUserSubscriptions.table.columns.startDate'),
+    t('admin.manageUserSubscriptions.table.columns.expiryDate'),
+    t('admin.manageUserSubscriptions.table.columns.paymentStatus')
+  ];
 
   // Get unique plans for filter
   const uniquePlans = useMemo(() => {
@@ -183,11 +174,11 @@ const ManageUserSubscriptionsPage = () => {
   // Custom table component that extends DataTable structure
   const CustomSubscriptionTable = () => {
     return (
-      <section className="w-full overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_54px_rgba(0,0,0,0.05)]">
+      <section className="w-full overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard">
         <div className="hidden overflow-x-auto md:block">
           <table className="min-w-full border-collapse">
             <thead className="hidden md:table-header-group">
-              <tr className="bg-[#032746] text-center">
+              <tr className="bg-oxford-blue text-center">
                 {columns.map((column) => (
                   <th
                     key={column}
@@ -201,15 +192,15 @@ const ManageUserSubscriptionsPage = () => {
             <tbody>
               {transformedSubscriptions.length ? (
                 transformedSubscriptions.map((sub) => (
-                  <SubscriptionTableRow key={sub.id} item={sub} onView={handleView} />
+                  <SubscriptionTableRow key={sub.id} item={sub} onView={handleView} t={t} />
                 ))
               ) : (
                 <tr>
                   <td
                     colSpan={columns.length}
-                    className="px-6 py-10 text-center text-sm text-[#6B7280]"
+                    className="px-6 py-10 text-center text-sm text-dark-gray"
                   >
-                    No subscriptions match the current filters.
+                    {t('admin.manageUserSubscriptions.table.emptyState')}
                   </td>
                 </tr>
               )}
@@ -221,37 +212,37 @@ const ManageUserSubscriptionsPage = () => {
           {transformedSubscriptions.length ? (
             transformedSubscriptions.map((sub) => (
               <div key={sub.id} className="rounded-[12px] border border-[#E5E7EB] bg-white p-4 shadow-sm">
-                <div className="space-y-2 text-[#032746]">
+                <div className="space-y-2 text-oxford-blue">
                   <div>
-                    <span className="text-[14px] font-semibold">User: </span>
+                    <span className="text-[14px] font-semibold">{t('admin.manageUserSubscriptions.table.mobileLabels.user')} </span>
                     <span className="text-[14px]">{sub.user}</span>
                   </div>
                   <div>
-                    <span className="text-[14px] font-semibold">Email: </span>
+                    <span className="text-[14px] font-semibold">{t('admin.manageUserSubscriptions.table.mobileLabels.email')} </span>
                     <span className="text-[14px]">{sub.email}</span>
                   </div>
                   <div>
-                    <span className="text-[14px] font-semibold">Plan: </span>
+                    <span className="text-[14px] font-semibold">{t('admin.manageUserSubscriptions.table.mobileLabels.plan')} </span>
                     <span className="text-[14px]">{sub.plan}</span>
                   </div>
                   <div>
-                    <span className="text-[14px] font-semibold">Start Date: </span>
+                    <span className="text-[14px] font-semibold">{t('admin.manageUserSubscriptions.table.mobileLabels.startDate')} </span>
                     <span className="text-[14px]">{sub.startdate}</span>
                   </div>
                   <div>
-                    <span className="text-[14px] font-semibold">Expiry Date: </span>
+                    <span className="text-[14px] font-semibold">{t('admin.manageUserSubscriptions.table.mobileLabels.expiryDate')} </span>
                     <span className="text-[14px]">{sub.expirydate}</span>
                   </div>
                   <div>
-                    <span className="text-[14px] font-semibold">Payment Status: </span>
+                    <span className="text-[14px] font-semibold">{t('admin.manageUserSubscriptions.table.mobileLabels.paymentStatus')} </span>
                     <span className="text-[14px]">{sub.paymentstatus}</span>
                   </div>
                 </div>
               </div>
             ))
           ) : (
-            <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-[#6B7280] shadow-[0_6px_24px_rgba(0,0,0,0.05)]">
-              No subscriptions match the current filters.
+            <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-dark-gray shadow-empty">
+              {t('admin.manageUserSubscriptions.table.emptyState')}
             </div>
           )}
         </div>
@@ -264,8 +255,8 @@ const ManageUserSubscriptionsPage = () => {
       <div className="mx-auto flex max-w-[1200px] flex-col gap-5">
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-[#032746]">
-              Manage User Subscriptions
+            <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
+              {t('admin.manageUserSubscriptions.hero.title')}
             </h1>
           </div>
           <div className="flex flex-wrap gap-3 ">
@@ -286,7 +277,7 @@ const ManageUserSubscriptionsPage = () => {
                   fill="white"
                 />
               </svg>
-              Export Billing Reports
+              {t('admin.manageUserSubscriptions.actions.exportBillingReports')}
             </button>
           </div>
         </header>
@@ -302,12 +293,12 @@ const ManageUserSubscriptionsPage = () => {
             >
               {uniquePlans.map((plan) => (
                 <option key={plan} value={plan}>
-                  {plan === "All" ? "Plan: All" : plan}
+                  {plan === "All" ? t('admin.manageUserSubscriptions.filters.plan') : plan}
                 </option>
               ))}
             </select>
             <svg
-              className="pointer-events-none absolute left-32 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]"
+              className="pointer-events-none absolute left-32 top-1/2 h-4 w-4 -translate-y-1/2 text-dark-gray"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -332,7 +323,7 @@ const ManageUserSubscriptionsPage = () => {
                   : "bg-white border border-[#E5E7EB] text-[#374151] hover:bg-gray-50"
               }`}
             >
-              Active
+              {t('admin.manageUserSubscriptions.filters.active')}
             </button>
             <button
               type="button"
@@ -343,7 +334,7 @@ const ManageUserSubscriptionsPage = () => {
                   : "bg-white border border-[#E5E7EB] text-[#374151] hover:bg-gray-50"
               }`}
             >
-              Expire
+              {t('admin.manageUserSubscriptions.filters.expire')}
             </button>
             <button
               type="button"
@@ -354,7 +345,7 @@ const ManageUserSubscriptionsPage = () => {
                   : "bg-white border border-[#E5E7EB] text-[#374151] hover:bg-gray-50"
               }`}
             >
-              Pending
+              {t('admin.manageUserSubscriptions.filters.pending')}
             </button>
           </div>
         </div>

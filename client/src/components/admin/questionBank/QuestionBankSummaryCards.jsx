@@ -16,12 +16,12 @@ const QuestionBankSummaryCards = ({ stats }) => {
           <div className="space-y-2">
             <p
               className={`text-[16px] font-roboto leading-[20px] ${
-                item.labelClassName ?? "text-[#6B7280]"
+                item.labelClassName ?? "text-dark-gray"
               }`}
             >
               {item.label}
             </p>
-            <p className="text-[30px] font-archivo font-semibold leading-[28px] text-[#032746]">
+            <p className="text-[30px] font-archivo font-semibold leading-[28px] text-oxford-blue">
               {item.value}
             </p>
           </div>

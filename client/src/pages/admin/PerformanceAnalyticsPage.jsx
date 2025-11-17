@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import AdminMetricCard from "../../components/admin/AdminMetricCard";
+import { useLanguage } from "../../context/LanguageContext";
 
 const PerformanceAnalyticsPage = () => {
+  const { t } = useLanguage();
   const [exam, setExam] = useState("");
   const [subject, setSubject] = useState("");
   const [cognitiveLevel, setCognitiveLevel] = useState("");
@@ -11,10 +13,10 @@ const PerformanceAnalyticsPage = () => {
   const performanceKPICards = [
     {
       id: 1,
-      title: "Average Accuracy",
+      title: t('admin.performanceAnalytics.kpi.averageAccuracy'),
       value: "78%",
       subtext: "",
-      subtextClassName: "text-[#6B7280]",
+      subtextClassName: "text-dark-gray",
       icon: (
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect width="40" height="40" rx="6" fill="#ED4122"/>
@@ -24,10 +26,10 @@ const PerformanceAnalyticsPage = () => {
     },
     {
       id: 2,
-      title: "Average Time/ Question",
+      title: t('admin.performanceAnalytics.kpi.averageTimePerQuestion'),
       value: "45s",
       subtext: "",
-      subtextClassName: "text-[#6B7280]",
+      subtextClassName: "text-dark-gray",
       icon: (
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect width="40" height="40" rx="6" fill="#ED4122"/>
@@ -37,10 +39,10 @@ const PerformanceAnalyticsPage = () => {
     },
     {
       id: 3,
-      title: "Improvement %",
+      title: t('admin.performanceAnalytics.kpi.improvementPercent'),
       value: "5%",
       subtext: "",
-      subtextClassName: "text-[#6B7280]",
+      subtextClassName: "text-dark-gray",
       icon: (
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect width="40" height="40" rx="6" fill="#ED4122"/>
@@ -50,10 +52,10 @@ const PerformanceAnalyticsPage = () => {
     },
     {
       id: 4,
-      title: "Total Attempt",
+      title: t('admin.performanceAnalytics.kpi.totalAttempt'),
       value: "1,250",
       subtext: "",
-      subtextClassName: "text-[#6B7280]",
+      subtextClassName: "text-dark-gray",
       icon: (
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect width="40" height="40" rx="6" fill="#ED4122"/>
@@ -139,11 +141,11 @@ const PerformanceAnalyticsPage = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-[#032746]">
-              Performance Analytics
+            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
+              {t('admin.performanceAnalytics.hero.title')}
             </h1>
-            <p className="mt-2 font-roboto text-[14px] md:text-[18px] font-normal leading-[20px] md:leading-[24px] text-[#6B7280]">
-              Analyze user performance across various metrics.
+            <p className="mt-2 font-roboto text-[14px] md:text-[18px] font-normal leading-[20px] md:leading-[24px] text-dark-gray">
+              {t('admin.performanceAnalytics.hero.subtitle')}
             </p>
           </div>
           <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
@@ -163,7 +165,7 @@ const PerformanceAnalyticsPage = () => {
                   fill="#25314C"
                 />
               </svg>
-              Compare period
+              {t('admin.performanceAnalytics.actions.comparePeriod')}
             </button>
             <button
               type="button"
@@ -181,7 +183,7 @@ const PerformanceAnalyticsPage = () => {
                   fill="white"
                 />
               </svg>
-              Export Report
+              {t('admin.performanceAnalytics.actions.exportReport')}
             </button>
           </div>
         </div>
@@ -193,18 +195,18 @@ const PerformanceAnalyticsPage = () => {
             <select
               value={exam}
               onChange={(e) => setExam(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
               style={{
                 width: "135px",
                 height: "50px",
               }}
             >
-              <option value="" disabled>Exam</option>
+              <option value="" disabled>{t('admin.performanceAnalytics.filters.exam')}</option>
               <option value="exam1">Exam 1</option>
               <option value="exam2">Exam 2</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -223,19 +225,19 @@ const PerformanceAnalyticsPage = () => {
             <select
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
               style={{
                 width: "184px",
                 height: "50px",
               }}
             >
-              <option value="" disabled>Subject</option>
+              <option value="" disabled>{t('admin.performanceAnalytics.filters.subject')}</option>
               <option value="math">Mathematics</option>
               <option value="science">Science</option>
               <option value="english">English</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -254,20 +256,20 @@ const PerformanceAnalyticsPage = () => {
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
               style={{
                 width: "184px",
                 height: "50px",
               }}
             >
-              <option value="" disabled>Date range</option>
-              <option value="Last 30 Days">Last 30 Days</option>
-              <option value="Last 7 Days">Last 7 Days</option>
-              <option value="Last 90 Days">Last 90 Days</option>
-              <option value="Last Year">Last Year</option>
+              <option value="" disabled>{t('admin.performanceAnalytics.filters.dateRange')}</option>
+              <option value="Last 30 Days">{t('admin.performanceAnalytics.filters.last30Days')}</option>
+              <option value="Last 7 Days">{t('admin.performanceAnalytics.filters.last7Days')}</option>
+              <option value="Last 90 Days">{t('admin.performanceAnalytics.filters.last90Days')}</option>
+              <option value="Last Year">{t('admin.performanceAnalytics.filters.lastYear')}</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -286,19 +288,19 @@ const PerformanceAnalyticsPage = () => {
             <select
               value={cognitiveLevel}
               onChange={(e) => setCognitiveLevel(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
               style={{
                 width: "206px",
                 height: "50px",
               }}
             >
-              <option value="" disabled>Cognitive Level</option>
-              <option value="recall">Recall</option>
-              <option value="analysis">Analysis</option>
-              <option value="synthesis">Synthesis</option>
+              <option value="" disabled>{t('admin.performanceAnalytics.filters.cognitiveLevel')}</option>
+              <option value="recall">{t('admin.performanceAnalytics.filters.recall')}</option>
+              <option value="analysis">{t('admin.performanceAnalytics.filters.analysis')}</option>
+              <option value="synthesis">{t('admin.performanceAnalytics.filters.synthesis')}</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -333,13 +335,13 @@ const PerformanceAnalyticsPage = () => {
           {/* Accuracy over Time Chart */}
           <div className="rounded-[12px] border border-[#03274633] w-[639px]  bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-                Accuracy over Time
+              <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+                {t('admin.performanceAnalytics.charts.accuracyOverTime')}
               </h2>
-              <span className="font-archivo text-[#032746] leading-[32px] align-middle">
+              <span className="font-archivo text-oxford-blue leading-[32px] align-middle">
                 <span className="font-bold text-[20px] text-[#ED4122]">72%</span>
-                <span className="font-normal text-[16px] text-oxford-blue"> Last 30 days </span>
-                <span className="font-normal text-[16px] text-orange-dark">+5%</span>
+                <span className="font-normal text-[16px] text-oxford-blue"> {t('admin.performanceAnalytics.charts.last30Days')} </span>
+                <span className="font-normal text-[16px] text-orange-dark">{t('admin.performanceAnalytics.charts.improvement')}</span>
               </span>
             </div>
             <div className="h-[350px] relative">
@@ -408,8 +410,8 @@ const PerformanceAnalyticsPage = () => {
 
           {/* Subject Distribution Chart */}
           <div className="rounded-[12px] border border-[#03274633] w-[455px] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Subject Distribution
+            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.performanceAnalytics.charts.subjectDistribution')}
             </h2>
             <div className="flex flex-col items-center justify-center gap-6 mt-6">
               <div className="relative">
@@ -430,7 +432,7 @@ const PerformanceAnalyticsPage = () => {
                       className="w-4 h-4 rounded-full flex-shrink-0"
                       style={{ backgroundColor: item.color }}
                     ></div>
-                    <span className="font-roboto text-[14px] font-normal leading-[20px] text-[#032746]">
+                    <span className="font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
                       {item.subject}
                     </span>
                   </div>
@@ -444,21 +446,21 @@ const PerformanceAnalyticsPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Top Performer Table */}
           <div className="rounded-[12px] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full h-auto">
-            <h2 className="py-6 pt-10 px-6 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Top Performer
+            <h2 className="py-6 pt-10 px-6 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.performanceAnalytics.tables.topPerformer')}
             </h2>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-white">
-                    <th className="px-6 py-4 text-[16px] font-roboto font-medium leading-[16px] text-[#032746] text-left">
-                      NAME
+                    <th className="px-6 py-4 text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue text-left">
+                      {t('admin.performanceAnalytics.tables.columns.name')}
                     </th>
-                    <th className="px-6 py-4 text-[16px] font-roboto font-medium leading-[16px] text-[#032746] text-center">
-                      Accuracy
+                    <th className="px-6 py-4 text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue text-center">
+                      {t('admin.performanceAnalytics.tables.columns.accuracy')}
                     </th>
-                    <th className="px-6 py-4 text-[16px] font-roboto font-medium leading-[16px] text-[#032746] text-right">
-                      Time/Q
+                    <th className="px-6 py-4 text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue text-right">
+                      {t('admin.performanceAnalytics.tables.columns.timePerQ')}
                     </th>
                   </tr>
                 </thead>
@@ -468,13 +470,13 @@ const PerformanceAnalyticsPage = () => {
                       key={index}
                       className="border-b border-[#E5E7EB] bg-white last:border-none"
                     >
-                      <td className="px-6 py-3 text-[16px] font-roboto font-normal leading-[100%] text-[#6B7280] text-left">
+                      <td className="px-6 py-3 text-[16px] font-roboto font-normal leading-[100%] text-dark-gray text-left">
                         {performer.name}
                       </td>
-                      <td className="px-6 py-3 text-[16px] font-roboto font-normal leading-[100%] text-[#6B7280] text-center">
+                      <td className="px-6 py-3 text-[16px] font-roboto font-normal leading-[100%] text-dark-gray text-center">
                         {performer.accuracy}
                       </td>
-                      <td className="px-6 py-3 text-[16px] font-roboto font-normal leading-[100%] text-[#6B7280] text-right">
+                      <td className="px-6 py-3 text-[16px] font-roboto font-normal leading-[100%] text-dark-gray text-right">
                         {performer.timePerQ}
                       </td>
                     </tr>
@@ -486,21 +488,21 @@ const PerformanceAnalyticsPage = () => {
 
           {/* Weak Areas Table */}
           <div className="rounded-[12px] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full h-auto">
-            <h2 className="py-6 pt-10 px-6 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Weak Areas
+            <h2 className="py-6 pt-10 px-6 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.performanceAnalytics.tables.weakAreas')}
             </h2>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-white">
-                    <th className="px-6 py-4 text-[16px] font-roboto font-medium leading-[16px] text-[#032746] text-left">
-                      Subject
+                    <th className="px-6 py-4 text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue text-left">
+                      {t('admin.performanceAnalytics.tables.columns.subject')}
                     </th>
-                    <th className="px-6 py-4 text-[16px] font-roboto font-medium leading-[16px] text-[#032746] text-center">
-                      Avg.Accuracy
+                    <th className="px-6 py-4 text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue text-center">
+                      {t('admin.performanceAnalytics.tables.columns.avgAccuracy')}
                     </th>
-                    <th className="px-6 py-4 text-[16px] font-roboto font-medium leading-[16px] text-[#032746] text-right">
-                      Attempted
+                    <th className="px-6 py-4 text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue text-right">
+                      {t('admin.performanceAnalytics.tables.columns.attempted')}
                     </th>
                   </tr>
                 </thead>
@@ -510,13 +512,13 @@ const PerformanceAnalyticsPage = () => {
                       key={index}
                       className="border-b border-[#E5E7EB] bg-white last:border-none"
                     >
-                      <td className="px-6 py-3 text-[16px] font-roboto font-normal leading-[100%] text-[#6B7280] text-left">
+                      <td className="px-6 py-3 text-[16px] font-roboto font-normal leading-[100%] text-dark-gray text-left">
                         {area.subject}
                       </td>
-                      <td className="px-6 py-3 text-[16px] font-roboto font-normal leading-[100%] text-[#6B7280] text-center">
+                      <td className="px-6 py-3 text-[16px] font-roboto font-normal leading-[100%] text-dark-gray text-center">
                         {area.avgAccuracy}
                       </td>
-                      <td className="px-6 py-3 text-[14px] font-roboto font-normal leading-[100%] text-[#6B7280] text-right">
+                      <td className="px-6 py-3 text-[14px] font-roboto font-normal leading-[100%] text-dark-gray text-right">
                         {area.attempted}
                       </td>
                     </tr>

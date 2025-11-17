@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
+import { dropdownArrow } from '../../assets/svg';
 
 
 const Dropdown = ({ label, value, options, onChange, placeholder }) => {
@@ -21,7 +23,7 @@ const Dropdown = ({ label, value, options, onChange, placeholder }) => {
     return (
         <div className="w-full" ref={dropdownRef}>
             {label && (
-                <label className="block font-roboto text-[16px] leading-[100%] font-normal text-[#032746] mb-4">
+                <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-4">
                     {label}
                 </label>
             )}
@@ -29,19 +31,14 @@ const Dropdown = ({ label, value, options, onChange, placeholder }) => {
             {/* Dropdown Box */}
             <div
                 onClick={() => setIsOpen((prev) => !prev)}
-                className="relative flex h-[60px] cursor-pointer items-center justify-between rounded-[7px] border border-[#E5E7EB] bg-white px-4 text-sm font-normal text-[#032746]"
+                className="relative flex h-[60px] cursor-pointer items-center justify-between rounded-[7px] border border-[#E5E7EB] bg-white px-4 text-sm font-normal text-oxford-blue"
             >
                 <span className="font-roboto text-[14px] leading-[20px]">{displayValue}</span>
-                <svg
-                    width="12"
-                    height="8"
-                    viewBox="0 0 12 8"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+                <img 
+                    src={dropdownArrow} 
+                    alt=""
                     className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-                >
-                    <path d="M1 1.5L6 6.5L11 1.5" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                />
 
                 {/* Dropdown Menu */}
                 {isOpen && (
@@ -53,7 +50,7 @@ const Dropdown = ({ label, value, options, onChange, placeholder }) => {
                                     onChange(option);
                                     setIsOpen(false);
                                 }}
-                                className={`px-4 py-2.5 text-sm cursor-pointer hover:bg-[#F9FAFB] font-roboto text-[14px] leading-[20px] ${displayValue === option ? "font-medium text-[#032746] bg-[#F9FAFB]" : "text-[#6B7280]"
+                                className={`px-4 py-2.5 text-sm cursor-pointer hover:bg-[#F9FAFB] font-roboto text-[14px] leading-[20px] ${displayValue === option ? "font-medium text-oxford-blue bg-[#F9FAFB]" : "text-dark-gray"
                                     }`}
                             >
                                 {option}
@@ -67,10 +64,11 @@ const Dropdown = ({ label, value, options, onChange, placeholder }) => {
 };
 
 const EditAnnouncementPage = () => {
+    const { t } = useLanguage();
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
-    const [targetAudience, setTargetAudience] = useState('All users');
-    const [type, setType] = useState('Info');
+    const [targetAudience, setTargetAudience] = useState(t('admin.editAnnouncement.options.targetAudience.allUsers'));
+    const [type, setType] = useState(t('admin.editAnnouncement.options.type.info'));
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [isPublished, setIsPublished] = useState(true);
@@ -78,8 +76,18 @@ const EditAnnouncementPage = () => {
     const fileInputRef = useRef(null);
 
 
-    const targetAudienceOptions = ['All users', 'Administrators', 'Members', 'Guests'];
-    const typeOptions = ['Info', 'Warning', 'Alert', 'Success'];
+    const targetAudienceOptions = [
+        t('admin.editAnnouncement.options.targetAudience.allUsers'),
+        t('admin.editAnnouncement.options.targetAudience.administrators'),
+        t('admin.editAnnouncement.options.targetAudience.members'),
+        t('admin.editAnnouncement.options.targetAudience.guests')
+    ];
+    const typeOptions = [
+        t('admin.editAnnouncement.options.type.info'),
+        t('admin.editAnnouncement.options.type.warning'),
+        t('admin.editAnnouncement.options.type.alert'),
+        t('admin.editAnnouncement.options.type.success')
+    ];
 
     const handleFileUpload = (uploadedFile) => {
         if (!uploadedFile) return;
@@ -122,48 +130,48 @@ const EditAnnouncementPage = () => {
         <div className='max-w-[1200px] mx-auto py-10 px-12'>
             <div className="bg-white rounded-lg border border-[#E5E7EB]">
                 <div className='border-b w-full px-5 pt-4 pb-4'>
-                    <h2 className="font-archivo text-[20px] leading-[100%] font-bold text-[#032746]">
-                        Edit Announcement
+                    <h2 className="font-archivo text-[20px] leading-[100%] font-bold text-oxford-blue">
+                        {t('admin.editAnnouncement.hero.title')}
                     </h2>
                 </div>
                 <div className="space-y-6 px-5 pt-5 pb-6">
                     <div>
-                        <label className="block font-roboto text-[16px] leading-[100%] font-normal text-[#032746] mb-4">
-                            Title
+                        <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-4">
+                            {t('admin.editAnnouncement.fields.title')}
                         </label>
                         <input
                             type="text"
-                            placeholder="Enter announcement title"
+                            placeholder={t('admin.editAnnouncement.placeholders.title')}
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            className="w-full px-4 py-3 bg-[#E5E7EB] h-[60px] border border-[#03274633] rounded-lg font-roboto text-[14px] leading-[20px] text-[#6B7280] placeholder:text-[#6B7280] focus:outline-none focus:ring-[1px] focus:ring-[#032746] focus:border-transparent"
+                            className="w-full px-4 py-3 bg-[#E5E7EB] h-[60px] border border-[#03274633] rounded-lg font-roboto text-[14px] leading-[20px] text-dark-gray placeholder:text-dark-gray focus:outline-none focus:ring-[1px] focus:ring-[#032746] focus:border-transparent"
                         />
                     </div>
 
                     <div>
-                        <label className="block font-roboto text-[16px] leading-[100%] font-normal text-[#032746] mb-4">
-                            Message
+                        <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-4">
+                            {t('admin.editAnnouncement.fields.message')}
                         </label>
                         <textarea
-                            placeholder="Type your message here"
+                            placeholder={t('admin.editAnnouncement.placeholders.message')}
                             value={body}
                             onChange={(e) => setBody(e.target.value)}
                             rows={6}
-                            className="w-full px-4 py-3 bg-[#E5E7EB] h-[280px] border border-[#03274633] rounded-lg font-roboto text-[14px] leading-[20px] text-[#6B7280] placeholder:text-[#6B7280] focus:outline-none focus:ring-[1px] focus:ring-[#032746] focus:border-transparent resize-none"
+                            className="w-full px-4 py-3 bg-[#E5E7EB] h-[280px] border border-[#03274633] rounded-lg font-roboto text-[14px] leading-[20px] text-dark-gray placeholder:text-dark-gray focus:outline-none focus:ring-[1px] focus:ring-[#032746] focus:border-transparent resize-none"
                         />
                     </div>
 
                     {/* Target Audience and Type Row */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <Dropdown
-                            label="Target Audience"
+                            label={t('admin.editAnnouncement.fields.targetAudience')}
                             value={targetAudience}
                             options={targetAudienceOptions}
                             onChange={setTargetAudience}
                         />
 
                         <Dropdown
-                            label="Type"
+                            label={t('admin.editAnnouncement.fields.type')}
                             value={type}
                             options={typeOptions}
                             onChange={setType}
@@ -173,8 +181,8 @@ const EditAnnouncementPage = () => {
                     {/* Start Date and End Date Row */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
-                            <label className="block font-roboto text-[16px] leading-[100%] font-normal text-[#032746] mb-4">
-                                Start Date
+                            <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-4">
+                                {t('admin.editAnnouncement.fields.startDate')}
                             </label>
                             <div className="relative">
                                 <input
@@ -182,24 +190,19 @@ const EditAnnouncementPage = () => {
                                     placeholder="mm/dd/yyyy"
                                     value={startDate}
                                     onChange={(e) => setStartDate(e.target.value)}
-                                    className="w-full px-4 py-3 [&::-webkit-calendar-picker-indicator]:opacity-0 h-[60px] bg-white border border-[#E5E7EB] rounded-lg font-roboto text-[14px] leading-[20px] text-[#6B7280] placeholder:text-[#6B7280] focus:outline-none focus:ring-[1px] focus:ring-[#032746] focus:border-transparent"
+                                    className="w-full px-4 py-3 [&::-webkit-calendar-picker-indicator]:opacity-0 h-[60px] bg-white border border-[#E5E7EB] rounded-lg font-roboto text-[14px] leading-[20px] text-dark-gray placeholder:text-dark-gray focus:outline-none focus:ring-[1px] focus:ring-[#032746] focus:border-transparent"
                                 />
-                                <svg
+                                <img 
+                                    src={dropdownArrow} 
+                                    alt=""
                                     className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none"
-                                    width="12"
-                                    height="8"
-                                    viewBox="0 0 12 8"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path d="M1 1.5L6 6.5L11 1.5" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                                />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block font-roboto text-[16px] leading-[100%] font-normal text-[#032746] mb-4">
-                                End Date
+                            <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-4">
+                                {t('admin.editAnnouncement.fields.endDate')}
                             </label>
                             <div className="relative">
                                 <input
@@ -207,18 +210,13 @@ const EditAnnouncementPage = () => {
                                     placeholder="mm/dd/yyyy"
                                     value={endDate}
                                     onChange={(e) => setEndDate(e.target.value)}
-                                    className="w-full px-4 py-3 h-[60px] [&::-webkit-calendar-picker-indicator]:opacity-0 bg-white border border-[#E5E7EB] rounded-lg font-roboto text-[14px] leading-[20px] text-[#6B7280] placeholder:text-[#6B7280] focus:outline-none focus:ring-[1px] focus:ring-[#032746] focus:border-transparent"
+                                    className="w-full px-4 py-3 h-[60px] [&::-webkit-calendar-picker-indicator]:opacity-0 bg-white border border-[#E5E7EB] rounded-lg font-roboto text-[14px] leading-[20px] text-dark-gray placeholder:text-dark-gray focus:outline-none focus:ring-[1px] focus:ring-[#032746] focus:border-transparent"
                                 />
-                                <svg
+                                <img 
+                                    src={dropdownArrow} 
+                                    alt=""
                                     className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none"
-                                    width="12"
-                                    height="8"
-                                    viewBox="0 0 12 8"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path d="M1 1.5L6 6.5L11 1.5" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                                />
                             </div>
                         </div>
                     </div>
@@ -226,8 +224,8 @@ const EditAnnouncementPage = () => {
                     {/* Status Toggle */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2 gap-5">
                         <div>
-                            <span className="font-roboto text-[16px] leading-[20px] font-normal text-[#032746]">
-                                Status: <span className="text-[#6B7280] text-[12px] ">Set the announcement active or Inactive</span>
+                            <span className="font-roboto text-[16px] leading-[20px] font-normal text-oxford-blue">
+                                {t('admin.editAnnouncement.fields.status')} <span className="text-dark-gray text-[12px] ">{t('admin.editAnnouncement.labels.statusDescription')}</span>
                             </span>
                         </div>
                         <div className="flex items-center gap-3">
@@ -241,8 +239,8 @@ const EditAnnouncementPage = () => {
                                         }`}
                                 />
                             </button>
-                            <span className="font-roboto text-[16px] leading-[100%] font-normal text-[#032746]">
-                                Published
+                            <span className="font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue">
+                                {t('admin.editAnnouncement.labels.published')}
                             </span>
                         </div>
                     </div>
@@ -276,19 +274,19 @@ const EditAnnouncementPage = () => {
                         {/* Text */}
                         {!file ? (
                             <div className="text-center">
-                                <p className="font-roboto text-[18px] leading-[20px] font-medium text-[#032746] mb-4">
-                                    Click to upload
+                                <p className="font-roboto text-[18px] leading-[20px] font-medium text-oxford-blue mb-4">
+                                    {t('admin.editAnnouncement.upload.clickToUpload')}
                                 </p>
-                                <p className="font-roboto text-[16px] leading-[20px] font-normal text-[#6B7280] mb-2">
-                                    or drag and drop
+                                <p className="font-roboto text-[16px] leading-[20px] font-normal text-dark-gray mb-2">
+                                    {t('admin.editAnnouncement.upload.dragAndDrop')}
                                 </p>
-                                <p className="font-roboto text-[16px] leading-[20px] font-normal text-[#6B7280]">
-                                    PNG ,JPG, PDF (Max 5mb)
+                                <p className="font-roboto text-[16px] leading-[20px] font-normal text-dark-gray">
+                                    {t('admin.editAnnouncement.upload.fileTypes')}
                                 </p>
                             </div>
                         ) : (
-                            <p className="font-roboto text-[14px] leading-[20px] text-[#032746]">
-                                Uploaded: <span className="font-medium">{file.name}</span>
+                            <p className="font-roboto text-[14px] leading-[20px] text-oxford-blue">
+                                {t('admin.editAnnouncement.upload.uploaded')} <span className="font-medium">{file.name}</span>
                             </p>
                         )}
                     </div>
@@ -300,13 +298,13 @@ const EditAnnouncementPage = () => {
                         onClick={handleCancel}
                         className="px-6 py-2.5 font-roboto text-[14px] leading-[20px] font-medium text-[#374151] bg-white border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] transition-colors"
                     >
-                        Cancel
+                        {t('admin.editAnnouncement.buttons.cancel')}
                     </button>
                     <button
                         onClick={handleSave}
                         className="px-6 py-2.5 font-roboto text-[14px] leading-[20px] font-medium text-white bg-[#ED4122] rounded-lg hover:bg-[#DC2626] transition-colors"
                     >
-                        Save Announcement
+                        {t('admin.editAnnouncement.buttons.saveAnnouncement')}
                     </button>
                 </div>
             </div>

@@ -1,9 +1,8 @@
-
-
+import { useLanguage } from "../../../context/LanguageContext";
 
 const TableHeader = ({ columns }) => (
     <thead className="hidden md:table-header-group">
-        <tr className="bg-[#032746] text-center">
+        <tr className="bg-oxford-blue text-center">
             {columns.map((column) => (
                 <th
                     key={column}
@@ -17,7 +16,7 @@ const TableHeader = ({ columns }) => (
 );
 
 // Table Row
-const TableRow = ({ item, columns, onView, onEdit }) => {
+const TableRow = ({ item, columns, onView, onEdit, t }) => {
     // Get the field key from column name (e.g., "Created By" -> "createdby")
     const getFieldKey = (columnName) => {
         const key = columnName.toLowerCase().replace(/ /g, "");
@@ -29,7 +28,7 @@ const TableRow = ({ item, columns, onView, onEdit }) => {
     };
 
     return (
-        <tr className="hidden border-b border-[#E5E7EB] bg-white text-[#032746] last:border-none md:table-row">
+        <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row">
             {columns.slice(0, -1).map((column) => {
                 const fieldKey = getFieldKey(column);
                 const value = item[fieldKey] || "—";
@@ -48,8 +47,8 @@ const TableRow = ({ item, columns, onView, onEdit }) => {
                     <button
                         type="button"
                         onClick={() => onView?.(item)}
-                        className="rounded-full p-2 text-[#032746] transition hover:bg-[#F3F4F6]"
-                        aria-label={`View ${item.name}`}
+                        className="rounded-full p-2 text-oxford-blue transition hover:bg-[#F3F4F6]"
+                        aria-label={t('admin.classificationManagement.table.ariaLabels.view').replace('{{name}}', item.name)}
                     >
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M13.2961 7.00203C13.1105 7.00203 12.9326 7.07576 12.8013 7.20699C12.6701 7.33823 12.5963 7.51623 12.5963 7.70183V11.9006C12.5963 12.0862 12.5226 12.2642 12.3914 12.3954C12.2601 12.5267 12.0821 12.6004 11.8966 12.6004H2.09939C1.91379 12.6004 1.7358 12.5267 1.60456 12.3954C1.47332 12.2642 1.39959 12.0862 1.39959 11.9006V2.10345C1.39959 1.91785 1.47332 1.73986 1.60456 1.60862C1.7358 1.47738 1.91379 1.40365 2.09939 1.40365H6.29817C6.48377 1.40365 6.66177 1.32992 6.793 1.19869C6.92424 1.06745 6.99797 0.889453 6.99797 0.703855C6.99797 0.518257 6.92424 0.340261 6.793 0.209023C6.66177 0.0777861 6.48377 0.00405766 6.29817 0.00405766H2.09939C1.5426 0.00405766 1.00861 0.225243 0.614898 0.618955C0.221185 1.01267 0 1.54666 0 2.10345V11.9006C0 12.4574 0.221185 12.9914 0.614898 13.3851C1.00861 13.7788 1.5426 14 2.09939 14H11.8966C12.4533 14 12.9873 13.7788 13.381 13.3851C13.7748 12.9914 13.9959 12.4574 13.9959 11.9006V7.70183C13.9959 7.51623 13.9222 7.33823 13.791 7.20699C13.6597 7.07576 13.4817 7.00203 13.2961 7.00203ZM2.79919 7.53387V10.501C2.79919 10.6866 2.87292 10.8646 3.00415 10.9958C3.13539 11.1271 3.31339 11.2008 3.49899 11.2008H6.46613C6.55822 11.2013 6.64952 11.1837 6.73478 11.1489C6.82004 11.114 6.89759 11.0627 6.96298 10.9979L11.8056 6.14828L13.793 4.20284C13.8586 4.13778 13.9107 4.06039 13.9462 3.97511C13.9817 3.88983 14 3.79837 14 3.70598C14 3.6136 13.9817 3.52214 13.9462 3.43686C13.9107 3.35158 13.8586 3.27418 13.793 3.20913L10.8259 0.206999C10.7608 0.141408 10.6834 0.089347 10.5981 0.0538192C10.5129 0.0182915 10.4214 0 10.329 0C10.2366 0 10.1452 0.0182915 10.0599 0.0538192C9.9746 0.089347 9.8972 0.141408 9.83215 0.206999L7.85872 2.18742L3.00213 7.03702C2.93727 7.10241 2.88596 7.17996 2.85113 7.26522C2.81631 7.35048 2.79866 7.44178 2.79919 7.53387ZM10.329 1.69057L12.3094 3.67099L11.3157 4.66471L9.33529 2.68428L10.329 1.69057ZM4.19878 7.82079L8.34858 3.67099L10.329 5.65142L6.17921 9.80122H4.19878V7.82079Z" fill="#032746" />
@@ -58,8 +57,8 @@ const TableRow = ({ item, columns, onView, onEdit }) => {
                     <button
                         type="button"
                         onClick={() => onEdit?.(item)}
-                        className="rounded-full p-2 text-[#032746] transition hover:bg-[#F3F4F6]"
-                        aria-label={`Edit ${item.name}`}
+                        className="rounded-full p-2 text-oxford-blue transition hover:bg-[#F3F4F6]"
+                        aria-label={t('admin.classificationManagement.table.ariaLabels.edit').replace('{{name}}', item.name)}
                     >
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M13.4615 2.15385H10.9064C10.2595 2.15385 10.2322 2.072 10.0549 1.54072L9.90984 1.10492C9.68943 0.444411 9.07416 0 8.37775 0H5.62225C4.92584 0 4.30985 0.443693 4.09015 1.10492L3.94513 1.54072C3.7678 2.07272 3.74051 2.15385 3.09364 2.15385H0.538462C0.241231 2.15385 0 2.39508 0 2.69231C0 2.98954 0.241231 3.23077 0.538462 3.23077H1.47036L2.02103 11.4865C2.12728 13.0839 3.10657 14 4.70759 14H9.29313C10.8934 14 11.8727 13.0839 11.9797 11.4865L12.5304 3.23077H13.4615C13.7588 3.23077 14 2.98954 14 2.69231C14 2.39508 13.7588 2.15385 13.4615 2.15385ZM5.11179 1.44523C5.18574 1.22482 5.39035 1.07692 5.62225 1.07692H8.37775C8.60965 1.07692 8.81498 1.22482 8.88821 1.44523L9.03323 1.88102C9.06482 1.97507 9.09641 2.06626 9.13087 2.15385H4.86769C4.90215 2.06554 4.93447 1.97436 4.96606 1.88102L5.11179 1.44523ZM10.9042 11.4147C10.836 12.4435 10.3234 12.9231 9.29241 12.9231H4.70687C3.6759 12.9231 3.164 12.4442 3.09507 11.4147L2.54944 3.23077H3.09292C3.18267 3.23077 3.25733 3.22144 3.33775 3.2157C3.36216 3.21929 3.38441 3.23077 3.40954 3.23077H10.589C10.6149 3.23077 10.6364 3.21929 10.6608 3.2157C10.7412 3.22144 10.8159 3.23077 10.9056 3.23077H11.4491L10.9042 11.4147ZM8.97436 6.28205V9.87179C8.97436 10.169 8.73313 10.4103 8.4359 10.4103C8.13867 10.4103 7.89744 10.169 7.89744 9.87179V6.28205C7.89744 5.98482 8.13867 5.74359 8.4359 5.74359C8.73313 5.74359 8.97436 5.98482 8.97436 6.28205ZM6.10256 6.28205V9.87179C6.10256 10.169 5.86133 10.4103 5.5641 10.4103C5.26687 10.4103 5.02564 10.169 5.02564 9.87179V6.28205C5.02564 5.98482 5.26687 5.74359 5.5641 5.74359C5.86133 5.74359 6.10256 5.98482 6.10256 6.28205Z" fill="#032746" />
@@ -97,13 +96,13 @@ const CalendarDays = ({ size = 14, color = "#032746", className = "" }) => (
 );
 
 const iconMap = {
-    name: <BookIcon size={16} className="text-[#032746]" />,
-    description: <FileText size={16} className="text-[#032746]" />,
-    createdby: <User size={16} className="text-[#032746]" />,
-    datecreated: <CalendarDays size={16} className="text-[#032746]" />,
+    name: <BookIcon size={16} className="text-oxford-blue" />,
+    description: <FileText size={16} className="text-oxford-blue" />,
+    createdby: <User size={16} className="text-oxford-blue" />,
+    datecreated: <CalendarDays size={16} className="text-oxford-blue" />,
 };
 
-const MobileCard = ({ item, columns, onView, onEdit }) => {
+const MobileCard = ({ item, columns, onView, onEdit, t }) => {
     const displayColumns = columns.slice(0, -1); // Exclude "Actions"
 
     // Normalize column name to match item key
@@ -114,12 +113,12 @@ const MobileCard = ({ item, columns, onView, onEdit }) => {
     };
 
     return (
-        <article className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] bg-white px-5 py-4 shadow-[0_6px_24px_rgba(0,0,0,0.05)] md:hidden">
-            <div className="flex flex-col gap-3 text-[#032746]">
+        <article className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] bg-white px-5 py-4 shadow-empty md:hidden">
+            <div className="flex flex-col gap-3 text-oxford-blue">
                 {displayColumns.map((column) => {
                     const fieldKey = getFieldKey(column);
                     const value = item[fieldKey] || "—";
-                    const icon = iconMap[fieldKey.toLowerCase()] || <FileText size={16} className="text-[#032746]" />;
+                    const icon = iconMap[fieldKey.toLowerCase()] || <FileText size={16} className="text-oxford-blue" />;
 
                     return (
                         <div key={column} className="flex items-start gap-2">
@@ -138,8 +137,8 @@ const MobileCard = ({ item, columns, onView, onEdit }) => {
                 <button
                     type="button"
                     onClick={() => onView?.(item)}
-                    className="rounded-full p-2 text-[#032746] transition hover:bg-[#F3F4F6]"
-                    aria-label={`View ${item.name}`}
+                    className="rounded-full p-2 text-oxford-blue transition hover:bg-[#F3F4F6]"
+                    aria-label={t('admin.classificationManagement.table.ariaLabels.view').replace('{{name}}', item.name)}
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -164,8 +163,8 @@ const MobileCard = ({ item, columns, onView, onEdit }) => {
                 <button
                     type="button"
                     onClick={() => onEdit?.(item)}
-                    className="rounded-full p-2 text-[#032746] transition hover:bg-[#F3F4F6]"
-                    aria-label={`Edit ${item.name}`}
+                    className="rounded-full p-2 text-oxford-blue transition hover:bg-[#F3F4F6]"
+                    aria-label={t('admin.classificationManagement.table.ariaLabels.edit').replace('{{name}}', item.name)}
                 >
                     <svg
                         width="12"
@@ -187,7 +186,7 @@ const MobileCard = ({ item, columns, onView, onEdit }) => {
 
 
 // Pagination
-const Pagination = ({ page, pageSize, total, onPageChange }) => {
+const Pagination = ({ page, pageSize, total, onPageChange, t }) => {
     const totalPages = Math.ceil(total / pageSize);
     const safeTotalPages = Math.max(totalPages, 1);
     const firstItem = total ? (page - 1) * pageSize + 1 : 0;
@@ -204,9 +203,12 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
     const pages = Array.from({ length: safeTotalPages }, (_, index) => index + 1);
 
     return (
-        <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-[#032746] md:flex-row md:items-center md:justify-between md:bg-[#032746] md:px-6 md:text-white">
+        <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-oxford-blue md:flex-row md:items-center md:justify-between md:bg-oxford-blue md:px-6 md:text-white">
             <p className="text-[12px] font-roboto font-medium leading-[18px] tracking-[3%]">
-                Showing {firstItem} to {lastItem} of {total} results
+                {t('admin.classificationManagement.table.pagination.showing')
+                    .replace('{{first}}', firstItem)
+                    .replace('{{last}}', lastItem)
+                    .replace('{{total}}', total)}
             </p>
             <div className="flex items-center gap-2">
                 <button
@@ -215,10 +217,10 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
                     disabled={page === 1}
                     className={`flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${page === 1
                         ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
-                        : "border-[#032746] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-white"
+                        : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
                         }`}
                 >
-                    Previous
+                    {t('admin.classificationManagement.table.pagination.previous')}
                 </button>
                 {pages.map((pageNumber) => (
                     <button
@@ -227,7 +229,7 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
                         onClick={() => onPageChange?.(pageNumber)}
                         className={`flex h-[27.16px] w-8 items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${pageNumber === page
                             ? "border-[#ED4122] bg-[#ED4122] text-white"
-                            : "border-[#E5E7EB] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-[#032746]"
+                            : "border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
                             }`}
                     >
                         {pageNumber}
@@ -239,10 +241,10 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
                     disabled={page === safeTotalPages}
                     className={`flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${page === safeTotalPages
                         ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
-                        : "border-[#032746] bg-white text-[#032746] hover:bg-[#F3F4F6] md:border-white"
+                        : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
                         }`}
                 >
-                    Next
+                    {t('admin.classificationManagement.table.pagination.next')}
                 </button>
             </div>
         </div>
@@ -261,10 +263,10 @@ const ClassificationTable = ({
     onEdit,
     emptyMessage,
 }) => {
-
+    const { t } = useLanguage();
 
     return (
-        <section className="w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_54px_rgba(0,0,0,0.05)] md:min-h-[348px]">
+        <section className="w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard md:min-h-[348px]">
             <div className="hidden overflow-x-auto md:block">
                 <table className="min-w-full border-collapse">
                     <TableHeader columns={columns} />
@@ -277,13 +279,14 @@ const ClassificationTable = ({
                                     columns={columns}
                                     onView={onView}
                                     onEdit={onEdit}
+                                    t={t}
                                 />
                             ))
                         ) : (
                             <tr>
                                 <td
                                     colSpan={columns.length}
-                                    className="px-6 py-10 text-center text-sm text-[#6B7280]"
+                                    className="px-6 py-10 text-center text-sm text-dark-gray"
                                 >
                                     {emptyMessage}
                                 </td>
@@ -301,10 +304,11 @@ const ClassificationTable = ({
                             columns={columns}
                             onView={onView}
                             onEdit={onEdit}
+                            t={t}
                         />
                     ))
                 ) : (
-                    <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-[#6B7280] shadow-[0_6px_24px_rgba(0,0,0,0.05)]">
+                    <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-dark-gray shadow-empty">
                         {emptyMessage}
                     </div>
                 )}
@@ -314,6 +318,7 @@ const ClassificationTable = ({
                 pageSize={pageSize}
                 total={total}
                 onPageChange={onPageChange}
+                t={t}
             />
         </section>
     );

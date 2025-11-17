@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 
 const SubscriptionDetailsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useLanguage();
   const subscription = location.state?.subscription || {
     user: "Sarah Khan",
     email: "sarahkhan@gmail.com",
@@ -35,8 +37,8 @@ const SubscriptionDetailsPage = () => {
 
   const statusBadgeColors = {
     Active: { bg: "bg-[#FDF0D5]", text: "text-[#ED4122]" },
-    Inactive: { bg: "bg-[#C6D8D3]", text: "text-[#032746]" },
-    Expired: { bg: "bg-[#C6D8D3]", text: "text-[#032746]" },
+    Inactive: { bg: "bg-[#C6D8D3]", text: "text-oxford-blue" },
+    Expired: { bg: "bg-[#C6D8D3]", text: "text-oxford-blue" },
   };
 
   const statusBadge = statusBadgeColors[formData.status] || statusBadgeColors.Active;
@@ -47,30 +49,30 @@ const SubscriptionDetailsPage = () => {
        
 
         {/* Main Card */}
-        <div className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_54px_rgba(0,0,0,0.05)] ">
+        <div className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard ">
            {/* Header */}
-        <h1 className="font-archivo pb-4 p-6 border-b border-[#E5E7EB] text-[20px] leading-[40px] font-bold text-[#032746]">
-          Subscription Details
+        <h1 className="font-archivo pb-4 p-6 border-b border-[#E5E7EB] text-[20px] leading-[40px] font-bold text-oxford-blue">
+          {t('admin.subscriptionDetails.hero.title')}
         </h1>
           {/* User Info Section */}
           <div className="px-6 py-8 border-b border-[#E5E7EB]">
-            <h2 className="mb-4 font-roboto text-[16px] font-medium leading-[100%] text-[#032746]">
-              User Info
+            <h2 className="mb-4 font-roboto text-[16px] font-medium leading-[100%] text-oxford-blue">
+              {t('admin.subscriptionDetails.sections.userInfo')}
             </h2>
             <div className="space-y-3">
               <div className="flex items-center gap-[300px]">
-                <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
-                  Name
+                <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                  {t('admin.subscriptionDetails.fields.name')}
                 </span>
-                <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                <span className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                   {subscription.user}
                 </span>
               </div>
               <div className="flex items-center gap-[300px]">
-                <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
-                  Email
+                <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                  {t('admin.subscriptionDetails.fields.email')}
                 </span>
-                <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">
+                <span className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
                   {subscription.email}
                 </span>
               </div>
@@ -79,31 +81,31 @@ const SubscriptionDetailsPage = () => {
 
           {/* Plan Info Section */}
           <div className="px-6 py-8 border-b border-[#E5E7EB]">
-            <h2 className="mb-4 font-roboto text-[16px] font-medium leading-[100%] text-[#032746]">
-              Plan Info
+            <h2 className="mb-4 font-roboto text-[16px] font-medium leading-[100%] text-oxford-blue">
+              {t('admin.subscriptionDetails.sections.planInfo')}
             </h2>
             <div className="space-y-3">
               <div className="flex items-center gap-[265px]">
-                <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
-                  Current Plan
+                <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                  {t('admin.subscriptionDetails.fields.currentPlan')}
                 </span>
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">Premium</p>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">Premium</p>
               </div>
               <div className="flex items-center gap-[290px]">
-                <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
-                  Duration
+                <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                  {t('admin.subscriptionDetails.fields.duration')}
                 </span>
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#032746]">Monthly</p>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">Monthly</p>
               </div>
               <div className="flex items-center gap-[254px]">
-                <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
-                  Renewal Date
+                <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                  {t('admin.subscriptionDetails.fields.renewalDate')}
                 </span>
-                <p className="font-roboto text-[16px] font-normal  leading-[20px] text-[#032746]">July 15, 2024</p>
+                <p className="font-roboto text-[16px] font-normal  leading-[20px] text-oxford-blue">July 15, 2024</p>
               </div>
               <div className="flex items-center gap-[204px]">
-                <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#6B7280]">
-                  Status
+                <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                  {t('admin.subscriptionDetails.fields.status')}
                 </span>
                 <span
                   className={`inline-flex h-[26px] ml-24 items-center justify-center rounded-[6px] py-[5px] px-[10px] font-roboto text-[14px] font-normal leading-[100%] tracking-[0%] ${statusBadge.bg} ${statusBadge.text}`}
@@ -117,29 +119,29 @@ const SubscriptionDetailsPage = () => {
 
           {/* Billing Info Section */}
           <div className="px-6 py-8 border-b border-[#E5E7EB]">
-            <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[100%] text-[#032746]">
-              Billing Info
+            <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[100%] text-oxford-blue">
+              {t('admin.subscriptionDetails.sections.billingInfo')}
             </h2>
             <div className="space-y-3">
               <div className="flex items-center gap-[265px]">
-                <span className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280]">
-                  Last payment
+                <span className="font-roboto text-[14px] font-normal leading-[20px] text-dark-gray">
+                  {t('admin.subscriptionDetails.fields.lastPayment')}
                 </span>
-                <span className="font-roboto text-[14px] font-normal leading-[20px] text-[#032746]">
+                <span className="font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
                   {subscription.lastPayment || "$19.99 June 24, 2024"}
                 </span>
               </div>
               <div className="flex items-center gap-[260px]">
-                <span className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280]">
-                  Next Due Date
+                <span className="font-roboto text-[14px] font-normal leading-[20px] text-dark-gray">
+                  {t('admin.subscriptionDetails.fields.nextDueDate')}
                 </span>
-                <span className="font-roboto text-[14px] font-normal leading-[20px] text-[#032746]">
+                <span className="font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
                   {subscription.nextDueDate || "July 15, 2024"}
                 </span>
               </div>
               <div className="flex items-center gap-[243px]">
-                <span className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280]">
-                  Payment Method
+                <span className="font-roboto text-[14px] font-normal leading-[20px] text-dark-gray">
+                  {t('admin.subscriptionDetails.fields.paymentMethod')}
                 </span>
                 <div className="flex items-center gap-2">
                   <svg
@@ -168,7 +170,7 @@ const SubscriptionDetailsPage = () => {
                       strokeWidth="2"
                     />
                   </svg>
-                  <span className="font-roboto text-[14px] font-normal leading-[20px] text-[#032746]">
+                  <span className="font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
                     {subscription.paymentMethod || "Visa ending in 1234"}
                   </span>
                 </div>
@@ -181,7 +183,7 @@ const SubscriptionDetailsPage = () => {
             <div className="space-y-3">
               <button
                 type="button"
-                className="flex w-full items-center gap-2 font-roboto text-[16px] font-medium leading-[20px] text-[#032746] transition hover:text-[#ED4122]"
+                className="flex w-full items-center gap-2 font-roboto text-[16px] font-medium leading-[20px] text-oxford-blue transition hover:text-[#ED4122]"
               >
                 <svg
                   width="16"
@@ -195,7 +197,7 @@ const SubscriptionDetailsPage = () => {
                 >
                   <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
                 </svg>
-                Upgrade / Downgrade Plan
+                {t('admin.subscriptionDetails.actions.upgradeDowngrade')}
               </button>
               <button
                 type="button"
@@ -215,11 +217,11 @@ const SubscriptionDetailsPage = () => {
                   <line x1="15" y1="9" x2="9" y2="15" />
                   <line x1="9" y1="9" x2="15" y2="15" />
                 </svg>
-                Cancel Subscription
+                {t('admin.subscriptionDetails.actions.cancelSubscription')}
               </button>
               <button
                 type="button"
-                className="flex w-full items-center gap-2 font-roboto text-[16px] font-medium leading-[20px] text-[#032746] transition hover:text-[#ED4122]"
+                className="flex w-full items-center gap-2 font-roboto text-[16px] font-medium leading-[20px] text-oxford-blue transition hover:text-[#ED4122]"
               >
                 <svg
                   width="16"
@@ -233,7 +235,7 @@ const SubscriptionDetailsPage = () => {
                 >
                   <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
                 </svg>
-                Renewal Manually
+                {t('admin.subscriptionDetails.actions.renewalManually')}
               </button>
             </div>
           </div>
@@ -245,14 +247,14 @@ const SubscriptionDetailsPage = () => {
               onClick={handleCancel}
               className="h-[40px] rounded-[8px] border border-[#E5E7EB] bg-white px-6 font-roboto text-[16px] font-medium leading-[20px] text-[#374151] transition hover:bg-[#F9FAFB]"
             >
-              Cancel
+              {t('admin.subscriptionDetails.buttons.cancel')}
             </button>
             <button
               type="button"
               onClick={handleSave}
               className="h-[40px] rounded-[8px] bg-[#ED4122] px-6 font-roboto text-[16px] font-medium leading-[20px] text-white transition hover:bg-[#d43a1f]"
             >
-              Save Changes
+              {t('admin.subscriptionDetails.buttons.saveChanges')}
             </button>
           </div>
         </div>

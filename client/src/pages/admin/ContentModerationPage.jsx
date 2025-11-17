@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 
 const ContentModerationPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("flagged");
   const [status, setStatus] = useState("");
   const [contentType, setContentType] = useState("");
@@ -130,11 +132,11 @@ const ContentModerationPage = () => {
         <div className="mb-4 md:mb-6">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
             <div>
-              <h1 className="font-archivo text-[24px] sm:text-[28px] md:text-[36px] font-bold leading-[28px] sm:leading-[32px] md:leading-[40px] text-[#032746] mb-2">
-                Content Moderation
+              <h1 className="font-archivo text-[24px] sm:text-[28px] md:text-[36px] font-bold leading-[28px] sm:leading-[32px] md:leading-[40px] text-oxford-blue mb-2">
+                {t('admin.contentModeration.hero.title')}
               </h1>
-              <p className="font-roboto text-[14px] sm:text-[16px] md:text-[18px] font-normal leading-[20px] sm:leading-[22px] md:leading-[24px] text-[#6B7280]">
-                Review and take action on flagged questions and answers.
+              <p className="font-roboto text-[14px] sm:text-[16px] md:text-[18px] font-normal leading-[20px] sm:leading-[22px] md:leading-[24px] text-dark-gray">
+                {t('admin.contentModeration.hero.subtitle')}
               </p>
             </div>
             <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
@@ -155,7 +157,7 @@ const ContentModerationPage = () => {
                     fill="#25314C"
                   />
                 </svg>
-                <span className="hidden sm:inline">Refresh</span>
+                <span className="hidden sm:inline">{t('admin.contentModeration.actions.refresh')}</span>
               </button>
               <button
                 type="button"
@@ -174,7 +176,7 @@ const ContentModerationPage = () => {
                     fill="white"
                   />
                 </svg>
-                <span className="hidden sm:inline">Filter</span>
+                <span className="hidden sm:inline">{t('admin.contentModeration.actions.filter')}</span>
               </button>
               <button
                 type="button"
@@ -193,7 +195,7 @@ const ContentModerationPage = () => {
                     fill="white"
                   />
                 </svg>
-                <span className="hidden sm:inline">Export</span>
+                <span className="hidden sm:inline">{t('admin.contentModeration.actions.export')}</span>
               </button>
             </div>
           </div>
@@ -206,10 +208,10 @@ const ContentModerationPage = () => {
               className={`px-4 sm:px-6 py-2 rounded-[8px] font-roboto text-[14px] sm:text-[16px] font-medium leading-[20px] transition border border-[#E5E7EB] whitespace-nowrap ${
                 activeTab === "flagged"
                   ? "bg-[#ED4122] text-white"
-                  : "bg-[#FFFFFF] text-[#032746] hover:bg-[#E5E7EB]"
+                  : "bg-[#FFFFFF] text-oxford-blue hover:bg-[#E5E7EB]"
               }`}
             >
-              Flagged Content
+              {t('admin.contentModeration.tabs.flaggedContent')}
             </button>
             <button
               type="button"
@@ -217,10 +219,10 @@ const ContentModerationPage = () => {
               className={`px-4 sm:px-6 py-2 rounded-[8px] font-roboto text-[14px] sm:text-[16px] font-medium leading-[20px] transition border border-[#E5E7EB] whitespace-nowrap ${
                 activeTab === "pending"
                   ? "bg-[#ED4122] text-white"
-                  : "bg-[#FFFFFF] text-[#032746] hover:bg-[#E5E7EB]"
+                  : "bg-[#FFFFFF] text-oxford-blue hover:bg-[#E5E7EB]"
               }`}
             >
-              Pending Approval
+              {t('admin.contentModeration.tabs.pendingApproval')}
             </button>
             <button
               type="button"
@@ -228,10 +230,10 @@ const ContentModerationPage = () => {
               className={`px-4 sm:px-6 py-2 rounded-[8px] font-roboto text-[14px] sm:text-[16px] font-medium leading-[20px] transition border border-[#E5E7EB] whitespace-nowrap ${
                 activeTab === "reports"
                   ? "bg-[#ED4122] text-white"
-                  : "bg-[#FFFFFF] text-[#032746] hover:bg-[#E5E7EB]"
+                  : "bg-[#FFFFFF] text-oxford-blue hover:bg-[#E5E7EB]"
               }`}
             >
-              User Reports
+              {t('admin.contentModeration.tabs.userReports')}
             </button>
           </div>
 
@@ -241,12 +243,12 @@ const ContentModerationPage = () => {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[14px] font-normal leading-[20px] text-[#032746] appearance-none cursor-pointer "
+                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue appearance-none cursor-pointer "
               >
-                <option value="">Status</option>
-                <option value="flagged">Flagged</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
+                <option value="">{t('admin.contentModeration.filters.status')}</option>
+                <option value="flagged">{t('admin.contentModeration.filters.flagged')}</option>
+                <option value="approved">{t('admin.contentModeration.filters.approved')}</option>
+                <option value="rejected">{t('admin.contentModeration.filters.rejected')}</option>
               </select>
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                 <svg
@@ -268,12 +270,12 @@ const ContentModerationPage = () => {
               <select
                 value={contentType}
                 onChange={(e) => setContentType(e.target.value)}
-                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[14px] font-normal leading-[20px] text-[#032746] appearance-none cursor-pointer "
+                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue appearance-none cursor-pointer "
               >
-                <option value="">Content Type</option>
-                <option value="video">Video</option>
-                <option value="image">Image</option>
-                <option value="text">Text</option>
+                <option value="">{t('admin.contentModeration.filters.contentType')}</option>
+                <option value="video">{t('admin.contentModeration.filters.video')}</option>
+                <option value="image">{t('admin.contentModeration.filters.image')}</option>
+                <option value="text">{t('admin.contentModeration.filters.text')}</option>
               </select>
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                 <svg
@@ -295,12 +297,12 @@ const ContentModerationPage = () => {
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}
-                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[14px] font-normal leading-[20px] text-[#032746] appearance-none cursor-pointer "
+                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue appearance-none cursor-pointer "
               >
-                <option value="">Date Range</option>
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
+                <option value="">{t('admin.contentModeration.filters.dateRange')}</option>
+                <option value="today">{t('admin.contentModeration.filters.today')}</option>
+                <option value="week">{t('admin.contentModeration.filters.thisWeek')}</option>
+                <option value="month">{t('admin.contentModeration.filters.thisMonth')}</option>
               </select>
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                 <svg
@@ -326,27 +328,27 @@ const ContentModerationPage = () => {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-[#032746] text-center">
+                <tr className="bg-oxford-blue text-center">
                   <th className="px-3 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
-                    #
+                    {t('admin.contentModeration.table.columns.number')}
                   </th>
                   <th className="px-4 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
-                    CONTENT TYPE
+                    {t('admin.contentModeration.table.columns.contentType')}
                   </th>
                   <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
-                    SUBMITTED BY
+                    {t('admin.contentModeration.table.columns.submittedBy')}
                   </th>
                   <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
-                    FLAG REASON
+                    {t('admin.contentModeration.table.columns.flagReason')}
                   </th>
                   <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
-                    DATE REPORTED
+                    {t('admin.contentModeration.table.columns.dateReported')}
                   </th>
                   <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
-                    STATUS
+                    {t('admin.contentModeration.table.columns.status')}
                   </th>
                   <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
-                    ACTIONS
+                    {t('admin.contentModeration.table.columns.actions')}
                   </th>
                 </tr>
               </thead>
@@ -356,19 +358,19 @@ const ContentModerationPage = () => {
                     key={item.id}
                     className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition"
                   >
-                    <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-[#032746]">
+                    <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue">
                       {item.id}
                     </td>
-                    <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-[#032746]">
+                    <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue">
                       {item.contentType}
                     </td>
-                    <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-[#032746]">
+                    <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue">
                       {item.submittedBy}
                     </td>
-                    <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-[#032746]">
+                    <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue">
                       {item.flagReason}
                     </td>
-                    <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-[#032746]">
+                    <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue">
                       {item.dateReported}
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -401,7 +403,7 @@ const ContentModerationPage = () => {
                             height: "22px",
                           }}
                         >
-                          View
+                          {t('admin.contentModeration.table.actions.view')}
                         </button>
                         <button
                           type="button"
@@ -414,7 +416,7 @@ const ContentModerationPage = () => {
                             height: "22px",
                           }}
                         >
-                          Approve
+                          {t('admin.contentModeration.table.actions.approve')}
                         </button>
                         <button
                           type="button"
@@ -427,7 +429,7 @@ const ContentModerationPage = () => {
                             height: "22px",
                           }}
                         >
-                          Reject
+                          {t('admin.contentModeration.table.actions.reject')}
                         </button>
                       </div>
                     </td>
@@ -447,10 +449,10 @@ const ContentModerationPage = () => {
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <p className="font-archivo text-[14px] font-medium leading-[16px] text-[#032746] mb-1">
+                  <p className="font-archivo text-[14px] font-medium leading-[16px] text-oxford-blue mb-1">
                     #{item.id}
                   </p>
-                  <p className="font-roboto text-[12px] font-normal leading-[16px] text-[#6B7280]">
+                  <p className="font-roboto text-[12px] font-normal leading-[16px] text-dark-gray">
                     {item.contentType}
                   </p>
                 </div>
@@ -473,26 +475,26 @@ const ContentModerationPage = () => {
               
               <div className="space-y-2 mb-4">
                 <div className="flex items-start gap-2">
-                  <p className="font-roboto text-[12px] font-medium leading-[16px] text-[#6B7280] w-24">
-                    Submitted By:
+                  <p className="font-roboto text-[12px] font-medium leading-[16px] text-dark-gray w-24">
+                    {t('admin.contentModeration.mobile.submittedBy')}
                   </p>
-                  <p className="font-roboto text-[12px] font-normal leading-[16px] text-[#032746] flex-1">
+                  <p className="font-roboto text-[12px] font-normal leading-[16px] text-oxford-blue flex-1">
                     {item.submittedBy}
                   </p>
                 </div>
                 <div className="flex items-start gap-2">
-                  <p className="font-roboto text-[12px] font-medium leading-[16px] text-[#6B7280] w-24">
-                    Flag Reason:
+                  <p className="font-roboto text-[12px] font-medium leading-[16px] text-dark-gray w-24">
+                    {t('admin.contentModeration.mobile.flagReason')}
                   </p>
-                  <p className="font-roboto text-[12px] font-normal leading-[16px] text-[#032746] flex-1">
+                  <p className="font-roboto text-[12px] font-normal leading-[16px] text-oxford-blue flex-1">
                     {item.flagReason}
                   </p>
                 </div>
                 <div className="flex items-start gap-2">
-                  <p className="font-roboto text-[12px] font-medium leading-[16px] text-[#6B7280] w-24">
-                    Date Reported:
+                  <p className="font-roboto text-[12px] font-medium leading-[16px] text-dark-gray w-24">
+                    {t('admin.contentModeration.mobile.dateReported')}
                   </p>
-                  <p className="font-roboto text-[12px] font-normal leading-[16px] text-[#032746] flex-1">
+                  <p className="font-roboto text-[12px] font-normal leading-[16px] text-oxford-blue flex-1">
                     {item.dateReported}
                   </p>
                 </div>
@@ -509,7 +511,7 @@ const ContentModerationPage = () => {
                     minHeight: "32px",
                   }}
                 >
-                  View
+                  {t('admin.contentModeration.table.actions.view')}
                 </button>
                 <button
                   type="button"
@@ -521,7 +523,7 @@ const ContentModerationPage = () => {
                     minHeight: "32px",
                   }}
                 >
-                  Approve
+                  {t('admin.contentModeration.table.actions.approve')}
                 </button>
                 <button
                   type="button"
@@ -533,7 +535,7 @@ const ContentModerationPage = () => {
                     minHeight: "32px",
                   }}
                 >
-                  Reject
+                  {t('admin.contentModeration.table.actions.reject')}
                 </button>
               </div>
             </div>
@@ -542,16 +544,16 @@ const ContentModerationPage = () => {
 
         {/* Pagination */}
         <div className="rounded-[12px] border border-[#03274633] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] mt-4 lg:mt-0 lg:border-t-0 lg:rounded-t-none">
-          <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-3 sm:px-4 py-4 text-[#032746] lg:flex-row lg:items-center lg:justify-between lg:bg-[#032746] lg:px-6 lg:text-white">
+          <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-3 sm:px-4 py-4 text-oxford-blue lg:flex-row lg:items-center lg:justify-between lg:bg-oxford-blue lg:px-6 lg:text-white">
             <p className="text-[11px] sm:text-[12px] font-roboto font-medium leading-[18px] tracking-[3%] text-center lg:text-left">
-              Showing 1 to 3 of 25 results
+              {t('admin.contentModeration.pagination.showing').replace('{{from}}', '1').replace('{{to}}', '3').replace('{{total}}', '25')}
             </p>
             <div className="flex items-center justify-center gap-1 sm:gap-2">
               <button
                 type="button"
-                className="flex h-[27px] w-[70px] sm:w-[78px] items-center justify-center rounded border text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#032746] bg-white text-[#032746] hover:bg-[#F3F4F6] lg:border-white"
+                className="flex h-[27px] w-[70px] sm:w-[78px] items-center justify-center rounded border text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] lg:border-white"
               >
-                Previous
+                {t('admin.contentModeration.pagination.previous')}
               </button>
               <button
                 type="button"
@@ -561,21 +563,21 @@ const ContentModerationPage = () => {
               </button>
               <button
                 type="button"
-                className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded border border-[#E5E7EB] bg-white text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] text-[#032746] transition-colors hover:bg-[#F3F4F6] lg:border-[#032746]"
+                className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded border border-[#E5E7EB] bg-white text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] text-oxford-blue transition-colors hover:bg-[#F3F4F6] lg:border-[#032746]"
               >
                 2
               </button>
               <button
                 type="button"
-                className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded border border-[#E5E7EB] bg-white text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] text-[#032746] transition-colors hover:bg-[#F3F4F6] lg:border-[#032746]"
+                className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded border border-[#E5E7EB] bg-white text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] text-oxford-blue transition-colors hover:bg-[#F3F4F6] lg:border-[#032746]"
               >
                 3
               </button>
               <button
                 type="button"
-                className="flex h-[27px] w-[70px] sm:w-[78px] items-center justify-center rounded border text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#032746] bg-white text-[#032746] hover:bg-[#F3F4F6] lg:border-white"
+                className="flex h-[27px] w-[70px] sm:w-[78px] items-center justify-center rounded border text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] lg:border-white"
               >
-                Next
+                {t('admin.contentModeration.pagination.next')}
               </button>
             </div>
           </div>

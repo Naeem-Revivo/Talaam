@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "user": "John Doe",
+    "email": "johndoe@gmail.com",
+    "plan": "Premium",
+    "startdate": "01-15-2023",
+    "expirydate": "15-01-2024",
+    "paymentstatus": "Paid"
+  },
+  {
+    "id": 2,
+    "user": "Sarah Khan",
+    "email": "sarahkhan@gmail.com",
+    "plan": "Free",
+    "startdate": "03-20-2024",
+    "expirydate": "N/A",
+    "paymentstatus": "N/A"
+  },
+  {
+    "id": 3,
+    "user": "Ali Raza",
+    "email": "aliraza@gmail.com",
+    "plan": "Organization",
+    "startdate": "05-10-2023",
+    "expirydate": "05-10-2024",
+    "paymentstatus": "Active"
+  }
+]
+

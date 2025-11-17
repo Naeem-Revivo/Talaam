@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import AdminMetricCard from "../../components/admin/AdminMetricCard";
+import { useLanguage } from "../../context/LanguageContext";
 
 const UserGrowthAnalyticsPage = () => {
+  const { t } = useLanguage();
   
   // User Growth Analytics filters
   const [userGrowthDateRange, setUserGrowthDateRange] = useState("Last 30 Days");
@@ -13,7 +15,7 @@ const UserGrowthAnalyticsPage = () => {
   const userGrowthKPICards = [
     {
       id: 1,
-      title: "New Sign-ups",
+      title: t('admin.userGrowthAnalytics.kpi.newSignups'),
       value: "10,884",
       subtext: "+15% from last month",
       subtextClassName: "text-[#10B981]",
@@ -26,7 +28,7 @@ const UserGrowthAnalyticsPage = () => {
     },
     {
       id: 2,
-      title: "Active Users",
+      title: t('admin.userGrowthAnalytics.kpi.activeUsers'),
       value: "5,432",
       subtext: "+ 8% vs last month",
       subtextClassName: "text-[#10B981]",
@@ -39,7 +41,7 @@ const UserGrowthAnalyticsPage = () => {
     },
     {
       id: 3,
-      title: "Retention Rate",
+      title: t('admin.userGrowthAnalytics.kpi.retentionRate'),
       value: "85%",
       subtext: "- 2% vs last month",
       subtextClassName: "text-[#ED4122]",
@@ -52,7 +54,7 @@ const UserGrowthAnalyticsPage = () => {
     },
     {
       id: 4,
-      title: "Verification Rate",
+      title: t('admin.userGrowthAnalytics.kpi.verificationRate'),
       value: "72%",
       subtext: "+5% vs month",
       subtextClassName: "text-[#10B981]",
@@ -87,8 +89,8 @@ const UserGrowthAnalyticsPage = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-[#032746]">
-              User Growth Analytics
+            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
+              {t('admin.userGrowthAnalytics.hero.title')}
             </h1>
           </div>
           <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto py-8">
@@ -108,7 +110,7 @@ const UserGrowthAnalyticsPage = () => {
                   fill="#25314C"
                 />
               </svg>
-              Compare period
+              {t('admin.userGrowthAnalytics.actions.comparePeriod')}
             </button>
             <button
               type="button"
@@ -126,7 +128,7 @@ const UserGrowthAnalyticsPage = () => {
                   fill="white"
                 />
               </svg>
-              Export Report
+              {t('admin.userGrowthAnalytics.actions.exportReport')}
             </button>
           </div>
         </div>
@@ -138,20 +140,20 @@ const UserGrowthAnalyticsPage = () => {
             <select
               value={userGrowthDateRange}
               onChange={(e) => setUserGrowthDateRange(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
               style={{
                 width: "184px",
                 height: "50px",
               }}
             >
-              <option value="" disabled>Date range</option>
-              <option value="Last 30 Days">Last 30 Days</option>
-              <option value="Last 7 Days">Last 7 Days</option>
-              <option value="Last 90 Days">Last 90 Days</option>
-              <option value="Last Year">Last Year</option>
+              <option value="" disabled>{t('admin.userGrowthAnalytics.filters.dateRange')}</option>
+              <option value="Last 30 Days">{t('admin.userGrowthAnalytics.filters.last30Days')}</option>
+              <option value="Last 7 Days">{t('admin.userGrowthAnalytics.filters.last7Days')}</option>
+              <option value="Last 90 Days">{t('admin.userGrowthAnalytics.filters.last90Days')}</option>
+              <option value="Last Year">{t('admin.userGrowthAnalytics.filters.lastYear')}</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -170,20 +172,20 @@ const UserGrowthAnalyticsPage = () => {
             <select
               value={userType}
               onChange={(e) => setUserType(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
               style={{
                 width: "184px",
                 height: "50px",
               }}
             >
-              <option value="" disabled>User Type</option>
-              <option value="Student">Student</option>
-              <option value="Teacher">Teacher</option>
-              <option value="Admin">Admin</option>
-              <option value="Parent">Parent</option>
+              <option value="" disabled>{t('admin.userGrowthAnalytics.filters.userType')}</option>
+              <option value="Student">{t('admin.userGrowthAnalytics.filters.student')}</option>
+              <option value="Teacher">{t('admin.userGrowthAnalytics.filters.teacher')}</option>
+              <option value="Admin">{t('admin.userGrowthAnalytics.filters.admin')}</option>
+              <option value="Parent">{t('admin.userGrowthAnalytics.filters.parent')}</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -202,20 +204,20 @@ const UserGrowthAnalyticsPage = () => {
             <select
               value={userRole}
               onChange={(e) => setUserRole(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
               style={{
                 width: "184px",
                 height: "50px",
               }}
             >
-              <option value="All Roles">All Roles</option>
-              <option value="Student">Student</option>
-              <option value="Teacher">Teacher</option>
-              <option value="Admin">Admin</option>
-              <option value="Parent">Parent</option>
+              <option value="All Roles">{t('admin.userGrowthAnalytics.filters.allRoles')}</option>
+              <option value="Student">{t('admin.userGrowthAnalytics.filters.student')}</option>
+              <option value="Teacher">{t('admin.userGrowthAnalytics.filters.teacher')}</option>
+              <option value="Admin">{t('admin.userGrowthAnalytics.filters.admin')}</option>
+              <option value="Parent">{t('admin.userGrowthAnalytics.filters.parent')}</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -234,19 +236,19 @@ const UserGrowthAnalyticsPage = () => {
             <select
               value={userPlan}
               onChange={(e) => setUserPlan(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-[#032746] outline-none cursor-pointer hover:border-[#03274666] transition"
+              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
               style={{
                 width: "184px",
                 height: "50px",
               }}
             >
-              <option value="All Plans">All Plans</option>
-              <option value="Free">Free</option>
-              <option value="Premium">Premium</option>
-              <option value="Organization">Organization</option>
+              <option value="All Plans">{t('admin.userGrowthAnalytics.filters.allPlans')}</option>
+              <option value="Free">{t('admin.userGrowthAnalytics.filters.free')}</option>
+              <option value="Premium">{t('admin.userGrowthAnalytics.filters.premium')}</option>
+              <option value="Organization">{t('admin.userGrowthAnalytics.filters.organization')}</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#032746]"
+              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -280,11 +282,11 @@ const UserGrowthAnalyticsPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Overall User Growth Chart */}
           <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Overall User Growth
+            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.userGrowthAnalytics.charts.overallUserGrowth')}
             </h2>
-            <p className="mt-1 font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280]">
-              New users over the last 30 days
+            <p className="mt-1 font-roboto text-[14px] font-normal leading-[20px] text-dark-gray">
+              {t('admin.userGrowthAnalytics.charts.newUsersOverLast30Days')}
             </p>
             <div className="h-[300px] relative mt-6">
               <svg width="100%" height="100%" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid meet">
@@ -368,11 +370,11 @@ const UserGrowthAnalyticsPage = () => {
 
           {/* Sign-ups by Role Chart */}
           <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-[#032746]">
-              Sign-ups by Role
+            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.userGrowthAnalytics.charts.signupsByRole')}
             </h2>
-            <p className="mt-1 font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280]">
-              Categorization of new users
+            <p className="mt-1 font-roboto text-[14px] font-normal leading-[20px] text-dark-gray">
+              {t('admin.userGrowthAnalytics.charts.categorizationOfNewUsers')}
             </p>
             <div className="h-[300px] relative mt-6">
               <svg width="100%" height="100%" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid meet">
@@ -436,7 +438,7 @@ const UserGrowthAnalyticsPage = () => {
                     className="w-4 h-4 rounded"
                     style={{ backgroundColor: item.color }}
                   ></div>
-                  <span className="font-roboto text-[14px] font-normal leading-[20px] text-[#032746]">
+                  <span className="font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
                     {item.role}
                   </span>
                 </div>

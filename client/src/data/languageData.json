@@ -1,0 +1,13 @@
+[
+  { "id": 1, "languagename": "English", "code": "EN", "default": true, "status": "Inactive" },
+  { "id": 2, "languagename": "Arabic", "code": "AR", "default": false, "status": "Active" },
+  { "id": 3, "languagename": "Spanish", "code": "ES", "default": false, "status": "Inactive" },
+  { "id": 4, "languagename": "French", "code": "FR", "default": true, "status": "Active" },
+  { "id": 5, "languagename": "German", "code": "DE", "default": false, "status": "Active" },
+  { "id": 6, "languagename": "Italian", "code": "IT", "default": true, "status": "Inactive" },
+  { "id": 7, "languagename": "Portuguese", "code": "PT", "default": false, "status": "Active" },
+  { "id": 8, "languagename": "Russian", "code": "RU", "default": false, "status": "Inactive" },
+  { "id": 9, "languagename": "Chinese", "code": "ZH", "default": false, "status": "Active" },
+  { "id": 10, "languagename": "Japanese", "code": "JA", "default": false, "status": "Inactive" }
+]
+

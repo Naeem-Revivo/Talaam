@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 
 const CreateNewQuestionBankPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     productName: "",
     description: "",
@@ -95,19 +97,19 @@ const CreateNewQuestionBankPage = () => {
       <div className="mx-auto max-w-[1200px]">
         {/* Header */}
         <header className="mb-6">
-          <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-[#032746] mb-2">
-            Create New Question Bank
+          <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue mb-2">
+            {t('admin.createNewQuestionBank.hero.title')}
           </h1>
-          <p className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280]">
-            Upload question and define Subscription plans for this product
+          <p className="font-roboto text-[14px] font-normal leading-[20px] text-dark-gray">
+            {t('admin.createNewQuestionBank.hero.subtitle')}
           </p>
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Product Details Section */}
-          <div className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_54px_rgba(0,0,0,0.05)] p-6">
-            <h2 className="font-archivo text-[20px] font-semibold leading-[100%] text-[#032746] mb-6">
-              Create New Question Bank
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard p-6">
+            <h2 className="font-archivo text-[20px] font-semibold leading-[100%] text-oxford-blue mb-6">
+              {t('admin.createNewQuestionBank.sections.productDetails')}
             </h2>
 
             {/* Product Name */}
@@ -116,7 +118,7 @@ const CreateNewQuestionBankPage = () => {
                 htmlFor="productName"
                 className="block font-roboto text-[14px] font-medium leading-[20px] text-[#374151] mb-2"
               >
-                Product Name
+                {t('admin.createNewQuestionBank.fields.productName')}
               </label>
               <input
                 id="productName"
@@ -124,8 +126,8 @@ const CreateNewQuestionBankPage = () => {
                 type="text"
                 value={formData.productName}
                 onChange={handleChange}
-                placeholder="E.g advance Math Question Bank"
-                className="w-full h-[60px] px-4 font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280] bg-white border border-[rgba(3,39,70,0.2)] rounded-[12px] focus:outline-none"
+                placeholder={t('admin.createNewQuestionBank.placeholders.productName')}
+                className="w-full h-[60px] px-4 font-roboto text-[14px] font-normal leading-[20px] text-dark-gray bg-white border border-[rgba(3,39,70,0.2)] rounded-[12px] focus:outline-none"
                 style={{
                   boxShadow:
                     "0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)",
@@ -139,7 +141,7 @@ const CreateNewQuestionBankPage = () => {
                 htmlFor="description"
                 className="block font-roboto text-[14px] font-medium leading-[20px] text-[#374151] mb-2"
               >
-                Description
+                {t('admin.createNewQuestionBank.fields.description')}
               </label>
               <textarea
                 id="description"
@@ -147,7 +149,7 @@ const CreateNewQuestionBankPage = () => {
                 value={formData.description}
                 onChange={handleChange}
                 rows={4}
-                className="w-full px-4 py-3 font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280] bg-white border border-[rgba(3,39,70,0.2)] rounded-[12px] focus:outline-none resize-none"
+                className="w-full px-4 py-3 font-roboto text-[14px] font-normal leading-[20px] text-dark-gray bg-white border border-[rgba(3,39,70,0.2)] rounded-[12px] focus:outline-none resize-none"
                 style={{
                   boxShadow:
                     "0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)",
@@ -157,9 +159,9 @@ const CreateNewQuestionBankPage = () => {
           </div>
 
           {/* Upload Questions Section */}
-          <div className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_54px_rgba(0,0,0,0.05)] p-6">
-            <h2 className="font-archivo text-[20px] font-semibold leading-[100%] text-[#032746] mb-6">
-              Upload Questions
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard p-6">
+            <h2 className="font-archivo text-[20px] font-semibold leading-[100%] text-oxford-blue mb-6">
+              {t('admin.createNewQuestionBank.sections.uploadQuestions')}
             </h2>
 
             <div
@@ -208,21 +210,21 @@ const CreateNewQuestionBankPage = () => {
                     />
                   </svg>
                 </div>
-                <p className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280] mb-1">
-                  drag and drop
+                <p className="font-roboto text-[14px] font-normal leading-[20px] text-dark-gray mb-1">
+                  {t('admin.createNewQuestionBank.placeholders.dragAndDrop')}
                 </p>
-                <p className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280]">
-                  or click to browse
+                <p className="font-roboto text-[14px] font-normal leading-[20px] text-dark-gray">
+                  {t('admin.createNewQuestionBank.placeholders.orClickToBrowse')}
                 </p>
               </label>
             </div>
           </div>
 
           {/* Subscription Plan Section */}
-          <div className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_54px_rgba(0,0,0,0.05)] p-6">
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-archivo text-[20px] font-semibold leading-[100%] text-[#032746]">
-                Subscription Plan
+              <h2 className="font-archivo text-[20px] font-semibold leading-[100%] text-oxford-blue">
+                {t('admin.createNewQuestionBank.sections.subscriptionPlan')}
               </h2>
               <button
                 type="button"
@@ -242,7 +244,7 @@ const CreateNewQuestionBankPage = () => {
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-                Add Plan
+                {t('admin.createNewQuestionBank.buttons.addPlan')}
               </button>
             </div>
 
@@ -250,21 +252,21 @@ const CreateNewQuestionBankPage = () => {
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse">
                 <thead>
-                  <tr className="bg-[#032746]">
+                  <tr className="bg-oxford-blue">
                     <th className="px-6 py-4 text-left font-archivo text-[16px] font-medium leading-[16px] text-white">
-                      PLAN NAME
+                      {t('admin.createNewQuestionBank.table.headers.planName')}
                     </th>
                     <th className="px-6 py-4 text-left font-archivo text-[16px] font-medium leading-[16px] text-white">
-                      PRICE
+                      {t('admin.createNewQuestionBank.table.headers.price')}
                     </th>
                     <th className="px-6 py-4 text-left font-archivo text-[16px] font-medium leading-[16px] text-white">
-                      DURATION
+                      {t('admin.createNewQuestionBank.table.headers.duration')}
                     </th>
                     <th className="px-6 py-4 text-left font-archivo text-[16px] font-medium leading-[16px] text-white">
-                      INTEGRATION DETAILS
+                      {t('admin.createNewQuestionBank.table.headers.integrationDetails')}
                     </th>
                     <th className="px-6 py-4 text-center font-archivo text-[16px] font-medium leading-[16px] text-white">
-                      ACTIONS
+                      {t('admin.createNewQuestionBank.table.headers.actions')}
                     </th>
                   </tr>
                 </thead>
@@ -274,24 +276,26 @@ const CreateNewQuestionBankPage = () => {
                       key={plan.id}
                       className="border-b border-[#E5E7EB] bg-white last:border-none"
                     >
-                      <td className="px-6 py-4 font-roboto text-[14px] font-normal leading-[100%] text-[#032746]">
+                      <td className="px-6 py-4 font-roboto text-[14px] font-normal leading-[100%] text-oxford-blue">
                         {plan.planName}
                       </td>
-                      <td className="px-6 py-4 font-roboto text-[14px] font-normal leading-[100%] text-[#032746]">
+                      <td className="px-6 py-4 font-roboto text-[14px] font-normal leading-[100%] text-oxford-blue">
                         {plan.price}
                       </td>
-                      <td className="px-6 py-4 font-roboto text-[14px] font-normal leading-[100%] text-[#032746]">
+                      <td className="px-6 py-4 font-roboto text-[14px] font-normal leading-[100%] text-oxford-blue">
                         {plan.duration}
                       </td>
-                      <td className="px-6 py-4 font-roboto text-[14px] font-normal leading-[100%] text-[#032746]">
-                        Product ID: {plan.productId}, Price ID: {plan.priceId}
+                      <td className="px-6 py-4 font-roboto text-[14px] font-normal leading-[100%] text-oxford-blue">
+                        {t('admin.createNewQuestionBank.table.integrationDetails')
+                          .replace('{{productId}}', plan.productId)
+                          .replace('{{priceId}}', plan.priceId)}
                       </td>
                       <td className="px-6 py-4 text-center">
                         <button
                           type="button"
                           onClick={() => handleEditPlan(plan.id)}
-                          className="rounded-full p-2 text-[#032746] transition hover:bg-[#F3F4F6]"
-                          aria-label={`Edit ${plan.planName}`}
+                          className="rounded-full p-2 text-oxford-blue transition hover:bg-[#F3F4F6]"
+                          aria-label={t('admin.createNewQuestionBank.ariaLabels.editPlan').replace('{{planName}}', plan.planName)}
                         >
                           <svg
                             width="16"
@@ -321,13 +325,13 @@ const CreateNewQuestionBankPage = () => {
               onClick={handleCancel}
               className="w-[120px] h-[36px] rounded-[8px] border border-[#E5E7EB] bg-white font-roboto text-[14px] font-medium leading-[20px] text-[#374151] transition hover:bg-[#F9FAFB]"
             >
-              Cancel
+              {t('admin.createNewQuestionBank.buttons.cancel')}
             </button>
             <button
               type="submit"
               className="w-[140px] h-[36px] rounded-[8px] bg-[#ED4122] font-roboto text-[14px] font-medium leading-[20px] text-white transition hover:bg-[#d43a1f]"
             >
-              Create Product
+              {t('admin.createNewQuestionBank.buttons.createProduct')}
             </button>
           </div>
         </form>

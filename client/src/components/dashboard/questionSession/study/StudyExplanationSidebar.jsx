@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../../../../context/LanguageContext';
 
 const StudyExplanationSidebar = ({
   showExplanation,
@@ -9,57 +10,59 @@ const StudyExplanationSidebar = ({
   currentState,
   onToggleExplanation,
   onToggleHint,
-}) => (
-  <div className="hidden lg:flex w-[256px] h-full bg-[#F9FAFB] border-l border-[#E5E7EB] overflow-y-auto">
-    <div className="p-4 md:p-6 w-full">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-[18px] md:text-[20px] font-bold text-[#032746] font-archivo">Explanation</h3>
-        <button onClick={onToggleExplanation} className="text-[14px] font-normal text-[#032746] font-roboto hover:opacity-70">
-          {showExplanation ? 'Hide' : 'Show'}
-        </button>
-      </div>
+}) => {
+  const { t } = useLanguage();
+  return (
+    <div className="hidden lg:flex w-[256px] h-full bg-[#F9FAFB] border-l border-[#E5E7EB] overflow-y-auto">
+      <div className="p-4 md:p-6 w-full">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[18px] md:text-[20px] font-bold text-oxford-blue font-archivo">{t('dashboard.questionSession.explanation.title')}</h3>
+          <button onClick={onToggleExplanation} className="text-[14px] font-normal text-oxford-blue font-roboto hover:opacity-70">
+            {showExplanation ? t('dashboard.questionSession.explanation.hide') : t('dashboard.questionSession.explanation.show')}
+          </button>
+        </div>
 
       {showExplanation ? (
         showReview ? (
           <div className="space-y-6">
             <div>
-              <h4 className="text-[16px] font-medium text-[#032746] font-archivo leading-[24px] tracking-[0%] mb-3">
-                Correct Answer Explanation
+              <h4 className="text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-3">
+                {t('dashboard.questionSession.explanation.correctAnswerExplanation')}
               </h4>
-              <p className="text-[14px] font-normal text-[#6B7280] font-roboto leading-[24px] tracking-[0%] mb-2">
-                Answer: {correctOption?.id}. {correctOption?.text}
+              <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%] mb-2">
+                {t('dashboard.questionSession.explanation.answer')} {correctOption?.id}. {correctOption?.text}
               </p>
-              <h5 className="text-[16px] font-medium text-[#032746] font-archivo leading-[24px] tracking-[0%] mb-2">
-                Explanation:
+              <h5 className="text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-2">
+                {t('dashboard.questionSession.explanation.explanationLabel')}
               </h5>
-              <p className="text-[14px] font-normal text-[#6B7280] font-roboto leading-[24px] tracking-[0%]">
+              <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
                 {correctOption?.explanation || 'This answer choice aligns with the underlying concept tested in the question.'}
               </p>
             </div>
 
             {selectedOption && selectedOption.id !== correctOption?.id && (
               <div>
-                <h4 className="text-[16px] font-medium text-[#032746] font-archivo leading-[24px] tracking-[0%] mb-3">
-                  Your Answer
+                <h4 className="text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-3">
+                  {t('dashboard.questionSession.yourAnswer')}
                 </h4>
-                <p className="text-[14px] font-normal text-[#6B7280] font-roboto leading-[24px] tracking-[0%] mb-2">
-                  Answer: {selectedOption.id}. {selectedOption.text}
+                <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%] mb-2">
+                  {t('dashboard.questionSession.explanation.answer')} {selectedOption.id}. {selectedOption.text}
                 </p>
-                <h5 className="text-[16px] font-medium text-[#032746] font-archivo leading-[24px] tracking-[0%] mb-2">
-                  Consider:
+                <h5 className="text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-2">
+                  {t('dashboard.questionSession.consider')}
                 </h5>
-                <p className="text-[14px] font-normal text-[#6B7280] font-roboto leading-[24px] tracking-[0%]">
+                <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
                   Review why this option may not address the scenario described. Focus on differentiating the mechanisms.
                 </p>
               </div>
             )}
 
             <div>
-              <h4 className="text-[16px] font-medium text-[#032746] font-archivo leading-[24px] tracking-[0%] mb-3">
-                Hints
+              <h4 className="text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-3">
+                {t('dashboard.questionSession.hints')}
               </h4>
               <button onClick={onToggleHint} className="text-[14px] font-roboto text-[#0369A1] hover:underline mb-2">
-                {currentState.showHint ? 'Hide hints' : 'Show hints'}
+                {currentState.showHint ? t('dashboard.questionSession.hideHints') : t('dashboard.questionSession.showHints')}
               </button>
               {currentState.showHint ? (
                 <ul className="space-y-3">
@@ -70,21 +73,22 @@ const StudyExplanationSidebar = ({
                   ))}
                 </ul>
               ) : (
-                <p className="text-[14px] font-normal text-[#6B7280] font-roboto leading-[24px] tracking-[0%]">
-                  Reveal hints to get strategic nudges before reattempting the question.
+                <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
+                  {t('dashboard.questionSession.revealHints')}
                 </p>
               )}
             </div>
           </div>
         ) : (
-          <p className="text-[14px] font-normal text-[#6B7280] font-roboto leading-[24px] tracking-[0%]">
-            Submit your answer to see explanations and hints.
+          <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
+            {t('dashboard.questionSession.submitToSee')}
           </p>
         )
       ) : null}
     </div>
   </div>
-);
+  );
+};
 
 export default StudyExplanationSidebar;
 

@@ -1,7 +1,11 @@
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function TopicPageHierarchy() {
+    const { t } = useLanguage();
+    
     return (
         <div className="w-full">
-            <h2 className="text-[20px] leading-7 font-semibold text-dark-blue mb-3">Hierarchy</h2>
+            <h2 className="text-[20px] leading-7 font-semibold text-dark-blue mb-3">{t('admin.classificationManagement.hierarchy.title')}</h2>
             <div className="border rounded-md px-5 py-4 bg-white">
                 <nav className="flex flex-col gap-2">
                     <div className="flex items-center space-x-3 text-base font-medium text-blue-dark">
