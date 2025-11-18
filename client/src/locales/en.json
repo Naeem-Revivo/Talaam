@@ -743,11 +743,17 @@
       "userManagement": "User Management",
       "questionBank": "Question Bank",
       "classification": "Classification",
-      "subscriptions": "Subscriptions & Billing",
+      "subscriptions": "Subscriptions",
+      "paymentHistory": "Payment History",
+      "manageUserSubscription": "Manage User Subscription",
       "reports": "Reports & Analytics",
       "moderation": "Content Moderation",
       "settings": "System Settings",
-      "security": "Security & Permissions"
+      "security": "Security & Permissions",
+      "userGrowthAnalytics": "User Growth Analytics",
+      "subscriptionTrends": "Subscription Trends",
+      "performanceAnalytics": "Performance Analytics",
+      "exportReports": "Export Reports"
     },
     "dashboard": {
       "hero": {
