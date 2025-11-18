@@ -216,7 +216,7 @@ const Pagination = ({ page, pageSize, total, onPageChange, t }) => {
           type="button"
           onClick={handlePrev}
           disabled={page === 1}
-          className={`flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors ${
+          className={`flex h-[30px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${
             page === 1
               ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
               : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
@@ -229,7 +229,7 @@ const Pagination = ({ page, pageSize, total, onPageChange, t }) => {
             key={pageNumber}
             type="button"
             onClick={() => onPageChange?.(pageNumber)}
-            className={`flex h-8 w-8 items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors ${
+            className={`flex h-[30px] w-8 items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${
               pageNumber === page
                 ? "border-[#ED4122] bg-[#ED4122] text-white"
                 : "border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
@@ -242,7 +242,7 @@ const Pagination = ({ page, pageSize, total, onPageChange, t }) => {
           type="button"
           onClick={handleNext}
           disabled={page === safeTotalPages}
-          className={`flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors ${
+          className={`flex h-[30px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${
             page === safeTotalPages
               ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
               : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"

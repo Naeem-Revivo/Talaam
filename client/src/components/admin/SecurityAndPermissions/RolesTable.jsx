@@ -40,7 +40,7 @@ const TableRow = ({ item, columns, onView, onEdit }) => {
                 return (
                     <td
                         key={column}
-                        className="px-6 py-4 text-[14px] font-normal leading-[100%] text-center"
+                        className={`px-6 py-4 text-[14px] font-normal leading-[100%] font-roboto text-center  ${fieldKey === "assignedadmins" || fieldKey === "permissionssummary" ? "text-[#6B7280]" : "text-blue-dark"}`}
                     >
                         {value}
                     </td>

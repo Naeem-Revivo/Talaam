@@ -31,9 +31,9 @@ const Dropdown = ({ label, value, options, onChange, placeholder }) => {
             {/* Dropdown Box */}
             <div
                 onClick={() => setIsOpen((prev) => !prev)}
-                className="relative flex h-[60px] cursor-pointer items-center justify-between rounded-[7px] border border-[#E5E7EB] bg-white px-4 text-sm font-normal text-oxford-blue"
+                className="relative flex h-[60px] cursor-pointer shadow-[0px_10px_15px_-3px_#0000001A] items-center justify-between rounded-[7px] border border-[#E5E7EB] bg-white px-4 text-sm font-normal text-oxford-blue"
             >
-                <span className="font-roboto text-[14px] leading-[20px]">{displayValue}</span>
+                <span className="font-roboto text-[16px] leading-[100%] font-normal text-blue-dark">{displayValue}</span>
                 <img 
                     src={dropdownArrow} 
                     alt=""
@@ -168,7 +168,7 @@ const AddNewAnnouncements = () => {
                                     placeholder="mm/dd/yyyy"
                                     value={startDate}
                                     onChange={(e) => setStartDate(e.target.value)}
-                                    className="w-full px-4 py-3 [&::-webkit-calendar-picker-indicator]:opacity-0 h-[60px] bg-white border border-[#E5E7EB] rounded-lg font-roboto text-[14px] leading-[20px] text-dark-gray placeholder:text-dark-gray focus:outline-none focus:ring-[1px] focus:ring-[#032746] focus:border-transparent"
+                                    className="w-full shadow-[0px_10px_15px_-3px_#0000001A] px-4 py-3 h-[60px] [&::-webkit-calendar-picker-indicator]:opacity-0 bg-white border border-[#E5E7EB] rounded-lg font-roboto text-[16px] placeholder:text-[16px] leading-[100%] text-blue-dark font-normal placeholder:text-blue-dark focus:outline-none focus:ring-[1px] focus:ring-[#032746] focus:border-transparent"
                                 />
                                  <img 
                                     src={dropdownArrow} 
@@ -188,7 +188,7 @@ const AddNewAnnouncements = () => {
                                     placeholder="mm/dd/yyyy"
                                     value={endDate}
                                     onChange={(e) => setEndDate(e.target.value)}
-                                    className="w-full px-4 py-3 h-[60px] [&::-webkit-calendar-picker-indicator]:opacity-0 bg-white border border-[#E5E7EB] rounded-lg font-roboto text-[14px] leading-[20px] text-dark-gray placeholder:text-dark-gray focus:outline-none focus:ring-[1px] focus:ring-[#032746] focus:border-transparent"
+                                    className="w-full shadow-[0px_10px_15px_-3px_#0000001A] px-4 py-3 h-[60px] [&::-webkit-calendar-picker-indicator]:opacity-0 bg-white border border-[#E5E7EB] rounded-lg font-roboto text-[16px] placeholder:text-[16px] leading-[100%] text-blue-dark font-normal placeholder:text-blue-dark focus:outline-none focus:ring-[1px] focus:ring-[#032746] focus:border-transparent"
                                 />
                                  <img 
                                     src={dropdownArrow} 
@@ -202,8 +202,8 @@ const AddNewAnnouncements = () => {
                     {/* Status Toggle */}
                     <div className="flex items-center justify-between pt-2">
                         <div>
-                            <span className="font-roboto text-[16px] leading-[20px] font-normal text-oxford-blue">
-                                {t('admin.addNewAnnouncements.fields.status')} <span className="text-dark-gray text-[12px] hidden sm:block">{t('admin.addNewAnnouncements.labels.statusDescription')}</span>
+                            <span className="font-roboto text-[16px] leading-[100%] flex items-center gap-1 font-normal text-oxford-blue">
+                                {t('admin.addNewAnnouncements.fields.status')} <span className="text-[#6B7280] text-[12px] leading-[100%] mt-1 hidden sm:block">{t('admin.addNewAnnouncements.labels.statusDescription')}</span>
                             </span>
                         </div>
                         <div className="flex items-center gap-3">
@@ -229,13 +229,13 @@ const AddNewAnnouncements = () => {
                 <div className="flex flex-col sm:flex-row sm:justify-end gap-3 px-5 pb-6 pt-2">
                     <button
                         onClick={handleCancel}
-                        className="px-6 py-2.5 font-roboto text-[14px] leading-[20px] font-medium text-[#374151] bg-white border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] transition-colors"
+                        className="px-6 py-2.5 font-roboto text-[16px] leading-[24px] font-medium text-blue-dark bg-white border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] transition-colors"
                     >
                         {t('admin.addNewAnnouncements.buttons.cancel')}
                     </button>
                     <button
                         onClick={handleSave}
-                        className="px-6 py-2.5 font-roboto text-[14px] leading-[20px] font-medium text-white bg-[#ED4122] rounded-lg hover:bg-[#DC2626] transition-colors"
+                        className="px-6 py-2.5 font-roboto text-[16px] leading-[100%] font-medium text-white bg-[#ED4122] rounded-lg hover:bg-[#DC2626] transition-colors"
                     >
                         {t('admin.addNewAnnouncements.buttons.saveAnnouncement')}
                     </button>

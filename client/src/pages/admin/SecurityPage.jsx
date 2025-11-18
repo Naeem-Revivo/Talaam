@@ -87,8 +87,8 @@ export default function SecuritySettingsPage() {
 
                 {/* Security & Authentication */}
                 <section className="px-8 ">
-                    <h2 className="text-[20px] leading-[100%] font-semibold text-oxford-blue mb-3">{t('admin.security.sections.securityAndAuthentication.title')}</h2>
-                    <p className="text-[14px] leading-[100%] text-oxford-blue">{t('admin.security.sections.securityAndAuthentication.description')}</p>
+                    <h2 className="text-[20px] leading-[100%] font-semibold text-oxford-blue mb-3 font-archivo">Security & Authentication</h2>
+                    <p className="text-[16px] leading-[100%] font-normal text-oxford-blue font-roboto">Manage password rules, two-factor authentication, and sensitive action controls.</p>
                 </section>
 
                 {/* Password Policy */}
@@ -191,8 +191,8 @@ export default function SecuritySettingsPage() {
 
                 {/* Save + Cancel */}
                 <div className="flex justify-end gap-3 pt-6 px-8">
-                    <button className="border border-[#E5E7EB] rounded-md h-9 w-[120px] text-blue-dark">{t('admin.security.actions.cancel')}</button>
-                    <button className=" bg-[#ED4122] rounded-md h-9 w-[158px] text-white">{t('admin.security.actions.saveChanges')}</button>
+                    <button className="border border-[#E5E7EB] text-[16px] leading-[24px] font-medium rounded-md h-9 w-[120px] text-blue-dark">Cancel</button>
+                    <button className=" bg-[#ED4122] rounded-md h-9 w-[158px] text-[16px] leading-[100%] font-medium text-white">Save Changes</button>
                 </div>
             </div>
         </div>

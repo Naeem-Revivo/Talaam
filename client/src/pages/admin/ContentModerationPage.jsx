@@ -340,7 +340,7 @@ const ContentModerationPage = () => {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
-                        className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] border text-center w-[70px] h-5 rounded-[6px] border-[0.5px] border-[#ED4122] bg-[#FEF2F2] text-[10px] text-[#ED4122]"
+                        className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] text-center w-[70px] h-5 rounded-[6px] border-[0.5px] border-[#ED4122] bg-[#FEF2F2] text-[10px] text-[#ED4122]"
                       >
                         {item.status}
                       </span>
@@ -394,7 +394,7 @@ const ContentModerationPage = () => {
                   </p>
                 </div>
                 <span
-                  className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] border text-center w-[70px] h-5 rounded-[6px] border-[0.5px] border-[#ED4122] bg-[#FEF2F2] text-[10px] text-[#ED4122]"
+                  className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] text-center w-[70px] h-5 rounded-[6px] border-[0.5px] border-[#ED4122] bg-[#FEF2F2] text-[10px] text-[#ED4122]"
                 >
                   {item.status}
                 </span>

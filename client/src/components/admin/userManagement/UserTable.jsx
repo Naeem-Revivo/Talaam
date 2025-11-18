@@ -75,7 +75,7 @@ const TableRow = ({ user, onView, onEdit }) => {
       </td>
       <td className="px-6 py-4 text-center">
         <span
-          className={`inline-flex h-[26px] min-w-[59px] items-center justify-center rounded-md px-3 text-sm font-normal ${tone.wrapper} ${tone.text}`}
+          className={`inline-flex h-[26px] min-w-[59px] font-roboto items-center justify-center rounded-md px-3 text-sm font-normal ${tone.wrapper} ${tone.text}`}
         >
           {getStatusLabel(user.status)}
         </span>
