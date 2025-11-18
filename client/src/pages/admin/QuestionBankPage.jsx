@@ -304,13 +304,6 @@ const QuestionBankPage = () => {
             </button>
             <button
               type="button"
-              className="flex gap-3 h-[36px] w-[124px] items-center justify-center rounded-[8px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
-            >
-              <img src={users} alt="Mark" />
-              {t('admin.questionBank.actions.users')}
-            </button>
-            <button
-              type="button"
               onClick={() => navigate("/admin/add-question")}
               className="flex h-[36px] items-center justify-center rounded-[10px] bg-[#ED4122] px-4 text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
