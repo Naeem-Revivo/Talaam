@@ -151,6 +151,7 @@ const UserGrowthAnalyticsPage = () => {
               showDefaultOnEmpty={false}
               className="w-full"
               height="h-[50px]"
+              textClassName="font-archivo text-[16px] font-semibold"
             />
           </div>
 
@@ -169,6 +170,7 @@ const UserGrowthAnalyticsPage = () => {
               showDefaultOnEmpty={false}
               className="w-full"
               height="h-[50px]"
+              textClassName="font-archivo text-[16px] font-semibold"
             />
           </div>
 
@@ -188,6 +190,7 @@ const UserGrowthAnalyticsPage = () => {
               showDefaultOnEmpty={true}
               className="w-full"
               height="h-[50px]"
+              textClassName="font-archivo text-[16px] font-semibold"
             />
           </div>
 
@@ -206,6 +209,7 @@ const UserGrowthAnalyticsPage = () => {
               showDefaultOnEmpty={true}
               className="w-full"
               height="h-[50px]"
+              textClassName="font-archivo text-[16px] font-semibold"
             />
           </div>
         </div>
@@ -232,7 +236,7 @@ const UserGrowthAnalyticsPage = () => {
             <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
               {t('admin.userGrowthAnalytics.charts.overallUserGrowth')}
             </h2>
-            <p className="mt-1 font-roboto text-[14px] font-normal leading-[20px] text-dark-gray">
+            <p className="mt-1 font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
               {t('admin.userGrowthAnalytics.charts.newUsersOverLast30Days')}
             </p>
             <div className="h-[300px] relative mt-6">
@@ -317,10 +321,10 @@ const UserGrowthAnalyticsPage = () => {
 
           {/* Sign-ups by Role Chart */}
           <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+            <h2 className="pt-3 font-archivo text-[20px] font-semibold leading-[28px] text-oxford-blue">
               {t('admin.userGrowthAnalytics.charts.signupsByRole')}
             </h2>
-            <p className="mt-1 font-roboto text-[14px] font-normal leading-[20px] text-dark-gray">
+            <p className="mt-1 font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
               {t('admin.userGrowthAnalytics.charts.categorizationOfNewUsers')}
             </p>
             <div className="h-[300px] relative mt-6">
