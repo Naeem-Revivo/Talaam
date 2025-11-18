@@ -754,10 +754,16 @@
       "questionBank": "بنك الأسئلة",
       "classification": "التصنيف",
       "subscriptions": "الاشتراكات والفوترة",
+      "paymentHistory": "سجل المدفوعات",
+      "manageUserSubscription": "إدارة اشتراكات المستخدمين",
       "reports": "التقارير والتحليلات",
       "moderation": "إدارة المحتوى",
       "settings": "إعدادات النظام",
-      "security": "الأمان والصلاحيات"
+      "security": "الأمان والصلاحيات",
+      "userGrowthAnalytics": "تحليلات نمو المستخدمين",
+      "subscriptionTrends": "اتجاهات الاشتراكات",
+      "performanceAnalytics": "تحليلات الأداء",
+      "exportReports": "تصدير التقارير"
     },
     "dashboard": {
       "hero": {
