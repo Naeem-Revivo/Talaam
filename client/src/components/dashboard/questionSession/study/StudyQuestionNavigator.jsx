@@ -9,7 +9,8 @@ const StudyQuestionNavigator = ({
   onGoToIndex,
   onCloseQuestionNav,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dir = language === 'ar' ? 'rtl' : 'ltr'
   return (
     <>
       {showQuestionNav && (
@@ -47,7 +48,7 @@ const StudyQuestionNavigator = ({
       </>
     )}
 
-    <div className="hidden lg:flex w-[110px] h-full bg-white overflow-y-auto flex-col border-r border-[#E5E7EB]">
+    <div className={`hidden lg:flex w-[110px] h-full bg-white overflow-y-auto flex-col border-r border-[#E5E7EB] ${dir === 'rtl' ? "border-l" : "border-r"}`}>
       <div className="flex-1">
         {questions.map((_, index) => (
           <button

@@ -3,6 +3,8 @@ import { analytics, watch, tick, cross } from '../icons';
 import { useLanguage } from '../../../../context/LanguageContext';
 
 const OptionCard = ({ option, groupName, isSelected, disabled, onOptionChange, highlight }) => {
+  const language = useLanguage();
+  const dir = language === 'ar' ? 'rtl' : 'ltr'
   const baseClass = 'w-full min-h-[50px] rounded-lg flex items-center px-3 md:px-4 py-2 border bg-white';
   const borderClass = highlight
     ? 'border-[#ED4122]'
@@ -11,8 +13,8 @@ const OptionCard = ({ option, groupName, isSelected, disabled, onOptionChange, h
       : 'border-[#E5E7EB]';
 
   return (
-    <div className={`${baseClass} ${borderClass}`}>
-      <label className="flex items-center gap-2 md:gap-3 cursor-pointer w-full">
+    <div className={`${baseClass} ${borderClass}`} dir={dir}>
+      <label className="flex items-center gap-2 md:gap-3 cursor-pointer w-full" dir="ltr">
         <input
           type="radio"
           name={groupName}
@@ -37,15 +39,15 @@ const ReviewOptionCard = ({ option, groupName, isCorrect, isUserAnswer }) => {
   const cardClass = isCorrect
     ? "border border-[#ED4122] bg-[#C6D8D3]" // correct card style from screenshot
     : isWrong
-    ? "border border-[#ED4122] bg-[#FDF0D5]" // wrong card style from screenshot
-    : "border border-[#E5E7EB] bg-white";
+      ? "border border-[#ED4122] bg-[#FDF0D5]" // wrong card style from screenshot
+      : "border border-[#E5E7EB] bg-white";
 
   return (
     <div
       className={`w-full rounded-lg px-3 py-2 md:px-4 min-h-[50px] flex items-center ${cardClass}`}
     >
       <label className="flex items-center gap-3 w-full cursor-default">
-        
+
         {/* ====================== RADIO ====================== */}
         <span
           className={`
@@ -55,7 +57,7 @@ const ReviewOptionCard = ({ option, groupName, isCorrect, isUserAnswer }) => {
             pointer-events-none
           `}
         >
-          
+
           {/* INNER DOT only for correct */}
           {isChecked && (
             <span className="w-2 h-2 bg-[#ED4122] rounded-full" />
@@ -72,7 +74,7 @@ const ReviewOptionCard = ({ option, groupName, isCorrect, isUserAnswer }) => {
           <img src={tick} alt="Correct" className="text-white bg-cinnebar-red rounded-full p-1" />
         ) : isWrong ? (
           <div>
-          <img src={cross} alt="Incorrect" className="text-white bg-cinnebar-red rounded-full p-1" />
+            <img src={cross} alt="Incorrect" className="text-white bg-cinnebar-red rounded-full p-1" />
           </div>
         ) : null}
       </label>
@@ -107,7 +109,8 @@ const StudyQuestionContent = ({
   showExplanationPanel,
   onToggleExplanationPanel,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dir = language === 'ar' ? 'rtl' : 'ltr'
   const statusButtonClass = isCorrect ? 'bg-[#10B981] text-white' : 'bg-[#ED4122] text-white';
   const statusButtonLabel = isCorrect ? t('dashboard.questionSession.correctAnswer') : t('dashboard.questionSession.incorrectAnswer');
   const infoContainerClass = isCorrect ? 'bg-[#ECFDF5] border-l-4 border-[#10B981]' : 'bg-[#FDF0D5] border-l-4 border-[#ED4122]';
@@ -117,9 +120,12 @@ const StudyQuestionContent = ({
   const reviewGroupName = `answer-review-${currentQuestion.id}`;
 
   return (
-    <div className="max-w-4xl mx-auto lg:ml-5">
+    <div className="max-w-4xl mx-auto lg:ml-5" dir={dir}>
       <div className="mb-4 md:mb-6">
-        <p className="text-[16px] md:text-[18px] font-normal text-oxford-blue font-roboto leading-[24px] tracking-[0%]">
+        <p
+          dir="ltr"
+          className="text-[16px] md:text-[18px] font-normal text-oxford-blue font-roboto leading-[24px] tracking-[0%] text-left"
+        >
           {currentQuestion.prompt}
         </p>
       </div>

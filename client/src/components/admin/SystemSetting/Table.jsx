@@ -8,7 +8,7 @@ const TableHeader = ({ columns }) => (
       {columns.map((column) => (
         <th
           key={column}
-          className="px-6 py-4 text-[16px] font-medium leading-[16px] text-white uppercase"
+          className="px-6 py-4 text-[16px] font-medium leading-[16px] font-archivo text-white uppercase"
         >
           {column}
         </th>
@@ -34,7 +34,7 @@ const TableRow = ({ item, columns, onView, onEdit }) => {
           const isScheduled = value.toLowerCase() === 'scheduled';
           return (
             <td key={column} className="px-6 py-4 text-center">
-              <span className={`inline-block px-[12px] py-[5px] rounded-md text-[14px] leading-[100%] font-normal ${isActive ? 'bg-[#FDF0D5] text-[#ED4122]' :
+              <span className={`inline-block px-[12px] py-[5px] rounded-md text-[14px] leading-[100%] font-normal font-roboto ${isActive ? 'bg-[#FDF0D5] text-[#ED4122]' :
                 isScheduled ? 'bg-[#ED4122] text-white' :
                   'bg-[#C6D8D3] text-oxford-blue'
                 }`}>
@@ -57,11 +57,12 @@ const TableRow = ({ item, columns, onView, onEdit }) => {
             </td>
           );
         }
+        console.log(fieldKey)
 
         return (
           <td
             key={column}
-            className="px-6 py-4 text-[14px] font-normal leading-[100%] text-center"
+            className={`px-6 py-4 font-normal font-roboto text-center ${fieldKey === "schedule" || fieldKey === "message" ? "text-[12px] leading-4 text-[#6B7280]" : "text-[14px] leading-[100%] text-blue-dark"}`}
           >
             {value}
           </td>

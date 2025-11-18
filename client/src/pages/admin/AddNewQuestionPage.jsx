@@ -2,6 +2,73 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 
+const Dropdown = ({ label, value, options, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Automatically show default if value is empty
+  const displayValue = value && value.trim() !== "" ? value : options[0];
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="w-full" ref={dropdownRef}>
+      {/* Label only on small screens */}
+      <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3 block lg:hidden">{label}</p>
+
+      {/* Dropdown Box */}
+      <div
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="relative flex h-[50px] cursor-pointer items-center justify-between rounded-lg bg-white px-4 text-[16px] leading-[100%] font-normal text-oxford-blue border border-[#03274633]"
+      >
+        <span>{displayValue}</span>
+        <svg
+          width="15"
+          height="9"
+          viewBox="0 0 15 9"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+        >
+          <path
+            d="M0.6875 0.726562L7.00848 6.71211L13.3295 0.726562"
+            stroke="#032746"
+            strokeWidth="2"
+          />
+        </svg>
+
+        {/* Dropdown Menu */}
+        {isOpen && (
+          <ul className="absolute left-0 top-full z-10 mt-1 w-full rounded-lg border border-gray-100 bg-white shadow-lg">
+            {options.map((option) => (
+              <li
+                key={option}
+                onClick={() => {
+                  onChange(option);
+                  setIsOpen(false);
+                }}
+                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                  displayValue === option ? "font-semibold text-oxford-blue" : "text-gray-700"
+                }`}
+              >
+                {option}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const AddNewQuestionPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -99,9 +166,9 @@ const AddNewQuestionPage = () => {
     };
 
     return (
-      <div className="rounded-[8px] w-full lg:w-[660px] h-auto lg:h-[208px] min-h-[150px] border border-[#CDD4DA] bg-white overflow-hidden">
+      <div className="rounded-[8px] w-full h-auto lg:h-[208px] min-h-[150px] border border-[#CDD4DA] bg-white overflow-hidden">
         {/* Toolbar */}
-        <div className="flex items-center gap-2 border-b  border-[#CDD4DA] bg-[#F6F7F8] py-3 px-2 rounded-t-[8px]">
+        <div className="flex items-center flex-wrap gap-2 border-b  border-[#CDD4DA] bg-[#F6F7F8] py-3 px-2 rounded-t-[8px]">
           {/* Text Formatting */}
           <button
             type="button"
@@ -751,9 +818,8 @@ const AddNewQuestionPage = () => {
           onInput={handleInput}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          className={`w-full p-4 font-roboto text-[16px] leading-[100%] text-oxford-blue focus:outline-none ${
-            !value && !isFocused ? "text-[#9CA3AF]" : ""
-          }`}
+          className={`w-full p-4 font-roboto text-[16px] leading-[100%] text-oxford-blue focus:outline-none ${!value && !isFocused ? "text-[#9CA3AF]" : ""
+            }`}
           style={{
             minHeight: minHeight,
             lineHeight: "100%",
@@ -839,10 +905,10 @@ const AddNewQuestionPage = () => {
           min-height: 150px;
         }
       `}</style>
-      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]">
-        <div className="mx-auto flex max-w-[1400px] flex-col gap-6">
+      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1200px]">
           {/* Header */}
-          <header className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
+          <header className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center mb-10">
             <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
               {t('admin.addNewQuestion.hero.title')}
             </h1>
@@ -850,14 +916,14 @@ const AddNewQuestionPage = () => {
               <button
                 type="button"
                 onClick={handleSaveDraft}
-                className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-3 md:px-5 text-[14px] md:text-[16px] font-archivo font-semibold leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
+                className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#E5E7EB] bg-white px-3 md:px-5 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
               >
                 {t('admin.addNewQuestion.buttons.saveDraft')}
               </button>
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 md:px-6 text-[14px] md:text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
+                className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 md:px-6 text-[14px] md:text-[16px] font-archivo font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]"
               >
                 {t('admin.addNewQuestion.buttons.submit')}
               </button>
@@ -865,139 +931,91 @@ const AddNewQuestionPage = () => {
           </header>
 
           {/* Main Content - Two Columns */}
-          <div className="flex flex-col gap-6 lg:flex-row">
-            {/* Left Column - Question Details */}
-            <div
-              className="flex-1 rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 lg:p-8"
-              className="shadow-card"
-            >
-              <h2 className="my-4 md:my-6 font-archivo text-[20px] md:text-[24px] font-bold leading-[28px] text-oxford-blue">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+            {/* Left Column - Question Details (2/3 width on xl screens) */}
+            <div className="xl:col-span-2 bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
+              <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark mb-[30px]">
                 {t('admin.addNewQuestion.sections.questionDetails')}
               </h2>
 
               <div className="space-y-6">
                 {/* Question Text */}
                 <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-5">
                     {t('admin.addNewQuestion.fields.questionText')}
                   </label>
                   <RichTextEditor
                     value={questionText}
                     onChange={setQuestionText}
                     placeholder={t('admin.addNewQuestion.placeholders.questionText')}
-                    minHeight="274px"
+                    minHeight="200px"
                   />
                 </div>
 
                 {/* Question Type */}
                 <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                  <label className="block  text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                     {t('admin.addNewQuestion.fields.questionType')}
                   </label>
-                  <div className="relative">
-                    <select
-                      value={questionType}
-                      onChange={(e) => setQuestionType(e.target.value)}
-                      className="w-full appearance-none rounded-[12px] border border-[#03274633] bg-white py-3 pl-4 pr-10 font-roboto text-[16px] leading-[100%] text-oxford-blue outline-none lg:w-[660px] lg:h-[59px] h-[50px] md:h-[59px]"
-                      style={{
-                        lineHeight: "100%",
-                      }}
-                    >
-                      <option>{t('admin.addNewQuestion.questionTypes.multipleChoice')}</option>
-                      <option>{t('admin.addNewQuestion.questionTypes.trueFalse')}</option>
-                      <option>{t('admin.addNewQuestion.questionTypes.shortAnswer')}</option>
-                      <option>{t('admin.addNewQuestion.questionTypes.essay')}</option>
-                    </select>
-                    <svg
-                      className="pointer-events-none absolute right-6 top-1/2 -translate-y-1/2"
-                      width="15"
-                      height="9"
-                      viewBox="0 0 15 9"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M0.6875 0.726562L7.00848 6.71211L13.3295 0.726562"
-                        stroke="#032746"
-                        strokeWidth="2"
-                      />
-                    </svg>
-                  </div>
+                  <Dropdown
+                    value={questionType}
+                    onChange={setQuestionType}
+                    options={[
+                      t('admin.addNewQuestion.questionTypes.multipleChoice'),
+                      t('admin.addNewQuestion.questionTypes.trueFalse'),
+                      t('admin.addNewQuestion.questionTypes.shortAnswer'),
+                      t('admin.addNewQuestion.questionTypes.essay')
+                    ]}
+                  />
                 </div>
 
-                {/* Options */}
+                {/* Options Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Left Column: A and C */}
                   <div className="space-y-4">
                     <div>
-                      <label className="mb-1 block font-roboto text-[16px] font-normal leading-[32px] text-oxford-blue">
+                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                         {t('admin.addNewQuestion.fields.optionA')}
                       </label>
                       <input
                         type="text"
                         value={options.A}
-                        onChange={(e) =>
-                          handleOptionChange("A", e.target.value)
-                        }
-                        className="w-full rounded-[12px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] leading-[100%] text-oxford-blue outline-none lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
-                        style={{
-                          lineHeight: "100%",
-                          letterSpacing: "0%",
-                        }}
+                        onChange={(e) => handleOptionChange("A", e.target.value)}
+                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block font-roboto text-[16px] font-normal leading-[32px] text-oxford-blue">
+                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                         {t('admin.addNewQuestion.fields.optionC')}
                       </label>
                       <input
                         type="text"
                         value={options.C}
-                        onChange={(e) =>
-                          handleOptionChange("C", e.target.value)
-                        }
-                        className="w-full rounded-[12px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] leading-[100%] text-oxford-blue outline-none lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
-                        style={{
-                          lineHeight: "100%",
-                          letterSpacing: "0%",
-                        }}
+                        onChange={(e) => handleOptionChange("C", e.target.value)}
+                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                       />
                     </div>
                   </div>
-                  {/* Right Column: B and D */}
                   <div className="space-y-4">
                     <div>
-                      <label className="mb-1 block font-roboto text-[16px] font-normal leading-[32px] text-oxford-blue">
+                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                         {t('admin.addNewQuestion.fields.optionB')}
                       </label>
                       <input
                         type="text"
                         value={options.B}
-                        onChange={(e) =>
-                          handleOptionChange("B", e.target.value)
-                        }
-                        className="w-full rounded-[12px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] leading-[100%] text-oxford-blue outline-none lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
-                        style={{
-                          lineHeight: "100%",
-                          letterSpacing: "0%",
-                        }}
+                        onChange={(e) => handleOptionChange("B", e.target.value)}
+                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block font-roboto text-[16px] font-normal leading-[32px] text-oxford-blue">
+                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                         {t('admin.addNewQuestion.fields.optionD')}
                       </label>
                       <input
                         type="text"
                         value={options.D}
-                        onChange={(e) =>
-                          handleOptionChange("D", e.target.value)
-                        }
-                        className="w-full rounded-[12px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] leading-[100%] text-oxford-blue outline-none lg:w-[319px] lg:h-[50px] h-[45px] md:h-[50px]"
-                        style={{
-                          lineHeight: "100%",
-                          letterSpacing: "0%",
-                        }}
+                        onChange={(e) => handleOptionChange("D", e.target.value)}
+                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                       />
                     </div>
                   </div>
@@ -1005,220 +1023,138 @@ const AddNewQuestionPage = () => {
 
                 {/* Correct Answer */}
                 <div>
-                  <label className="mb-1 block font-roboto text-[16px] font-normal leading-[32px] text-oxford-blue">
+                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                     {t('admin.addNewQuestion.fields.correctAnswer')}
                   </label>
-                  <div className="relative">
-                    <select
-                      value={correctAnswer}
-                      onChange={(e) => setCorrectAnswer(e.target.value)}
-                      className="w-full appearance-none rounded-[8px] h-[50px] border border-[#03274633] bg-white py-3 pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-oxford-blue outline-none"
-                    >
-                      <option>{t('admin.addNewQuestion.correctAnswerOptions.optionA')}</option>
-                      <option>{t('admin.addNewQuestion.correctAnswerOptions.optionB')}</option>
-                      <option>{t('admin.addNewQuestion.correctAnswerOptions.optionC')}</option>
-                      <option>{t('admin.addNewQuestion.correctAnswerOptions.optionD')}</option>
-                    </select>
-                    <svg
-                      className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-dark-gray"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
+                  <Dropdown
+                    value={correctAnswer}
+                    onChange={setCorrectAnswer}
+                    options={[
+                      t('admin.addNewQuestion.correctAnswerOptions.optionA'),
+                      t('admin.addNewQuestion.correctAnswerOptions.optionB'),
+                      t('admin.addNewQuestion.correctAnswerOptions.optionC'),
+                      t('admin.addNewQuestion.correctAnswerOptions.optionD')
+                    ]}
+                  />
                 </div>
               </div>
             </div>
 
-            {/* Right Column - Classification */}
-            <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[376px] h-auto lg:h-[674px]"
-              style={{
-              }}
-            >
-              <h2 className="my-6 mt-10  font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+            {/* Right Column - Classification (1/3 width on xl screens) */}
+            <div className="bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
+              <h2 className="text-[20px] leading-[100%] font-bold font-archivo text-blue-dark mb-6">
                 {t('admin.addNewQuestion.sections.classification')}
               </h2>
 
               <div className="space-y-6">
                 {/* Subject */}
                 <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#374151]">
+                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                     {t('admin.addNewQuestion.fields.subject')}
                   </label>
-                  <div className="relative">
-                    <select
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      className="w-full appearance-none rounded-[8px] border border-[#03274633] bg-white py-3 h-[50px] md:h-[59px] lg:w-[318px] lg:h-[59px] pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-oxford-blue outline-none"
-                    >
-                      <option value="">{t('admin.addNewQuestion.placeholders.selectSubject')}</option>
-                      <option>Math</option>
-                      <option>Science</option>
-                      <option>History</option>
-                      <option>Geography</option>
-                    </select>
-                    <svg
-                      className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-dark-gray"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
+                  <Dropdown
+                    value={subject}
+                    onChange={setSubject}
+                    options={[
+                      t('admin.addNewQuestion.placeholders.selectSubject'),
+                      'Math',
+                      'Science',
+                      'History',
+                      'Geography'
+                    ]}
+                  />
                 </div>
 
                 {/* Topic */}
                 <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#374151]">
+                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                     {t('admin.addNewQuestion.fields.topic')}
                   </label>
-                  <div className="relative">
-                    <select
-                      value={topic}
-                      onChange={(e) => setTopic(e.target.value)}
-                      className="w-full appearance-none rounded-[8px] border border-[#03274633] bg-white py-3 h-[50px] md:h-[59px] lg:w-[318px] lg:h-[59px] pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-oxford-blue outline-none"
-                    >
-                      <option value="">{t('admin.addNewQuestion.placeholders.selectTopic')}</option>
-                      <option>Algebra</option>
-                      <option>Geometry</option>
-                      <option>Calculus</option>
-                    </select>
-                    <svg
-                      className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-dark-gray"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
+                  <Dropdown
+                    value={topic}
+                    onChange={setTopic}
+                    options={[
+                      t('admin.addNewQuestion.placeholders.selectTopic'),
+                      'Algebra',
+                      'Geometry',
+                      'Calculus'
+                    ]}
+                  />
                 </div>
 
                 {/* Cognitive Level */}
                 <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#374151]">
+                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                     {t('admin.addNewQuestion.fields.cognitiveLevel')}
                   </label>
-                  <div className="relative">
-                    <select
-                      value={cognitiveLevel}
-                      onChange={(e) => setCognitiveLevel(e.target.value)}
-                      className="w-full appearance-none rounded-[8px] border border-[#03274633] bg-white py-3 h-[50px] md:h-[59px] lg:w-[318px] lg:h-[59px] pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-oxford-blue outline-none"
-                    >
-                      <option value="">{t('admin.addNewQuestion.placeholders.selectLevel')}</option>
-                      <option>{t('admin.addNewQuestion.cognitiveLevels.remember')}</option>
-                      <option>{t('admin.addNewQuestion.cognitiveLevels.understand')}</option>
-                      <option>{t('admin.addNewQuestion.cognitiveLevels.apply')}</option>
-                      <option>{t('admin.addNewQuestion.cognitiveLevels.analyze')}</option>
-                      <option>{t('admin.addNewQuestion.cognitiveLevels.evaluate')}</option>
-                      <option>{t('admin.addNewQuestion.cognitiveLevels.create')}</option>
-                    </select>
-                    <svg
-                      className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-dark-gray"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
+                  <Dropdown
+                    value={cognitiveLevel}
+                    onChange={setCognitiveLevel}
+                    options={[
+                      t('admin.addNewQuestion.placeholders.selectLevel'),
+                      t('admin.addNewQuestion.cognitiveLevels.remember'),
+                      t('admin.addNewQuestion.cognitiveLevels.understand'),
+                      t('admin.addNewQuestion.cognitiveLevels.apply'),
+                      t('admin.addNewQuestion.cognitiveLevels.analyze'),
+                      t('admin.addNewQuestion.cognitiveLevels.evaluate'),
+                      t('admin.addNewQuestion.cognitiveLevels.create')
+                    ]}
+                  />
                 </div>
 
-                {/* Source (Optional) */}
+                {/* Source */}
                 <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-[#374151]">
+                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                     {t('admin.addNewQuestion.fields.source')}
                   </label>
-                  <div className="relative">
-                    <select
-                      value={source}
-                      onChange={(e) => setSource(e.target.value)}
-                      className="w-full appearance-none rounded-[8px] border border-[#03274633] bg-white py-3 h-[50px] md:h-[59px] lg:w-[318px] lg:h-[59px] pl-4 pr-10 font-roboto text-[16px] leading-[20px] text-oxford-blue outline-none"
-                    >
-                      <option value="">{t('admin.addNewQuestion.placeholders.selectSource')}</option>
-                      <option>{t('admin.addNewQuestion.sources.textbook')}</option>
-                      <option>{t('admin.addNewQuestion.sources.pastExam')}</option>
-                      <option>{t('admin.addNewQuestion.sources.custom')}</option>
-                    </select>
-                    <svg
-                      className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-dark-gray"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
+                  <Dropdown
+                    value={source}
+                    onChange={setSource}
+                    options={[
+                      t('admin.addNewQuestion.placeholders.selectSource'),
+                      t('admin.addNewQuestion.sources.textbook'),
+                      t('admin.addNewQuestion.sources.pastExam'),
+                      t('admin.addNewQuestion.sources.custom')
+                    ]}
+                  />
                 </div>
               </div>
             </div>
           </div>
-          {/* Bottom Section - Explanation */}
-          <div className="flex justify-between items-end">
-          <div
-            className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[720px] h-auto lg:h-[321px]"
-            style={{
-              boxShadow: "6px 6px 54px 0px rgba(0, 0, 0, 0.05)",
-            }}
-          >
-            <h2 className="mb-6 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
-              {t('admin.addNewQuestion.sections.explanation')}
-            </h2>
-            <RichTextEditor
-              value={explanation}
-              onChange={setExplanation}
-              placeholder={t('admin.addNewQuestion.placeholders.explanation')}
-              minHeight="150px"
-            />
-          </div>
 
-          {/* Footer Action Buttons */}
-          <div className="flex flex-wrap justify-end gap-4 pb-6">
+          {/* Bottom Section - Explanation and Actions */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            {/* Explanation Section */}
+            <div className="lg:col-span-2 bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
+              <h2 className="text-[20px] leading-[100%] font-archivo font-bold text-blue-dark mb-6">
+                {t('admin.addNewQuestion.sections.explanation')}
+              </h2>
+              <RichTextEditor
+                value={explanation}
+                onChange={setExplanation}
+                placeholder={t('admin.addNewQuestion.placeholders.explanation')}
+                minHeight="150px"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col lg:flex-row gap-5 justify-end items-end">
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
+                className="flex h-[36px] w-full lg:w-auto items-center justify-center rounded-[8px] border border-[#E5E7EB] bg-white px-9 text-[16px] font-roboto font-medium leading-[24px] text-blue-dark transition hover:bg-[#F9FAFB]"
               >
                 {t('admin.addNewQuestion.buttons.cancel')}
               </button>
               <button
                 type="button"
                 onClick={handleSaveQuestion}
-                className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-7 text-[16px] font-roboto font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]"
+                className="flex h-[36px] w-full lg:w-auto items-center justify-center rounded-[8px] bg-[#ED4122] px-8 text-[16px] font-roboto font-medium leading-[100%] text-white transition hover:bg-[#d43a1f]"
               >
                 {t('admin.addNewQuestion.buttons.saveQuestion')}
               </button>
             </div>
-            </div>
+          </div>
         </div>
       </div>
     </>

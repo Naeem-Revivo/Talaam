@@ -114,7 +114,7 @@ const SystemSettingPlan = () => {
                                     </h2>
                                 </div>
                                 <div className="flex-1">
-                                    <p className="font-roboto text-[14px] leading-[20px] text-dark-gray mb-3">
+                                    <p className="font-roboto text-[16px] leading-[100%] font-normal text-[#6B7280] mb-4">
                                         {card.description}
                                     </p>
                                     <button

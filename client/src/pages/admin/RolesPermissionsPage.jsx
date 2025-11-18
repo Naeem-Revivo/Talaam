@@ -24,7 +24,7 @@ const Dropdown = ({ label, value, options, onChange }) => {
       <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3 block lg:hidden">{label}</p>
       <div
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative flex h-[48px] cursor-pointer items-center justify-between rounded-lg border border-transparent bg-white px-4 text-sm font-semibold text-oxford-blue shadow-filter-hover"
+        className="relative flex h-[48px] cursor-pointer items-center justify-between rounded-lg border bg-white px-4 text-[16px] leading-[100%] font-semibold text-oxford-blue font-archivo border-[#E5E7EB]"
       >
         <span>{displayValue}</span>
         <svg
@@ -135,10 +135,10 @@ export default function RolesPermissionsPage() {
       <div className="mx-auto max-w-[1400px]">
         {/* Header */}
         <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-[36px] leading-[40px] font-bold text-oxford-blue">{t('admin.rolesPermissions.hero.title')}</h1>
+          <h1 className="text-[36px] leading-[40px] font-bold text-oxford-blue font-archivo">{t('admin.rolesPermissions.hero.title')}</h1>
           <button
             onClick={handleAddNewRole}
-            className="flex items-center justify-center gap-2 rounded-lg bg-[#ED4122] px-5 py-2.5 text-[14px] font-semibold text-white shadow-sm transition-all hover:bg-[#DC2626] active:scale-95"
+            className="flex items-center font-archivo justify-center gap-2 rounded-lg bg-[#ED4122] px-7 py-2.5 text-[16px] leading-[16px] font-semibold text-white shadow-sm transition-all hover:bg-[#DC2626] active:scale-95"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M8 3.33337V12.6667M3.33334 8H12.6667" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

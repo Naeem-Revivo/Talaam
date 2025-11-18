@@ -25,7 +25,7 @@ const AddUserPage = () => {
           <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
             {t('admin.addUser.hero.title')}
           </h1>
-          <p className="font-roboto text-[18px] leading-[16px] text-dark-gray">
+          <p className="font-roboto text-[18px] leading-[16px] text-[#6B7280] font-normal">
             {t('admin.addUser.hero.subtitle')}
           </p>
         </header>

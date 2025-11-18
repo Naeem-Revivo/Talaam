@@ -463,15 +463,15 @@ const AdminDashboardPage = () => {
                       </span>
                     </div>
                     <div>
-                      <p className="font-roboto text-[16px] leading-[20px] text-oxford-blue font-normal">
+                      <p className="font-roboto text-[16px] leading-[20px] text-[#032746] font-normal">
                         {user.name}
                       </p>
-                      <p className="font-roboto text-[12px] leading-[20px] text-dark-gray">
+                      <p className="font-roboto text-[12px] leading-[20px] text-[#6B7280]">
                         {user.email}
                       </p>
                     </div>
                   </div>
-                  <span className="font-roboto text-[12px] leading-[20px] text-dark-gray">
+                  <span className="font-roboto text-[12px] leading-[20px] text-[#6B7280]">
                     {user.time}
                   </span>
                 </div>

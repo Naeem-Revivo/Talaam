@@ -37,18 +37,18 @@ const PracticePage = () => {
 
 
   const domains = [
-    { id: 'quantitative', name: 'Quantitative' },
-    { id: 'language', name: 'Language' },
-    { id: 'logical', name: 'Logical Reasoning' },
-    { id: 'general', name: 'General Knowledge' },
+  { id: 'quantitative', name: t('dashboard.practice.questionPool.domainsOptions.quantitative') },
+    { id: 'language', name: t('dashboard.practice.questionPool.domainsOptions.language') },
+    { id: 'logical', name: t('dashboard.practice.questionPool.domainsOptions.logical') },
+    { id: 'general', name: t('dashboard.practice.questionPool.domainsOptions.general') },
   ];
 
   const subtopics = [
-    { id: 'algebra', name: 'Algebra', count: 150 },
-    { id: 'geometry', name: 'Geometry', count: 120 },
-    { id: 'arithmetic', name: 'Arithmetic', count: 180 },
-    { id: 'statistics', name: 'Statistics', count: 90 },
-    { id: 'verbal', name: 'Verbal Analogy', count: 200 },
+    { id: 'algebra', name: t('dashboard.practice.questionPool.subtopicsOptions.algebra'), count: 150 },
+    { id: 'geometry', name: t('dashboard.practice.questionPool.subtopicsOptions.geometry'), count: 120 },
+    { id: 'arithmetic', name: t('dashboard.practice.questionPool.subtopicsOptions.arithmetic'), count: 180 },
+    { id: 'statistics', name: t('dashboard.practice.questionPool.subtopicsOptions.statistics'), count: 90 },
+    { id: 'verbal', name: t('dashboard.practice.questionPool.subtopicsOptions.verbal'), count: 200 },
   ];
 
   const toggleDomain = (domainId) => {

@@ -16,8 +16,8 @@ const RoleCard = ({ title, description, badge, onEdit, onDelete }) => {
       {/* Top section with title and edit button - Fixed height */}
       <div className="flex items-start justify-between px-6 pt-8 pb-6 flex-1">
         <div className="flex-1 pr-3">
-          <h3 className="text-xl font-bold text-oxford-blue mb-4">{title}</h3>
-          <p className="text-[14px] text-dark-gray leading-[100%] line-clamp-2">{description}</p>
+          <h3 className="text-[20px] leading-[100%] font-archivo font-bold text-oxford-blue mb-4">{title}</h3>
+          <p className="text-[16px] text-[#6B7280] font-normal leading-[100%] line-clamp-2">{description}</p>
         </div>
         <button
           onClick={onEdit}
@@ -32,7 +32,7 @@ const RoleCard = ({ title, description, badge, onEdit, onDelete }) => {
 
       {/* Bottom section with badge and delete button - Fixed height */}
       <div className="flex items-center justify-between px-6 h-[80px] border-t border-[#E5E7EB]">
-        <span className={`inline-flex items-center px-[10px] py-[5px] rounded-md text-[14px] font-normal ${getBadgeStyles()}`}>
+        <span className={`inline-flex items-center px-[10px] py-[5px] rounded-md text-[14px] leading-[100%] font-normal font-roboto ${getBadgeStyles()}`}>
           {badge}
         </span>
         <button
@@ -73,7 +73,7 @@ const Checkbox = ({ id, label, checked, onChange }) => {
           )}
         </div>
       </div>
-      <span className="text-[16px] leading-[100%] font-normal text-oxford-blue select-none">{label}</span>
+      <span className="text-[16px] leading-[100%] font-normal font-roboto text-oxford-blue select-none">{label}</span>
     </label>
   );
 };
@@ -82,7 +82,7 @@ const Checkbox = ({ id, label, checked, onChange }) => {
 const PermissionSection = ({ title, permissions, values, onChange }) => {
   return (
     <div>
-      <h4 className="text-[20px] leading-[100%] font-bold text-oxford-blue mb-8">{title}</h4>
+      <h4 className="text-[20px] leading-[100%] font-bold font-archivo text-oxford-blue mb-8">{title}</h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {permissions.map((permission) => (
           <Checkbox
@@ -177,11 +177,11 @@ export default function AdminRolePermissions() {
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-[1200px]">
         {/* Header */}
         <div className="mb-[50px] flex flex-col md:flex-row items-start md:items-center justify-between">
-          <h1 className="text-[26px] leading[40px] font-bold text-oxford-blue">{t('admin.adminRolePermissions.hero.title')}</h1>
-          <button className="flex items-center justify-center w-[171px] h-[36px] gap-2 rounded-lg bg-[#ED4122] px-4 py-2.5 text-[16px] leading[16px] font-semibold text-white shadow-sm transition-all hover:bg-[#DC2626] active:scale-95">
+          <h1 className="text-[36px] leading[40px] font-archivo font-bold text-oxford-blue">{t('admin.adminRolePermissions.hero.title')}</h1>
+          <button className="flex items-center justify-center w-[171px] h-[36px] gap-2 rounded-lg bg-[#ED4122] px-4 py-2.5 text-[16px] leading[16px] font-semibold font-archivo text-white shadow-sm transition-all hover:bg-[#DC2626] active:scale-95">
             {t('admin.adminRolePermissions.buttons.addNewRole')}
           </button>
         </div>
@@ -203,7 +203,7 @@ export default function AdminRolePermissions() {
         {/* Permission Settings */}
         <div className="">
           <div className="pb-[30px]">
-            <h2 className="text-[20px] font-bold leading-[100%] text-oxford-blue">{t('admin.adminRolePermissions.sections.permissionSettings')}</h2>
+            <h2 className="text-[20px] font-bold leading-[100%] font-archivo text-oxford-blue">{t('admin.adminRolePermissions.sections.permissionSettings')}</h2>
           </div>
 
 
@@ -240,13 +240,13 @@ export default function AdminRolePermissions() {
           <div className="flex flex-col sm:flex-row items-center justify-end gap-3 border-t border-[#E5E7EB] px-6 py-4">
             <button
               onClick={handleCancel}
-              className="rounded-md w-full sm:w-[120px] border border-[#E5E7EB] bg-white px-5 py-2 text-[16px] leading-[100%] font-medium text-oxford-blue shadow-sm transition-all hover:bg-[#F9FAFB] active:scale-95"
+              className="rounded-md w-full sm:w-[120px] border border-[#E5E7EB] font-roboto bg-white px-5 py-2 text-[16px] leading-[100%] font-medium text-oxford-blue shadow-sm transition-all hover:bg-[#F9FAFB] active:scale-95"
             >
               {t('admin.adminRolePermissions.buttons.cancel')}
             </button>
             <button
               onClick={handleSaveChanges}
-              className="rounded-md bg-[#ED4122] px-5 py-2 text-[16px] leading-[100%] w-full sm:w-[158px] font-medium text-white shadow-sm transition-all hover:bg-[#DC2626] active:scale-95"
+              className="rounded-md bg-[#ED4122] px-5 py-2 text-[16px] leading-[100%] font-roboto w-full sm:w-[158px] font-medium text-white shadow-sm transition-all hover:bg-[#DC2626] active:scale-95"
             >
               {t('admin.adminRolePermissions.buttons.saveChanges')}
             </button>

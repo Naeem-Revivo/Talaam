@@ -47,7 +47,7 @@ const AdminMetricCard = ({
       {badgeText && (
         <footer className="">
           <span
-            className={`inline-flex items-center rounded-md px-3 py-1 text-sm font-normal ${badgeClassName}`}
+            className={`inline-flex items-center font-roboto rounded-md px-3 py-1 text-sm font-normal ${badgeClassName}`}
           >
             {badgeText}
           </span>

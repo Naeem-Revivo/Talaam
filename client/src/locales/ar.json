@@ -444,7 +444,21 @@
       "dashboard": "لوحة التحكم",
       "practiceSession": "إنشاء جلسة تدريبية",
       "performanceAnalytics": "تحليلات الأداء",
-      "reviewSessions": "مراجعة الجلسات"
+      "reviewIncorrect": "مراجعة الأسئلة الخاطئة",
+      "reviewAll": "مراجعة جميع الأسئلة",
+      "reviewSessions": "مراجعة الجلسات",
+      "sessionSummary": "ملخص الجلسة",
+      "questionSession": "جلسة الأسئلة"
+    },
+    "title": {
+      "dashboard": "لوحة التحكم",
+      "practiceSession": "إنشاء جلسة تدريبية",
+      "performanceAnalytics": "تحليلات الأداء",
+      "reviewIncorrect": "مراجعة الأسئلة الخاطئة",
+      "reviewAll": "مراجعة جميع الأسئلة",
+      "reviewSessions": "مراجعة الجلسات",
+      "sessionSummary": "ملخص الجلسة",
+      "questionSession": "جلسة الأسئلة"
     },
     "overview": {
       "title": "نظرة عامة",
@@ -494,7 +508,20 @@
         "allQuestions": "جميع الأسئلة",
         "domains": "المجالات",
         "subtopics": "المواضيع الفرعية",
-        "noQuestionsMatch": "لا توجد أسئلة تطابق المرشحات الخاصة بك. امسح المرشحات للمتابعة."
+        "noQuestionsMatch": "لا توجد أسئلة تطابق المرشحات الخاصة بك. امسح المرشحات للمتابعة.",
+        "domainsOptions": {
+          "quantitative": "الكمّي",
+          "language": "اللغة",
+          "logical": "الاستدلال المنطقي",
+          "general": "المعرفة العامة"
+        },
+        "subtopicsOptions": {
+          "algebra": "الجبر",
+          "geometry": "الهندسة",
+          "arithmetic": "الحساب",
+          "statistics": "الإحصاء",
+          "verbal": "القياس اللفظي"
+        }
       },
       "sessionSize": {
         "title": "حجم الجلسة",
@@ -2119,4 +2146,3 @@
     }
   }
 }
-

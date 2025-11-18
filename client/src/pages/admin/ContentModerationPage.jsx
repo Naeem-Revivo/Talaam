@@ -243,7 +243,7 @@ const ContentModerationPage = () => {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue appearance-none cursor-pointer "
+                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[16px] leading-[100%] font-semibold text-oxford-blue appearance-none cursor-pointer "
               >
                 <option value="">{t('admin.contentModeration.filters.status')}</option>
                 <option value="flagged">{t('admin.contentModeration.filters.flagged')}</option>
@@ -270,7 +270,7 @@ const ContentModerationPage = () => {
               <select
                 value={contentType}
                 onChange={(e) => setContentType(e.target.value)}
-                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue appearance-none cursor-pointer "
+                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[16px] leading-[100%] font-semibold text-oxford-blue appearance-none cursor-pointer "
               >
                 <option value="">{t('admin.contentModeration.filters.contentType')}</option>
                 <option value="video">{t('admin.contentModeration.filters.video')}</option>
@@ -297,7 +297,7 @@ const ContentModerationPage = () => {
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}
-                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue appearance-none cursor-pointer "
+                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[16px] leading-[100%] font-semibold text-oxford-blue appearance-none cursor-pointer "
               >
                 <option value="">{t('admin.contentModeration.filters.dateRange')}</option>
                 <option value="today">{t('admin.contentModeration.filters.today')}</option>
