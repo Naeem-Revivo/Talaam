@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AdminMetricCard from "../../components/admin/AdminMetricCard";
 import { useLanguage } from "../../context/LanguageContext";
+import Dropdown from "../../components/shared/Dropdown";
 
 const SubscriptionTrendsPage = () => {
   const { t } = useLanguage();
@@ -200,67 +201,39 @@ const SubscriptionTrendsPage = () => {
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 md:gap-6">
           {/* Plan Type Filter */}
-          <div className="relative">
-            <select
-              value={planType}
-              onChange={(e) => setPlanType(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
-              style={{
-                width: "184px",
-                height: "50px",
-              }}
-            >
-              <option value="" disabled>{t('admin.subscriptionTrends.filters.planType')}</option>
-              <option value="Basic">Basic</option>
-              <option value="Premium">Premium</option>
-              <option value="Enterprise">Enterprise</option>
-              <option value="Trial">Trial</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="w-full md:w-[184px] md:flex-shrink-0">
+            <Dropdown
+              value={planType || ""}
+              options={[
+                { value: "Basic", label: "Basic" },
+                { value: "Premium", label: "Premium" },
+                { value: "Enterprise", label: "Enterprise" },
+                { value: "Trial", label: "Trial" },
+              ]}
+              onChange={(value) => setPlanType(value)}
+              placeholder={t('admin.subscriptionTrends.filters.planType')}
+              showDefaultOnEmpty={false}
+              className="!w-full md:!w-[184px]"
+              height="h-[50px]"
+            />
           </div>
 
           {/* Date Range Filter */}
-          <div className="relative">
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
-              style={{
-                width: "184px",
-                height: "50px",
-              }}
-            >
-              <option value="" disabled>{t('admin.subscriptionTrends.filters.dateRange')}</option>
-              <option value="Last 30 Days">{t('admin.subscriptionTrends.filters.last30Days')}</option>
-              <option value="Last 7 Days">{t('admin.subscriptionTrends.filters.last7Days')}</option>
-              <option value="Last 90 Days">{t('admin.subscriptionTrends.filters.last90Days')}</option>
-              <option value="Last Year">{t('admin.subscriptionTrends.filters.lastYear')}</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="w-full md:w-[184px] md:flex-shrink-0">
+            <Dropdown
+              value={dateRange || ""}
+              options={[
+                { value: "Last 30 Days", label: t('admin.subscriptionTrends.filters.last30Days') },
+                { value: "Last 7 Days", label: t('admin.subscriptionTrends.filters.last7Days') },
+                { value: "Last 90 Days", label: t('admin.subscriptionTrends.filters.last90Days') },
+                { value: "Last Year", label: t('admin.subscriptionTrends.filters.lastYear') },
+              ]}
+              onChange={(value) => setDateRange(value)}
+              placeholder={t('admin.subscriptionTrends.filters.dateRange')}
+              showDefaultOnEmpty={false}
+              className="!w-full md:!w-[184px]"
+              height="h-[50px]"
+            />
           </div>
         </div>
 
@@ -274,19 +247,19 @@ const SubscriptionTrendsPage = () => {
               subtext={card.subtext}
               subtextClassName={card.subtextClassName}
               icon={card.icon}
-              className="w-full sm:w-[calc(50%-12px)] lg:w-[262px]"
+              className="w-full"
             />
           ))}
         </div>
 
         {/* Charts Section */}
-        <div className="flex justify-between gap-6 ">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Revenue Trend Chart */}
-          <div className="rounded-[12px] w-[639px] h-[462px] border border-[#03274633] bg-white p-4 md:p-6 shadow-card">
-            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+          <div className="rounded-[12px] w-full border border-[#03274633] bg-white p-4 md:p-6 shadow-card">
+            <h2 className="pt-3 font-archivo text-[18px] md:text-[20px] font-bold leading-[24px] md:leading-[28px] text-oxford-blue">
               {t('admin.subscriptionTrends.charts.revenueTrend')}
             </h2>
-            <div className="h-[322px] relative mt-6">
+            <div className="h-[250px] md:h-[322px] relative mt-4 md:mt-6">
               <svg width="100%" height="100%" viewBox="0 0 599 322" preserveAspectRatio="xMidYMid meet">
                 <defs>
                   <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
@@ -373,13 +346,13 @@ const SubscriptionTrendsPage = () => {
           </div>
 
           {/* Plan Distribution Chart */}
-          <div className="rounded-[12px] border w-[455px] h-[462px] border-[#03274633] bg-white p-4 md:p-6 shadow-card">
-            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+          <div className="rounded-[12px] border w-full border-[#03274633] bg-white p-4 md:p-6 shadow-card">
+            <h2 className="pt-3 font-archivo text-[18px] md:text-[20px] font-bold leading-[24px] md:leading-[28px] text-oxford-blue">
               {t('admin.subscriptionTrends.charts.planDistribution')}
             </h2>
-            <div className="flex flex-col items-center justify-center gap-6 mt-6">
-              <div className="relative">
-                <svg width="270" height="270" viewBox="0 0 200 200">
+            <div className="flex flex-col items-center justify-center gap-4 md:gap-6 mt-4 md:mt-6">
+              <div className="relative w-full max-w-[270px]">
+                <svg width="100%" height="100%" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
                   {donutPaths.map((item, index) => (
                     <path
                       key={index}
@@ -389,19 +362,19 @@ const SubscriptionTrendsPage = () => {
                   ))}
                 </svg>
               </div>
-              <div className="flex justify-around gap-3 ">
+              <div className="flex flex-col sm:flex-row justify-around gap-3 w-full max-w-[400px]">
                 {planDistribution.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div key={index} className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       <div
-                        className="w-4 h-4 rounded"
+                        className="w-4 h-4 rounded flex-shrink-0"
                         style={{ backgroundColor: item.color }}
                       ></div>
-                      <span className="font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                      <span className="font-roboto text-[13px] md:text-[14px] font-normal leading-[18px] md:leading-[20px] text-oxford-blue">
                         {item.plan}
                       </span>
                     </div>
-                    <span className="font-roboto pl-1.5 text-[14px] font-medium leading-[20px] text-oxford-blue">
+                    <span className="font-roboto pl-1.5 text-[13px] md:text-[14px] font-medium leading-[18px] md:leading-[20px] text-oxford-blue">
                       {item.percentage}%
                     </span>
                   </div>
@@ -412,30 +385,30 @@ const SubscriptionTrendsPage = () => {
         </div>
 
         {/* Plan-Wise Breakdown Table */}
-        <h2 className="pt-6 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+        <h2 className="pt-6 font-archivo text-[18px] md:text-[20px] font-bold leading-[24px] md:leading-[28px] text-oxford-blue">
           {t('admin.subscriptionTrends.table.title')}
         </h2>
         <section className="w-full flex flex-col overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard">
-          <div className="hidden overflow-x-auto md:block">
-            <table className="min-w-full border-collapse">
-              <thead className="hidden md:table-header-group">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse min-w-[600px]">
+              <thead>
                 <tr className="bg-oxford-blue text-center">
-                  <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-[14px] md:text-[16px] font-archivo font-medium leading-[16px] text-white whitespace-nowrap">
                     {t('admin.subscriptionTrends.table.columns.planType')}
                   </th>
-                  <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-[14px] md:text-[16px] font-archivo font-medium leading-[16px] text-white whitespace-nowrap">
                     {t('admin.subscriptionTrends.table.columns.subscribers')}
                   </th>
-                  <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-[14px] md:text-[16px] font-archivo font-medium leading-[16px] text-white whitespace-nowrap">
                     {t('admin.subscriptionTrends.table.columns.active')}
                   </th>
-                  <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-[14px] md:text-[16px] font-archivo font-medium leading-[16px] text-white whitespace-nowrap">
                     {t('admin.subscriptionTrends.table.columns.expired')}
                   </th>
-                  <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-[14px] md:text-[16px] font-archivo font-medium leading-[16px] text-white whitespace-nowrap">
                     {t('admin.subscriptionTrends.table.columns.revenue')}
                   </th>
-                  <th className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-[14px] md:text-[16px] font-archivo font-medium leading-[16px] text-white whitespace-nowrap">
                     {t('admin.subscriptionTrends.table.columns.avgDuration')}
                   </th>
                 </tr>
@@ -445,24 +418,24 @@ const SubscriptionTrendsPage = () => {
                   planBreakdown.map((plan, index) => (
                     <tr
                       key={index}
-                      className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row"
+                      className="border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none hover:bg-[#F9FAFB] transition"
                     >
-                      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center">
+                      <td className="px-3 md:px-6 py-3 md:py-4 text-[12px] md:text-[14px] font-roboto font-normal leading-[100%] text-center">
                         {plan.planType}
                       </td>
-                      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center">
+                      <td className="px-3 md:px-6 py-3 md:py-4 text-[12px] md:text-[14px] font-roboto font-normal leading-[100%] text-center">
                         {plan.subscribers}
                       </td>
-                      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center">
+                      <td className="px-3 md:px-6 py-3 md:py-4 text-[12px] md:text-[14px] font-roboto font-normal leading-[100%] text-center">
                         {plan.active}
                       </td>
-                      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center">
+                      <td className="px-3 md:px-6 py-3 md:py-4 text-[12px] md:text-[14px] font-roboto font-normal leading-[100%] text-center">
                         {plan.expired}
                       </td>
-                      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center">
+                      <td className="px-3 md:px-6 py-3 md:py-4 text-[12px] md:text-[14px] font-roboto font-normal leading-[100%] text-center">
                         {plan.revenue}
                       </td>
-                      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center">
+                      <td className="px-3 md:px-6 py-3 md:py-4 text-[12px] md:text-[14px] font-roboto font-normal leading-[100%] text-center">
                         {plan.avgDuration}
                       </td>
                     </tr>

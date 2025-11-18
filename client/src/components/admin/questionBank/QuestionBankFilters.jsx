@@ -1,8 +1,6 @@
 import React from "react";
 import { useLanguage } from "../../../context/LanguageContext";
-
-const selectClasses =
-  "h-[44px] w-full rounded-[12px] border border-[#E5E7EB] bg-white px-4 text-[16px] font-archivo font-semibold leading-[16px] text-oxford-blue transition focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#032746]/10";
+import Dropdown from "../../shared/Dropdown";
 
 const inputClasses =
   "h-[50px] w-full rounded-[12px] border border-[#E5E7EB] bg-white pl-[52px] pr-[112px] text-[14px] font-roboto leading-[16px] text-oxford-blue transition placeholder:text-[#9CA3AF] focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#032746]/10 md:w-[537px]";
@@ -57,76 +55,61 @@ const QuestionBankFilters = ({
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-4 md:flex-nowrap">
-        <div className="w-full md:w-[350px]">
-          <select
-            value={filters.exam}
-            onChange={(event) => onFilterChange?.("exam", event.target.value)}
-            className={`${selectClasses} h-[50px]`}
-          >
-            <option value="" >{t('admin.questionBank.filters.exam')}</option>
-            {examOptions.map((exam) => (
-              <option key={exam} value={exam}>
-                {exam}
-              </option>
-            ))}
-          </select>
+      <div className="flex flex-wrap gap-4 md:flex-nowrap md:items-center">
+        <div className="w-full md:w-auto md:flex-[1.8] md:min-w-[200px]">
+          <Dropdown
+            value={filters.exam || ""}
+            options={examOptions}
+            onChange={(value) => onFilterChange?.("exam", value)}
+            placeholder={t('admin.questionBank.filters.exam')}
+            showDefaultOnEmpty={false}
+            className="w-full"
+            height="h-[50px]"
+          />
         </div>
-        <div className="w-full md:w-[150px] ml-12">
-          <select
-            value={filters.subject}
-            onChange={(event) => onFilterChange?.("subject", event.target.value)}
-            className={`${selectClasses} h-[50px]`}
-          >
-            <option value="">{t('admin.questionBank.filters.subject')}</option>
-            {subjectOptions.map((subject) => (
-              <option key={subject} value={subject}>
-                {subject}
-              </option>
-            ))}
-          </select>
+        <div className="w-full md:w-auto md:flex-1 md:min-w-[140px]">
+          <Dropdown
+            value={filters.subject || ""}
+            options={subjectOptions}
+            onChange={(value) => onFilterChange?.("subject", value)}
+            placeholder={t('admin.questionBank.filters.subject')}
+            showDefaultOnEmpty={false}
+            className="w-full"
+            height="h-[50px]"
+          />
         </div>
-        <div className="w-full md:w-[150px]">
-          <select
-            value={filters.topic}
-            onChange={(event) => onFilterChange?.("topic", event.target.value)}
-            className={`${selectClasses} h-[50px]`}
-          >
-            <option value="">{t('admin.questionBank.filters.topic')}</option>
-            {topicOptions.map((topic) => (
-              <option key={topic} value={topic}>
-                {topic}
-              </option>
-            ))}
-          </select>
+        <div className="w-full md:w-auto md:flex-1 md:min-w-[140px]">
+          <Dropdown
+            value={filters.topic || ""}
+            options={topicOptions}
+            onChange={(value) => onFilterChange?.("topic", value)}
+            placeholder={t('admin.questionBank.filters.topic')}
+            showDefaultOnEmpty={false}
+            className="w-full"
+            height="h-[50px]"
+          />
         </div>
-        <div className="w-full md:w-[150px]">
-          <select
-            value={filters.level}
-            onChange={(event) => onFilterChange?.("level", event.target.value)}
-            className={`${selectClasses} h-[50px]`}
-          >
-            <option value="">{t('admin.questionBank.filters.cognitiveLevel')}</option>
-            {levelOptions.map((level) => (
-              <option key={level} value={level}>
-                {level}
-              </option>
-            ))}
-          </select>
+        <div className="w-full md:w-auto md:flex-1 md:min-w-[160px]">
+          <Dropdown
+            value={filters.level || ""}
+            options={levelOptions}
+            onChange={(value) => onFilterChange?.("level", value)}
+            placeholder={t('admin.questionBank.filters.cognitiveLevel')}
+            showDefaultOnEmpty={false}
+            className="w-full"
+            height="h-[50px]"
+          />
         </div>
-        <div className="w-full md:w-[150px]">
-          <select
-            value={filters.status}
-            onChange={(event) => onFilterChange?.("status", event.target.value)}
-            className={`${selectClasses} h-[50px]`}
-          >
-            <option value="">{t('admin.questionBank.filters.status')}</option>
-            {statusOptions.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
+        <div className="w-full md:w-auto md:flex-1 md:min-w-[140px]">
+          <Dropdown
+            value={filters.status || ""}
+            options={statusOptions}
+            onChange={(value) => onFilterChange?.("status", value)}
+            placeholder={t('admin.questionBank.filters.status')}
+            showDefaultOnEmpty={false}
+            className="w-full"
+            height="h-[50px]"
+          />
         </div>
       </div>
       <button

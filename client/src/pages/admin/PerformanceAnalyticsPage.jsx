@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AdminMetricCard from "../../components/admin/AdminMetricCard";
 import { useLanguage } from "../../context/LanguageContext";
+import Dropdown from "../../components/shared/Dropdown";
 
 const PerformanceAnalyticsPage = () => {
   const { t } = useLanguage();
@@ -191,132 +192,76 @@ const PerformanceAnalyticsPage = () => {
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 md:gap-3">
           {/* Exam Dropdown */}
-          <div className="relative">
-            <select
-              value={exam}
-              onChange={(e) => setExam(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
-              style={{
-                width: "135px",
-                height: "50px",
-              }}
-            >
-              <option value="" disabled>{t('admin.performanceAnalytics.filters.exam')}</option>
-              <option value="exam1">Exam 1</option>
-              <option value="exam2">Exam 2</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="w-[135px]">
+            <Dropdown
+              value={exam || ""}
+              options={[
+                { value: "exam1", label: "Exam 1" },
+                { value: "exam2", label: "Exam 2" },
+              ]}
+              onChange={(value) => setExam(value)}
+              placeholder={t('admin.performanceAnalytics.filters.exam')}
+              showDefaultOnEmpty={false}
+              className="w-full"
+              height="h-[50px]"
+            />
           </div>
 
           {/* Subject Dropdown */}
-          <div className="relative">
-            <select
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
-              style={{
-                width: "184px",
-                height: "50px",
-              }}
-            >
-              <option value="" disabled>{t('admin.performanceAnalytics.filters.subject')}</option>
-              <option value="math">Mathematics</option>
-              <option value="science">Science</option>
-              <option value="english">English</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="w-[184px]">
+            <Dropdown
+              value={subject || ""}
+              options={[
+                { value: "math", label: "Mathematics" },
+                { value: "science", label: "Science" },
+                { value: "english", label: "English" },
+              ]}
+              onChange={(value) => setSubject(value)}
+              placeholder={t('admin.performanceAnalytics.filters.subject')}
+              showDefaultOnEmpty={false}
+              className="w-full"
+              height="h-[50px]"
+            />
           </div>
 
           {/* Date Range Dropdown */}
-          <div className="relative">
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
-              style={{
-                width: "184px",
-                height: "50px",
-              }}
-            >
-              <option value="" disabled>{t('admin.performanceAnalytics.filters.dateRange')}</option>
-              <option value="Last 30 Days">{t('admin.performanceAnalytics.filters.last30Days')}</option>
-              <option value="Last 7 Days">{t('admin.performanceAnalytics.filters.last7Days')}</option>
-              <option value="Last 90 Days">{t('admin.performanceAnalytics.filters.last90Days')}</option>
-              <option value="Last Year">{t('admin.performanceAnalytics.filters.lastYear')}</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="w-[184px]">
+            <Dropdown
+              value={dateRange || ""}
+              options={[
+                { value: "Last 30 Days", label: t('admin.performanceAnalytics.filters.last30Days') },
+                { value: "Last 7 Days", label: t('admin.performanceAnalytics.filters.last7Days') },
+                { value: "Last 90 Days", label: t('admin.performanceAnalytics.filters.last90Days') },
+                { value: "Last Year", label: t('admin.performanceAnalytics.filters.lastYear') },
+              ]}
+              onChange={(value) => setDateRange(value)}
+              placeholder={t('admin.performanceAnalytics.filters.dateRange')}
+              showDefaultOnEmpty={false}
+              className="w-full"
+              height="h-[50px]"
+            />
           </div>
 
           {/* Cognitive Level Dropdown */}
-          <div className="relative">
-            <select
-              value={cognitiveLevel}
-              onChange={(e) => setCognitiveLevel(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-archivo text-[16px] font-semibold leading-[16px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition"
-              style={{
-                width: "206px",
-                height: "50px",
-              }}
-            >
-              <option value="" disabled>{t('admin.performanceAnalytics.filters.cognitiveLevel')}</option>
-              <option value="recall">{t('admin.performanceAnalytics.filters.recall')}</option>
-              <option value="analysis">{t('admin.performanceAnalytics.filters.analysis')}</option>
-              <option value="synthesis">{t('admin.performanceAnalytics.filters.synthesis')}</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="w-[206px]">
+            <Dropdown
+              value={cognitiveLevel || ""}
+              options={[
+                { value: "recall", label: t('admin.performanceAnalytics.filters.recall') },
+                { value: "analysis", label: t('admin.performanceAnalytics.filters.analysis') },
+                { value: "synthesis", label: t('admin.performanceAnalytics.filters.synthesis') },
+              ]}
+              onChange={(value) => setCognitiveLevel(value)}
+              placeholder={t('admin.performanceAnalytics.filters.cognitiveLevel')}
+              showDefaultOnEmpty={false}
+              className="w-full"
+              height="h-[50px]"
+            />
           </div>
         </div>
 
         {/* Performance KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
           {performanceKPICards.map((card) => (
             <AdminMetricCard
               key={card.id}
@@ -325,7 +270,7 @@ const PerformanceAnalyticsPage = () => {
               subtext={card.subtext}
               subtextClassName={card.subtextClassName}
               icon={card.icon}
-              className="w-full sm:w-[calc(50%-12px)] lg:w-[262px]"
+              className="w-full"
             />
           ))}
         </div>

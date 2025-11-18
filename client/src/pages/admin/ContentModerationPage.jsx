@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
+import Dropdown from "../../components/shared/Dropdown";
 
 const ContentModerationPage = () => {
   const navigate = useNavigate();
@@ -239,86 +240,50 @@ const ContentModerationPage = () => {
 
           {/* Filter Dropdowns */}
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-4 md:mb-6">
-            <div className="relative w-full sm:w-[184px]">
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[16px] leading-[100%] font-semibold text-oxford-blue appearance-none cursor-pointer "
-              >
-                <option value="">{t('admin.contentModeration.filters.status')}</option>
-                <option value="flagged">{t('admin.contentModeration.filters.flagged')}</option>
-                <option value="approved">{t('admin.contentModeration.filters.approved')}</option>
-                <option value="rejected">{t('admin.contentModeration.filters.rejected')}</option>
-              </select>
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <svg
-                  width="15"
-                  height="9"
-                  viewBox="0 0 15 9"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M0.687592 0.726562L7.00857 6.71211L13.3296 0.726562"
-                    stroke="#032746"
-                    strokeWidth="2"
-                  />
-                </svg>
-              </div>
+            <div className="w-full sm:w-[184px]">
+              <Dropdown
+                value={status || ""}
+                options={[
+                  { value: "flagged", label: t('admin.contentModeration.filters.flagged') },
+                  { value: "approved", label: t('admin.contentModeration.filters.approved') },
+                  { value: "rejected", label: t('admin.contentModeration.filters.rejected') },
+                ]}
+                onChange={(value) => setStatus(value)}
+                placeholder={t('admin.contentModeration.filters.status')}
+                showDefaultOnEmpty={false}
+                className="w-full"
+                height="h-[50px]"
+              />
             </div>
-            <div className="relative w-full sm:w-[184px]">
-              <select
-                value={contentType}
-                onChange={(e) => setContentType(e.target.value)}
-                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[16px] leading-[100%] font-semibold text-oxford-blue appearance-none cursor-pointer "
-              >
-                <option value="">{t('admin.contentModeration.filters.contentType')}</option>
-                <option value="video">{t('admin.contentModeration.filters.video')}</option>
-                <option value="image">{t('admin.contentModeration.filters.image')}</option>
-                <option value="text">{t('admin.contentModeration.filters.text')}</option>
-              </select>
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <svg
-                  width="15"
-                  height="9"
-                  viewBox="0 0 15 9"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M0.687592 0.726562L7.00857 6.71211L13.3296 0.726562"
-                    stroke="#032746"
-                    strokeWidth="2"
-                  />
-                </svg>
-              </div>
+            <div className="w-full sm:w-[184px]">
+              <Dropdown
+                value={contentType || ""}
+                options={[
+                  { value: "video", label: t('admin.contentModeration.filters.video') },
+                  { value: "image", label: t('admin.contentModeration.filters.image') },
+                  { value: "text", label: t('admin.contentModeration.filters.text') },
+                ]}
+                onChange={(value) => setContentType(value)}
+                placeholder={t('admin.contentModeration.filters.contentType')}
+                showDefaultOnEmpty={false}
+                className="w-full"
+                height="h-[50px]"
+              />
             </div>
-            <div className="relative w-full sm:w-[184px]">
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                className="h-[50px] w-full rounded-[8px] outline-none border border-[#03274633] bg-white px-3 pr-10 font-roboto text-[16px] leading-[100%] font-semibold text-oxford-blue appearance-none cursor-pointer "
-              >
-                <option value="">{t('admin.contentModeration.filters.dateRange')}</option>
-                <option value="today">{t('admin.contentModeration.filters.today')}</option>
-                <option value="week">{t('admin.contentModeration.filters.thisWeek')}</option>
-                <option value="month">{t('admin.contentModeration.filters.thisMonth')}</option>
-              </select>
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <svg
-                  width="15"
-                  height="9"
-                  viewBox="0 0 15 9"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M0.687592 0.726562L7.00857 6.71211L13.3296 0.726562"
-                    stroke="#032746"
-                    strokeWidth="2"
-                  />
-                </svg>
-              </div>
+            <div className="w-full sm:w-[184px]">
+              <Dropdown
+                value={dateRange || ""}
+                options={[
+                  { value: "today", label: t('admin.contentModeration.filters.today') },
+                  { value: "week", label: t('admin.contentModeration.filters.thisWeek') },
+                  { value: "month", label: t('admin.contentModeration.filters.thisMonth') },
+                ]}
+                onChange={(value) => setDateRange(value)}
+                placeholder={t('admin.contentModeration.filters.dateRange')}
+                showDefaultOnEmpty={false}
+                className="w-full"
+                height="h-[50px]"
+              />
             </div>
           </div>
         </div>
@@ -375,17 +340,7 @@ const ContentModerationPage = () => {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
-                        className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] border text-center"
-                        style={{
-                          width: "70px",
-                          height: "20px",
-                          borderRadius: "6px",
-                          borderWidth: "0.5px",
-                          borderColor: "#ED4122",
-                          backgroundColor: "#FEF2F2",
-                          fontSize: "10px",
-                          color: "#ED4122",
-                        }}
+                        className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] text-center w-[70px] h-5 rounded-[6px] border-[0.5px] border-[#ED4122] bg-[#FEF2F2] text-[10px] text-[#ED4122]"
                       >
                         {item.status}
                       </span>
@@ -395,39 +350,21 @@ const ContentModerationPage = () => {
                         <button
                           type="button"
                           onClick={() => handleView(item.id)}
-                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition"
-                          style={{
-                            padding: "4px 10px",
-                            backgroundColor: "#C6D8D3",
-                            color: "#032746",
-                            height: "22px",
-                          }}
+                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition py-1 px-[10px] bg-[#C6D8D3] text-[#032746] h-[22px]"
                         >
                           {t('admin.contentModeration.table.actions.view')}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleApprove(item.id)}
-                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition"
-                          style={{
-                            padding: "4px 10px",
-                            backgroundColor: "#FDF0D5",
-                            color: "#ED4122",
-                            height: "22px",
-                          }}
+                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition py-1 px-[10px] bg-[#FDF0D5] text-[#ED4122] h-[22px]"
                         >
                           {t('admin.contentModeration.table.actions.approve')}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleReject(item.id)}
-                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition"
-                          style={{
-                            padding: "4px 10px",
-                            backgroundColor: "#ED4122",
-                            color: "#FFFFFF",
-                            height: "22px",
-                          }}
+                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition py-1 px-[10px] bg-[#ED4122] text-white h-[22px]"
                         >
                           {t('admin.contentModeration.table.actions.reject')}
                         </button>
@@ -457,17 +394,7 @@ const ContentModerationPage = () => {
                   </p>
                 </div>
                 <span
-                  className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] border text-center"
-                  style={{
-                    width: "70px",
-                    height: "20px",
-                    borderRadius: "6px",
-                    borderWidth: "0.5px",
-                    borderColor: "#ED4122",
-                    backgroundColor: "#FEF2F2",
-                    fontSize: "10px",
-                    color: "#ED4122",
-                  }}
+                  className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] text-center w-[70px] h-5 rounded-[6px] border-[0.5px] border-[#ED4122] bg-[#FEF2F2] text-[10px] text-[#ED4122]"
                 >
                   {item.status}
                 </span>
@@ -504,36 +431,21 @@ const ContentModerationPage = () => {
                 <button
                   type="button"
                   onClick={() => handleView(item.id)}
-                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2"
-                  style={{
-                    backgroundColor: "#C6D8D3",
-                    color: "#032746",
-                    minHeight: "32px",
-                  }}
+                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2 bg-[#C6D8D3] text-[#032746] min-h-[32px]"
                 >
                   {t('admin.contentModeration.table.actions.view')}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleApprove(item.id)}
-                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2"
-                  style={{
-                    backgroundColor: "#FDF0D5",
-                    color: "#ED4122",
-                    minHeight: "32px",
-                  }}
+                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2 bg-[#FDF0D5] text-[#ED4122] min-h-[32px]"
                 >
                   {t('admin.contentModeration.table.actions.approve')}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleReject(item.id)}
-                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2"
-                  style={{
-                    backgroundColor: "#ED4122",
-                    color: "#FFFFFF",
-                    minHeight: "32px",
-                  }}
+                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2 bg-[#ED4122] text-white min-h-[32px]"
                 >
                   {t('admin.contentModeration.table.actions.reject')}
                 </button>

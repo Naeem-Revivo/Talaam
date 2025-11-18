@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
+import Dropdown from "../../components/shared/Dropdown";
 
 const ExportReportsPage = () => {
   const navigate = useNavigate();
@@ -57,29 +58,20 @@ const ExportReportsPage = () => {
               <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue mb-2">
                 {t('admin.exportReports.fields.selectReportType')}
               </label>
-              <div className="relative">
-                <select
+              <div className="w-full lg:w-[990px]">
+                <Dropdown
                   value={reportType}
-                  onChange={(e) => setReportType(e.target.value)}
-                  className="appearance-none w-full lg:w-[990px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 pr-10 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition shadow-input"
-                >
-                  <option value="User Growth">{t('admin.exportReports.options.reportType.userGrowth')}</option>
-                  <option value="Subscription Trends">{t('admin.exportReports.options.reportType.subscriptionTrends')}</option>
-                  <option value="Performance Analytics">{t('admin.exportReports.options.reportType.performanceAnalytics')}</option>
-                </select>
-                <svg
-                  className="pointer-events-none absolute right-3 lg:right-20 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
+                  options={[
+                    { value: "User Growth", label: t('admin.exportReports.options.reportType.userGrowth') },
+                    { value: "Subscription Trends", label: t('admin.exportReports.options.reportType.subscriptionTrends') },
+                    { value: "Performance Analytics", label: t('admin.exportReports.options.reportType.performanceAnalytics') },
+                  ]}
+                  onChange={(value) => setReportType(value)}
+                  placeholder={t('admin.exportReports.fields.selectReportType')}
+                  showDefaultOnEmpty={false}
+                  className="w-full"
+                  height="h-[50px] sm:h-[60px]"
+                />
               </div>
             </div>
 
@@ -88,29 +80,20 @@ const ExportReportsPage = () => {
               <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue mb-2">
                 {t('admin.exportReports.fields.selectFormat')}
               </label>
-              <div className="relative">
-                <select
+              <div className="w-full lg:w-[990px]">
+                <Dropdown
                   value={format}
-                  onChange={(e) => setFormat(e.target.value)}
-                  className="appearance-none w-full lg:w-[990px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 pr-10 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition shadow-input"
-                >
-                  <option value="Excel">{t('admin.exportReports.options.format.excel')}</option>
-                  <option value="PDF">{t('admin.exportReports.options.format.pdf')}</option>
-                  <option value="CSV">{t('admin.exportReports.options.format.csv')}</option>
-                </select>
-                <svg
-                  className="pointer-events-none absolute right-3 lg:right-20 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
+                  options={[
+                    { value: "Excel", label: t('admin.exportReports.options.format.excel') },
+                    { value: "PDF", label: t('admin.exportReports.options.format.pdf') },
+                    { value: "CSV", label: t('admin.exportReports.options.format.csv') },
+                  ]}
+                  onChange={(value) => setFormat(value)}
+                  placeholder={t('admin.exportReports.fields.selectFormat')}
+                  showDefaultOnEmpty={false}
+                  className="w-full"
+                  height="h-[50px] sm:h-[60px]"
+                />
               </div>
             </div>
 
@@ -190,29 +173,20 @@ const ExportReportsPage = () => {
                   <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue mb-2">
                     {t('admin.exportReports.fields.frequency')}
                   </label>
-                  <div className="relative">
-                    <select
+                  <div className="w-full lg:w-[990px]">
+                    <Dropdown
                       value={frequency}
-                      onChange={(e) => setFrequency(e.target.value)}
-                      className="appearance-none w-full lg:w-[990px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 pr-10 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition shadow-input"
-                    >
-                      <option value="Daily">{t('admin.exportReports.options.frequency.daily')}</option>
-                      <option value="Weekly">{t('admin.exportReports.options.frequency.weekly')}</option>
-                      <option value="Monthly">{t('admin.exportReports.options.frequency.monthly')}</option>
-                    </select>
-                    <svg
-                      className="pointer-events-none absolute right-3 lg:right-20 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
+                      options={[
+                        { value: "Daily", label: t('admin.exportReports.options.frequency.daily') },
+                        { value: "Weekly", label: t('admin.exportReports.options.frequency.weekly') },
+                        { value: "Monthly", label: t('admin.exportReports.options.frequency.monthly') },
+                      ]}
+                      onChange={(value) => setFrequency(value)}
+                      placeholder={t('admin.exportReports.fields.frequency')}
+                      showDefaultOnEmpty={false}
+                      className="w-full"
+                      height="h-[50px] sm:h-[60px]"
+                    />
                   </div>
                 </div>
 
@@ -221,28 +195,19 @@ const ExportReportsPage = () => {
                   <label className="block font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue mb-2">
                     {t('admin.exportReports.fields.deliveryMethod')}
                   </label>
-                  <div className="relative">
-                    <select
+                  <div className="w-full lg:w-[990px]">
+                    <Dropdown
                       value={deliveryMethod}
-                      onChange={(e) => setDeliveryMethod(e.target.value)}
-                      className="appearance-none w-full lg:w-[990px] h-[50px] sm:h-[60px] rounded-[12px] border border-[rgba(3,39,70,0.2)] bg-white px-4 pr-10 font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue outline-none cursor-pointer hover:border-[#03274666] transition shadow-input"
-                    >
-                      <option value="Email">{t('admin.exportReports.options.deliveryMethod.email')}</option>
-                      <option value="Download">{t('admin.exportReports.options.deliveryMethod.download')}</option>
-                    </select>
-                    <svg
-                      className="pointer-events-none absolute right-3 lg:right-20 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
+                      options={[
+                        { value: "Email", label: t('admin.exportReports.options.deliveryMethod.email') },
+                        { value: "Download", label: t('admin.exportReports.options.deliveryMethod.download') },
+                      ]}
+                      onChange={(value) => setDeliveryMethod(value)}
+                      placeholder={t('admin.exportReports.fields.deliveryMethod')}
+                      showDefaultOnEmpty={false}
+                      className="w-full"
+                      height="h-[50px] sm:h-[60px]"
+                    />
                   </div>
                 </div>
 

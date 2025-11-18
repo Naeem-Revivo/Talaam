@@ -822,7 +822,6 @@ const AddNewQuestionPage = () => {
             }`}
           style={{
             minHeight: minHeight,
-            lineHeight: "100%",
           }}
           data-placeholder={placeholder}
           suppressContentEditableWarning

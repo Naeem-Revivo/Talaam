@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { DataTable } from "../../components/admin/SystemSetting/Table";
 import basePlansData from "../../data/subscriptionPlansData.json";
+import Dropdown from "../../components/shared/Dropdown";
 
 // Mock data for subscription plans
 // DataTable converts column names to keys by: columnName.toLowerCase().replace(/ /g, "")
@@ -166,36 +167,23 @@ const SubscriptionPlan = () => {
         </header>
 
         {/* Status Filter */}
-        <div className="relative">
-          <select
-            value={statusFilter || "placeholder"}
-            onChange={(e) => {
-              const value = e.target.value === "placeholder" ? "" : e.target.value;
+        <div className="w-[165px]">
+          <Dropdown
+            value={statusFilter || ""}
+            options={[
+              { value: "", label: t('admin.subscriptionPlans.filters.all') },
+              { value: "Active", label: t('admin.subscriptionPlans.filters.active') },
+              { value: "Inactive", label: t('admin.subscriptionPlans.filters.inactive') },
+            ]}
+            onChange={(value) => {
               setStatusFilter(value);
               setPage(1);
             }}
-            className="appearance-none h-[50px] w-[165px] rounded-[8px] border border-[#E5E7EB] bg-white px-4 pr-8 font-roboto text-[14px] font-normal leading-[20px] text-[#374151] outline-none cursor-pointer hover:border-[#D1D5DB] transition"
-          >
-            <option value="placeholder" disabled>
-              {t('admin.subscriptionPlans.filters.status')}
-            </option>
-            <option value="">{t('admin.subscriptionPlans.filters.all')}</option>
-            <option value="Active">{t('admin.subscriptionPlans.filters.active')}</option>
-            <option value="Inactive">{t('admin.subscriptionPlans.filters.inactive')}</option>
-          </select>
-          <svg
-            className="pointer-events-none absolute left-32 top-1/2 h-4 w-4 -translate-y-1/2 text-dark-gray"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
+            placeholder={t('admin.subscriptionPlans.filters.status')}
+            showDefaultOnEmpty={false}
+            className="w-full"
+            height="h-[50px]"
+          />
         </div>
 
         {/* Table */}

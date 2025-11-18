@@ -147,7 +147,7 @@ const DashboardPage = () => {
         <h2 className="font-archivo font-semibold pl-4 md:pl-6 lg:pl-10 pb-4 md:pb-5 pt-6 md:pt-10 text-[20px] leading-[28px] text-oxford-blue">
           {t('dashboard.performance.title')}
         </h2>
-        <div className="rounded-xl flex flex-col items-center justify-center p-3 md:p-6 overflow-x-auto md:overflow-x-visible" style={{ scrollBehavior: 'smooth' }}>
+        <div className="rounded-xl flex flex-col items-center justify-center p-3 md:p-6 overflow-x-auto md:overflow-x-visible scroll-smooth">
           <div className="min-w-[650px] md:min-w-0 w-full md:w-[1070px] h-[320px]">
             <BarChart
               width={chartWidth}
