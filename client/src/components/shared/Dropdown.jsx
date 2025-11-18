@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
  * @param {string} placeholder - Placeholder text when no value is selected
  * @param {boolean} showDefaultOnEmpty - If true, shows first option when value is empty (default: true)
  * @param {string} height - Custom height class (e.g., 'h-[50px]', default: 'h-[48px]')
+ * @param {string} textClassName - Custom CSS classes for the text inside the dropdown button
  */
 const Dropdown = ({ 
   label, 
@@ -20,7 +21,8 @@ const Dropdown = ({
   className = "",
   placeholder = "",
   showDefaultOnEmpty = true,
-  height = "h-[48px]"
+  height = "h-[48px]",
+  textClassName = ""
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -74,7 +76,7 @@ const Dropdown = ({
     <div className={`w-full lg:w-[180px] ${className}`} ref={dropdownRef}>
       {/* Label only on small screens */}
       {label && (
-        <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3 block lg:hidden">
+        <p className="text-[16px] leading-[100%] font-archivo font-semibold text-oxford-blue mb-3 block lg:hidden">
           {label}
         </p>
       )}
@@ -82,9 +84,9 @@ const Dropdown = ({
       {/* Dropdown Box */}
       <div
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`relative flex ${height} cursor-pointer items-center justify-between rounded-lg border border-transparent bg-white px-4 text-sm font-semibold text-oxford-blue shadow-filter-hover`}
+        className={`relative flex ${height} cursor-pointer items-center justify-between rounded-lg border border-transparent bg-white px-4 ${textClassName || "text-sm font-semibold"} text-oxford-blue shadow-filter-hover`}
       >
-        <span className={!displayValue ? "text-gray-400" : ""}>
+        <span className={`${!displayValue ? "text-gray-400" : ""} ${textClassName || ""}`}>
           {displayValue || placeholder}
         </span>
         <svg

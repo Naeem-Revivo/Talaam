@@ -261,7 +261,7 @@ const PerformanceAnalyticsPage = () => {
         </div>
 
         {/* Performance KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
           {performanceKPICards.map((card) => (
             <AdminMetricCard
               key={card.id}
@@ -270,7 +270,7 @@ const PerformanceAnalyticsPage = () => {
               subtext={card.subtext}
               subtextClassName={card.subtextClassName}
               icon={card.icon}
-              className="w-full sm:w-[calc(50%-12px)] lg:w-[262px]"
+              className="w-full"
             />
           ))}
         </div>

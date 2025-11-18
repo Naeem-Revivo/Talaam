@@ -4,18 +4,18 @@ import { useLanguage } from "../../context/LanguageContext";
 import Dropdown from "../../components/shared/Dropdown";
 
 // Reusable KPI Card Component
-const KPICard = ({ title, value, icon, titleSize = "text-[16px]", valueSize = "text-[30px]", valueWeight = "font-semibold", marginBottom = "mb-1" }) => {
+const KPICard = ({ title, value, icon, valueWeight = "font-semibold", marginBottom = "mb-1" }) => {
   return (
-    <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-4 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-[262px] h-[106px]">
+    <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-4 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full min-h-[90px] md:h-[106px]">
       <div className={`flex items-center justify-between ${marginBottom}`}>
-        <h3 className={`font-roboto ${titleSize} font-normal leading-[20px] text-dark-gray`}>
+        <h3 className="font-roboto text-[14px] md:text-[16px] font-normal leading-[18px] md:leading-[20px] text-dark-gray flex-1 pr-2">
           {title}
         </h3>
-        <div className="">
+        <div className="flex-shrink-0">
         {icon}
         </div>
       </div>
-      <p className={`font-archivo ${valueSize} ${valueWeight} leading-[40px] text-oxford-blue`}>
+      <p className={`font-archivo text-[24px] md:text-[30px] ${valueWeight} leading-[32px] md:leading-[40px] text-oxford-blue`}>
         {value}
       </p>
     </div>
@@ -317,6 +317,7 @@ const ReportsAndAnalyticsPage = () => {
               showDefaultOnEmpty={false}
               className="!w-full md:!w-[135px]"
               height="h-[50px]"
+              textClassName="font-archivo text-[16px] font-semibold"
             />
           </div>
 
@@ -333,6 +334,7 @@ const ReportsAndAnalyticsPage = () => {
               showDefaultOnEmpty={false}
               className="!w-full md:!w-[184px]"
               height="h-[50px]"
+              textClassName="font-archivo text-[16px] font-semibold"
             />
           </div>
 
@@ -349,6 +351,7 @@ const ReportsAndAnalyticsPage = () => {
               showDefaultOnEmpty={false}
               className="!w-full md:!w-[206px]"
               height="h-[50px]"
+              textClassName="font-archivo text-[16px] font-semibold"
             />
           </div>
 
@@ -366,6 +369,7 @@ const ReportsAndAnalyticsPage = () => {
               showDefaultOnEmpty={false}
               className="!w-full md:!w-[206px]"
               height="h-[50px]"
+              textClassName="font-archivo text-[16px] font-semibold"
             />
           </div>
 
@@ -441,8 +445,6 @@ const ReportsAndAnalyticsPage = () => {
                   title={card.title}
                   value={card.value}
                   icon={card.icon}
-                  titleSize={card.titleSize}
-                  valueSize={card.valueSize}
                   valueWeight={card.valueWeight}
                   marginBottom={card.marginBottom}
                 />
@@ -522,7 +524,7 @@ const ReportsAndAnalyticsPage = () => {
 
           {/* Practice Distribution Chart */}
           <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+            <h2 className="pt-3 font-archivo text-[20px] font-semibold leading-[28px] text-oxford-blue">
               {t('admin.reportsAndAnalytics.charts.practiceDistribution')}
             </h2>
             <div className="flex flex-col items-center justify-center gap-6">
@@ -558,30 +560,30 @@ const ReportsAndAnalyticsPage = () => {
           <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue pt-6">
             {t('admin.reportsAndAnalytics.table.topPerformanceUser')}
           </h2>
-        <div className="rounded-[12px] border border-[#03274633] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-          <div className="rounded-[12px]">
-            <table className="w-full border-collapse w-[1130px] h-[298px]">
+        <div className="rounded-[12px] border border-[#03274633] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse min-w-[600px]">
               <thead>
                 <tr className="bg-oxford-blue">
-                  <th className="text-left py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                  <th className="text-left py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
                     {t('admin.reportsAndAnalytics.table.columns.number')}
                   </th>
-                  <th className="text-left py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                  <th className="text-left py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
                     {t('admin.reportsAndAnalytics.table.columns.user')}
                   </th>
-                  <th className="text-left py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                  <th className="text-left py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
                     {t('admin.reportsAndAnalytics.table.columns.email')}
                   </th>
-                  <th className="text-center py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                  <th className="text-center py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
                     {t('admin.reportsAndAnalytics.table.columns.attempts')}
                   </th>
-                  <th className="text-center py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                  <th className="text-center py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
                     {t('admin.reportsAndAnalytics.table.columns.accuracy')}
                   </th>
-                  <th className="text-center py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                  <th className="text-center py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
                     {t('admin.reportsAndAnalytics.table.columns.averageTime')}
                   </th>
-                  <th className="text-left py-3 px-6 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                  <th className="text-left py-3 px-3 md:px-6 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
                     {t('admin.reportsAndAnalytics.table.columns.lastActive')}
                   </th>
                 </tr>
@@ -592,25 +594,25 @@ const ReportsAndAnalyticsPage = () => {
                     key={user.id}
                     className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition"
                   >
-                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                    <td className="py-4 px-3 md:px-4 font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
                       {user.id}
                     </td>
-                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                    <td className="py-4 px-3 md:px-4 font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
                       {user.name}
                     </td>
-                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                    <td className="py-4 px-3 md:px-4 font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue break-words max-w-[150px] md:max-w-none">
                       {user.email}
                     </td>
-                    <td className="py-4 px-4 text-center font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                    <td className="py-4 px-3 md:px-4 text-center font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
                       {user.attempts}
                     </td>
-                    <td className="py-4 px-4 text-center font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                    <td className="py-4 px-3 md:px-4 text-center font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
                       {user.accuracy}%
                     </td>
-                    <td className="py-4 px-4 text-center font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                    <td className="py-4 px-3 md:px-4 text-center font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
                       {user.avgTime}s
                     </td>
-                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                    <td className="py-4 px-3 md:px-4 font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
                       {user.lastActive}
                     </td>
                   </tr>
@@ -621,29 +623,30 @@ const ReportsAndAnalyticsPage = () => {
         </div>
 
         {/* Bottom Row - Recent Reports and System Insights */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Recent Reports Generated */}
-          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-            <h2 className="mb-6 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full">
+            <h2 className="mb-4 md:mb-6 font-archivo text-[18px] md:text-[20px] font-semibold leading-[24px] md:leading-[28px] text-oxford-blue">
               {t('admin.reportsAndAnalytics.sections.recentReports')}
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {recentReports.map((report, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between rounded-[8px] border border-[#6CA6C1] bg-[#F9FAFB] w-[500px] h-[86px] p-4"
+                  className="flex items-center justify-between rounded-[8px] border border-[#6CA6C1] bg-[#F9FAFB] w-full min-h-[70px] md:h-[86px] p-3 md:p-4"
                 >
-                  <div className="flex flex-col justify-center">
-                    <h3 className="font-roboto text-[14px] font-semibold leading-[20px] text-oxford-blue">
+                  <div className="flex flex-col justify-center flex-1 min-w-0 pr-2">
+                    <h3 className="font-roboto text-[13px] md:text-[16px] font-medium leading-[18px] md:leading-[20px] text-oxford-blue break-words">
                       {report.name}
                     </h3>
-                    <p className="font-roboto text-[12px] font-normal leading-[20px] text-dark-gray mt-1">
+                    <p className="font-roboto text-[11px] md:text-[12px] font-normal leading-[16px] md:leading-[20px] text-dark-gray mt-1">
                       {t('admin.reportsAndAnalytics.sections.generated').replace('{{date}}', report.date)}
                     </p>
                   </div>
                   <button
                     type="button"
                     className="p-2 rounded-[8px] hover:bg-[#E5E7EB] transition flex-shrink-0"
+                    aria-label="Download report"
                   >
                     <svg
                       width="20"
@@ -664,11 +667,11 @@ const ReportsAndAnalyticsPage = () => {
           </div>
 
           {/* System Insights */}
-          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-[548px] h-[410px]">
-            <h2 className="mb-6 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full">
+            <h2 className="mb-4 md:mb-6 font-archivo text-[18px] md:text-[20px] font-bold leading-[24px] md:leading-[28px] text-oxford-blue">
               {t('admin.reportsAndAnalytics.sections.systemInsights')}
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {systemInsights.map((insight, index) => {
                 // Parse insight text to highlight specific parts
                 let formattedText = insight;
@@ -697,9 +700,9 @@ const ReportsAndAnalyticsPage = () => {
                 return (
                   <div
                     key={index}
-                    className="flex items-center rounded-[8px] border border-[#ED4122] bg-[#FEF2F2] w-[500px] h-[86px] p-4"
+                    className="flex items-center rounded-[8px] border border-[#ED4122] bg-[#FEF2F2] w-full min-h-[70px] md:h-[86px] p-3 md:p-4"
                   >
-                    <p className="font-roboto text-[16px] font-normal leading-[16px] text-oxford-blue flex items-center">
+                    <p className="font-roboto text-[14px] md:text-[16px] font-normal leading-[20px] md:leading-[24px] text-oxford-blue flex items-center break-words">
                       {formattedText}
                     </p>
                   </div>
