@@ -364,7 +364,7 @@ const QuestionDetailsPage = () => {
 
   return (
     <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]">
-      <div className="mx-auto flex max-w-[1400px] flex-col gap-6">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-6">
         {/* Header */}
         <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
@@ -407,7 +407,7 @@ const QuestionDetailsPage = () => {
           <div className="flex-1 flex flex-col gap-6">
             {/* Question Info Card */}
             <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[720px] h-auto lg:h-[472px]"
+              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full h-auto lg:h-[472px]"
               style={{
               }}
             >
@@ -514,7 +514,7 @@ const QuestionDetailsPage = () => {
 
             {/* Explanation Card */}
             <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[720px] h-auto lg:h-[199px]"
+              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full h-auto lg:h-[199px]"
               style={{
               }}
             >
@@ -530,7 +530,7 @@ const QuestionDetailsPage = () => {
 
             {/* Comments Card */}
             <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 relative w-full lg:w-[720px] h-auto lg:h-[271px]"
+              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 relative w-full h-auto lg:h-[271px]"
               style={{
               }}
             >
@@ -542,12 +542,12 @@ const QuestionDetailsPage = () => {
                   value={comments}
                   onChange={(e) => setComments(e.target.value)}
                   placeholder={t('admin.questionDetails.placeholders.addComments')}
-                  className="w-full rounded-[8px] border border-[#03274633] bg-white py-3 px-4 font-roboto text-[16px] leading-[20px] text-oxford-blue placeholder:text-[#9CA3AF] outline-none lg:w-[678px] lg:h-[143px] min-h-[100px]"
+                  className="rounded-[8px] border border-[#03274633] bg-white py-3 px-4 font-roboto text-[16px] leading-[20px] text-oxford-blue placeholder:text-[#9CA3AF] outline-none w-full lg:h-[143px] min-h-[100px]"
                 />
                 <button
                   type="button"
                   onClick={handleAddComment}
-                  className=" flex  h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 text-[16px] font-roboto font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
+                  className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 text-[16px] font-roboto font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]"
                 >
                   {t('admin.questionDetails.buttons.addComment')}
                 </button>
@@ -556,7 +556,7 @@ const QuestionDetailsPage = () => {
 
             {/* Activity Log Card */}
             <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[720px] h-auto lg:h-[351px]"
+              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full h-auto lg:h-[351px]"
               style={{
               }}
             >
@@ -565,11 +565,7 @@ const QuestionDetailsPage = () => {
             </h2>
               <div className="space-y-4">
                 <div
-                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4"
-                  style={{
-                    width: "672px",
-                    height: "70px",
-                  }}
+                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-[672px] h-auto"
                 >
                   <div className="flex-shrink-0">
                     <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -587,11 +583,7 @@ const QuestionDetailsPage = () => {
                   </div>
                 </div>
                 <div
-                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4"
-                  style={{
-                    width: "672px",
-                    height: "70px",
-                  }}
+                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-[672px] h-auto"
                 >
                   <div className="flex-shrink-0">
                     <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -609,11 +601,7 @@ const QuestionDetailsPage = () => {
                   </div>
                 </div>
                 <div
-                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4"
-                  style={{
-                    width: "672px",
-                    height: "70px",
-                  }}
+                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-[672px] h-auto"
                 >
                   <div className="flex-shrink-0">
                     <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -738,7 +726,7 @@ const QuestionDetailsPage = () => {
                   <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
                     {t('admin.questionDetails.fields.variantId')}
                   </label>
-                  <p className="font-roboto text-[16px] font-bold leading-[20px] text-oxford-blue">
+                  <p className="font-roboto text-[16px] font-normal leading-[100%] text-oxford-blue">
                     Variant #1
                   </p>
                 </div>
@@ -746,7 +734,7 @@ const QuestionDetailsPage = () => {
                   <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
                     {t('admin.questionDetails.fields.createdByVariant')}
                   </label>
-                  <p className="font-roboto text-[16px] font-bold leading-[20px] text-oxford-blue">
+                  <p className="font-roboto text-[16px] font-normal leading-[100%] text-oxford-blue">
                     Sarah
                   </p>
                 </div>

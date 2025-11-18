@@ -1,26 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
+import Dropdown from "../../components/shared/Dropdown";
 
 // Reusable KPI Card Component
-const KPICard = ({ title, value, icon, titleSize = "text-[16px]", valueSize = "text-[30px]", valueWeight = "font-semibold", marginBottom = "mb-1" }) => {
+const KPICard = ({ title, value, icon, valueWeight = "font-semibold", marginBottom = "mb-1" }) => {
   return (
-    <div
-      className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-4 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]"
-      style={{
-        width: "262px",
-        height: "106px",
-      }}
-    >
+    <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-4 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full min-h-[90px] md:h-[106px]">
       <div className={`flex items-center justify-between ${marginBottom}`}>
-        <h3 className={`font-roboto ${titleSize} font-normal leading-[20px] text-dark-gray`}>
+        <h3 className="font-roboto text-[14px] md:text-[16px] font-normal leading-[18px] md:leading-[20px] text-dark-gray flex-1 pr-2">
           {title}
         </h3>
-        <div className="">
+        <div className="flex-shrink-0">
         {icon}
         </div>
       </div>
-      <p className={`font-archivo ${valueSize} ${valueWeight} leading-[40px] text-oxford-blue`}>
+      <p className={`font-archivo text-[24px] md:text-[30px] ${valueWeight} leading-[32px] md:leading-[40px] text-oxford-blue`}>
         {value}
       </p>
     </div>
@@ -308,164 +303,104 @@ const ReportsAndAnalyticsPage = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3 md:gap-3">
+        <div className="flex flex-wrap items-center gap-3 md:flex-nowrap md:gap-3">
           {/* Exam Dropdown */}
-          <div className="relative">
-            <select
-              value={exam}
-              onChange={(e) => setExam(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue outline-none"
-              style={{
-                width: "135px",
-                height: "50px",
-              }}
-            >
-              <option value="">{t('admin.reportsAndAnalytics.filters.exam')}</option>
-              <option value="exam1">Exam 1</option>
-              <option value="exam2">Exam 2</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="w-full md:w-[135px] md:flex-shrink-0 md:max-w-[135px]">
+            <Dropdown
+              value={exam || ""}
+              options={[
+                { value: "exam1", label: "Exam 1" },
+                { value: "exam2", label: "Exam 2" },
+              ]}
+              onChange={(value) => setExam(value)}
+              placeholder={t('admin.reportsAndAnalytics.filters.exam')}
+              showDefaultOnEmpty={false}
+              className="!w-full md:!w-[135px]"
+              height="h-[50px]"
+              textClassName="font-archivo text-[16px] font-semibold"
+            />
           </div>
 
           {/* Subject Dropdown */}
-          <div className="relative">
-            <select
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue outline-none"
-              style={{
-                width: "184px",
-                height: "50px",
-              }}
-            >
-              <option value="">{t('admin.reportsAndAnalytics.filters.subject')}</option>
-              <option value="math">Mathematics</option>
-              <option value="science">Science</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="w-full md:w-[184px] md:flex-shrink-0 md:max-w-[184px]">
+            <Dropdown
+              value={subject || ""}
+              options={[
+                { value: "math", label: "Mathematics" },
+                { value: "science", label: "Science" },
+              ]}
+              onChange={(value) => setSubject(value)}
+              placeholder={t('admin.reportsAndAnalytics.filters.subject')}
+              showDefaultOnEmpty={false}
+              className="!w-full md:!w-[184px]"
+              height="h-[50px]"
+              textClassName="font-archivo text-[16px] font-semibold"
+            />
           </div>
 
           {/* Cognitive Level Dropdown */}
-          <div className="relative">
-            <select
-              value={cognitiveLevel}
-              onChange={(e) => setCognitiveLevel(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue outline-none"
-              style={{
-                width: "206px",
-                height: "50px",
-              }}
-            >
-              <option value="">{t('admin.reportsAndAnalytics.filters.cognitiveLevel')}</option>
-              <option value="recall">Recall</option>
-              <option value="analysis">Analysis</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="w-full md:w-[206px] md:flex-shrink-0 md:max-w-[206px]">
+            <Dropdown
+              value={cognitiveLevel || ""}
+              options={[
+                { value: "recall", label: "Recall" },
+                { value: "analysis", label: "Analysis" },
+              ]}
+              onChange={(value) => setCognitiveLevel(value)}
+              placeholder={t('admin.reportsAndAnalytics.filters.cognitiveLevel')}
+              showDefaultOnEmpty={false}
+              className="!w-full md:!w-[206px]"
+              height="h-[50px]"
+              textClassName="font-archivo text-[16px] font-semibold"
+            />
           </div>
 
           {/* Date Range Dropdown */}
-          <div className="relative">
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="appearance-none rounded-[8px] border border-[#03274633] bg-white px-4 pr-10 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue outline-none"
-              style={{
-                width: "206px",
-                height: "50px",
-              }}
-            >
-              <option value="">{t('admin.reportsAndAnalytics.filters.dateRange')}</option>
-              <option value="week">{t('admin.reportsAndAnalytics.filters.lastWeek')}</option>
-              <option value="month">{t('admin.reportsAndAnalytics.filters.lastMonth')}</option>
-              <option value="year">{t('admin.reportsAndAnalytics.filters.lastYear')}</option>
-            </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-oxford-blue"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+          <div className="w-full md:w-[206px] md:flex-shrink-0 md:max-w-[206px]">
+            <Dropdown
+              value={dateRange || ""}
+              options={[
+                { value: "week", label: t('admin.reportsAndAnalytics.filters.lastWeek') },
+                { value: "month", label: t('admin.reportsAndAnalytics.filters.lastMonth') },
+                { value: "year", label: t('admin.reportsAndAnalytics.filters.lastYear') },
+              ]}
+              onChange={(value) => setDateRange(value)}
+              placeholder={t('admin.reportsAndAnalytics.filters.dateRange')}
+              showDefaultOnEmpty={false}
+              className="!w-full md:!w-[206px]"
+              height="h-[50px]"
+              textClassName="font-archivo text-[16px] font-semibold"
+            />
           </div>
 
           {/* View Details Button */}
-          <div className="flex gap-5 ml-8">
-          <button
-            type="button"
-            className="flex items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] font-medium leading-[20px] text-oxford-blue transition hover:bg-[#F9FAFB]"
-            style={{
-              width: "130px",
-              height: "36px",
-            }}
-          >
-            {t('admin.reportsAndAnalytics.filters.viewDetails')}
-          </button>
-
-          {/* Apply Filter Button */}
-          <button
-            type="button"
-            className="flex items-center justify-center gap-2 rounded-[8px] bg-[#ED4122] px-4 font-roboto text-[16px] font-medium leading-[20px] text-white transition hover:bg-[#d43a1f]"
-            style={{
-              width: "157px",
-              height: "36px",
-            }}
-          >
-            <svg
-              width="14"
-              height="16"
-              viewBox="0 0 14 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+          <div className="flex gap-5 md:ml-auto md:flex-shrink-0">
+            <button
+              type="button"
+              className="flex items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] font-medium leading-[20px] text-oxford-blue transition hover:bg-[#F9FAFB] whitespace-nowrap w-[130px] h-9"
             >
-              <path
-                d="M8.6 16C8.4728 16 8.34644 15.9582 8.24004 15.8769L5.04004 13.4154C4.88964 13.2989 4.8 13.1167 4.8 12.9231V9.64103C4.8 9.47692 4.73762 9.32184 4.62402 9.20533L0.527246 5.00348C0.187246 4.65394 0 4.19117 0 3.69804V1.84615C0 0.827897 0.808 0 1.8 0H12.2C13.192 0 14 0.827897 14 1.84615V3.69804C14 4.19117 13.8128 4.65476 13.4728 5.00348L9.37598 9.20533C9.26238 9.32184 9.2 9.4761 9.2 9.64103V15.3846C9.2 15.6176 9.07197 15.831 8.86797 15.9352C8.78317 15.9787 8.6912 16 8.6 16ZM6 12.6154L8 14.1538V9.64103C8 9.1479 8.18725 8.68431 8.52725 8.33559L12.624 4.13374C12.7376 4.01723 12.8 3.86297 12.8 3.69804V1.84615C12.8 1.50646 12.5304 1.23077 12.2 1.23077H1.8C1.4696 1.23077 1.2 1.50646 1.2 1.84615V3.69804C1.2 3.86214 1.26238 4.01723 1.37598 4.13374L5.47275 8.33559C5.81275 8.68513 6 9.1479 6 9.64103V12.6154Z"
-                fill="white"
-              />
-            </svg>
-            {t('admin.reportsAndAnalytics.filters.applyFilter')}
-          </button>
+              {t('admin.reportsAndAnalytics.filters.viewDetails')}
+            </button>
+
+            {/* Apply Filter Button */}
+            <button
+              type="button"
+              className="flex items-center justify-center gap-2 rounded-[8px] bg-[#ED4122] px-4 font-roboto text-[16px] font-medium leading-[20px] text-white transition hover:bg-[#d43a1f] whitespace-nowrap w-[157px] h-9"
+            >
+              <svg
+                width="14"
+                height="16"
+                viewBox="0 0 14 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8.6 16C8.4728 16 8.34644 15.9582 8.24004 15.8769L5.04004 13.4154C4.88964 13.2989 4.8 13.1167 4.8 12.9231V9.64103C4.8 9.47692 4.73762 9.32184 4.62402 9.20533L0.527246 5.00348C0.187246 4.65394 0 4.19117 0 3.69804V1.84615C0 0.827897 0.808 0 1.8 0H12.2C13.192 0 14 0.827897 14 1.84615V3.69804C14 4.19117 13.8128 4.65476 13.4728 5.00348L9.37598 9.20533C9.26238 9.32184 9.2 9.4761 9.2 9.64103V15.3846C9.2 15.6176 9.07197 15.831 8.86797 15.9352C8.78317 15.9787 8.6912 16 8.6 16ZM6 12.6154L8 14.1538V9.64103C8 9.1479 8.18725 8.68431 8.52725 8.33559L12.624 4.13374C12.7376 4.01723 12.8 3.86297 12.8 3.69804V1.84615C12.8 1.50646 12.5304 1.23077 12.2 1.23077H1.8C1.4696 1.23077 1.2 1.50646 1.2 1.84615V3.69804C1.2 3.86214 1.26238 4.01723 1.37598 4.13374L5.47275 8.33559C5.81275 8.68513 6 9.1479 6 9.64103V12.6154Z"
+                  fill="white"
+                />
+              </svg>
+              {t('admin.reportsAndAnalytics.filters.applyFilter')}
+            </button>
           </div>
         </div>
 
@@ -474,48 +409,28 @@ const ReportsAndAnalyticsPage = () => {
           <button
             type="button"
             onClick={() => navigate("/admin/reports/user-growth")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB]"
-            style={{
-              width: "211px",
-              height: "44px",
-              borderRadius: "30px",
-            }}
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB] w-[211px] h-11 rounded-[30px]"
           >
             {t('admin.reportsAndAnalytics.tabs.userGrowthAnalytics')}
           </button>
           <button
             type="button"
             onClick={() => navigate("/admin/reports/subscription-trends")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB]"
-            style={{
-              width: "211px",
-              height: "44px",
-              borderRadius: "30px",
-            }}
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB] w-[211px] h-11 rounded-[30px]"
           >
             {t('admin.reportsAndAnalytics.tabs.subscriptionTrends')}
           </button>
           <button
             type="button"
             onClick={() => navigate("/admin/reports/performance-analytics")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB]"
-            style={{
-              width: "211px",
-              height: "44px",
-              borderRadius: "30px",
-            }}
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB] w-[211px] h-11 rounded-[30px]"
           >
             {t('admin.reportsAndAnalytics.tabs.performanceAnalytics')}
           </button>
           <button
             type="button"
             onClick={() => navigate("/admin/reports/export")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB]"
-            style={{
-              width: "211px",
-              height: "44px",
-              borderRadius: "30px",
-            }}
+            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB] w-[211px] h-11 rounded-[30px]"
           >
             {t('admin.reportsAndAnalytics.tabs.exportReports')}
           </button>
@@ -530,8 +445,6 @@ const ReportsAndAnalyticsPage = () => {
                   title={card.title}
                   value={card.value}
                   icon={card.icon}
-                  titleSize={card.titleSize}
-                  valueSize={card.valueSize}
                   valueWeight={card.valueWeight}
                   marginBottom={card.marginBottom}
                 />
@@ -611,7 +524,7 @@ const ReportsAndAnalyticsPage = () => {
 
           {/* Practice Distribution Chart */}
           <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-            <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+            <h2 className="pt-3 font-archivo text-[20px] font-semibold leading-[28px] text-oxford-blue">
               {t('admin.reportsAndAnalytics.charts.practiceDistribution')}
             </h2>
             <div className="flex flex-col items-center justify-center gap-6">
@@ -647,36 +560,30 @@ const ReportsAndAnalyticsPage = () => {
           <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue pt-6">
             {t('admin.reportsAndAnalytics.table.topPerformanceUser')}
           </h2>
-        <div className="rounded-[12px] border border-[#03274633] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-          <div className="rounded-[12px]">
-            <table
-              className="w-full border-collapse "
-              style={{
-                width: "1130px",
-                height: "298px",
-              }}
-            >
+        <div className="rounded-[12px] border border-[#03274633] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse min-w-[600px]">
               <thead>
                 <tr className="bg-oxford-blue">
-                  <th className="text-left py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                  <th className="text-left py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
                     {t('admin.reportsAndAnalytics.table.columns.number')}
                   </th>
-                  <th className="text-left py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                  <th className="text-left py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
                     {t('admin.reportsAndAnalytics.table.columns.user')}
                   </th>
-                  <th className="text-left py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                  <th className="text-left py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
                     {t('admin.reportsAndAnalytics.table.columns.email')}
                   </th>
-                  <th className="text-center py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                  <th className="text-center py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
                     {t('admin.reportsAndAnalytics.table.columns.attempts')}
                   </th>
-                  <th className="text-center py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                  <th className="text-center py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
                     {t('admin.reportsAndAnalytics.table.columns.accuracy')}
                   </th>
-                  <th className="text-center py-3 px-4 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                  <th className="text-center py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
                     {t('admin.reportsAndAnalytics.table.columns.averageTime')}
                   </th>
-                  <th className="text-left py-3 px-6 font-roboto text-[16px] font-semibold leading-[20px] text-white">
+                  <th className="text-left py-3 px-3 md:px-6 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
                     {t('admin.reportsAndAnalytics.table.columns.lastActive')}
                   </th>
                 </tr>
@@ -687,25 +594,25 @@ const ReportsAndAnalyticsPage = () => {
                     key={user.id}
                     className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition"
                   >
-                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                    <td className="py-4 px-3 md:px-4 font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
                       {user.id}
                     </td>
-                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                    <td className="py-4 px-3 md:px-4 font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
                       {user.name}
                     </td>
-                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                    <td className="py-4 px-3 md:px-4 font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue break-words max-w-[150px] md:max-w-none">
                       {user.email}
                     </td>
-                    <td className="py-4 px-4 text-center font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                    <td className="py-4 px-3 md:px-4 text-center font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
                       {user.attempts}
                     </td>
-                    <td className="py-4 px-4 text-center font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                    <td className="py-4 px-3 md:px-4 text-center font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
                       {user.accuracy}%
                     </td>
-                    <td className="py-4 px-4 text-center font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                    <td className="py-4 px-3 md:px-4 text-center font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
                       {user.avgTime}s
                     </td>
-                    <td className="py-4 px-4 font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
+                    <td className="py-4 px-3 md:px-4 font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
                       {user.lastActive}
                     </td>
                   </tr>
@@ -716,34 +623,30 @@ const ReportsAndAnalyticsPage = () => {
         </div>
 
         {/* Bottom Row - Recent Reports and System Insights */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Recent Reports Generated */}
-          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-            <h2 className="mb-6 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full">
+            <h2 className="mb-4 md:mb-6 font-archivo text-[18px] md:text-[20px] font-semibold leading-[24px] md:leading-[28px] text-oxford-blue">
               {t('admin.reportsAndAnalytics.sections.recentReports')}
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {recentReports.map((report, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between rounded-[8px] border border-[#6CA6C1] bg-[#F9FAFB]"
-                  style={{
-                    width: "500px",
-                    height: "86px",
-                    padding: "16px",
-                  }}
+                  className="flex items-center justify-between rounded-[8px] border border-[#6CA6C1] bg-[#F9FAFB] w-full min-h-[70px] md:h-[86px] p-3 md:p-4"
                 >
-                  <div className="flex flex-col justify-center">
-                    <h3 className="font-roboto text-[14px] font-semibold leading-[20px] text-oxford-blue">
+                  <div className="flex flex-col justify-center flex-1 min-w-0 pr-2">
+                    <h3 className="font-roboto text-[13px] md:text-[16px] font-medium leading-[18px] md:leading-[20px] text-oxford-blue break-words">
                       {report.name}
                     </h3>
-                    <p className="font-roboto text-[12px] font-normal leading-[20px] text-dark-gray mt-1">
+                    <p className="font-roboto text-[11px] md:text-[12px] font-normal leading-[16px] md:leading-[20px] text-dark-gray mt-1">
                       {t('admin.reportsAndAnalytics.sections.generated').replace('{{date}}', report.date)}
                     </p>
                   </div>
                   <button
                     type="button"
                     className="p-2 rounded-[8px] hover:bg-[#E5E7EB] transition flex-shrink-0"
+                    aria-label="Download report"
                   >
                     <svg
                       width="20"
@@ -764,17 +667,11 @@ const ReportsAndAnalyticsPage = () => {
           </div>
 
           {/* System Insights */}
-          <div
-            className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]"
-            style={{
-              width: "548px",
-              height: "410px",
-            }}
-          >
-            <h2 className="mb-6 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full">
+            <h2 className="mb-4 md:mb-6 font-archivo text-[18px] md:text-[20px] font-bold leading-[24px] md:leading-[28px] text-oxford-blue">
               {t('admin.reportsAndAnalytics.sections.systemInsights')}
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {systemInsights.map((insight, index) => {
                 // Parse insight text to highlight specific parts
                 let formattedText = insight;
@@ -803,14 +700,9 @@ const ReportsAndAnalyticsPage = () => {
                 return (
                   <div
                     key={index}
-                    className="flex items-center rounded-[8px] border border-[#ED4122] bg-[#FEF2F2]"
-                    style={{
-                      width: "500px",
-                      height: "86px",
-                      padding: "16px",
-                    }}
+                    className="flex items-center rounded-[8px] border border-[#ED4122] bg-[#FEF2F2] w-full min-h-[70px] md:h-[86px] p-3 md:p-4"
                   >
-                    <p className="font-roboto text-[16px] font-normal leading-[16px] text-oxford-blue flex items-center">
+                    <p className="font-roboto text-[14px] md:text-[16px] font-normal leading-[20px] md:leading-[24px] text-oxford-blue flex items-center break-words">
                       {formattedText}
                     </p>
                   </div>

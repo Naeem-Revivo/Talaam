@@ -4,7 +4,7 @@ const TableHeader = ({ columns }) => (
             {columns.map((column) => (
                 <th
                     key={column}
-                    className="px-6 py-4 text-[12px] font-semibold leading-[16px] text-white uppercase tracking-wide whitespace-nowrap"
+                    className="px-6 py-4 text-[16px] leading-[16px] font-medium text-white uppercase tracking-wide whitespace-nowrap"
                 >
                     {column}
                 </th>
@@ -24,10 +24,12 @@ const TableRow = ({ item, columns, onView }) => {
                 const fieldKey = getFieldKey(column);
                 let value = item[fieldKey] || "—";
 
+                console.log(fieldKey, "field key")
+
                 return (
                     <td
                         key={column}
-                        className="px-6 py-4 text-[13px] font-normal leading-[100%] text-center"
+                        className={`px-6 py-4 font-normal leading-[100%] font-roboto text-center  ${fieldKey === "timestamp" ? "text-[#6B7280] text-[12px]" : "text-blue-dark text-[14px]"}`}
                     >
                         {value}
                     </td>
@@ -128,7 +130,7 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
 
     return (
         <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-oxford-blue md:flex-row md:items-center md:justify-between md:bg-oxford-blue md:px-6 md:text-white">
-            <p className="text-[12px] font-medium leading-[18px]">
+            <p className="text-[12px] font-medium leading-[18px] font-roboto">
                 Showing {firstItem} to {lastItem} of {total} results
             </p>
             <div className="flex items-center gap-2">
@@ -136,7 +138,7 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
                     type="button"
                     onClick={handlePrev}
                     disabled={page === 1}
-                    className={`flex h-[27px] w-[78px] items-center justify-center rounded border text-[14px] font-semibold leading-[16px] transition-colors ${page === 1
+                    className={`flex h-[27px] w-[78px] items-center justify-center rounded border text-[14px] font-medium leading-[16px] transition-colors ${page === 1
                         ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
                         : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
                         }`}
@@ -148,7 +150,7 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
                         key={pageNumber}
                         type="button"
                         onClick={() => onPageChange?.(pageNumber)}
-                        className={`flex h-8 w-8 items-center justify-center rounded border text-[14px] font-semibold leading-[16px] transition-colors ${pageNumber === page
+                        className={`flex h-[27px] w-8 items-center justify-center rounded border text-[14px] font-medium leading-[16px] transition-colors ${pageNumber === page
                             ? "border-[#ED4122] bg-[#ED4122] text-white"
                             : "border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
                             }`}
@@ -160,7 +162,7 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
                     type="button"
                     onClick={handleNext}
                     disabled={page === safeTotalPages}
-                    className={`flex h-[27px] w-[78px] items-center justify-center rounded border text-[14px] font-semibold leading-[16px] transition-colors ${page === safeTotalPages
+                    className={`flex h-[27px] w-[78px] items-center justify-center rounded border text-[14px] font-medium leading-[16px] transition-colors ${page === safeTotalPages
                         ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
                         : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
                         }`}

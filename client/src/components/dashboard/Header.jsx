@@ -40,8 +40,17 @@ const Header = ({ onToggleSidebar }) => {
     // Admin routes
     if (pathname.startsWith('/admin')) {
       if (pathname === '/admin') return 'Admin Dashboard';
+      if (pathname.includes('add-announcements')) return 'New Announcements';
+      if (pathname.includes('announcements')) return 'Site-wide Announcements';
+      if (pathname.includes('language-management')) return 'Language Management';
+      if (pathname.includes('email-template')) return 'Email Templates';
+      if (pathname.includes('roles-permissions')) return 'Admin Roles & Permissions';
       if (pathname.startsWith('/admin/users')) return 'User Management';
       if (pathname.startsWith('/admin/question-bank')) return 'Question Bank';
+      if (pathname.startsWith('/admin/question-management')) return 'Question Management';
+      if (pathname.startsWith('/admin/add-question')) return 'Add New Question';
+      if (pathname.startsWith('/admin/question-details')) return 'View Question Details';
+      if (pathname.startsWith('/admin/create-variant')) return 'Create Variant';
       if (pathname.startsWith('/admin/classification')) return 'Classification Management';
       if (pathname.startsWith('/admin/subscriptions')) return 'Subscriptions & Billing';
       if (pathname.startsWith('/admin/reports')) return 'Reports & Analytics';
@@ -51,15 +60,31 @@ const Header = ({ onToggleSidebar }) => {
       return 'Admin';
     }
     // User dashboard routes
-    if (pathname === '/dashboard') return 'Dashboard';
-    if (pathname.startsWith('/dashboard/practice')) return 'Practice Session';
-    if (pathname.startsWith('/dashboard/analytics')) return 'Performance Analytics';
-    if (pathname.startsWith('/dashboard/review-incorrect')) return 'Review Incorrect';
-    if (pathname.startsWith('/dashboard/review-all')) return 'Review All';
-    if (pathname.startsWith('/dashboard/review')) return 'Review Sessions';
-    if (pathname.startsWith('/dashboard/session-summary')) return 'Session Summary';
-    if (pathname.startsWith('/dashboard/session')) return 'Question Session';
-    return t('dashboard.header.title');
+   if (pathname === "/dashboard")
+    return t("dashboard.sidebar.dashboard");
+
+  if (pathname.startsWith("/dashboard/practice"))
+    return t("dashboard.sidebar.practiceSession");
+
+  if (pathname.startsWith("/dashboard/analytics"))
+    return t("dashboard.sidebar.performanceAnalytics");
+
+  if (pathname.startsWith("/dashboard/review-incorrect"))
+    return t("dashboard.sidebar.reviewIncorrect");
+
+  if (pathname.startsWith("/dashboard/review-all"))
+    return t("dashboard.sidebar.reviewAll");
+
+  if (pathname.startsWith("/dashboard/review"))
+    return t("dashboard.sidebar.reviewSessions");
+
+  if (pathname.startsWith("/dashboard/session-summary"))
+    return t("dashboard.sidebar.sessionSummary");
+
+  if (pathname.startsWith("/dashboard/session"))
+    return t("dashboard.sidebar.questionSession");
+
+  return t("dashboard.header.title");
   };
 
   const headerTitle = getTitleByPath(location.pathname);
@@ -135,24 +160,36 @@ const Header = ({ onToggleSidebar }) => {
 
             {/* User Dropdown Menu */}
             {isUserMenuOpen && (
-              <div className="absolute top-full right-0 mt-2 w-[192px] h-[154.4px] bg-white border border-[#E5E7EB] rounded-lg shadow-header-dropdown z-50">
+              <div 
+                className="absolute top-full right-0 mt-2 w-[192px] h-[154.4px] bg-white border border-[#E5E7EB] rounded-lg shadow-header-dropdown z-50"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="p-2">
                   <button
-                    onClick={() => handleMenuItemClick('Settings')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMenuItemClick('Settings');
+                    }}
                     className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-md transition-colors"
                   >
                     <img src={settings} alt="Settings" className="w-5 h-5" />
                     <span className="text-[14px] text-gray-700 font-roboto font-[400]">Settings</span>
                   </button>
                   <button
-                    onClick={() => handleMenuItemClick('My Profile')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMenuItemClick('My Profile');
+                    }}
                     className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-md transition-colors"
                   >
                     <img src={profile} alt="My Profile" className="w-5 h-5" />
                     <span className="text-[14px] text-gray-700 font-roboto font-[400]">My Profile</span>
                   </button>
                   <button
-                    onClick={() => handleMenuItemClick('Logout')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMenuItemClick('Logout');
+                    }}
                     className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-md transition-colors"
                   >
                     <img src={logout} alt="Logout" className="w-5 h-5" />

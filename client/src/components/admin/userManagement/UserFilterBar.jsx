@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
 import { dropdownArrow } from "../../../assets/svg";
+import Dropdown from "../../shared/Dropdown";
 
 const UserFilterBar = ({
   searchValue,
@@ -198,61 +199,43 @@ const UserFilterBar = ({
       </div>
 
       {/* Desktop / tablet filters */}
-      <div className="hidden flex-row items-center gap-5 lg:flex">
-        <label className="relative flex w-[220px] items-center xl:w-[240px]">
-          <span className="sr-only">Filter by status</span>
-          <select
-            value={statusValue}
-            onChange={(event) => onStatusChange?.(event.target.value)}
-            className="h-[50px] w-full appearance-none rounded-[14px] border border-transparent bg-white px-4 pr-10 text-[16px] font-archivo font-semibold text-oxford-blue shadow-filter-hover focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#D6E3F0]"
-          >
-            <option value="" disabled hidden>
-              {t('admin.userManagement.filters.status')}
-            </option>
-            {statusOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <svg
-            width="15"
-            height="9"
-            viewBox="0 0 15 9"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2"
-          >
-            <path d="M0.6875 0.726562L7.00848 6.71211L13.3295 0.726562" stroke="#032746" strokeWidth="2" />
-          </svg>
-        </label>
-        <label className="relative flex w-[220px] items-center xl:w-[240px]">
-          <span className="sr-only">Filter by role</span>
-          <select
-            value={roleValue}
-            onChange={(event) => onRoleChange?.(event.target.value)}
-            className="h-[50px] w-full appearance-none rounded-[14px] border border-transparent bg-white px-4 pr-10 text-[16px] font-archivo font-semibold text-oxford-blue shadow-filter-hover focus:border-[#032746] focus:outline-none focus:ring-2 focus:ring-[#D6E3F0]"
-          >
-            <option value="" disabled hidden>
-              {t('admin.userManagement.filters.role')}
-            </option>
-            {roleOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <svg
-            width="15"
-            height="9"
-            viewBox="0 0 15 9"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2"
-          >
-            <path d="M0.6875 0.726562L7.00848 6.71211L13.3295 0.726562" stroke="#032746" strokeWidth="2" />
-          </svg>
-        </label>
+      <div className="hidden flex-row items-center gap-5 lg:flex lg:flex-nowrap">
+        <div className="flex-shrink-0 w-[220px] xl:w-[240px]">
+          <Dropdown
+            label={t('admin.userManagement.filters.status')}
+            value={statusValue || ""}
+            options={statusOptions}
+            onChange={(value) => {
+              if (value === "All") {
+                onStatusChange?.("");
+              } else {
+                onStatusChange?.(value);
+              }
+            }}
+            placeholder={t('admin.userManagement.filters.status')}
+            showDefaultOnEmpty={false}
+            className="!w-full"
+            height="h-[50px]"
+          />
+        </div>
+        <div className="flex-shrink-0 w-[220px] xl:w-[240px]">
+          <Dropdown
+            label={t('admin.userManagement.filters.role')}
+            value={roleValue || ""}
+            options={roleOptions}
+            onChange={(value) => {
+              if (value === "All") {
+                onRoleChange?.("");
+              } else {
+                onRoleChange?.(value);
+              }
+            }}
+            placeholder={t('admin.userManagement.filters.role')}
+            showDefaultOnEmpty={false}
+            className="!w-full"
+            height="h-[50px]"
+          />
+        </div>
       </div>
     </section>
   );

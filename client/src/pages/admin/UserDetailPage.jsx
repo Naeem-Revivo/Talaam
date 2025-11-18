@@ -125,7 +125,7 @@ const ActivityItem = ({ icon, title, timestamp }) => {
         {icon}
       </div>
       <div className="flex flex-col gap-1">
-        <p className="font-roboto font-normal text-sm text-black">
+        <p className="font-roboto font-normal text-[16px] leading-5 text-black">
           {renderTitle()}
         </p>
         <span className="text-xs font-normal font-roboto text-dark-gray">
@@ -304,11 +304,11 @@ const UserDetailPage = () => {
               </div>
               </div>
 
-          <div className="rounded-[24px] border border-[#032746]/10 bg-white px-8 py-6 shadow-modal">
-            <h2 className="border-b border-[#E2E2E2] pb-5 text-[20px] font-archivo font-bold leading-[100%] text-oxford-blue">
+          <div className="rounded-[24px] border border-[#032746]/10 bg-white py-6 shadow-modal">
+            <h2 className="border-b px-8 border-[#E2E2E2] pb-5 text-[20px] font-archivo font-semibold leading-[28px] text-oxford-blue">
               {t('admin.viewUser.sections.activityLog')}
             </h2>
-            <div className="mt-6 flex flex-col gap-4">
+            <div className="mt-6 px-8 flex flex-col gap-4">
               {activityLog.map((item, index) => {
                 const visuals = resolveActivityVisuals(item.description);
                 return (
