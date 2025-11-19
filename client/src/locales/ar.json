@@ -468,6 +468,13 @@
       "overall": "الإجمالي",
       "questionsCompleted": "الأسئلة المكتملة",
       "sectionBreakdown": "تفصيل الأقسام",
+      "sectionNames": {
+        "quantitative": "الكمّيات",
+        "language": "اللغة",
+        "logical": "الاستدلال المنطقي",
+        "general": "المعرفة العامة",
+        "current": "الشؤون الجارية"
+      },
       "legend": {
         "normal": "عادي",
         "hovered": "عند التمرير",
@@ -1076,7 +1083,8 @@
       "buttons": {
         "delete": "حذف",
         "edit": "تعديل",
-        "createVariant": "+ إنشاء متغير"
+        "createVariant": "+ إنشاء متغير",
+        "addComment": "إضافة تعليق"
       },
       "sections": {
         "questionInfo": "معلومات السؤال",
@@ -1104,9 +1112,6 @@
       },
       "placeholders": {
         "addComments": "إضافة تعليقات"
-      },
-      "buttons": {
-        "addComment": "إضافة تعليق"
       }
     },
     "createVariant": {

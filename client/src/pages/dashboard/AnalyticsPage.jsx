@@ -35,7 +35,8 @@ const AnalyticsPage = () => {
   ];
 
   return (
-    <div className="bg-white min-h-screen p-4 md:p-6 lg:p-8 2xl:px-[70px]">
+    <div className="bg-white min-h-screen">
+      <div className="p-4 md:p-6 lg:p-8 2xl:px-6 max-w-[1200px] mx-auto">
       {/* Page Title and Subtitle */}
       <div className="mb-6 md:mb-8">
         <h1 className="text-[24px] md:text-[32px] font-bold text-oxford-blue mb-2 font-archivo leading-[32px] md:leading-[40px] tracking-[0%]">
@@ -431,7 +432,7 @@ const AnalyticsPage = () => {
           {focusAreas.map((area, index) => (
             <div
               key={index}
-              className="bg-[#FDF0D5] rounded-full p-3 md:p-4 flex items-center justify-between w-full md:w-[527.2px] min-h-[50px] md:min-h-[57.6px] border border-[#FFE5B0]"
+              className="bg-[#FDF0D5] rounded-full p-3 md:p-4 flex items-center justify-between w-full min-h-[50px] md:min-h-[57.6px] border border-[#FFE5B0]"
               style={{ borderWidth: "1px", borderRadius: "9999px" }}
             >
               <span className="text-[14px] md:text-[16px] font-normal text-oxford-blue font-archivo leading-[20px] md:leading-[24px] tracking-[0%]">
@@ -443,6 +444,7 @@ const AnalyticsPage = () => {
             </div>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );
