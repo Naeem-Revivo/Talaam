@@ -171,7 +171,7 @@ const AnalyticsPage = () => {
           </div>
         </div>
         <div className="h-[250px] md:h-[280px] w-full max-w-[650px] mx-auto overflow-x-auto">
-          {/* <LineChart
+          <LineChart
             width={undefined}
             height={250}
             series={[
@@ -229,7 +229,7 @@ const AnalyticsPage = () => {
                 r: 4,
               },
             }}
-          /> */}
+          />
         </div>
       </div>
 
