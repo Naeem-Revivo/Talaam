@@ -90,7 +90,7 @@ const PracticePage = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 2xl:px-[70px] desktop:px-[260px] bg- min-h-screen">
+    <div className="p-4 md:p-6 lg:p-8 2xl:px-6 max-w-[1200px] mx-auto min-h-screen">
       {/* Title and Subtitle */}
       <div className="mb-8">
         <h1 className="font-archivo font-bold text-[32px] md:text-[36px] leading-[36px] md:leading-[40px] text-oxford-blue mb-1 md:mb-2">
@@ -102,16 +102,16 @@ const PracticePage = () => {
       </div>
 
       {/* Session Mode and Question Status Cards - Flexed */}
-      <div className="flex flex-col lg:flex-row  flex-wrap justify-start gap-2 mb-6">
+      <div className="flex flex-col xl:flex-row justify-start gap-2 mb-6">
         {/* Session Mode Card */}
-        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:w-[594px] lg:h-[266px]">
+        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:h-[266px]">
         <h2 className="font-archivo font-bold text-lg md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-4">
           {t('dashboard.practice.sessionMode.title')}
         </h2>
           <div className="flex flex-row gap-2 md:gap-4 mb-4">
             <button
               onClick={() => handleSessionModeChange('test')}
-              className={`rounded-lg transition-all duration-200 text-left w-[170px] md:w-full lg:w-[264px] h-[82px] md:h-[81.6px] p-2 md:p-4 ${
+              className={`rounded-lg transition-all duration-200 text-left w-full h-[82px] md:h-[81.6px] p-2 md:p-4 ${
                 sessionMode === 'test'
                   ? 'bg-cinnebar-red border border-cinnebar-red shadow-input'
                   : 'bg-white border border-[#E5E7EB]'
@@ -130,7 +130,7 @@ const PracticePage = () => {
             </button>
             <button
               onClick={() => handleSessionModeChange('study')}
-              className={`rounded-lg transition-all duration-200 text-left w-[170px] md:w-full lg:w-[264px] h-[82px] md:h-[81.6px] p-2 md:p-4 ${
+              className={`rounded-lg transition-all duration-200 text-left w-full h-[82px] md:h-[81.6px] p-2 md:p-4 ${
                 sessionMode === 'study'
                   ? 'bg-cinnebar-red border border-cinnebar-red shadow-input'
                   : 'bg-white border border-[#E5E7EB]'
@@ -159,7 +159,7 @@ const PracticePage = () => {
         </div>
 
         {/* Question Status Card */}
-        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:w-[506px] lg:h-[266px]">
+        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:h-[266px]">
         <h2 className="font-archivo font-bold text-[18px] md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-4">
           {t('dashboard.practice.questionStatus.title')}
         </h2>
@@ -235,7 +235,7 @@ const PracticePage = () => {
       </div>
 
       {/* Question Pool Section */}
-      <div className="mb-6 bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:w-[1120px]">
+      <div className="mb-6 bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full">
         <h2 className="font-archivo font-bold text-[18px] md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-4">
           {t('dashboard.practice.questionPool.title')}
         </h2>
@@ -343,7 +343,7 @@ const PracticePage = () => {
         <p className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-gray-500 mb-4">
           {t('dashboard.practice.sessionSize.enterRange')}
         </p>
-        <div className="rounded-lg flex items-center gap-2 w-full lg:w-[1072px] h-auto lg:h-[47px] bg-papaya-whip border border-cinnebar-red px-4 py-3">
+        <div className="rounded-lg flex items-center gap-2 w-full h-auto lg:h-[47px] bg-papaya-whip border border-cinnebar-red px-4 py-3">
           <svg className="w-5 h-5 text-cinnebar-red flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>

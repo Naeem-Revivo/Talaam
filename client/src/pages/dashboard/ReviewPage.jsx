@@ -47,7 +47,8 @@ const ReviewPage = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen p-4 md:p-6 lg:p-8 2xl:px-[70px] desktop:px-[260px]">
+    <div className="bg-white min-h-screen">
+      <div className=' p-4 md:p-6 lg:p-8 2xl:px-6 max-w-[1200px] mx-auto'>
       {/* Page Title and Subtitle */}
       <div className="mb-4 md:mb-6 lg:mb-8">
         <h1 className="font-archivo font-bold text-[32px] md:text-[36px] leading-[36px] md:leading-[40px] text-oxford-blue mb-2">
@@ -288,6 +289,7 @@ const ReviewPage = () => {
             {t('dashboard.review.pagination.next')}
           </button>
         </div>
+      </div>
       </div>
     </div>
   );
