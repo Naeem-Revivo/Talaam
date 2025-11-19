@@ -1,9 +1,4 @@
-const express = require('express');
-const router = express.Router();
 const { body } = require('express-validator');
-const profileController = require('../controllers/profile.controller');
-const authMiddleware = require('../middlewares/auth.middleware');
-const handleValidationErrors = require('../middlewares/validation.middleware');
 
 // Validation middleware for profile
 const validateProfile = [
@@ -44,9 +39,7 @@ const validateProfile = [
     .withMessage('Language must be either English or العربية'),
 ];
 
-// Routes
-router.get('/profile', authMiddleware, profileController.getProfile);
-router.put('/profile', authMiddleware, validateProfile, handleValidationErrors, profileController.updateProfile);
-router.post('/profile/complete', authMiddleware, validateProfile, handleValidationErrors, profileController.completeProfile);
+module.exports = {
+  validateProfile,
+};
 
-module.exports = router;

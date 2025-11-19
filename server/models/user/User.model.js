@@ -75,6 +75,24 @@ const userSchema = new mongoose.Schema(
       enum: ['English', 'العربية'],
       default: 'English',
     },
+    // Role fields
+    role: {
+      type: String,
+      enum: ['superadmin', 'student', 'admin'],
+      default: 'student',
+    },
+    adminRole: {
+      type: String,
+      default: null,
+      validate: {
+        validator: function(value) {
+          // Allow null/undefined or one of the valid admin roles
+          if (value === null || value === undefined) return true;
+          return ['gatherer', 'creator', 'explainer', 'processor', 'admin'].includes(value);
+        },
+        message: 'adminRole must be one of: gatherer, creator, explainer, processor, admin',
+      },
+    },
   },
   {
     timestamps: true,
@@ -96,3 +114,4 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 };
 
 module.exports = mongoose.model('User', userSchema);
+

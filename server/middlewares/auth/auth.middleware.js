@@ -1,5 +1,5 @@
-const { verifyToken } = require('../config/jwt.config');
-const User = require('../models/User.model');
+const { verifyToken } = require('../../config/jwt');
+const User = require('../../models/user');
 
 const authMiddleware = async (req, res, next) => {
   try {
@@ -30,6 +30,8 @@ const authMiddleware = async (req, res, next) => {
     req.user = {
       id: user._id,
       email: user.email,
+      role: user.role,
+      adminRole: user.adminRole,
     };
 
     next();
@@ -54,3 +56,4 @@ const authMiddleware = async (req, res, next) => {
 };
 
 module.exports = authMiddleware;
+

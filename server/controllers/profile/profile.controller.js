@@ -1,7 +1,7 @@
-const User = require('../models/User.model');
+const User = require('../../models/user');
 
 // Get user profile
-exports.getProfile = async (req, res, next) => {
+const getProfile = async (req, res, next) => {
   try {
     console.log('[PROFILE] GET /profile → requested', { userId: req.user && req.user.id });
     const user = await User.findById(req.user.id);
@@ -34,7 +34,7 @@ exports.getProfile = async (req, res, next) => {
 };
 
 // Update user profile
-exports.updateProfile = async (req, res, next) => {
+const updateProfile = async (req, res, next) => {
   try {
     console.log('[PROFILE] PUT /profile → requested', { userId: req.user && req.user.id });
     const { fullName, dateOfBirth, country, timezone, language } = req.body;
@@ -102,7 +102,7 @@ exports.updateProfile = async (req, res, next) => {
 };
 
 // Create/Complete profile (for initial setup)
-exports.completeProfile = async (req, res, next) => {
+const completeProfile = async (req, res, next) => {
   try {
     console.log('[PROFILE] POST /profile/complete → requested', { userId: req.user && req.user.id });
     const { fullName, dateOfBirth, country, timezone, language } = req.body;
@@ -166,3 +166,10 @@ exports.completeProfile = async (req, res, next) => {
     next(error);
   }
 };
+
+module.exports = {
+  getProfile,
+  updateProfile,
+  completeProfile,
+};
+
