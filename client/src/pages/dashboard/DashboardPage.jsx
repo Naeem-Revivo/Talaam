@@ -193,7 +193,7 @@ const DashboardPage = () => {
         </h2>
         <div className="rounded-xl flex flex-col items-center justify-center p-3 md:p-6 overflow-x-auto md:overflow-x-visible scroll-smooth">
           <div className="min-w-[650px] md:min-w-0 w-full md:w-[1070px] h-[320px]">
-            {/* <BarChart
+            <BarChart
               width={chartWidth}
               height={320}
               margin={{ left: 70, right: 30, top: 30, bottom: 80 }}
@@ -298,7 +298,7 @@ const DashboardPage = () => {
                   width: 35,
                 },
               }}
-            /> */}
+            />
           </div>
 
           {/* Footer with legend */}
