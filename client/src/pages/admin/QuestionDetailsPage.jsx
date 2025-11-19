@@ -4,7 +4,8 @@ import { useLanguage } from "../../context/LanguageContext";
 
 const QuestionDetailsPage = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dir = language === 'ar' ? 'rtl' : 'ltr'
   const [comments, setComments] = useState("");
 
   // Rich Text Editor Component using contentEditable (React 19 compatible)
@@ -363,7 +364,7 @@ const QuestionDetailsPage = () => {
   };
 
   return (
-    <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]">
+    <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]" dir={dir}>
       <div className="mx-auto flex max-w-[1200px] flex-col gap-6">
         {/* Header */}
         <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -433,12 +434,12 @@ const QuestionDetailsPage = () => {
                 <div className="border-t border-[#E5E7EB] pt-4"></div>
 
                 <div>
-                  <p className="pb-7 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                  <p className="pb-7 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue" dir="ltr">
                     Which of the following mountain ranges is the longest in the world?
                   </p>
 
                   {/* Options */}
-                  <div className="space-y-5">
+                  <div className="space-y-5" dir="ltr">
                     <label className="flex items-center gap-3 cursor-pointer">
                       <input
                         type="radio"
@@ -494,7 +495,7 @@ const QuestionDetailsPage = () => {
                     <p className="font-archivo text-[20px] font-bold leading-[20px] text-oxford-blue mb-2">
                       {t('admin.questionDetails.fields.correctAnswer')}
                     </p>
-                    <label className="flex items-center gap-3 pt-2 cursor-pointer">
+                    <label className="flex items-center gap-3 pt-2 cursor-pointer" dir="ltr">
                       <input
                         type="radio"
                         name="correctAnswer"
@@ -522,7 +523,7 @@ const QuestionDetailsPage = () => {
               {t('admin.questionDetails.sections.explanation')}
             </h2>
               <div className="border-t border-[#E5E7EB] pt-4">
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue" dir="ltr">
                   The Andes Mountains, running along the western coast of south America, are the longest continental mountain range in the world, stretching for approximately 7,000 kilometers (4,300 miles).
                 </p>
               </div>
@@ -565,7 +566,7 @@ const QuestionDetailsPage = () => {
             </h2>
               <div className="space-y-4">
                 <div
-                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-[672px] h-auto"
+                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-[672px] h-auto" dir="ltr"
                 >
                   <div className="flex-shrink-0">
                     <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -583,7 +584,7 @@ const QuestionDetailsPage = () => {
                   </div>
                 </div>
                 <div
-                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-[672px] h-auto"
+                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-[672px] h-auto" dir="ltr"
                 >
                   <div className="flex-shrink-0">
                     <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -601,7 +602,7 @@ const QuestionDetailsPage = () => {
                   </div>
                 </div>
                 <div
-                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-[672px] h-auto"
+                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-[672px] h-auto" dir="ltr"
                 >
                   <div className="flex-shrink-0">
                     <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">

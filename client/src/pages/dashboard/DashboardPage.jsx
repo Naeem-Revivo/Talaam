@@ -22,12 +22,33 @@ const DashboardPage = () => {
   }, []);
 
   const sectionData = [
-    { name: "Quantitative", progress: 65, color: "bg-moonstone-blue" },
-    { name: "Language", progress: 80, color: "bg-[#C6D8D3]" },
-    { name: "Logical Reasoning", progress: 72, color: "bg-cinnebar-red" },
-    { name: "General Knowledge", progress: 58, color: "bg-papaya-whip" },
-    { name: "Current Affairs", progress: 45, color: "bg-oxford-blue" },
-  ];
+  {
+    name: t("dashboard.overview.sectionNames.quantitative"),
+    progress: 65,
+    color: "bg-moonstone-blue",
+  },
+  {
+    name: t("dashboard.overview.sectionNames.language"),
+    progress: 80,
+    color: "bg-[#C6D8D3]",
+  },
+  {
+    name: t("dashboard.overview.sectionNames.logical"),
+    progress: 72,
+    color: "bg-cinnebar-red",
+  },
+  {
+    name: t("dashboard.overview.sectionNames.general"),
+    progress: 58,
+    color: "bg-papaya-whip",
+  },
+  {
+    name: t("dashboard.overview.sectionNames.current"),
+    progress: 45,
+    color: "bg-oxford-blue",
+  },
+];
+
 
   const performanceData = [
     { session: "S1", accuracy: 65, state: "normal" },
@@ -54,9 +75,9 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 2xl:px-[70px] desktop:px-[260px] bg-gray-50 min-h-screen px-6">
+    <div className="p-4 md:p-6 lg:p-8 bg-gray-50 min-h-screen 2xl:px-6 max-w-[1200px] mx-auto">
       {/* Overview Section */}
-      <div className="mb-8 md:mb-12">
+      <div className="mb-8 md:mb-12 w-full">
         <h2 className="font-archivo font-bold text-2xl md:text-3xl lg:text-[36px] leading-tight md:leading-[40px] text-oxford-blue mb-2">
           {t("dashboard.overview.title")}
         </h2>
@@ -66,7 +87,7 @@ const DashboardPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 pt-4">
           {/* Progress Card */}
-          <div className="rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:w-[548px] h-auto min-h-[200px] md:min-h-[251px]">
+          <div className="rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full h-auto min-h-[200px] md:min-h-[251px]">
             <h3 className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue mb-3 md:mb-4">
               {t("dashboard.overview.progress")}
             </h3>
@@ -113,7 +134,7 @@ const DashboardPage = () => {
           </div>
 
           {/* Accuracy Card */}
-          <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:w-[548px] h-auto min-h-[200px] md:min-h-[251px]">
+          <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full h-auto min-h-[200px] md:min-h-[251px]">
             <h3 className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue mb-3 md:mb-10">
               {t("dashboard.overview.accuracy")}
             </h3>
@@ -132,7 +153,7 @@ const DashboardPage = () => {
       </div>
 
       {/* Section Breakdown */}
-      <div className="w-full max-w-[382px] md:max-w-[1120px] h-[491px] md:h-[508px]">
+      <div className="w-full h-[491px] md:h-[508px]">
         <h2 className="font-archivo font-bold text-[20px] leading-[32px] text-oxford-blue mb-4 md:mb-3">
           {t("dashboard.overview.sectionBreakdown")}
         </h2>
@@ -166,13 +187,13 @@ const DashboardPage = () => {
       </div>
 
       {/* Performance Chart */}
-      <div className="bg-white my-20 border border-[#E5E7EB] shadow-dashboard w-full max-w-full md:w-[1120px] h-auto md:h-auto rounded-[12px] overflow-x-hidden overflow-y-visible pb-8">
+      <div className="bg-white my-20 border border-[#E5E7EB] shadow-dashboard w-full h-auto md:h-auto rounded-[12px] overflow-x-hidden overflow-y-visible pb-8">
         <h2 className="font-archivo font-semibold pl-4 md:pl-6 lg:pl-10 pb-4 md:pb-5 pt-6 md:pt-10 text-[20px] leading-[28px] text-oxford-blue">
           {t("dashboard.performance.title")}
         </h2>
         <div className="rounded-xl flex flex-col items-center justify-center p-3 md:p-6 overflow-x-auto md:overflow-x-visible scroll-smooth">
           <div className="min-w-[650px] md:min-w-0 w-full md:w-[1070px] h-[320px]">
-            <BarChart
+            {/* <BarChart
               width={chartWidth}
               height={320}
               margin={{ left: 70, right: 30, top: 30, bottom: 80 }}
@@ -277,7 +298,7 @@ const DashboardPage = () => {
                   width: 35,
                 },
               }}
-            />
+            /> */}
           </div>
 
           {/* Footer with legend */}

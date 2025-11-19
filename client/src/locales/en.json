@@ -458,6 +458,13 @@
       "overall": "Overall",
       "questionsCompleted": "Questions Completed",
       "sectionBreakdown": "Section Breakdown",
+      "sectionNames": {
+        "quantitative": "Quantitative",
+        "language": "Language",
+        "logical": "Logical Reasoning",
+        "general": "General Knowledge",
+        "current": "Current Affairs"
+      },
       "legend": {
         "normal": "Normal",
         "hovered": "Hovered",

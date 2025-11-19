@@ -61,7 +61,7 @@ const TestModeLayout = ({
               <button
                 onClick={() => onNavigate(-1)}
                 disabled={currentIndex === 0}
-                className={`px-3 py-1 rounded text-[14px] font-normal font-roboto transition-colors ${
+                className={`px-3 py-1 rounded text-[18px] leading-[100%] font-medium font-archivo transition-colors ${
                   currentIndex === 0 ? 'text-[#9CA3AF] cursor-not-allowed' : 'text-oxford-blue hover:bg-[#F3F4F6]'
                 }`}
               >
@@ -70,7 +70,7 @@ const TestModeLayout = ({
               <button
                 onClick={() => onNavigate(1)}
                 disabled={currentIndex === totalQuestions - 1}
-                className={`px-3 py-1 rounded text-[14px] font-normal font-roboto transition-colors ${
+                className={`px-3 py-1 rounded text-[18px] leading-[100%] font-medium font-archivo transition-colors ${
                   currentIndex === totalQuestions - 1 ? 'text-[#9CA3AF] cursor-not-allowed' : 'text-oxford-blue hover:bg-[#F3F4F6]'
                 }`}
               >
