@@ -20,7 +20,7 @@ const allPayments = [
 ];
 
 // Custom TableRow component for payments with badge support
-const PaymentTableRow = ({ item }) => {
+const PaymentTableRow = ({ item, t }) => {
   // Status badge colors
   const statusBadgeColors = {
     Paid: { bg: "bg-[#FDF0D5]", text: "text-[#ED4122]" },
@@ -130,14 +130,15 @@ const PaymentHistoryPage = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  // Updated columns with label and key structure
   const columns = [
-    "INVOICE ID",
-    "USER",
-    "PLAN",
-    "AMOUNT",
-    "DATE",
-    "PAYMENT METHOD",
-    "STATUS",
+    { label: t('admin.paymentHistory.table.columns.invoiceId'), key: 'invoiceid' },
+    { label: t('admin.paymentHistory.table.columns.user'), key: 'user' },
+    { label: t('admin.paymentHistory.table.columns.plan'), key: 'plan' },
+    { label: t('admin.paymentHistory.table.columns.amount'), key: 'amount' },
+    { label: t('admin.paymentHistory.table.columns.date'), key: 'date' },
+    { label: t('admin.paymentHistory.table.columns.paymentMethod'), key: 'paymentmethod' },
+    { label: t('admin.paymentHistory.table.columns.status'), key: 'status' }
   ];
 
   // Get unique plans for filter
@@ -162,10 +163,10 @@ const PaymentHistoryPage = () => {
               <tr className="bg-oxford-blue text-center">
                 {columns.map((column) => (
                   <th
-                    key={column}
+                    key={column.key}
                     className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white"
                   >
-                    {column}
+                    {column.label}
                   </th>
                 ))}
               </tr>
@@ -173,7 +174,7 @@ const PaymentHistoryPage = () => {
             <tbody>
               {transformedPayments.length ? (
                 transformedPayments.map((payment) => (
-                  <PaymentTableRow key={payment.id} item={payment} />
+                  <PaymentTableRow key={payment.id} item={payment} t={t} />
                 ))
               ) : (
                 <tr>
@@ -181,7 +182,7 @@ const PaymentHistoryPage = () => {
                     colSpan={columns.length}
                     className="px-6 py-10 text-center text-sm text-dark-gray"
                   >
-                    No payments match the current filters.
+                    {t('admin.paymentHistory.table.emptyMessage')}
                   </td>
                 </tr>
               )}
@@ -197,47 +198,28 @@ const PaymentHistoryPage = () => {
                 className="rounded-[12px] border border-[#E5E7EB] bg-white p-4 shadow-sm"
               >
                 <div className="space-y-2 text-oxford-blue">
-                  <div>
-                    <span className="text-[14px] font-semibold">Invoice ID: </span>
-                    <span className="text-[14px]">{payment.invoiceid}</span>
-                  </div>
-                  <div>
-                    <span className="text-[14px] font-semibold">User: </span>
-                    <span className="text-[14px]">{payment.user}</span>
-                  </div>
-                  <div>
-                    <span className="text-[14px] font-semibold">Plan: </span>
-                    <span className="text-[14px]">{payment.plan}</span>
-                  </div>
-                  <div>
-                    <span className="text-[14px] font-semibold">Amount: </span>
-                    <span className="text-[14px]">{payment.amount}</span>
-                  </div>
-                  <div>
-                    <span className="text-[14px] font-semibold">Date: </span>
-                    <span className="text-[14px]">{payment.date}</span>
-                  </div>
-                  <div>
-                    <span className="text-[14px] font-semibold">Payment Method: </span>
-                    <span className="text-[14px]">{payment.paymentmethod}</span>
-                  </div>
-                  <div>
-                    <span className="text-[14px] font-semibold">Status: </span>
-                    <span className="text-[14px]">{payment.status}</span>
-                  </div>
+                  {columns.map((column) => (
+                    <div key={column.key}>
+                      <span className="text-[14px] font-semibold">{column.label}: </span>
+                      <span className="text-[14px]">{payment[column.key]}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))
           ) : (
             <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-dark-gray shadow-empty">
-              No payments match the current filters.
+              {t('admin.paymentHistory.table.emptyMessage')}
             </div>
           )}
         </div>
         {/* Pagination */}
         <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-oxford-blue px-6 py-4 text-white md:flex-row md:items-center md:justify-between">
           <p className="text-[12px] font-roboto font-medium leading-[18px] tracking-[3%]">
-            Showing {firstItem} to {lastItem} of {filteredPayments.length} results
+            {t('admin.paymentHistory.table.pagination.showing')
+              .replace('{{first}}', firstItem)
+              .replace('{{last}}', lastItem)
+              .replace('{{total}}', filteredPayments.length)}
           </p>
           <div className="flex items-center gap-2">
             <button
@@ -250,7 +232,7 @@ const PaymentHistoryPage = () => {
                   : "border-white bg-transparent text-white hover:bg-white/10"
               }`}
             >
-              Previous
+              {t('admin.paymentHistory.table.pagination.previous')}
             </button>
             {Array.from({ length: Math.max(totalPages, 1) }, (_, i) => i + 1).map((pageNumber) => (
               <button
@@ -276,7 +258,7 @@ const PaymentHistoryPage = () => {
                   : "border-white bg-transparent text-white hover:bg-white/10"
               }`}
             >
-              Next
+              {t('admin.paymentHistory.table.pagination.next')}
             </button>
           </div>
         </div>
@@ -311,7 +293,7 @@ const PaymentHistoryPage = () => {
                   fill="white"
                 />
               </svg>
-              Export Billing Reports
+              {t('admin.paymentHistory.buttons.exportBilling')}
             </button>
           </div>
         </header>
@@ -330,10 +312,10 @@ const PaymentHistoryPage = () => {
                 }}
                 className="appearance-none h-[50px] w-[165px] rounded-[8px] border border-[#E5E7EB] bg-white px-4 pr-8 font-roboto text-[14px] font-normal leading-[20px] text-[#374151] outline-none cursor-pointer hover:border-[#D1D5DB] transition"
               >
-                <option value="All">Date Range Picker</option>
-                <option value="Last 7 days">Last 7 days</option>
-                <option value="Last 30 days">Last 30 days</option>
-                <option value="Last 90 days">Last 90 days</option>
+                <option value="All">{t('admin.paymentHistory.filters.dateRange')}</option>
+                <option value="Last 7 days">{t('admin.paymentHistory.filters.dateOptions.last7Days')}</option>
+                <option value="Last 30 days">{t('admin.paymentHistory.filters.dateOptions.last30Days')}</option>
+                <option value="Last 90 days">{t('admin.paymentHistory.filters.dateOptions.last90Days')}</option>
               </select>
               <svg
                 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dark-gray"
@@ -360,9 +342,10 @@ const PaymentHistoryPage = () => {
                 }}
                 className="appearance-none h-[50px] w-[165px] rounded-[8px] border border-[#E5E7EB] bg-white px-4 pr-8 font-roboto text-[14px] font-normal leading-[20px] text-[#374151] outline-none cursor-pointer hover:border-[#D1D5DB] transition"
               >
-                {uniquePlans.map((plan) => (
+                <option value="All">{t('admin.paymentHistory.filters.plan')}</option>
+                {uniquePlans.filter(plan => plan !== "All").map((plan) => (
                   <option key={plan} value={plan}>
-                    {plan === "All" ? "Plan" : plan}
+                    {plan}
                   </option>
                 ))}
               </select>
@@ -391,9 +374,9 @@ const PaymentHistoryPage = () => {
                 }}
                 className="appearance-none h-[50px] w-[165px] rounded-[8px] border border-[#E5E7EB] bg-white px-4 pr-8 font-roboto text-[14px] font-normal leading-[20px] text-[#374151] outline-none cursor-pointer hover:border-[#D1D5DB] transition"
               >
-                <option value="All">Payment Status</option>
-                <option value="Paid">Paid</option>
-                <option value="Pending">Pending</option>
+                <option value="All">{t('admin.paymentHistory.filters.paymentStatus')}</option>
+                <option value="Paid">{t('admin.paymentHistory.filters.paymentOptions.paid')}</option>
+                <option value="Pending">{t('admin.paymentHistory.filters.paymentOptions.pending')}</option>
               </select>
               <svg
                 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dark-gray"
@@ -413,48 +396,23 @@ const PaymentHistoryPage = () => {
 
           {/* Status Filter Buttons */}
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setStatusFilter("Active");
-                setPage(1);
-              }}
-              className={`py-2 px-6 rounded-[8px] font-roboto text-[16px] font-medium leading-[20px] transition ${
-                statusFilter === "Active"
-                  ? "bg-[#ED4122] text-white"
-                  : "bg-white border border-[#E5E7EB] text-[#374151] hover:bg-gray-50"
-              }`}
-            >
-              Active
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setStatusFilter("Expire");
-                setPage(1);
-              }}
-              className={`py-2 px-6 rounded-[8px] font-roboto text-[16px] font-medium leading-[20px] transition ${
-                statusFilter === "Expire"
-                  ? "bg-[#ED4122] text-white"
-                  : "bg-white border border-[#E5E7EB] text-[#374151] hover:bg-gray-50"
-              }`}
-            >
-              Expire
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setStatusFilter("Pending");
-                setPage(1);
-              }}
-              className={`py-2 px-6 rounded-[8px] font-roboto text-[16px] font-medium leading-[20px] transition ${
-                statusFilter === "Pending"
-                  ? "bg-[#ED4122] text-white"
-                  : "bg-white border border-[#E5E7EB] text-[#374151] hover:bg-gray-50"
-              }`}
-            >
-              Pending
-            </button>
+            {['Active', 'Expire', 'Pending'].map((status) => (
+              <button
+                key={status}
+                type="button"
+                onClick={() => {
+                  setStatusFilter(status);
+                  setPage(1);
+                }}
+                className={`py-2 px-6 rounded-[8px] font-roboto text-[16px] font-medium leading-[20px] transition ${
+                  statusFilter === status
+                    ? "bg-[#ED4122] text-white"
+                    : "bg-white border border-[#E5E7EB] text-[#374151] hover:bg-gray-50"
+                }`}
+              >
+                {t(`admin.paymentHistory.filters.status.${status.toLowerCase()}`)}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -466,4 +424,3 @@ const PaymentHistoryPage = () => {
 };
 
 export default PaymentHistoryPage;
-

@@ -1342,6 +1342,47 @@
     "paymentHistory": {
       "hero": {
         "title": "سجل المدفوعات"
+      },
+      "buttons": {
+        "exportBilling": "تصدير تقارير الفواتير"
+      },
+      "filters": {
+        "dateRange": "اختيار النطاق الزمني",
+        "plan": "الخطة",
+        "paymentStatus": "حالة الدفع",
+        "status": {
+          "active": "نشط",
+          "expire": "منتهي",
+          "pending": "قيد الانتظار"
+        },
+        "dateOptions": {
+          "all": "الكل",
+          "last7Days": "آخر 7 أيام",
+          "last30Days": "آخر 30 يوم",
+          "last90Days": "آخر 90 يوم"
+        },
+        "paymentOptions": {
+          "all": "الكل",
+          "paid": "مدفوع",
+          "pending": "قيد الانتظار"
+        }
+      },
+      "table": {
+        "columns": {
+          "invoiceId": "رقم الفاتورة",
+          "user": "المستخدم",
+          "plan": "الخطة",
+          "amount": "المبلغ",
+          "date": "التاريخ",
+          "paymentMethod": "طريقة الدفع",
+          "status": "الحالة"
+        },
+        "emptyMessage": "لا توجد مدفوعات تطابق الفلاتر الحالية.",
+        "pagination": {
+          "showing": "عرض {{first}} إلى {{last}} من {{total}} نتيجة",
+          "previous": "السابق",
+          "next": "التالي"
+        }
       }
     },
     "manageUserSubscriptions": {
