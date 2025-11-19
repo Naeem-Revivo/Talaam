@@ -3,10 +3,10 @@ const TableHeader = ({ columns }) => (
         <tr className="bg-oxford-blue text-center">
             {columns.map((column) => (
                 <th
-                    key={column}
+                    key={column.key}
                     className="px-6 py-4 text-[16px] leading-[16px] font-medium text-white uppercase tracking-wide whitespace-nowrap"
                 >
-                    {column}
+                    {column.label}
                 </th>
             ))}
         </tr>
@@ -21,15 +21,12 @@ const TableRow = ({ item, columns, onView }) => {
     return (
         <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row hover:bg-[#F9FAFB] transition-colors">
             {columns.slice(0, -1).map((column) => {
-                const fieldKey = getFieldKey(column);
-                let value = item[fieldKey] || "—";
-
-                console.log(fieldKey, "field key")
+                let value = item[column.key] || "—";
 
                 return (
                     <td
-                        key={column}
-                        className={`px-6 py-4 font-normal leading-[100%] font-roboto text-center  ${fieldKey === "timestamp" ? "text-[#6B7280] text-[12px]" : "text-blue-dark text-[14px]"}`}
+                        key={column.key}
+                        className={`px-6 py-4 font-normal leading-[100%] font-roboto text-center  ${column.key === "timestamp" ? "text-[#6B7280] text-[12px]" : "text-blue-dark text-[14px]"}`}
                     >
                         {value}
                     </td>
@@ -65,12 +62,11 @@ const MobileCard = ({ item, columns, onView }) => {
         <article className="flex flex-col rounded-[8px] border border-[#E5E7EB] bg-white shadow-sm md:hidden overflow-hidden">
             <div className="flex flex-col gap-2 px-4 py-3 text-oxford-blue">
                 {displayColumns.map((column) => {
-                    const fieldKey = getFieldKey(column);
-                    let value = item[fieldKey] || "—";
+                    let value = item[column.key] || "—";
 
                     return (
-                        <div key={column} className="flex items-start gap-2">
-                            <span className="text-[13px] font-semibold text-oxford-blue min-w-[120px]">{column}:</span>
+                        <div key={column.key} className="flex items-start gap-2">
+                            <span className="text-[13px] font-semibold text-oxford-blue min-w-[120px]">{column.label}:</span>
                             <span className="text-[13px] font-normal text-dark-gray">{value}</span>
                         </div>
                     );
