@@ -69,11 +69,11 @@ const SiteWideAnnouncements = () => {
                 <DataTable
                     items={paginatedNotifications}
                     columns={[
-                        t('admin.siteWideAnnouncements.table.columns.title'),
-                        t('admin.siteWideAnnouncements.table.columns.message'),
-                        t('admin.siteWideAnnouncements.table.columns.schedule'),
-                        t('admin.siteWideAnnouncements.table.columns.status'),
-                        t('admin.siteWideAnnouncements.table.columns.actions')
+                        {label: t('admin.siteWideAnnouncements.table.columns.title'), key: "title"},
+                        {label: t('admin.siteWideAnnouncements.table.columns.message'), key: "message"},
+                        {label: t('admin.siteWideAnnouncements.table.columns.schedule'), key: "sehedule"},
+                        {label: t('admin.siteWideAnnouncements.table.columns.status'), key: "status"},
+                        {label: t('admin.siteWideAnnouncements.table.columns.actions'), key: "actions"},
                     ]}
                     page={notificationPage}
                     pageSize={pageSize}

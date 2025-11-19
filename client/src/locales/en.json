@@ -1857,11 +1857,107 @@
     "auditLogs": {
       "hero": {
         "title": "Audit Logs"
+      },
+      "buttons": {
+        "exportLog": "Export Log"
+      },
+      "filters": {
+        "searchPlaceholder": "Search by keyword or ID",
+        "adminName": "Admin Name",
+        "actionType": "Action Type",
+        "dateRange": "Date Range"
+      },
+      "dropdowns": {
+        "adminName": {
+          "options": {
+            "all": "Admin Name",
+            "alexDoe": "Alex Doe",
+            "alexIbe": "Alex Ibe",
+            "davidEzenest": "David Ezenest",
+            "sarahChen": "Sarah Chen"
+          }
+        },
+        "actionType": {
+          "options": {
+            "all": "Action Type",
+            "createdUser": "Created User",
+            "suspendedUser": "Suspended User",
+            "editedQuestion": "Edited Question",
+            "login": "Login",
+            "settingChange": "Setting Change"
+          }
+        },
+        "dateRange": {
+          "options": {
+            "all": "Date Range",
+            "today": "Today",
+            "last7Days": "Last 7 Days",
+            "last30Days": "Last 30 Days",
+            "last90Days": "Last 90 Days"
+          }
+        }
+      },
+      "table": {
+        "columns": {
+          "timestamp": "Timestamp",
+          "adminName": "Admin Name",
+          "action": "Action",
+          "moduleArea": "Module / Area",
+          "detailsDescription": "Details / Description",
+          "ipAddressDevice": "IP Address / Device",
+          "details": "Details"
+        },
+        "emptyMessage": "No audit logs found"
       }
     },
     "rolesPermissions": {
       "hero": {
         "title": "Roles & Permissions"
+      },
+      "buttons": {
+        "addNewRole": "+ Add New Role",
+        "cancel": "Cancel",
+        "saveChanges": "Save Changes"
+      },
+      "dropdowns": {
+        "permissions": {
+          "label": "All Permissions",
+          "options": {
+            "all": "All Permissions",
+            "full": "Full Access",
+            "limited": "Limited Access",
+            "viewOnly": "View Only"
+          }
+        },
+        "status": {
+          "label": "Any Status",
+          "options": {
+            "any": "Any Status",
+            "active": "Active",
+            "inactive": "Inactive"
+          }
+        }
+      },
+      "table": {
+        "columns": {
+          "roleName": "Role Name",
+          "assignedAdmins": "Assigned Admins",
+          "permissionsSummary": "Permissions Summary",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "emptyMessage": "No roles found"
+      },
+      "loginHistory": {
+        "table": {
+          "columns": {
+            "user": "User",
+            "ipAddress": "IP Address",
+            "date": "Date",
+            "status": "Status"
+          },
+          "emptyMessage": "No login history found"
+        }
       }
     },
     "adminRolePermissions": {
@@ -1893,6 +1989,20 @@
         "createQuestions": "Create Questions",
         "editQuestions": "Edit Questions",
         "deleteQuestions": "Delete Questions"
+      },
+      "roles": {
+        "superAdmin": {
+          "title": "Super Admin",
+          "description": "Full access to all features and settings"
+        },
+        "moderator": {
+          "title": "Moderator",
+          "description": "Manages user interactions and content moderation"
+        },
+        "instructor": {
+          "title": "Instructor",
+          "description": "Manages courses and student progress"
+        }
       }
     },
     "systemSettings": {

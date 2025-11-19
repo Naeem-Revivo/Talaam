@@ -53,11 +53,11 @@ const LanguageManagement = () => {
                 <DataTable
                     items={paginatedLanguages}
                     columns={[
-                        t('admin.languageManagement.table.columns.languageName'),
-                        t('admin.languageManagement.table.columns.code'),
-                        t('admin.languageManagement.table.columns.default'),
-                        t('admin.languageManagement.table.columns.status'),
-                        t('admin.languageManagement.table.columns.actions')
+                       {label: t('admin.languageManagement.table.columns.languageName'), key: "languagename"},
+                       {label: t('admin.languageManagement.table.columns.code'), key: "code"},
+                       {label: t('admin.languageManagement.table.columns.default'), key: "default"},
+                       {label: t('admin.languageManagement.table.columns.status'), key: "status"},
+                       {label: t('admin.languageManagement.table.columns.actions'), key: "actions"},
                     ]}
                     page={languagePage}
                     pageSize={pageSize}
