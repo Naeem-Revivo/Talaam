@@ -15,11 +15,11 @@ const getTabConfig = (subjects, topics, subtopics, concepts, t) => ({
     Subject: {
         data: subjects,
         columns: [
-            t('admin.classificationManagement.table.columns.subjectName'),
-            t('admin.classificationManagement.table.columns.description'),
-            t('admin.classificationManagement.table.columns.createdBy'),
-            t('admin.classificationManagement.table.columns.date'),
-            t('admin.classificationManagement.table.columns.actions')
+            { label: t('admin.classificationManagement.table.columns.subjectName'), key: 'name' },
+            { label: t('admin.classificationManagement.table.columns.description'), key: 'description' },
+            { label: t('admin.classificationManagement.table.columns.createdBy'), key: 'createdby' },
+            { label: t('admin.classificationManagement.table.columns.date'), key: 'date' },
+            { label: t('admin.classificationManagement.table.columns.actions'), key: 'actions' }
         ],
         addButtonText: t('admin.classificationManagement.actions.addNewSubject'),
         addRoute: "/admin/classification/add-subject",
@@ -30,11 +30,11 @@ const getTabConfig = (subjects, topics, subtopics, concepts, t) => ({
     Topics: {
         data: topics,
         columns: [
-            t('admin.classificationManagement.table.columns.topicName'),
-            t('admin.classificationManagement.table.columns.description'),
-            t('admin.classificationManagement.table.columns.createdBy'),
-            t('admin.classificationManagement.table.columns.date'),
-            t('admin.classificationManagement.table.columns.actions')
+            { label: t('admin.classificationManagement.table.columns.topicName'), key: 'name' },
+            { label: t('admin.classificationManagement.table.columns.description'), key: 'description' },
+            { label: t('admin.classificationManagement.table.columns.createdBy'), key: 'createdby' },
+            { label: t('admin.classificationManagement.table.columns.date'), key: 'date' },
+            { label: t('admin.classificationManagement.table.columns.actions'), key: 'actions' }
         ],
         addButtonText: t('admin.classificationManagement.actions.addNewTopic'),
         addRoute: "/admin/classification/add-topic",
@@ -45,11 +45,11 @@ const getTabConfig = (subjects, topics, subtopics, concepts, t) => ({
     Subtopics: {
         data: subtopics,
         columns: [
-            t('admin.classificationManagement.table.columns.subtopicName'),
-            t('admin.classificationManagement.table.columns.description'),
-            t('admin.classificationManagement.table.columns.createdBy'),
-            t('admin.classificationManagement.table.columns.date'),
-            t('admin.classificationManagement.table.columns.actions')
+            { label: t('admin.classificationManagement.table.columns.subtopicName'), key: 'name' },
+            { label: t('admin.classificationManagement.table.columns.description'), key: 'description' },
+            { label: t('admin.classificationManagement.table.columns.createdBy'), key: 'createdby' },
+            { label: t('admin.classificationManagement.table.columns.date'), key: 'date' },
+            { label: t('admin.classificationManagement.table.columns.actions'), key: 'actions' }
         ],
         addButtonText: t('admin.classificationManagement.actions.addNewSubtopic'),
         addRoute: "/admin/classification/add-subtopic",
@@ -60,11 +60,11 @@ const getTabConfig = (subjects, topics, subtopics, concepts, t) => ({
     Concepts: {
         data: concepts,
         columns: [
-            t('admin.classificationManagement.table.columns.conceptName'),
-            t('admin.classificationManagement.table.columns.description'),
-            t('admin.classificationManagement.table.columns.linkedSubtopic'),
-            t('admin.classificationManagement.table.columns.date'),
-            t('admin.classificationManagement.table.columns.actions')
+            { label: t('admin.classificationManagement.table.columns.conceptName'), key: 'name' },
+            { label: t('admin.classificationManagement.table.columns.description'), key: 'description' },
+            { label: t('admin.classificationManagement.table.columns.linkedSubtopic'), key: 'linkedsubtopic' },
+            { label: t('admin.classificationManagement.table.columns.date'), key: 'date' },
+            { label: t('admin.classificationManagement.table.columns.actions'), key: 'actions' }
         ],
         addButtonText: t('admin.classificationManagement.actions.addNewConcept'),
         addRoute: "/admin/classification/add-concept",

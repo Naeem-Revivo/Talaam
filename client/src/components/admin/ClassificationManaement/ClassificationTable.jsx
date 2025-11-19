@@ -5,10 +5,10 @@ const TableHeader = ({ columns }) => (
         <tr className="bg-oxford-blue text-center">
             {columns.map((column) => (
                 <th
-                    key={column}
+                    key={column.key}
                     className="px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white"
                 >
-                    {column}
+                    {column.label}
                 </th>
             ))}
         </tr>
@@ -30,12 +30,11 @@ const TableRow = ({ item, columns, onView, onEdit, t }) => {
     return (
         <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row">
             {columns.slice(0, -1).map((column) => {
-                const fieldKey = getFieldKey(column);
-                const value = item[fieldKey] || "—";
+                const value = item[column.key] || "—";
 
                 return (
                     <td
-                        key={column}
+                        key={column.key}
                         className={`px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center`}
                     >
                         {value}
@@ -116,15 +115,14 @@ const MobileCard = ({ item, columns, onView, onEdit, t }) => {
         <article className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] bg-white px-5 py-4 shadow-empty md:hidden">
             <div className="flex flex-col gap-3 text-oxford-blue">
                 {displayColumns.map((column) => {
-                    const fieldKey = getFieldKey(column);
-                    const value = item[fieldKey] || "—";
-                    const icon = iconMap[fieldKey.toLowerCase()] || <FileText size={16} className="text-oxford-blue" />;
+                    const value = item[column.key] || "—"; 
+                    const icon = iconMap[column.key.toLowerCase()] || <FileText size={16} className="text-oxford-blue" />;
 
                     return (
-                        <div key={column} className="flex items-start gap-2">
+                        <div key={column.key} className="flex items-start gap-2">
                             {icon}
                             <p className="text-[14px] font-roboto text-[#1F2937]">
-                                <span className="font-semibold capitalize">{column}:</span>{" "}
+                                <span className="font-semibold capitalize">{column.label}:</span>{" "}
                                 <span className="text-[#374151]">{value}</span>
                             </p>
                         </div>
