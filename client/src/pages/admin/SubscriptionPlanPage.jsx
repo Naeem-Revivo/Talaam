@@ -41,14 +41,14 @@ const SubscriptionPlan = () => {
     return filteredPlans.slice(start, start + pageSize);
   }, [filteredPlans, page]);
 
-  const columns = [
-    t('admin.subscriptionPlans.table.columns.planName'),
-    t('admin.subscriptionPlans.table.columns.price'),
-    t('admin.subscriptionPlans.table.columns.duration'),
-    t('admin.subscriptionPlans.table.columns.subscriber'),
-    t('admin.subscriptionPlans.table.columns.status'),
-    t('admin.subscriptionPlans.table.columns.actions')
-  ];
+ const columns = [
+  { label: t('admin.subscriptionPlans.table.columns.planName'), key: 'planname' },
+  { label: t('admin.subscriptionPlans.table.columns.price'), key: 'price' },
+  { label: t('admin.subscriptionPlans.table.columns.duration'), key: 'duration' },
+  { label: t('admin.subscriptionPlans.table.columns.subscriber'), key: 'subscriber' },
+  { label: t('admin.subscriptionPlans.table.columns.status'), key: 'status' },
+  { label: t('admin.subscriptionPlans.table.columns.actions'), key: 'actions' }
+];
 
   const handleExport = () => {
     if (typeof window === "undefined") return;

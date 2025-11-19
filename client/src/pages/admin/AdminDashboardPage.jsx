@@ -32,7 +32,8 @@ const growthValues = [
 const growthYAxis = [0, 2.5, 5, 7.5, 10, 12.5, 15];
 
 const AdminDashboardPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dir = language === 'ar' ? 'rtl' : 'ltr'
 
   const stats = [
     {
@@ -210,7 +211,7 @@ const AdminDashboardPage = () => {
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-8 2xl:px-16">
       <div className="max-w-[1200px] mx-auto space-y-6 sm:space-y-8">
-        <header className="space-y-1 text-center sm:text-left">
+        <header className={`space-y-1 text-center ${dir === "ltr" ? "sm:text-left" : "sm:text-right"}`}>
           <h1 className="font-archivo font-bold text-[28px] leading-[32px] text-oxford-blue sm:text-[36px] sm:leading-[40px]">
             {t('admin.dashboard.hero.title')}
           </h1>
