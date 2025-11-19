@@ -101,26 +101,26 @@ const PermissionSection = ({ title, permissions, values, onChange }) => {
 // ============= MAIN APP COMPONENT =============
 export default function AdminRolePermissions() {
   const { t } = useLanguage();
-  const [roles] = useState([
-    {
-      id: 1,
-      title: 'Super Admin',
-      description: 'Full access to all features and settings',
-      badge: t('admin.adminRolePermissions.badges.allPermissions')
-    },
-    {
-      id: 2,
-      title: 'Moderator',
-      description: 'Manages user interactions and content moderation',
-      badge: t('admin.adminRolePermissions.badges.limitedPermissions')
-    },
-    {
-      id: 3,
-      title: 'Instructor',
-      description: 'Manages courses and student progress',
-      badge: t('admin.adminRolePermissions.badges.limitedPermissions')
-    }
-  ]);
+  const roles = [
+  {
+    id: 1,
+    title: t('admin.adminRolePermissions.roles.superAdmin.title'),
+    description: t('admin.adminRolePermissions.roles.superAdmin.description'),
+    badge: t('admin.adminRolePermissions.badges.allPermissions')
+  },
+  {
+    id: 2,
+    title: t('admin.adminRolePermissions.roles.moderator.title'),
+    description: t('admin.adminRolePermissions.roles.moderator.description'),
+    badge: t('admin.adminRolePermissions.badges.limitedPermissions')
+  },
+  {
+    id: 3,
+    title: t('admin.adminRolePermissions.roles.instructor.title'),
+    description: t('admin.adminRolePermissions.roles.instructor.description'),
+    badge: t('admin.adminRolePermissions.badges.limitedPermissions')
+  }
+]
 
   const [permissions, setPermissions] = useState({
     viewAnalytics: true,
