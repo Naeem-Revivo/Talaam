@@ -444,7 +444,11 @@
       "dashboard": "Dashboard",
       "practiceSession": "Make Practice Session",
       "performanceAnalytics": "Performance Analytics",
-      "reviewSessions": "Review Sessions"
+      "reviewIncorrect": "Review Incorrect",
+      "reviewAll": "Review All",
+      "reviewSessions": "Review Sessions",
+      "sessionSummary": "Session Summary",
+      "questionSession": "Question Session"
     },
     "overview": {
       "title": "Overview",
@@ -494,7 +498,20 @@
         "allQuestions": "All Questions",
         "domains": "Domains",
         "subtopics": "Subtopics",
-        "noQuestionsMatch": "No questions match your filters. Clear filters to continue."
+        "noQuestionsMatch": "No questions match your filters. Clear filters to continue.",
+        "domainsOptions": {
+          "quantitative": "Quantitative",
+          "language": "Language",
+          "logical": "Logical Reasoning",
+          "general": "General Knowledge"
+        },
+        "subtopicsOptions": {
+          "algebra": "Algebra",
+          "geometry": "Geometry",
+          "arithmetic": "Arithmetic",
+          "statistics": "Statistics",
+          "verbal": "Verbal Analogy"
+        }
       },
       "sessionSize": {
         "title": "Session Size",
@@ -575,10 +592,10 @@
       "item": "Item {{current}} of {{total}}",
       "questionId": "Question Id:",
       "title": "Review Incorrect",
-      "incorrectAnswer": "Incorrect Answer",
+      "incorrectAnswer": "Incorrect",
       "feedback": {
         "incorrect": "Incorrect",
-        "correctAnswer": "Correct answer:",
+        "correctAnswer": "Correct",
         "answeredCorrectly": "Answered correctly",
         "timeSpent": "Time spent"
       },
@@ -631,8 +648,8 @@
       "questions": "Questions",
       "title": "Question Solving Page",
       "submitAnswer": "Submit Answer",
-      "correctAnswer": "Correct Answer",
-      "incorrectAnswer": "Incorrect Answer",
+      "correctAnswer": "Correct",
+      "incorrectAnswer": "Incorrect",
       "correctAnswerLabel": "Correct answer:",
       "answeredCorrectly": "Answered correctly",
       "timeSpent": "Time spent",
@@ -726,11 +743,17 @@
       "userManagement": "User Management",
       "questionBank": "Question Bank",
       "classification": "Classification",
-      "subscriptions": "Subscriptions & Billing",
+      "subscriptions": "Subscriptions",
+      "paymentHistory": "Payment History",
+      "manageUserSubscription": "Manage User Subscription",
       "reports": "Reports & Analytics",
       "moderation": "Content Moderation",
       "settings": "System Settings",
-      "security": "Security & Permissions"
+      "security": "Security & Permissions",
+      "userGrowthAnalytics": "User Growth Analytics",
+      "subscriptionTrends": "Subscription Trends",
+      "performanceAnalytics": "Performance Analytics",
+      "exportReports": "Export Reports"
     },
     "dashboard": {
       "hero": {
@@ -923,7 +946,7 @@
     "questionBank": {
       "hero": {
         "title": "Question Bank",
-        "subtitle": "Manage, filter, and review all questions by subject, topic, or role."
+        "subtitle": "Manage filter and review all questions by subject topic or role."
       },
       "actions": {
         "questionManagement": "Question Management",
@@ -1043,7 +1066,8 @@
       "buttons": {
         "delete": "Delete",
         "edit": "Edit",
-        "createVariant": "+ Create Variant"
+        "createVariant": "+ Create Variant",
+        "addComment": "Add Comment"
       },
       "sections": {
         "questionInfo": "Question Info",
@@ -1071,9 +1095,6 @@
       },
       "placeholders": {
         "addComments": "add comments"
-      },
-      "buttons": {
-        "addComment": "Add Comment"
       }
     },
     "createVariant": {
@@ -1081,7 +1102,7 @@
         "title": "Create Variant",
         "subtitle": "Create a variant on an existing approved question."
       },
-      "tip": "Tip: Edit the question below as a new variant. Do not cite the original or add explanation yet.",
+      "tip": "Edit the question below as a new variant. Do not cite the original or add explanation yet.",
       "buttons": {
         "cancel": "Cancel",
         "saveVariant": "Save Variant",
@@ -1836,11 +1857,107 @@
     "auditLogs": {
       "hero": {
         "title": "Audit Logs"
+      },
+      "buttons": {
+        "exportLog": "Export Log"
+      },
+      "filters": {
+        "searchPlaceholder": "Search by keyword or ID",
+        "adminName": "Admin Name",
+        "actionType": "Action Type",
+        "dateRange": "Date Range"
+      },
+      "dropdowns": {
+        "adminName": {
+          "options": {
+            "all": "Admin Name",
+            "alexDoe": "Alex Doe",
+            "alexIbe": "Alex Ibe",
+            "davidEzenest": "David Ezenest",
+            "sarahChen": "Sarah Chen"
+          }
+        },
+        "actionType": {
+          "options": {
+            "all": "Action Type",
+            "createdUser": "Created User",
+            "suspendedUser": "Suspended User",
+            "editedQuestion": "Edited Question",
+            "login": "Login",
+            "settingChange": "Setting Change"
+          }
+        },
+        "dateRange": {
+          "options": {
+            "all": "Date Range",
+            "today": "Today",
+            "last7Days": "Last 7 Days",
+            "last30Days": "Last 30 Days",
+            "last90Days": "Last 90 Days"
+          }
+        }
+      },
+      "table": {
+        "columns": {
+          "timestamp": "Timestamp",
+          "adminName": "Admin Name",
+          "action": "Action",
+          "moduleArea": "Module / Area",
+          "detailsDescription": "Details / Description",
+          "ipAddressDevice": "IP Address / Device",
+          "details": "Details"
+        },
+        "emptyMessage": "No audit logs found"
       }
     },
     "rolesPermissions": {
       "hero": {
         "title": "Roles & Permissions"
+      },
+      "buttons": {
+        "addNewRole": "+ Add New Role",
+        "cancel": "Cancel",
+        "saveChanges": "Save Changes"
+      },
+      "dropdowns": {
+        "permissions": {
+          "label": "All Permissions",
+          "options": {
+            "all": "All Permissions",
+            "full": "Full Access",
+            "limited": "Limited Access",
+            "viewOnly": "View Only"
+          }
+        },
+        "status": {
+          "label": "Any Status",
+          "options": {
+            "any": "Any Status",
+            "active": "Active",
+            "inactive": "Inactive"
+          }
+        }
+      },
+      "table": {
+        "columns": {
+          "roleName": "Role Name",
+          "assignedAdmins": "Assigned Admins",
+          "permissionsSummary": "Permissions Summary",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "emptyMessage": "No roles found"
+      },
+      "loginHistory": {
+        "table": {
+          "columns": {
+            "user": "User",
+            "ipAddress": "IP Address",
+            "date": "Date",
+            "status": "Status"
+          },
+          "emptyMessage": "No login history found"
+        }
       }
     },
     "adminRolePermissions": {
@@ -1872,6 +1989,20 @@
         "createQuestions": "Create Questions",
         "editQuestions": "Edit Questions",
         "deleteQuestions": "Delete Questions"
+      },
+      "roles": {
+        "superAdmin": {
+          "title": "Super Admin",
+          "description": "Full access to all features and settings"
+        },
+        "moderator": {
+          "title": "Moderator",
+          "description": "Manages user interactions and content moderation"
+        },
+        "instructor": {
+          "title": "Instructor",
+          "description": "Manages courses and student progress"
+        }
       }
     },
     "systemSettings": {
@@ -2159,4 +2290,3 @@
     }
   }
 }
-

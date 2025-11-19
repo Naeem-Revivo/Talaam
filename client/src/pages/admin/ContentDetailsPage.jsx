@@ -128,7 +128,7 @@ const ContentDetailsPage = () => {
                 <button
                   type="button"
                   onClick={handleRevisionHistory}
-                  className="flex items-center gap-2 text-[#ED4122] font-roboto text-[12px] sm:text-[14px] font-normal leading-[18px] sm:leading-[20px] hover:text-[#d43a1f] transition self-start sm:self-auto"
+                  className="flex items-center gap-2 text-[#ED4122] font-roboto text-[12px] sm:text-[16px] font-normal sm:leading-[100%] hover:text-[#d43a1f] transition self-start sm:self-auto"
                 >
                   <svg
                     width="14"
@@ -212,7 +212,7 @@ const ContentDetailsPage = () => {
                 <div>
                   <label
                     htmlFor="moderator-comments"
-                    className="block font-roboto text-[16px] font-normal leading-[18px] sm:leading-[20px] text-oxford-blue mb-2"
+                    className="block font-roboto text-[16px] font-normal leading-[18px] sm:leading-[100%] text-oxford-blue mb-4"
                   >
                     {t('admin.contentDetails.fields.moderatorComments')}
                   </label>

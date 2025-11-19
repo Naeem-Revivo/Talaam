@@ -41,14 +41,14 @@ const SubscriptionPlan = () => {
     return filteredPlans.slice(start, start + pageSize);
   }, [filteredPlans, page]);
 
-  const columns = [
-    t('admin.subscriptionPlans.table.columns.planName'),
-    t('admin.subscriptionPlans.table.columns.price'),
-    t('admin.subscriptionPlans.table.columns.duration'),
-    t('admin.subscriptionPlans.table.columns.subscriber'),
-    t('admin.subscriptionPlans.table.columns.status'),
-    t('admin.subscriptionPlans.table.columns.actions')
-  ];
+ const columns = [
+  { label: t('admin.subscriptionPlans.table.columns.planName'), key: 'planname' },
+  { label: t('admin.subscriptionPlans.table.columns.price'), key: 'price' },
+  { label: t('admin.subscriptionPlans.table.columns.duration'), key: 'duration' },
+  { label: t('admin.subscriptionPlans.table.columns.subscriber'), key: 'subscriber' },
+  { label: t('admin.subscriptionPlans.table.columns.status'), key: 'status' },
+  { label: t('admin.subscriptionPlans.table.columns.actions'), key: 'actions' }
+];
 
   const handleExport = () => {
     if (typeof window === "undefined") return;
@@ -134,34 +134,6 @@ const SubscriptionPlan = () => {
               className="h-[36px] w-[180px] rounded-[10px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
               {t('admin.subscriptionPlans.actions.addNewPlan')}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/admin/subscriptions/new-plan")}
-              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
-            >
-              {t('admin.subscriptionPlans.actions.newPlan')}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/admin/subscriptions/manage-users")}
-              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
-            >
-              {t('admin.subscriptionPlans.actions.manageUser')}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/admin/subscriptions/payment-history")}
-              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
-            >
-              {t('admin.subscriptionPlans.actions.paymentHistory')}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/admin/subscriptions/new-question-bank")}
-              className="h-[36px] w-[160px] rounded-[10px] border border-[#E5E7EB] bg-white text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
-            >
-              {t('admin.subscriptionPlans.actions.newQuestion')}
             </button>
           </div>
         </header>

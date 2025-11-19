@@ -10,6 +10,7 @@ import usermanage1 from './admin-usermanage1.svg';
 import usermanage2 from './admin-usermanage2.svg';
 import usermanage3 from './admin-usermanage3.svg';
 import usermanage4 from './admin-usermanage4.svg';
+import users from './users.svg'
 
 export {
   headcard1,
@@ -24,4 +25,5 @@ export {
   usermanage2,
   usermanage3,
   usermanage4,
+  users
 };

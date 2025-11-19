@@ -53,13 +53,13 @@ const EmailTemplateForm = ({ title, subjectPlaceholder, bodyPlaceholder, onSave,
         <div className="flex flex-col sm:flex-row sm:justify-end gap-3 sm:mt-10 p-4 sm:p-0">
                     <button
                         onClick={handlePreview}
-                        className="px-6 py-2.5 font-roboto text-[14px] leading-[20px] font-medium text-[#374151] bg-white border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] transition-colors"
+                        className="px-6 py-2.5 font-roboto text-[14px] leading-[20px] font-semibold text-[#374151] bg-white border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] transition-colors"
                     >
                         {t('admin.emailTemplates.buttons.preview')}
                     </button>
                     <button
                         onClick={handleSave}
-                        className="px-6 py-2.5 font-roboto text-[14px] leading-[20px] font-medium text-white bg-[#EF4444] rounded-lg hover:bg-[#DC2626] transition-colors"
+                        className="px-6 py-2.5 font-archivo text-[16px] leading-[16px] font-semibold text-white bg-[#EF4444] rounded-lg hover:bg-[#DC2626] transition-colors"
                     >
                         {t('admin.emailTemplates.buttons.save')}
                     </button>

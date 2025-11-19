@@ -32,7 +32,8 @@ const growthValues = [
 const growthYAxis = [0, 2.5, 5, 7.5, 10, 12.5, 15];
 
 const AdminDashboardPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dir = language === 'ar' ? 'rtl' : 'ltr'
 
   const stats = [
     {
@@ -210,7 +211,7 @@ const AdminDashboardPage = () => {
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-8 2xl:px-16">
       <div className="max-w-[1200px] mx-auto space-y-6 sm:space-y-8">
-        <header className="space-y-1 text-center sm:text-left">
+        <header className={`space-y-1 text-center ${dir === "ltr" ? "sm:text-left" : "sm:text-right"}`}>
           <h1 className="font-archivo font-bold text-[28px] leading-[32px] text-oxford-blue sm:text-[36px] sm:leading-[40px]">
             {t('admin.dashboard.hero.title')}
           </h1>
@@ -240,12 +241,12 @@ const AdminDashboardPage = () => {
           <div className="rounded-[8px] bg-white shadow-dashboard border border-[#E5E7EB] p-6 w-full lg:w-[639px] xl:w-full lg:h-[462px]">
             <div className="flex items-start justify-between flex-col gap-4 sm:flex-row sm:gap-0">
               <div>
-                <h3 className="text-lg font-archivo font-semibold text-oxford-blue">
+                <h3 className="text-[20px] leading-[32px] font-archivo font-semibold text-oxford-blue">
                   {t('admin.dashboard.charts.userGrowthTrend.title')}
                 </h3>
-                <p className="text-sm text-dark-gray font-roboto">
+                {/* <p className="text-sm text-dark-gray font-roboto">
                   {t('admin.dashboard.charts.userGrowthTrend.subtitle')}
-                </p>
+                </p> */}
               </div>
               <button className="w-10 h-10 flex items-center justify-center rounded-xl transition">
                 <span className="sr-only">More</span>
@@ -360,12 +361,12 @@ const AdminDashboardPage = () => {
           <div className="rounded-[8px] bg-white shadow-dashboard border border-[#E5E7EB] p-6 flex flex-col w-full lg:w-[455px] lg:h-[462px]">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="text-lg font-archivo font-semibold text-oxford-blue">
+                <h3 className="text-[20px] leading-[28px] font-archivo font-semibold text-oxford-blue">
                   {t('admin.dashboard.charts.subscriptionPlans.title')}
                 </h3>
-                <p className="text-sm text-dark-gray font-roboto">
+                {/* <p className="text-sm text-dark-gray font-roboto">
                   {t('admin.dashboard.charts.subscriptionPlans.subtitle')}
-                </p>
+                </p> */}
               </div>
               <button className="w-10 h-10 flex items-center justify-center rounded-xl transition">
                 <span className="sr-only">More</span>
@@ -406,14 +407,14 @@ const AdminDashboardPage = () => {
                     fill="#FFFFFF"
                   />
                 </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                {/* <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                   <p className="font-archivo font-semibold text-[32px] leading-[36px] text-oxford-blue">
                     {donutData.highlighted.value.toFixed(1)}%
                   </p>
                   <p className="text-sm font-roboto text-dark-gray">
                     {donutData.highlighted.label}
                   </p>
-                </div>
+                </div> */}
               </div>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:gap-4">

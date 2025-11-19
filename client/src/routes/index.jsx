@@ -140,8 +140,6 @@ export const AppRoutes = () => {
           <Route path="reports" element={<ReportsAndAnalyticsPage />} />
           <Route path="moderation" element={<ContentModerationPage />} />
           <Route path="moderation/details" element={<ContentDetailsPage />} />
-          <Route path="reports" element={<AdminDashboardPage />} />
-          <Route path="moderation" element={<AdminDashboardPage />} />
           <Route path="settings" element={<SystemSettingPlan />} />
           <Route path="settings/language-management" element={<LanguageManagement />} />
           <Route path="settings/roles-permissions" element={<AdminRolePermissions />} />

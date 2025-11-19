@@ -404,38 +404,6 @@ const ReportsAndAnalyticsPage = () => {
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-3 md:gap-4">
-          <button
-            type="button"
-            onClick={() => navigate("/admin/reports/user-growth")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB] w-[211px] h-11 rounded-[30px]"
-          >
-            {t('admin.reportsAndAnalytics.tabs.userGrowthAnalytics')}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate("/admin/reports/subscription-trends")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB] w-[211px] h-11 rounded-[30px]"
-          >
-            {t('admin.reportsAndAnalytics.tabs.subscriptionTrends')}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate("/admin/reports/performance-analytics")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB] w-[211px] h-11 rounded-[30px]"
-          >
-            {t('admin.reportsAndAnalytics.tabs.performanceAnalytics')}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate("/admin/reports/export")}
-            className="flex items-center justify-center font-roboto text-[16px] font-medium leading-[20px] transition border border-[#03274633] bg-white text-oxford-blue hover:bg-[#F9FAFB] w-[211px] h-11 rounded-[30px]"
-          >
-            {t('admin.reportsAndAnalytics.tabs.exportReports')}
-          </button>
-        </div>
-
         {/* KPI Summary Cards */}
             <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue pt-4">{t('admin.reportsAndAnalytics.charts.kpiSummary')}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">

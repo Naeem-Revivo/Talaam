@@ -5,6 +5,7 @@ import QuestionBankTabs from "../../components/admin/questionBank/QuestionBankTa
 import QuestionBankFilters from "../../components/admin/questionBank/QuestionBankFilters";
 import QuestionBankSummaryCards from "../../components/admin/questionBank/QuestionBankSummaryCards";
 import QuestionBankTable from "../../components/admin/questionBank/QuestionBankTable";
+import { users } from "../../assets/svg/dashboard/admin";
 
 const pageSize = 5;
 
@@ -289,7 +290,7 @@ const QuestionBankPage = () => {
             <h1 className="font-archivo text-[36px] font-bold leading-[40px] text-oxford-blue">
               {t('admin.questionBank.hero.title')}
             </h1>
-            <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
+            <p className="font-roboto text-[18px] leading-[28px] text-[#6B7280]">
               {t('admin.questionBank.hero.subtitle')}
             </p>
           </div>
@@ -300,12 +301,6 @@ const QuestionBankPage = () => {
               className="flex h-[36px] w-[195px] items-center justify-center rounded-[8px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
               {t('admin.questionBank.actions.questionManagement')}
-            </button>
-            <button
-              type="button"
-              className="flex h-[36px] w-[124px] items-center justify-center rounded-[8px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
-            >
-              {t('admin.questionBank.actions.users')}
             </button>
             <button
               type="button"
@@ -323,7 +318,7 @@ const QuestionBankPage = () => {
             <button
               type="button"
               onClick={handleImport}
-              className="flex h-[36px] items-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 text-[16px] font-roboto font-semibold leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
+              className="flex h-[36px] items-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -336,7 +331,7 @@ const QuestionBankPage = () => {
             <button
               type="button"
               onClick={handleExport}
-              className="flex h-[36px] items-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 text-[16px] font-roboto font-semibold leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
+              className="flex h-[36px] items-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path

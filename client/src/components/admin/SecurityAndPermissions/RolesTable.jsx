@@ -3,10 +3,10 @@ const TableHeader = ({ columns }) => (
         <tr className="bg-oxford-blue text-center">
             {columns.map((column) => (
                 <th
-                    key={column}
+                    key={column.key}
                     className="px-6 py-4 text-[12px] font-semibold leading-[16px] text-white uppercase tracking-wide"
                 >
-                    {column}
+                    {column.label}
                 </th>
             ))}
         </tr>
@@ -21,14 +21,13 @@ const TableRow = ({ item, columns, onView, onEdit }) => {
     return (
         <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row hover:bg-[#F9FAFB] transition-colors">
             {columns.slice(0, -1).map((column) => {
-                const fieldKey = getFieldKey(column);
-                let value = item[fieldKey] || "—";
+                let value = item[column.key] || "—";
 
                 // Special rendering for status
-                if (fieldKey === 'status') {
+                if (column.key === 'status') {
                     const isActive = value.toLowerCase() === 'active';
                     return (
-                        <td key={column} className="px-6 py-4 text-center">
+                        <td key={column.key} className="px-6 py-4 text-center">
                             <span className={`inline-block px-[12px] py-[5px] rounded-md text-[14px] leading-[100%] font-normal ${isActive ? 'bg-[#FDF0D5] text-[#ED4122]' : 'bg-[#C6D8D3] text-oxford-blue'
                                 }`}>
                                 {value}
@@ -39,8 +38,8 @@ const TableRow = ({ item, columns, onView, onEdit }) => {
 
                 return (
                     <td
-                        key={column}
-                        className="px-6 py-4 text-[14px] font-normal leading-[100%] text-center"
+                        key={column.key}
+                        className={`px-6 py-4 text-[14px] font-normal leading-[100%] font-roboto text-center  ${column.key === "assignedadmins" || column.key === "permissionssummary" ? "text-[#6B7280]" : "text-blue-dark"}`}
                     >
                         {value}
                     </td>
@@ -86,17 +85,17 @@ const MobileCard = ({ item, columns, onView, onEdit }) => {
         <article className="flex flex-col rounded-[8px] border border-[#E5E7EB] bg-white shadow-sm md:hidden overflow-hidden">
             <div className="flex flex-col gap-2 px-4 py-3 text-oxford-blue">
                 {displayColumns.map((column) => {
-                    const fieldKey = getFieldKey(column);
-                    let value = item[fieldKey] || "—";
+                    let value = item[column.key] || "—";
 
                     // Skip status field in top section
-                    if (fieldKey === 'status') {
+                    if (column.key === 'status') {
                         return null;
                     }
 
+
                     return (
-                        <div key={column} className="flex items-center gap-2">
-                            <span className="text-[14px] font-normal text-oxford-blue">{column}:</span>
+                        <div key={column.key} className="flex items-center gap-2">
+                            <span className="text-[14px] font-normal text-oxford-blue">{column.label}:</span>
                             <span className="text-[14px] font-normal text-dark-gray">{value}</span>
                         </div>
                     );
@@ -144,68 +143,6 @@ const MobileCard = ({ item, columns, onView, onEdit }) => {
                 </div>
             </div>
         </article>
-    );
-};
-
-const Pagination = ({ page, pageSize, total, onPageChange }) => {
-    const totalPages = Math.ceil(total / pageSize);
-    const safeTotalPages = Math.max(totalPages, 1);
-    const firstItem = total ? (page - 1) * pageSize + 1 : 0;
-    const lastItem = total ? Math.min(page * pageSize, total) : 0;
-
-    const handlePrev = () => {
-        if (page > 1) onPageChange?.(page - 1);
-    };
-
-    const handleNext = () => {
-        if (page < safeTotalPages) onPageChange?.(page + 1);
-    };
-
-    const pages = Array.from({ length: safeTotalPages }, (_, index) => index + 1);
-
-    return (
-        <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-oxford-blue md:flex-row md:items-center md:justify-between md:bg-oxford-blue md:px-6 md:text-white">
-            <p className="text-[12px] font-medium leading-[18px]">
-                Showing {firstItem} to {lastItem} of {total} results
-            </p>
-            <div className="flex items-center gap-2">
-                <button
-                    type="button"
-                    onClick={handlePrev}
-                    disabled={page === 1}
-                    className={`flex h-[27px] w-[78px] items-center justify-center rounded border text-[14px] font-semibold leading-[16px] transition-colors ${page === 1
-                        ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
-                        : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
-                        }`}
-                >
-                    Previous
-                </button>
-                {pages.map((pageNumber) => (
-                    <button
-                        key={pageNumber}
-                        type="button"
-                        onClick={() => onPageChange?.(pageNumber)}
-                        className={`flex h-8 w-8 items-center justify-center rounded border text-[14px] font-semibold leading-[16px] transition-colors ${pageNumber === page
-                            ? "border-[#ED4122] bg-[#ED4122] text-white"
-                            : "border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
-                            }`}
-                    >
-                        {pageNumber}
-                    </button>
-                ))}
-                <button
-                    type="button"
-                    onClick={handleNext}
-                    disabled={page === safeTotalPages}
-                    className={`flex h-[27px] w-[78px] items-center justify-center rounded border text-[14px] font-semibold leading-[16px] transition-colors ${page === safeTotalPages
-                        ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
-                        : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
-                        }`}
-                >
-                    Next
-                </button>
-            </div>
-        </div>
     );
 };
 
@@ -262,12 +199,6 @@ export const RolesTable = ({
                     </div>
                 )}
             </div>
-            {/* <Pagination
-        page={page}
-        pageSize={pageSize}
-        total={total}
-        onPageChange={onPageChange}
-      /> */}
         </section>
     );
 };

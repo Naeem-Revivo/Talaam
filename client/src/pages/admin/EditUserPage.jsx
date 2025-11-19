@@ -44,7 +44,7 @@ const EditUserPage = () => {
 
   return (
     <div className="min-h-full bg-[#F5F7FB] px-4 py-6 lg:px-8">
-      <div className="flex max-w-[1120px] flex-col gap-6">
+      <div className="flex max-w-[1200px] mx-auto flex-col gap-6">
         <header className="space-y-2">
           <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
             {t('admin.editUser.hero.title')}

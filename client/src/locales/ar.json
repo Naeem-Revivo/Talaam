@@ -444,7 +444,21 @@
       "dashboard": "لوحة التحكم",
       "practiceSession": "إنشاء جلسة تدريبية",
       "performanceAnalytics": "تحليلات الأداء",
-      "reviewSessions": "مراجعة الجلسات"
+      "reviewIncorrect": "مراجعة الأسئلة الخاطئة",
+      "reviewAll": "مراجعة جميع الأسئلة",
+      "reviewSessions": "مراجعة الجلسات",
+      "sessionSummary": "ملخص الجلسة",
+      "questionSession": "جلسة الأسئلة"
+    },
+    "title": {
+      "dashboard": "لوحة التحكم",
+      "practiceSession": "إنشاء جلسة تدريبية",
+      "performanceAnalytics": "تحليلات الأداء",
+      "reviewIncorrect": "مراجعة الأسئلة الخاطئة",
+      "reviewAll": "مراجعة جميع الأسئلة",
+      "reviewSessions": "مراجعة الجلسات",
+      "sessionSummary": "ملخص الجلسة",
+      "questionSession": "جلسة الأسئلة"
     },
     "overview": {
       "title": "نظرة عامة",
@@ -494,7 +508,20 @@
         "allQuestions": "جميع الأسئلة",
         "domains": "المجالات",
         "subtopics": "المواضيع الفرعية",
-        "noQuestionsMatch": "لا توجد أسئلة تطابق المرشحات الخاصة بك. امسح المرشحات للمتابعة."
+        "noQuestionsMatch": "لا توجد أسئلة تطابق المرشحات الخاصة بك. امسح المرشحات للمتابعة.",
+        "domainsOptions": {
+          "quantitative": "الكمّي",
+          "language": "اللغة",
+          "logical": "الاستدلال المنطقي",
+          "general": "المعرفة العامة"
+        },
+        "subtopicsOptions": {
+          "algebra": "الجبر",
+          "geometry": "الهندسة",
+          "arithmetic": "الحساب",
+          "statistics": "الإحصاء",
+          "verbal": "القياس اللفظي"
+        }
       },
       "sessionSize": {
         "title": "حجم الجلسة",
@@ -727,10 +754,16 @@
       "questionBank": "بنك الأسئلة",
       "classification": "التصنيف",
       "subscriptions": "الاشتراكات والفوترة",
+      "paymentHistory": "سجل المدفوعات",
+      "manageUserSubscription": "إدارة اشتراكات المستخدمين",
       "reports": "التقارير والتحليلات",
       "moderation": "إدارة المحتوى",
       "settings": "إعدادات النظام",
-      "security": "الأمان والصلاحيات"
+      "security": "الأمان والصلاحيات",
+      "userGrowthAnalytics": "تحليلات نمو المستخدمين",
+      "subscriptionTrends": "اتجاهات الاشتراكات",
+      "performanceAnalytics": "تحليلات الأداء",
+      "exportReports": "تصدير التقارير"
     },
     "dashboard": {
       "hero": {
@@ -1836,16 +1869,112 @@
     "auditLogs": {
       "hero": {
         "title": "سجلات التدقيق"
+      },
+      "buttons": {
+        "exportLog": "تصدير السجلات"
+      },
+      "filters": {
+        "searchPlaceholder": "البحث بالكلمة المفتاحية أو الرمز",
+        "adminName": "اسم المسؤول",
+        "actionType": "نوع الإجراء",
+        "dateRange": "النطاق الزمني"
+      },
+      "dropdowns": {
+        "adminName": {
+          "options": {
+            "all": "اسم المسؤول",
+            "alexDoe": "أليكس دو",
+            "alexIbe": "أليكس إيبي",
+            "davidEzenest": "ديفيد إيزينيست",
+            "sarahChen": "سارة تشين"
+          }
+        },
+        "actionType": {
+          "options": {
+            "all": "نوع الإجراء",
+            "createdUser": "إنشاء مستخدم",
+            "suspendedUser": "تعليق مستخدم",
+            "editedQuestion": "تعديل سؤال",
+            "login": "تسجيل الدخول",
+            "settingChange": "تغيير الإعدادات"
+          }
+        },
+        "dateRange": {
+          "options": {
+            "all": "النطاق الزمني",
+            "today": "اليوم",
+            "last7Days": "آخر 7 أيام",
+            "last30Days": "آخر 30 يوم",
+            "last90Days": "آخر 90 يوم"
+          }
+        }
+      },
+      "table": {
+        "columns": {
+          "timestamp": "الطابع الزمني",
+          "adminName": "اسم المسؤول",
+          "action": "الإجراء",
+          "moduleArea": "الوحدة / المنطقة",
+          "detailsDescription": "التفاصيل / الوصف",
+          "ipAddressDevice": "عنوان IP / الجهاز",
+          "details": "التفاصيل"
+        },
+        "emptyMessage": "لم يتم العثور على سجلات تدقيق"
       }
     },
     "rolesPermissions": {
       "hero": {
         "title": "الأدوار والصلاحيات"
+      },
+      "buttons": {
+        "addNewRole": "+ إضافة دور جديد",
+        "cancel": "إلغاء",
+        "saveChanges": "حفظ التغييرات"
+      },
+      "dropdowns": {
+        "permissions": {
+          "label": "كل الصلاحيات",
+          "options": {
+            "all": "كل الصلاحيات",
+            "full": "صلاحيات كاملة",
+            "limited": "صلاحيات محدودة",
+            "viewOnly": "عرض فقط"
+          }
+        },
+        "status": {
+          "label": "أي حالة",
+          "options": {
+            "any": "أي حالة",
+            "active": "نشط",
+            "inactive": "غير نشط"
+          }
+        }
+      },
+      "table": {
+        "columns": {
+          "roleName": "اسم الدور",
+          "assignedAdmins": "المسؤولون المعينون",
+          "permissionsSummary": "ملخص الصلاحيات",
+          "status": "الحالة",
+          "actions": "الإجراءات"
+        },
+        "emptyMessage": "لم يتم العثور على أدوار"
+      },
+      "loginHistory": {
+        "table": {
+          "columns": {
+            "user": "المستخدم",
+            "ipAddress": "عنوان IP",
+            "date": "التاريخ",
+            "status": "الحالة"
+          },
+          "emptyMessage": "لا توجد سجلات دخول"
+        }
       }
     },
     "adminRolePermissions": {
       "hero": {
-        "title": "أدوار وصلاحيات المسؤول"
+        "title": "أدوار المسؤولين والصلاحيات"
       },
       "buttons": {
         "addNewRole": "+ إضافة دور جديد",
@@ -1872,6 +2001,20 @@
         "createQuestions": "إنشاء أسئلة",
         "editQuestions": "تعديل الأسئلة",
         "deleteQuestions": "حذف الأسئلة"
+      },
+      "roles": {
+        "superAdmin": {
+          "title": "المسؤول العام",
+          "description": "وصول كامل إلى جميع الميزات والإعدادات"
+        },
+        "moderator": {
+          "title": "المشرف",
+          "description": "يدير تفاعلات المستخدمين ومراقبة المحتوى"
+        },
+        "instructor": {
+          "title": "المدرب",
+          "description": "يدير الدورات والتقدم الدراسي"
+        }
       }
     },
     "systemSettings": {
@@ -2159,4 +2302,3 @@
     }
   }
 }
-

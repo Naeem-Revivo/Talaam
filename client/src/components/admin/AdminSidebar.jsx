@@ -1,10 +1,10 @@
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { useLanguage } from '../../context/LanguageContext';
-import { logodash } from '../../assets/svg/dashboard/sidebar';
+import React, { useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
+import { logodash } from "../../assets/svg/dashboard/sidebar";
 
 const DashboardIcon = ({ active }) => {
-  const stroke = active ? '#032746' : 'white';
+  const stroke = active ? "#032746" : "white";
 
   return (
     <svg
@@ -35,7 +35,7 @@ const DashboardIcon = ({ active }) => {
 };
 
 const UserManagementIcon = ({ active }) => {
-  const fill = active ? '#032746' : 'white';
+  const fill = active ? "#032746" : "white";
 
   return (
     <svg
@@ -56,8 +56,8 @@ const UserManagementIcon = ({ active }) => {
 };
 
 const QuestionBankIcon = ({ active }) => {
-  const stroke = active ? '#032746' : 'white';
-  const fill = active ? '#032746' : 'white';
+  const stroke = active ? "#032746" : "white";
+  const fill = active ? "#032746" : "white";
 
   return (
     <svg
@@ -85,7 +85,7 @@ const QuestionBankIcon = ({ active }) => {
 };
 
 const SubscriptionsIcon = ({ active }) => {
-  const stroke = active ? '#032746' : 'white';
+  const stroke = active ? "#032746" : "white";
 
   return (
     <svg
@@ -107,8 +107,8 @@ const SubscriptionsIcon = ({ active }) => {
 };
 
 const ReportsIcon = ({ active }) => {
-  const fill = active ? '#032746' : 'white';
-  const stroke = active ? '#032746' : 'white';
+  const fill = active ? "#032746" : "white";
+  const stroke = active ? "#032746" : "white";
 
   return (
     <svg
@@ -131,7 +131,7 @@ const ReportsIcon = ({ active }) => {
 };
 
 const ModerationIcon = ({ active }) => {
-  const fill = active ? '#032746' : 'white';
+  const fill = active ? "#032746" : "white";
 
   return (
     <svg
@@ -151,8 +151,74 @@ const ModerationIcon = ({ active }) => {
   );
 };
 
+const ClassificationIcon = ({ active }) => {
+  const fill = active ? "#032746" : "white";
+
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill={fill}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M5.24999 0.75H2.25C1.42157 0.75 0.75 1.42162 0.75 2.2501V5.25029C0.75 6.07877 1.42157 6.75039 2.25 6.75039H5.24999C6.07842 6.75039 6.74999 6.07877 6.74999 5.25029V2.2501C6.74999 1.42162 6.07842 0.75 5.24999 0.75Z"
+        stroke={fill}
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M17.25 0.75H14.25C13.4216 0.75 12.75 1.42162 12.75 2.2501V5.25029C12.75 6.07877 13.4216 6.75039 14.25 6.75039H17.25C18.0784 6.75039 18.75 6.07877 18.75 5.25029V2.2501C18.75 1.42162 18.0784 0.75 17.25 0.75Z"
+        stroke={fill}
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M11.2499 12.75H8.24994C7.42151 12.75 6.74994 13.4216 6.74994 14.2501V17.2503C6.74994 18.0788 7.42151 18.7504 8.24994 18.7504H11.2499C12.0784 18.7504 12.7499 18.0788 12.7499 17.2503V14.2501C12.7499 13.4216 12.0784 12.75 11.2499 12.75Z"
+        stroke={fill}
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M3.75 6.75V9.7502M15.75 6.75V9.7502M9.74999 12.7504V6.75"
+        stroke={fill}
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  );
+};
+
+const ChevronIcon = ({ isOpen }) => {
+  return (
+    <svg
+      width="12"
+      height="7"
+      viewBox="0 0 12 7"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={`transition-transform duration-200 ${
+        isOpen ? "rotate-180" : ""
+      }`}
+    >
+      <path
+        d="M1 1L6 6L11 1"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
 const SettingsIcon = ({ active }) => {
-  const fill = active ? '#032746' : 'white';
+  const fill = active ? "#032746" : "white";
 
   return (
     <svg
@@ -173,7 +239,7 @@ const SettingsIcon = ({ active }) => {
 };
 
 const SecurityIcon = ({ active }) => {
-  const fill = active ? '#032746' : 'white';
+  const fill = active ? "#032746" : "white";
 
   return (
     <svg
@@ -195,42 +261,178 @@ const SecurityIcon = ({ active }) => {
 
 const AdminSidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useLanguage();
+  const [openSubmenus, setOpenSubmenus] = useState({});
+
+  const submenuItems = {
+    reports: [
+      {
+        path: "/admin/reports",
+        labelKey: "admin.sidebar.reports",
+        isMain: true,
+      },
+      {
+        path: "/admin/reports/user-growth",
+        labelKey: "admin.sidebar.userGrowthAnalytics",
+      },
+      {
+        path: "/admin/reports/subscription-trends",
+        labelKey: "admin.sidebar.subscriptionTrends",
+      },
+      {
+        path: "/admin/reports/performance-analytics",
+        labelKey: "admin.sidebar.performanceAnalytics",
+      },
+      {
+        path: "/admin/reports/export",
+        labelKey: "admin.sidebar.exportReports",
+      },
+    ],
+    subscriptions: [
+      {
+        path: "/admin/subscriptions",
+        labelKey: "admin.sidebar.subscriptions",
+        isMain: true,
+      },
+      {
+        path: "/admin/subscriptions/manage-users",
+        labelKey: "admin.sidebar.manageUserSubscription",
+      },
+      {
+        path: "/admin/subscriptions/payment-history",
+        labelKey: "admin.sidebar.paymentHistory",
+      },
+    ],
+  };
 
   const menuItems = [
-    { path: '/admin', labelKey: 'admin.sidebar.dashboard', icon: DashboardIcon },
-    { path: '/admin/users', labelKey: 'admin.sidebar.userManagement', icon: UserManagementIcon },
-    { path: '/admin/question-bank', labelKey: 'admin.sidebar.questionBank', icon: QuestionBankIcon },
-    { path: '/admin/classification', labelKey: 'admin.sidebar.classification', icon: QuestionBankIcon },
-    { path: '/admin/subscriptions', labelKey: 'admin.sidebar.subscriptions', icon: SubscriptionsIcon },
-    { path: '/admin/reports', labelKey: 'admin.sidebar.reports', icon: ReportsIcon },
-    { path: '/admin/moderation', labelKey: 'admin.sidebar.moderation', icon: ModerationIcon },
-    { path: '/admin/settings', labelKey: 'admin.sidebar.settings', icon: SettingsIcon },
-    { path: '/admin/security', labelKey: 'admin.sidebar.security', icon: SecurityIcon },
+    {
+      path: "/admin",
+      labelKey: "admin.sidebar.dashboard",
+      icon: DashboardIcon,
+    },
+    {
+      path: "/admin/users",
+      labelKey: "admin.sidebar.userManagement",
+      icon: UserManagementIcon,
+    },
+    {
+      path: "/admin/question-bank",
+      labelKey: "admin.sidebar.questionBank",
+      icon: QuestionBankIcon,
+    },
+    {
+      path: "/admin/classification",
+      labelKey: "admin.sidebar.classification",
+      icon: ClassificationIcon,
+    },
+    {
+      path: "/admin/subscriptions",
+      labelKey: "admin.sidebar.subscriptions",
+      icon: SubscriptionsIcon,
+      submenuKey: "subscriptions",
+    },
+    {
+      path: "/admin/reports",
+      labelKey: "admin.sidebar.reports",
+      icon: ReportsIcon,
+      submenuKey: "reports",
+    },
+    {
+      path: "/admin/moderation",
+      labelKey: "admin.sidebar.moderation",
+      icon: ModerationIcon,
+    },
+    {
+      path: "/admin/settings",
+      labelKey: "admin.sidebar.settings",
+      icon: SettingsIcon,
+    },
+    {
+      path: "/admin/security",
+      labelKey: "admin.sidebar.security",
+      icon: SecurityIcon,
+    },
   ];
 
   const isActive = (path) => {
-  // If the menu item is exactly "/admin"
-  if (path === "/admin") {
-    return location.pathname === "/admin";
-  }
+    if (path === "/admin") {
+      return location.pathname === "/admin";
+    }
+    return (
+      location.pathname === path || location.pathname.startsWith(path + "/")
+    );
+  };
 
-  // For all other paths: only active if it matches exactly or nested under it
-  return (
-    location.pathname === path ||
-    location.pathname.startsWith(path + "/")
-  );
-};
+  const isSubmenuActive = (submenuKey) => {
+    const subItems = submenuItems[submenuKey];
+    return subItems ? subItems.some((item) => isActive(item.path)) : false;
+  };
 
   const handleLinkClick = () => {
     if (window.innerWidth < 1024) onClose();
   };
 
+  const handleMainItemClick = (item) => {
+    if (item.submenuKey) {
+      // For items with submenu, navigate to main page and toggle submenu
+      const mainPage = submenuItems[item.submenuKey]?.find(
+        (subItem) => subItem.isMain
+      );
+      if (mainPage) {
+        navigate(mainPage.path);
+      }
+      toggleSubmenu(item.submenuKey);
+    } else {
+      // Regular navigation for items without submenu
+      navigate(item.path);
+      handleLinkClick();
+    }
+  };
+
+  const toggleSubmenu = (submenuKey) => {
+    setOpenSubmenus((prev) => ({
+      ...prev,
+      [submenuKey]: !prev[submenuKey],
+    }));
+  };
+
+  const renderSubmenu = (submenuKey) => {
+    const items = submenuItems[submenuKey];
+    if (!items) return null;
+
+    // Filter out the main page from submenu items (it's already handled by the main button)
+    const subItems = items.filter((item) => !item.isMain);
+
+    return (
+      <div className="ml-8 mt-2 space-y-1">
+        {subItems.map((subItem) => {
+          const subActive = isActive(subItem.path);
+          return (
+            <NavLink
+              key={subItem.path}
+              to={subItem.path}
+              onClick={handleLinkClick}
+              className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${
+                subActive
+                  ? "bg-white/20 text-white"
+                  : "text-white/80 hover:text-white hover:bg-white/10"
+              }`}
+            >
+              <span className="text-sm font-medium">{t(subItem.labelKey)}</span>
+            </NavLink>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <aside
       className={`fixed inset-y-0 left-0 z-50 bg-oxford-blue h-screen overflow-y-auto transition-transform duration-300 ease-in-out lg:relative lg:z-auto lg:translate-x-0 ${
-        isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      } w-64`}
+        isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      } w-64 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}
     >
       <div className="mb-6 p-4 pt-4 border-b border-white/10 text-white flex flex-col items-start">
         <img src={logodash} alt="Talaam Admin" className="" />
@@ -239,14 +441,47 @@ const AdminSidebar = ({ isOpen, onClose }) => {
         {menuItems.map((item) => {
           const active = isActive(item.path);
           const Icon = item.icon;
+          const hasSubmenu = !!item.submenuKey;
+          const submenuActive = hasSubmenu
+            ? isSubmenuActive(item.submenuKey)
+            : false;
+          const isSubmenuOpen = openSubmenus[item.submenuKey];
+
+          if (hasSubmenu) {
+            return (
+              <div key={item.path} className="relative">
+                <button
+                  onClick={() => handleMainItemClick(item)}
+                  className={`relative flex items-center justify-between text-nowrap gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full max-w-[256px] h-[44px] ${
+                    submenuActive
+                      ? "bg-white text-oxford-blue"
+                      : "text-white hover:bg-blue-900"
+                  }`}
+                >
+                  {active && (
+                    <div className="absolute left-0 top-0 h-full w-[5px] bg-orange-dark rounded-l-lg"></div>
+                  )}
+                  <div className="flex items-center gap-3 text-nowrap">
+                    {Icon && <Icon active={submenuActive} />}
+                    <span className="font-medium">{t(item.labelKey)}</span>
+                  </div>
+                  <ChevronIcon isOpen={isSubmenuOpen} />
+                </button>
+
+                {isSubmenuOpen && renderSubmenu(item.submenuKey)}
+              </div>
+            );
+          }
 
           return (
             <NavLink
               key={item.path}
               to={item.path}
               onClick={handleLinkClick}
-              className={`relative flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full max-w-[256px] h-[44px] ${
-                active ? 'bg-white text-oxford-blue' : 'text-white hover:bg-blue-900'
+              className={`relative flex items-center text-nowrap gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full max-w-[256px] h-[44px] ${
+                active
+                  ? "bg-white text-oxford-blue"
+                  : "text-white hover:bg-blue-900"
               }`}
             >
               {active && (
@@ -263,5 +498,3 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 };
 
 export default AdminSidebar;
-
-

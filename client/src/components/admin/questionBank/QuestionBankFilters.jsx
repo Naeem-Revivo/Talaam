@@ -49,7 +49,7 @@ const QuestionBankFilters = ({
         <button
           type="button"
           onClick={onReset}
-          className="absolute right-3 top-1/2 hidden h-[38px] w-[104px] -translate-y-1/2 items-center justify-center rounded-[12px] border border-[#E5E7EB] bg-white text-[14px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6] md:flex"
+          className="absolute right-3 top-1/2 hidden h-[30px] w-[120px] -translate-y-1/2 items-center justify-center rounded-full bg-[#FDF0D5] text-[14px] font-roboto font-medium leading-[16px] text-[#ED4122] transition md:flex"
         >
           {t('admin.questionBank.filters.resetFilter')}
         </button>
