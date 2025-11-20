@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import { AppRoutes } from './routes/index.jsx';
+import { ToastContainer } from 'react-toastify';
 
 function AppContent() {
   const location = useLocation();
@@ -26,6 +27,7 @@ function AppContent() {
 function App() {
   return (
     <Router>
+      <ToastContainer />
       <LanguageProvider>
         <AuthProvider>
           <ScrollToTop />

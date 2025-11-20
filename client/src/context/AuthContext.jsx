@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { showErrorToast, showLogoutToast, showSuccessToast } from '../utils/toastConfig';
+import '../styles/customToast.css'
+import { loginFailed, loginSuccess } from '../assets/svg/toast';
 
 const AuthContext = createContext(null);
 
@@ -58,7 +61,12 @@ export const AuthProvider = ({ children }) => {
         name: STATIC_CREDENTIALS.admin.name,
       };
       setCurrentUser(user);
-      navigate('/admin', { replace: true });
+      showSuccessToast('You have successfully logged in.', {icon: loginSuccess});
+      
+      // Navigate after delay to show toast
+      setTimeout(() => {
+        navigate('/admin', { replace: true });
+      }, 1500);
       return { ok: true, role: 'admin' };
     }
     if (matchUser) {
@@ -68,15 +76,26 @@ export const AuthProvider = ({ children }) => {
         name: STATIC_CREDENTIALS.user.name,
       };
       setCurrentUser(user);
-      navigate('/dashboard', { replace: true });
+       showSuccessToast('You have successfully logged in.', {icon: loginSuccess});
+      
+      // Navigate after delay to show toast
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 1500);
       return { ok: true, role: 'user' };
     }
+    showErrorToast('Incorrect email or password.', {icon: loginFailed});
     return { ok: false, message: 'Invalid credentials' };
   };
 
   const logout = () => {
     setCurrentUser(null);
-    navigate('/login', { replace: true });
+    showLogoutToast('You have been logged out successfully.', {icon: loginSuccess});
+    
+    // Navigate after delay to show toast
+    setTimeout(() => {
+      navigate('/login', { replace: true });
+    }, 1500);
   };
 
   const value = useMemo(
@@ -87,7 +106,7 @@ export const AuthProvider = ({ children }) => {
       login,
       logout,
     }),
-    [currentUser]
+    [currentUser, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

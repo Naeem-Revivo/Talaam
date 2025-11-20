@@ -266,7 +266,7 @@ const QuestionBankTable = ({
   const { t } = useLanguage();
   
   return (
-    <section className="w-full max-w-[1120px] overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard md:min-h-[348px]">
+    <section className="w-full overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard md:min-h-[348px]">
       <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full border-collapse">
           <TableHeader t={t} />
