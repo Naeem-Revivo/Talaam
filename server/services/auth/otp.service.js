@@ -46,6 +46,11 @@ const verifyOTP = async (email, otp) => {
     throw new Error('Invalid OTP');
   }
 
+  // Check if user is suspended
+  if (user.status === 'suspended') {
+    throw new Error('Your account has been suspended. Please contact administrator.');
+  }
+
   // Update user
   user.isEmailVerified = true;
   user.otp = undefined;

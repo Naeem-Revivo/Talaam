@@ -17,6 +17,11 @@ const login = async (email, password) => {
     throw new Error('Invalid email or password');
   }
 
+  // Check if user is suspended
+  if (user.status === 'suspended') {
+    throw new Error('Your account has been suspended. Please contact administrator.');
+  }
+
   // Generate token
   const token = generateToken(user._id);
 

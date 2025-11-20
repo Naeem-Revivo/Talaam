@@ -26,6 +26,14 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
+    // Check if user is suspended
+    if (user.status === 'suspended') {
+      return res.status(403).json({
+        success: false,
+        message: 'Your account has been suspended. Please contact administrator.',
+      });
+    }
+
     // Attach user to request
     req.user = {
       id: user._id,

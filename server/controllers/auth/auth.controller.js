@@ -93,6 +93,12 @@ const login = async (req, res, next) => {
         message: error.message,
       });
     }
+    if (error.message === 'Your account has been suspended. Please contact administrator.') {
+      return res.status(403).json({
+        success: false,
+        message: error.message,
+      });
+    }
     next(error);
   }
 };
@@ -134,6 +140,12 @@ const verifyOTP = async (req, res, next) => {
     if (errorMessages.includes(error.message)) {
       const statusCode = error.message === 'User not found' ? 404 : 400;
       return res.status(statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.message === 'Your account has been suspended. Please contact administrator.') {
+      return res.status(403).json({
         success: false,
         message: error.message,
       });
@@ -301,6 +313,9 @@ const googleCallback = async (req, res, next) => {
     console.error('[AUTH] GET /google/callback → error', error);
     if (error.message === 'Missing authorization code' || error.message === 'Google profile has no email') {
       return res.status(400).json({ success: false, message: error.message });
+    }
+    if (error.message === 'Your account has been suspended. Please contact administrator.') {
+      return res.status(403).json({ success: false, message: error.message });
     }
     next(error);
   }

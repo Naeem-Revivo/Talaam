@@ -54,6 +54,11 @@ const handleGoogleCallback = async (code) => {
     await user.save({ validateBeforeSave: false });
   }
 
+  // Check if user is suspended
+  if (user.status === 'suspended') {
+    throw new Error('Your account has been suspended. Please contact administrator.');
+  }
+
   // Generate token
   const token = generateToken(user._id);
 

@@ -88,10 +88,15 @@ const userSchema = new mongoose.Schema(
         validator: function(value) {
           // Allow null/undefined or one of the valid admin roles
           if (value === null || value === undefined) return true;
-          return ['gatherer', 'creator', 'explainer', 'processor', 'admin'].includes(value);
+          return ['gatherer', 'creator', 'explainer', 'processor'].includes(value);
         },
-        message: 'adminRole must be one of: gatherer, creator, explainer, processor, admin',
+        message: 'adminRole must be one of: gatherer, creator, explainer, processor',
       },
+    },
+    status: {
+      type: String,
+      enum: ['active', 'suspended'],
+      default: 'active',
     },
   },
   {
