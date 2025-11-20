@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-const connectDB = require('./config/db.config');
+const connectDB = require('./config/db');
 
 const app = express();
 
@@ -12,11 +12,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/auth', require('./routes/auth.routes'));
-app.use('/api', require('./routes/profile.routes'));
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api', require('./routes/profile'));
+app.use('/api/admin', require('./routes/admin'));
 
 // Error handling middleware
-const errorHandler = require('./middlewares/error.middleware');
+const errorHandler = require('./middlewares/error');
 app.use(errorHandler);
 
 // Database connection
