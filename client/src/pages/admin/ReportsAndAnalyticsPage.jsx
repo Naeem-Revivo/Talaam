@@ -249,8 +249,8 @@ const ReportsAndAnalyticsPage = () => {
 
 
   return (
-    <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]">
-      <div className="mx-auto flex max-w-[1400px] flex-col gap-6">
+    <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 2xl:px-0">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>

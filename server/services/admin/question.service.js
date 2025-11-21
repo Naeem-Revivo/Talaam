@@ -325,15 +325,36 @@ const getTopicsBySubject = async (subjectId) => {
 };
 
 /**
+ * Build a base query with optional search term
+ */
+const buildSearchQuery = (baseFilters = {}, searchTerm = '') => {
+  const query = { ...baseFilters };
+
+  if (searchTerm && searchTerm.trim()) {
+    const regex = new RegExp(searchTerm.trim(), 'i');
+    query.$or = [
+      { questionText: regex },
+      { explanation: regex },
+      { status: regex },
+      { 'history.notes': regex },
+    ];
+  }
+
+  return query;
+};
+
+/**
  * Get questions with filters (for advanced queries)
  */
-const getQuestionsWithFilters = async (filters = {}, userId = null, role = null) => {
-  const query = { ...filters };
+const getQuestionsWithFilters = async (filters = {}, userId = null, role = null, searchTerm = '') => {
+  const baseFilters = { ...filters };
 
   // Gatherer can only see their own questions
   if (role === 'gatherer' && userId) {
-    query.createdBy = userId;
+    baseFilters.createdBy = userId;
   }
+
+  const query = buildSearchQuery(baseFilters, searchTerm);
 
   return await Question.find(query)
     .populate('exam', 'name')
@@ -421,6 +442,152 @@ const getQuestionsCountByStatus = async (status, userId = null, role = null) => 
   return await Question.countDocuments(query);
 };
 
+/**
+ * Get all questions for superadmin with optional search
+ */
+const getAllQuestionsForSuperadmin = async (filters = {}, searchTerm = '') => {
+  return await getQuestionsWithFilters(filters, null, null, searchTerm);
+};
+
+/**
+ * Get question counts (total, completed, pending)
+ * By default respects filters/search, but can be forced to ignore them
+ */
+const getQuestionCounts = async (filters = {}, searchTerm = '', applyFilters = true) => {
+  const baseFilters = applyFilters ? { ...filters } : {};
+  const search = applyFilters ? searchTerm : '';
+
+  const totalQuery = buildSearchQuery(baseFilters, search);
+
+  const completedFilters = baseFilters.status
+    ? { ...baseFilters }
+    : { ...baseFilters, status: 'completed' };
+  const completedQuery = buildSearchQuery(completedFilters, search);
+
+  const pendingStatuses = ['pending_processor', 'pending_creator', 'pending_explainer'];
+  const pendingFilters = baseFilters.status
+    ? { ...baseFilters }
+    : { ...baseFilters, status: { $in: pendingStatuses } };
+  const pendingQuery = buildSearchQuery(pendingFilters, search);
+
+  const [total, completed, pending] = await Promise.all([
+    Question.countDocuments(totalQuery),
+    Question.countDocuments(completedQuery),
+    Question.countDocuments(pendingQuery),
+  ]);
+
+  return {
+    total,
+    completed,
+    pending,
+  };
+};
+
+/**
+ * Get classification (exam -> subjects -> topics) for questions filtered by exam type
+ */
+const getQuestionClassificationByExamType = async (examType) => {
+  if (!['tahsely', 'qudrat'].includes(examType)) {
+    throw new Error('Invalid exam type. Must be tahsely or qudrat');
+  }
+
+  const exams = await Exam.find({ type: examType }).select('name type status').lean();
+  if (exams.length === 0) {
+    return {
+      type: examType,
+      exams: [],
+    };
+  }
+
+  const examIds = exams.map((exam) => exam._id);
+
+  const questions = await Question.find({ exam: { $in: examIds } })
+    .select('exam subject topic')
+    .populate('exam', 'name type status')
+    .populate('subject', 'name')
+    .populate('topic', 'name')
+    .lean();
+
+  const classificationMap = new Map();
+  const subjectIdsSet = new Set();
+
+  questions.forEach((question) => {
+    const exam = question.exam;
+    const subject = question.subject;
+
+    if (!exam || exam.type !== examType || !subject) {
+      return;
+    }
+
+    const examId = exam._id.toString();
+    if (!classificationMap.has(examId)) {
+      classificationMap.set(examId, {
+        id: exam._id,
+        name: exam.name,
+        type: exam.type,
+        status: exam.status,
+        subjects: new Map(),
+      });
+    }
+
+    const examEntry = classificationMap.get(examId);
+    const subjectId = subject._id.toString();
+
+    if (!examEntry.subjects.has(subjectId)) {
+      examEntry.subjects.set(subjectId, {
+        id: subject._id,
+        name: subject.name,
+      });
+      subjectIdsSet.add(subjectId);
+    }
+  });
+
+  if (classificationMap.size === 0) {
+    return {
+      type: examType,
+      exams: [],
+    };
+  }
+
+  const subjectIds = Array.from(subjectIdsSet);
+  let topicsBySubject = new Map();
+
+  if (subjectIds.length > 0) {
+    const topics = await Topic.find({ parentSubject: { $in: subjectIds } })
+      .select('name parentSubject')
+      .lean();
+
+    topicsBySubject = topics.reduce((map, topic) => {
+      const parentId = topic.parentSubject.toString();
+      if (!map.has(parentId)) {
+        map.set(parentId, []);
+      }
+      map.get(parentId).push({
+        id: topic._id,
+        name: topic.name,
+      });
+      return map;
+    }, new Map());
+  }
+
+  const examsResult = Array.from(classificationMap.values()).map((examEntry) => ({
+    id: examEntry.id,
+    name: examEntry.name,
+    type: examEntry.type,
+    status: examEntry.status,
+    subjects: Array.from(examEntry.subjects.values()).map((subjectEntry) => ({
+      id: subjectEntry.id,
+      name: subjectEntry.name,
+      topics: topicsBySubject.get(subjectEntry.id.toString()) || [],
+    })),
+  }));
+
+  return {
+    type: examType,
+    exams: examsResult,
+  };
+};
+
 module.exports = {
   createQuestion,
   getQuestionsByStatus,
@@ -436,5 +603,8 @@ module.exports = {
   getQuestionsByTopic,
   getQuestionStatistics,
   getQuestionsCountByStatus,
+  getAllQuestionsForSuperadmin,
+  getQuestionCounts,
+  getQuestionClassificationByExamType,
 };
 

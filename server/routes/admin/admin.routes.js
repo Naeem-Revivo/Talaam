@@ -119,6 +119,100 @@ const validateUpdateStatus = (req, res, next) => {
   next();
 };
 
+// Custom validation middleware for updating admin details
+const validateUpdateAdmin = (req, res, next) => {
+  const { name, email, status, adminRole } = req.body;
+  const errors = [];
+
+  if (
+    name === undefined &&
+    email === undefined &&
+    status === undefined &&
+    adminRole === undefined
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: 'Validation failed',
+      errors: [
+        {
+          field: 'request',
+          message: 'At least one field (name, email, status, adminRole) must be provided',
+        },
+      ],
+    });
+  }
+
+  if (name !== undefined) {
+    if (typeof name !== 'string' || !name.trim()) {
+      errors.push({
+        field: 'name',
+        message: 'Name must be a non-empty string',
+      });
+    } else {
+      req.body.name = name.trim();
+    }
+  }
+
+  if (email !== undefined) {
+    if (typeof email !== 'string' || !email.trim()) {
+      errors.push({
+        field: 'email',
+        message: 'Email must be a non-empty string',
+      });
+    } else {
+      const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+      if (!emailRegex.test(email.trim())) {
+        errors.push({
+          field: 'email',
+          message: 'Please provide a valid email',
+        });
+      } else {
+        req.body.email = email.trim().toLowerCase();
+      }
+    }
+  }
+
+  if (status !== undefined) {
+    if (!['active', 'suspended'].includes(status)) {
+      errors.push({
+        field: 'status',
+        message: 'Status must be either active or suspended',
+      });
+    } else {
+      req.body.status = status;
+    }
+  }
+
+  if (adminRole !== undefined) {
+    if (typeof adminRole !== 'string' || !adminRole.trim()) {
+      errors.push({
+        field: 'adminRole',
+        message: 'Workflow role must be a non-empty string',
+      });
+    } else {
+      const validAdminRoles = ['gatherer', 'creator', 'explainer', 'processor'];
+      if (!validAdminRoles.includes(adminRole.trim())) {
+        errors.push({
+          field: 'adminRole',
+          message: 'Workflow role must be one of: gatherer, creator, explainer, processor',
+        });
+      } else {
+        req.body.adminRole = adminRole.trim();
+      }
+    }
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Validation failed',
+      errors,
+    });
+  }
+
+  next();
+};
+
 // Routes (all require superadmin access)
 router.get('/users', authMiddleware, superadminMiddleware, adminController.getAllAdmins);
 router.post(
@@ -134,6 +228,14 @@ router.put(
   superadminMiddleware,
   validateUpdateStatus,
   adminController.updateUserStatus
+);
+
+router.put(
+  '/:userId',
+  authMiddleware,
+  superadminMiddleware,
+  validateUpdateAdmin,
+  adminController.updateAdmin
 );
 
 // Import exam routes

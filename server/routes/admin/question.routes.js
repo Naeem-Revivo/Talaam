@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const questionController = require('../../controllers/admin/question.controller');
-const { authMiddleware } = require('../../middlewares/auth');
+const { authMiddleware, superadminMiddleware } = require('../../middlewares/auth');
 const {
   gathererMiddleware,
   creatorMiddleware,
@@ -19,6 +19,27 @@ router.get(
   questionController.getTopicsBySubject
 );
 
+// Superadmin routes
+router.get(
+  '/all',
+  authMiddleware,
+  superadminMiddleware,
+  questionController.getAllQuestionsForSuperadmin
+);
+
+router.get(
+  '/all/:questionId',
+  authMiddleware,
+  superadminMiddleware,
+  questionController.getQuestionDetailForSuperadmin
+);
+
+router.get(
+  '/classification',
+  authMiddleware,
+  questionController.getQuestionClassificationByExamType
+);
+
 // Gatherer routes
 router.post(
   '/',
@@ -34,14 +55,7 @@ router.get(
   questionController.getQuestions
 );
 
-router.get(
-  '/:questionId',
-  authMiddleware,
-  gathererMiddleware,
-  questionController.getQuestionById
-);
-
-// Creator routes
+// Creator routes (must be before /:questionId to avoid route conflicts)
 router.get(
   '/creator',
   authMiddleware,
@@ -63,7 +77,7 @@ router.put(
   questionController.updateQuestion
 );
 
-// Explainer routes
+// Explainer routes (must be before /:questionId to avoid route conflicts)
 router.get(
   '/explainer',
   authMiddleware,
@@ -85,7 +99,7 @@ router.put(
   questionController.updateExplanation
 );
 
-// Processor routes
+// Processor routes (must be before /:questionId to avoid route conflicts)
 router.get(
   '/processor',
   authMiddleware,
@@ -112,6 +126,14 @@ router.post(
   authMiddleware,
   processorMiddleware,
   questionController.rejectQuestion
+);
+
+// Gatherer route for getting question by ID (must be last to avoid conflicts with specific routes)
+router.get(
+  '/:questionId',
+  authMiddleware,
+  gathererMiddleware,
+  questionController.getQuestionById
 );
 
 module.exports = router;

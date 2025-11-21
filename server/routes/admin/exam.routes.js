@@ -5,7 +5,7 @@ const { authMiddleware, superadminMiddleware, adminOrSuperadminMiddleware } = re
 
 // Custom validation middleware for creating exam
 const validateCreateExam = (req, res, next) => {
-  const { name, status } = req.body;
+  const { name, status, type } = req.body;
   
   const errors = [];
   
@@ -23,6 +23,24 @@ const validateCreateExam = (req, res, next) => {
       field: 'status',
       message: 'Status must be either active or inactive',
     });
+  }
+
+  // Validate type
+  if (!type || typeof type !== 'string') {
+    errors.push({
+      field: 'type',
+      message: 'Exam type is required',
+    });
+  } else {
+    const normalizedType = type.trim().toLowerCase();
+    if (!['tahsely', 'qudrat'].includes(normalizedType)) {
+      errors.push({
+        field: 'type',
+        message: 'Exam type must be either tahsely or qudrat',
+      });
+    } else {
+      req.body.type = normalizedType;
+    }
   }
   
   if (errors.length > 0) {
@@ -44,7 +62,7 @@ const validateCreateExam = (req, res, next) => {
 
 // Custom validation middleware for updating exam
 const validateUpdateExam = (req, res, next) => {
-  const { name, status } = req.body;
+  const { name, status, type } = req.body;
   
   const errors = [];
   
@@ -62,6 +80,26 @@ const validateUpdateExam = (req, res, next) => {
       field: 'status',
       message: 'Status must be either active or inactive',
     });
+  }
+
+  // Validate type if provided
+  if (type !== undefined) {
+    if (typeof type !== 'string' || !type.trim()) {
+      errors.push({
+        field: 'type',
+        message: 'Exam type cannot be empty',
+      });
+    } else {
+      const normalizedType = type.trim().toLowerCase();
+      if (!['tahsely', 'qudrat'].includes(normalizedType)) {
+        errors.push({
+          field: 'type',
+          message: 'Exam type must be either tahsely or qudrat',
+        });
+      } else {
+        req.body.type = normalizedType;
+      }
+    }
   }
   
   if (errors.length > 0) {

@@ -271,9 +271,95 @@ const getAllAdmins = async (req, res, next) => {
   }
 };
 
+/**
+ * Update admin user details
+ * Only superadmin can update admin users
+ */
+const updateAdmin = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { name, email, status, adminRole } = req.body;
+
+    console.log('[ADMIN] PUT /admin/:userId → requested', {
+      userId,
+      name,
+      email,
+      status,
+      adminRole,
+      requestedBy: req.user.id,
+      requesterRole: req.user.role,
+    });
+
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only superadmin can update admin users',
+      });
+    }
+
+    const user = await adminService.findUserById(userId);
+    if (!user || user.role !== 'admin') {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin user not found',
+      });
+    }
+
+    if (email && email !== user.email) {
+      const existingUser = await adminService.findUserByEmailExcludingId(email, userId);
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'Another user already exists with this email',
+        });
+      }
+    }
+
+    const updatedUser = await adminService.updateAdminDetails(user, {
+      name,
+      email,
+      status,
+      adminRole,
+    });
+
+    const response = {
+      success: true,
+      message: 'Admin user updated successfully',
+      data: {
+        user: {
+          id: updatedUser._id,
+          name: updatedUser.name,
+          email: updatedUser.email,
+          role: updatedUser.role,
+          adminRole: updatedUser.adminRole,
+          status: updatedUser.status,
+          isEmailVerified: updatedUser.isEmailVerified,
+        },
+      },
+    };
+
+    console.log('[ADMIN] PUT /admin/:userId → 200 (updated)', { userId: updatedUser._id });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[ADMIN] PUT /admin/:userId → error', error);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: Object.values(error.errors).map((err) => ({
+          field: err.path,
+          message: err.message,
+        })),
+      });
+    }
+    next(error);
+  }
+};
+
 module.exports = {
   createAdmin,
   updateUserStatus,
   getAllAdmins,
+  updateAdmin,
 };
 

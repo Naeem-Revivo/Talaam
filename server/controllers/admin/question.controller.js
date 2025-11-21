@@ -1,6 +1,176 @@
 const questionService = require('../../services/admin/question.service');
 
 /**
+ * Get all questions for superadmin with optional search
+ * GET /admin/questions/all?search=...&status=...
+ */
+const getAllQuestionsForSuperadmin = async (req, res, next) => {
+  try {
+    const { search, status } = req.query;
+
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only superadmin can view all questions',
+      });
+    }
+
+    const filters = {};
+    if (status) {
+      filters.status = status;
+    }
+
+    const [questions, counts] = await Promise.all([
+      questionService.getAllQuestionsForSuperadmin(filters, search),
+      questionService.getQuestionCounts({}, '', false),
+    ]);
+
+    const response = {
+      success: true,
+      data: {
+        summary: counts,
+        questions: questions.map((q) => ({
+          id: q._id,
+          exam: q.exam,
+          subject: q.subject,
+          topic: q.topic,
+          questionText: q.questionText,
+          questionType: q.questionType,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation,
+          status: q.status,
+          createdBy: q.createdBy,
+          lastModifiedBy: q.lastModifiedBy,
+          approvedBy: q.approvedBy,
+          rejectedBy: q.rejectedBy,
+          rejectionReason: q.rejectionReason,
+          createdAt: q.createdAt,
+          updatedAt: q.updatedAt,
+        })),
+      },
+    };
+
+    console.log('[QUESTION] GET /admin/questions/all → 200 (ok)', {
+      count: questions.length,
+      summary: counts,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] GET /admin/questions/all → error', error);
+    next(error);
+  }
+};
+
+/**
+ * Get classification of questions by exam type (tahsely/qudrat) for any authenticated user
+ * GET /admin/questions/classification?type=tahsely
+ */
+const getQuestionClassificationByExamType = async (req, res, next) => {
+  try {
+    const { type } = req.query;
+
+    if (!type || typeof type !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'Query parameter "type" is required and must be tahsely or qudrat',
+      });
+    }
+
+    const normalizedType = type.trim().toLowerCase();
+    if (!['tahsely', 'qudrat'].includes(normalizedType)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Query parameter "type" must be either tahsely or qudrat',
+      });
+    }
+
+    const classification = await questionService.getQuestionClassificationByExamType(normalizedType);
+
+    const response = {
+      success: true,
+      data: classification,
+    };
+
+    console.log('[QUESTION] GET /admin/questions/classification → 200 (ok)', {
+      type: normalizedType,
+      examsCount: classification.exams.length,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] GET /admin/questions/classification → error', error);
+    next(error);
+  }
+};
+
+/**
+ * Get single question details for superadmin
+ * GET /admin/questions/all/:questionId
+ */
+const getQuestionDetailForSuperadmin = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only superadmin can view question details',
+      });
+    }
+
+    const question = await questionService.getQuestionById(
+      questionId,
+      req.user.id,
+      req.user.role
+    );
+
+    const response = {
+      success: true,
+      data: {
+        question: {
+          id: question._id,
+          exam: question.exam,
+          subject: question.subject,
+          topic: question.topic,
+          questionText: question.questionText,
+          questionType: question.questionType,
+          options: question.options,
+          correctAnswer: question.correctAnswer,
+          explanation: question.explanation,
+          status: question.status,
+          createdBy: question.createdBy,
+          lastModifiedBy: question.lastModifiedBy,
+          approvedBy: question.approvedBy,
+          rejectedBy: question.rejectedBy,
+          rejectionReason: question.rejectionReason,
+          history: question.history,
+          createdAt: question.createdAt,
+          updatedAt: question.updatedAt,
+        },
+      },
+    };
+
+    console.log('[QUESTION] GET /admin/questions/all/:questionId → 200 (ok)', { questionId });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] GET /admin/questions/all/:questionId → error', error);
+    if (error.message === 'Question not found') {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid question ID',
+      });
+    }
+    next(error);
+  }
+};
+
+/**
  * Create question by Gatherer
  * POST /admin/questions
  */
@@ -653,6 +823,9 @@ const getTopicsBySubject = async (req, res, next) => {
 };
 
 module.exports = {
+  getAllQuestionsForSuperadmin,
+  getQuestionClassificationByExamType,
+  getQuestionDetailForSuperadmin,
   createQuestion,
   getQuestions,
   getQuestionById,

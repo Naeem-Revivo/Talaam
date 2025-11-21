@@ -21,7 +21,7 @@ const QuestionBankFilters = ({
   const { t } = useLanguage();
   
   return (
-    <section className="mx-auto flex w-full max-w-[1120px] flex-col gap-5 rounded-[16px] border border-[#E5E7EB] bg-white p-6 shadow-filter-lg md:gap-6 min-h-[326px]">
+    <section className="mx-auto flex w-full flex-col gap-5 rounded-[16px] border border-[#E5E7EB] bg-white p-6 shadow-filter-lg md:gap-6 min-h-[326px]">
       <div className="relative flex justify-start">
         <span className="pointer-events-none absolute left-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-oxford-blue">
           <svg
@@ -55,8 +55,8 @@ const QuestionBankFilters = ({
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-4 md:flex-nowrap md:items-center">
-        <div className="w-full md:w-auto md:flex-[1.8] md:min-w-[200px]">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:items-center">
+        <div className="w-full">
           <Dropdown
             value={filters.exam || ""}
             options={examOptions}
@@ -67,7 +67,7 @@ const QuestionBankFilters = ({
             height="h-[50px]"
           />
         </div>
-        <div className="w-full md:w-auto md:flex-1 md:min-w-[140px]">
+        <div className="w-full">
           <Dropdown
             value={filters.subject || ""}
             options={subjectOptions}
@@ -78,7 +78,7 @@ const QuestionBankFilters = ({
             height="h-[50px]"
           />
         </div>
-        <div className="w-full md:w-auto md:flex-1 md:min-w-[140px]">
+        <div className="w-full">
           <Dropdown
             value={filters.topic || ""}
             options={topicOptions}
@@ -89,7 +89,7 @@ const QuestionBankFilters = ({
             height="h-[50px]"
           />
         </div>
-        <div className="w-full md:w-auto md:flex-1 md:min-w-[160px]">
+        <div className="w-full">
           <Dropdown
             value={filters.level || ""}
             options={levelOptions}
@@ -100,7 +100,7 @@ const QuestionBankFilters = ({
             height="h-[50px]"
           />
         </div>
-        <div className="w-full md:w-auto md:flex-1 md:min-w-[140px]">
+        <div className="w-full">
           <Dropdown
             value={filters.status || ""}
             options={statusOptions}
