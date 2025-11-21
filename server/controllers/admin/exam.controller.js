@@ -6,7 +6,7 @@ const examService = require('../../services/admin');
  */
 const createExam = async (req, res, next) => {
   try {
-    const { name, status, type } = req.body;
+    const { name, status } = req.body;
 
     console.log('[EXAM] POST /admin/exams → requested', {
       name,
@@ -50,25 +50,10 @@ const createExam = async (req, res, next) => {
       });
     }
 
-    // Validate type
-    if (!type || !['tahsely', 'qudrat'].includes(type)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: [
-          {
-            field: 'type',
-            message: 'Exam type must be either tahsely or qudrat',
-          },
-        ],
-      });
-    }
-
     // Create exam
     const examData = {
       name: name.trim(),
       status: status || 'active',
-      type,
     };
 
     const exam = await examService.createExam(examData);
@@ -80,7 +65,6 @@ const createExam = async (req, res, next) => {
         exam: {
           id: exam._id,
           name: exam.name,
-          type: exam.type,
           status: exam.status,
           createdAt: exam.createdAt,
           updatedAt: exam.updatedAt,
@@ -114,21 +98,14 @@ const getAllExams = async (req, res, next) => {
   try {
     console.log('[EXAM] GET /admin/exams → requested', { requestedBy: req.user.id });
 
-    // Optional query parameter for filtering by status or type
-    const { status, type } = req.query;
+    // Optional query parameter for filtering by status
+    const { status } = req.query;
     const filter = {};
 
     if (status) {
       const validStatuses = ['active', 'inactive'];
       if (validStatuses.includes(status.toLowerCase())) {
         filter.status = status.toLowerCase();
-      }
-    }
-
-    if (type) {
-      const normalizedType = type.toLowerCase();
-      if (['tahsely', 'qudrat'].includes(normalizedType)) {
-        filter.type = normalizedType;
       }
     }
 
@@ -140,7 +117,6 @@ const getAllExams = async (req, res, next) => {
         exams: exams.map((exam) => ({
           id: exam._id,
           name: exam.name,
-          type: exam.type,
           status: exam.status,
           createdAt: exam.createdAt,
           updatedAt: exam.updatedAt,
@@ -184,7 +160,6 @@ const getExamById = async (req, res, next) => {
         exam: {
           id: exam._id,
           name: exam.name,
-          type: exam.type,
           status: exam.status,
           createdAt: exam.createdAt,
           updatedAt: exam.updatedAt,
@@ -213,7 +188,7 @@ const getExamById = async (req, res, next) => {
 const updateExam = async (req, res, next) => {
   try {
     const { examId } = req.params;
-    const { name, status, type } = req.body;
+    const { name, status } = req.body;
 
     console.log('[EXAM] PUT /admin/exams/:examId → requested', {
       examId,
@@ -270,22 +245,6 @@ const updateExam = async (req, res, next) => {
       }
     }
 
-    // Validate type if provided
-    if (type !== undefined) {
-      if (!['tahsely', 'qudrat'].includes(type)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: [
-            {
-              field: 'type',
-              message: 'Exam type must be either tahsely or qudrat',
-            },
-          ],
-        });
-      }
-    }
-
     // Update exam
     const updateData = {};
     if (name !== undefined) {
@@ -293,9 +252,6 @@ const updateExam = async (req, res, next) => {
     }
     if (status !== undefined) {
       updateData.status = status;
-    }
-    if (type !== undefined) {
-      updateData.type = type;
     }
 
     const updatedExam = await examService.updateExam(exam, updateData);
@@ -307,7 +263,6 @@ const updateExam = async (req, res, next) => {
         exam: {
           id: updatedExam._id,
           name: updatedExam.name,
-          type: updatedExam.type,
           status: updatedExam.status,
           createdAt: updatedExam.createdAt,
           updatedAt: updatedExam.updatedAt,

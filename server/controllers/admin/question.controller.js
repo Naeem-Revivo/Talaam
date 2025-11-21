@@ -63,47 +63,6 @@ const getAllQuestionsForSuperadmin = async (req, res, next) => {
 };
 
 /**
- * Get classification of questions by exam type (tahsely/qudrat) for any authenticated user
- * GET /admin/questions/classification?type=tahsely
- */
-const getQuestionClassificationByExamType = async (req, res, next) => {
-  try {
-    const { type } = req.query;
-
-    if (!type || typeof type !== 'string') {
-      return res.status(400).json({
-        success: false,
-        message: 'Query parameter "type" is required and must be tahsely or qudrat',
-      });
-    }
-
-    const normalizedType = type.trim().toLowerCase();
-    if (!['tahsely', 'qudrat'].includes(normalizedType)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Query parameter "type" must be either tahsely or qudrat',
-      });
-    }
-
-    const classification = await questionService.getQuestionClassificationByExamType(normalizedType);
-
-    const response = {
-      success: true,
-      data: classification,
-    };
-
-    console.log('[QUESTION] GET /admin/questions/classification → 200 (ok)', {
-      type: normalizedType,
-      examsCount: classification.exams.length,
-    });
-    res.status(200).json(response);
-  } catch (error) {
-    console.error('[QUESTION] GET /admin/questions/classification → error', error);
-    next(error);
-  }
-};
-
-/**
  * Get single question details for superadmin
  * GET /admin/questions/all/:questionId
  */
@@ -824,7 +783,6 @@ const getTopicsBySubject = async (req, res, next) => {
 
 module.exports = {
   getAllQuestionsForSuperadmin,
-  getQuestionClassificationByExamType,
   getQuestionDetailForSuperadmin,
   createQuestion,
   getQuestions,

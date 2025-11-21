@@ -34,12 +34,6 @@ router.get(
   questionController.getQuestionDetailForSuperadmin
 );
 
-router.get(
-  '/classification',
-  authMiddleware,
-  questionController.getQuestionClassificationByExamType
-);
-
 // Gatherer routes
 router.post(
   '/',
