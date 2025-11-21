@@ -483,111 +483,6 @@ const getQuestionCounts = async (filters = {}, searchTerm = '', applyFilters = t
   };
 };
 
-/**
- * Get classification (exam -> subjects -> topics) for questions filtered by exam type
- */
-const getQuestionClassificationByExamType = async (examType) => {
-  if (!['tahsely', 'qudrat'].includes(examType)) {
-    throw new Error('Invalid exam type. Must be tahsely or qudrat');
-  }
-
-  const exams = await Exam.find({ type: examType }).select('name type status').lean();
-  if (exams.length === 0) {
-    return {
-      type: examType,
-      exams: [],
-    };
-  }
-
-  const examIds = exams.map((exam) => exam._id);
-
-  const questions = await Question.find({ exam: { $in: examIds } })
-    .select('exam subject topic')
-    .populate('exam', 'name type status')
-    .populate('subject', 'name')
-    .populate('topic', 'name')
-    .lean();
-
-  const classificationMap = new Map();
-  const subjectIdsSet = new Set();
-
-  questions.forEach((question) => {
-    const exam = question.exam;
-    const subject = question.subject;
-
-    if (!exam || exam.type !== examType || !subject) {
-      return;
-    }
-
-    const examId = exam._id.toString();
-    if (!classificationMap.has(examId)) {
-      classificationMap.set(examId, {
-        id: exam._id,
-        name: exam.name,
-        type: exam.type,
-        status: exam.status,
-        subjects: new Map(),
-      });
-    }
-
-    const examEntry = classificationMap.get(examId);
-    const subjectId = subject._id.toString();
-
-    if (!examEntry.subjects.has(subjectId)) {
-      examEntry.subjects.set(subjectId, {
-        id: subject._id,
-        name: subject.name,
-      });
-      subjectIdsSet.add(subjectId);
-    }
-  });
-
-  if (classificationMap.size === 0) {
-    return {
-      type: examType,
-      exams: [],
-    };
-  }
-
-  const subjectIds = Array.from(subjectIdsSet);
-  let topicsBySubject = new Map();
-
-  if (subjectIds.length > 0) {
-    const topics = await Topic.find({ parentSubject: { $in: subjectIds } })
-      .select('name parentSubject')
-      .lean();
-
-    topicsBySubject = topics.reduce((map, topic) => {
-      const parentId = topic.parentSubject.toString();
-      if (!map.has(parentId)) {
-        map.set(parentId, []);
-      }
-      map.get(parentId).push({
-        id: topic._id,
-        name: topic.name,
-      });
-      return map;
-    }, new Map());
-  }
-
-  const examsResult = Array.from(classificationMap.values()).map((examEntry) => ({
-    id: examEntry.id,
-    name: examEntry.name,
-    type: examEntry.type,
-    status: examEntry.status,
-    subjects: Array.from(examEntry.subjects.values()).map((subjectEntry) => ({
-      id: subjectEntry.id,
-      name: subjectEntry.name,
-      topics: topicsBySubject.get(subjectEntry.id.toString()) || [],
-    })),
-  }));
-
-  return {
-    type: examType,
-    exams: examsResult,
-  };
-};
-
 module.exports = {
   createQuestion,
   getQuestionsByStatus,
@@ -605,6 +500,5 @@ module.exports = {
   getQuestionsCountByStatus,
   getAllQuestionsForSuperadmin,
   getQuestionCounts,
-  getQuestionClassificationByExamType,
 };
 

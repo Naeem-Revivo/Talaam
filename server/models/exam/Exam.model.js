@@ -7,12 +7,6 @@ const examSchema = new mongoose.Schema(
       required: [true, 'Exam name is required'],
       trim: true,
     },
-    type: {
-      type: String,
-      enum: ['tahsely', 'qudrat'],
-      default: 'tahsely',
-      required: [true, 'Exam type is required'],
-    },
     status: {
       type: String,
       enum: ['active', 'inactive'],
