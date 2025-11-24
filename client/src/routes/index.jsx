@@ -151,8 +151,8 @@ export const AppRoutes = () => {
           <Route path="security" element={<SecuritySettingsPage />} />
           <Route path="security/audit-logs" element={<AuditLogsPage />} />
           <Route path="security/view-logs" element={<ViewLogDetails />} />
-          {/* <Route path="security/roles-permissions" element={<RolesPermissionsPage />} /> */}
-          <Route path="security/roles-permissions" element={<Dashboard />} />
+          <Route path="security/roles-permissions" element={<RolesPermissionsPage />} />
+          {/* <Route path="security/roles-permissions" element={<Dashboard />} /> */}
         </Route>
       </Route>
     </Routes>

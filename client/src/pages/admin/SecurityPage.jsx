@@ -86,7 +86,7 @@ export default function SecuritySettingsPage() {
       <div className="bg-white border border-[#E5E7EB] rounded-xl pt-8 pb-10 space-y-10">
         {/* Security & Authentication */}
         <section className="px-8 ">
-          <h2 className="text-[20px] leading-[100%] font-semibold text-oxford-blue mb-3 font-archivo">
+          <h2 className="text-[20px] leading-[100%] font-bold text-oxford-blue mb-3 font-archivo">
             {t("admin.security.sections.securityAndAuthentication.title")}
           </h2>
           <p className="text-[16px] leading-[100%] font-normal text-oxford-blue font-roboto">
