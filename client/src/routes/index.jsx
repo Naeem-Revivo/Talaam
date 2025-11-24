@@ -65,6 +65,7 @@ import SecuritySettingsPage from '../pages/admin/SecurityPage';
 import AuditLogsPage from '../pages/admin/AuditLogsPage';
 import RolesPermissionsPage from '../pages/admin/RolesPermissionsPage';
 import ViewLogDetails from '../pages/admin/ViewLogsDetailPage';
+import Dashboard from '../pages/Processor/Dashboard';
 
 export const AppRoutes = () => {
   return (
@@ -151,6 +152,7 @@ export const AppRoutes = () => {
           <Route path="security/audit-logs" element={<AuditLogsPage />} />
           <Route path="security/view-logs" element={<ViewLogDetails />} />
           <Route path="security/roles-permissions" element={<RolesPermissionsPage />} />
+          {/* <Route path="security/roles-permissions" element={<Dashboard />} /> */}
         </Route>
       </Route>
     </Routes>

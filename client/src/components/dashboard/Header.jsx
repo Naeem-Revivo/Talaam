@@ -56,7 +56,7 @@ const Header = ({ onToggleSidebar }) => {
       if (pathname.startsWith('/admin/reports')) return 'Reports & Analytics';
       if (pathname.startsWith('/admin/moderation')) return 'Content Moderation';
       if (pathname.startsWith('/admin/settings')) return 'System Settings';
-      if (pathname.startsWith('/admin/security')) return 'Security & Permissions';
+      if (pathname.startsWith('/admin/security')) return 'Security Permissions';
       return 'Admin';
     }
     // User dashboard routes

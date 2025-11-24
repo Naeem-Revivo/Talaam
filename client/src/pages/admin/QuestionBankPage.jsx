@@ -283,7 +283,7 @@ const QuestionBankPage = () => {
   };
 
   return (
-    <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]">
+    <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 2xl:px-0">
       <div className="mx-auto flex max-w-[1200px] flex-col gap-6">
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div className="space-y-2">
