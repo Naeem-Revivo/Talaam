@@ -2336,5 +2336,22 @@
         "moderatorComments": "Add optional comments.."
       }
     }
-  }
+  },
+  "gatherer": {
+      "sidebar": {
+        "dashboard": "Dashboard",
+        "questionBank": "Question Bank",
+        "profile": "Profile"
+      }
+    },
+     "processor": {
+      "sidebar": {
+        "dashboard": "Dashboard",
+        "questionBank": "Question Bank",
+        "gathererSubmission": "Gatherer Submission",
+        "creatorSubmission": "Creator Submission",
+        "explainerSubmission": "Explainer Submission",
+        "profile": "Profile"
+      }
+    }
 }

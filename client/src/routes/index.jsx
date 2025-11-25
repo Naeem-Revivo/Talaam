@@ -65,7 +65,30 @@ import SecuritySettingsPage from '../pages/admin/SecurityPage';
 import AuditLogsPage from '../pages/admin/AuditLogsPage';
 import RolesPermissionsPage from '../pages/admin/RolesPermissionsPage';
 import ViewLogDetails from '../pages/admin/ViewLogsDetailPage';
-import Dashboard from '../pages/Processor/Dashboard';
+import GathererLayout from '../components/gatherer/GathererLayout';
+import GathererDashboard from '../pages/Gatherer/GathererDashboard';
+import GathererQuestionBank from '../pages/Gatherer/GathererQuestionBank';
+import GathererAddNewQuestionPage from '../pages/Gatherer/GathererAddNewQuestion';
+import GathererQuestionDetailsPage from '../pages/Gatherer/GathererQuestionDetail';
+import ProcessorDashboard from '../pages/Processor/ProcessorDashboard';
+import ProcessorLayout from '../components/Processor/ProcessorLayout';
+import AllProcessedQuestion from '../pages/Processor/AllProcessedQuestion';
+import GathererSubmission from '../pages/Processor/GathererSubmission';
+import ExplainerSubmission from '../pages/Processor/ExplainerSubmission';
+import CreaterSubmission from '../pages/Processor/CreatorSubmission';
+import ProcessorViewQuestion from '../pages/Processor/ProcessorViewQuestion';
+import CreatorLayout from '../components/creator/CreatorLayout';
+import CreatorDashboard from '../pages/Creator/CreatorDashboard';
+import CreatorQuestionBank from '../pages/Creator/CreatorQuestionBank';
+import AssignedQuestionPage from '../pages/Creator/AssignedQuestionPage';
+import CompletedQuestionPage from '../pages/Creator/CompletedQuestionPage';
+import CreatorVariantsPage from '../pages/Creator/CreatorVariantsPage';
+import ExplainerDashboard from '../pages/Explainer/ExplainerDashbaord';
+import ExplainerLayout from '../components/explainer/ExplainerLayout';
+import ExplainerQuestionBank from '../pages/Explainer/ExplainerQuestionBank';
+import AddExplanationPage from '../pages/Explainer/AddExplanationPage';
+import CompletedExplanationPage from '../pages/Explainer/CompletedExplanation';
+import DraftExplanationPage from '../pages/Explainer/DraftExplanation';
 
 export const AppRoutes = () => {
   return (
@@ -152,9 +175,52 @@ export const AppRoutes = () => {
           <Route path="security/audit-logs" element={<AuditLogsPage />} />
           <Route path="security/view-logs" element={<ViewLogDetails />} />
           <Route path="security/roles-permissions" element={<RolesPermissionsPage />} />
-          {/* <Route path="security/roles-permissions" element={<Dashboard />} /> */}
         </Route>
       </Route>
+
+      {/* Gatherer Routes */}
+      <Route element={<RoleRoute allow={['gatherer']} />}>
+        <Route path="/gatherer" element={<GathererLayout />}>
+          <Route index element={<GathererDashboard />} />
+          <Route path="question-bank" element={<GathererQuestionBank />} />
+          <Route path="question-bank/Gatherer-addQuestion" element={<GathererAddNewQuestionPage />} />
+          <Route path="question-bank/Gatherer-QuestionDetail" element={<GathererQuestionDetailsPage />} />
+          {/* Add gatherer specific routes here */}
+        </Route>
+      </Route>
+
+      {/* Processer dashboard */}
+      <Route element={<RoleRoute allow={['processor']} />}>
+        <Route path="/processor" element={<ProcessorLayout />}>
+          <Route index element={<ProcessorDashboard />} />
+          <Route path="Processed-Question" element={<AllProcessedQuestion />} />
+          <Route path="Processed-ViewQuestion" element={<ProcessorViewQuestion />} />
+          <Route path="question-bank/gatherer-submission" element={<GathererSubmission />} />
+          <Route path="question-bank/explainer-submission" element={<ExplainerSubmission />} />
+          <Route path="question-bank/creator-submission" element={<CreaterSubmission />} />
+        </Route>
+      </Route>
+
+      <Route element={<RoleRoute allow={['creator']} />}>
+        <Route path="/creator" element={<CreatorLayout />}>
+          <Route index element={<CreatorDashboard />} />
+          <Route path="question-bank" element={<CreatorQuestionBank />} />
+          <Route path="question-bank/assigned-question" element={<AssignedQuestionPage />} />
+          <Route path="question-bank/completed-question" element={<CompletedQuestionPage />} />
+          <Route path="question-bank/create-variants" element={<CreatorVariantsPage />} />
+        </Route>
+      </Route>
+
+      <Route element={<RoleRoute allow={['explainer']} />}>
+        <Route path="/explainer" element={<ExplainerLayout />}>
+          <Route index element={<ExplainerDashboard />} />
+          <Route path="question-bank" element={<ExplainerQuestionBank />} />
+          <Route path="question-bank/add-explanation" element={<AddExplanationPage />} />
+          <Route path="question-bank/completed-explanation" element={<CompletedExplanationPage />} />
+          <Route path="question-bank/draft-explanation" element={<DraftExplanationPage />} />
+        </Route>
+      </Route>
+      
     </Routes>
   );
 };
