@@ -3,14 +3,14 @@ import Dropdown from "../shared/Dropdown";
 
 // Demo options (replace later with real dynamic data)
 const getSubjectOptions = (t) => [
-  t("admin.classificationManagement.filters.allSubjects"),
+  "Subject",
   "Math",
   "Science",
   "History",
 ];
 
 const getTopicOptions = (t) => [
-  t("admin.classificationManagement.filters.allTopics"),
+  "Gatherer",
   "Algebra",
   "Geometry",
   "Biology",
@@ -18,7 +18,7 @@ const getTopicOptions = (t) => [
 ];
 
 const getSubtopicOptions = (t) => [
-  t("admin.classificationManagement.filters.allSubtopics"),
+  "Status",
   "Equations",
   "Triangles",
   "Cells",
@@ -87,7 +87,7 @@ const ProcessorFilter = ({
         </div>
         {/* Subject Dropdown */}
         <Dropdown
-          label={t("admin.classificationManagement.filters.selectSubject")}
+          label="Subject"
           value={subjectValue}
           options={subjectOptions}
           onChange={onSubjectChange}
@@ -95,7 +95,7 @@ const ProcessorFilter = ({
 
         {/* Topic Dropdown */}
         <Dropdown
-          label={t("admin.classificationManagement.filters.selectTopic")}
+          label="Gatherer"
           value={topicValue}
           options={topicOptions}
           onChange={onTopicChange}
@@ -103,7 +103,7 @@ const ProcessorFilter = ({
 
         {/* Subtopic Dropdown */}
         <Dropdown
-          label={t("admin.classificationManagement.filters.selectSubtopic")}
+          label="Status"
           value={subtopicValue}
           options={subtopicOptions}
           onChange={onSubtopicChange}

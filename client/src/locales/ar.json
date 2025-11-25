@@ -2346,5 +2346,22 @@
         "moderatorComments": "أضف تعليقات اختيارية.."
       }
     }
-  }
+  },
+  "gatherer": {
+    "sidebar": {
+      "dashboard": "لوحة التحكم",
+      "questionBank": "بنك الأسئلة",
+      "profile": "الملف الشخصي"
+    }
+  },
+   "processor": {
+      "sidebar": {
+        "dashboard": "لوحة التحكم",
+        "questionBank": "بنك الأسئلة",
+        "gathererSubmission": "تقديم المجمع",
+        "creatorSubmission": "تقديم المنشئ",
+        "explainerSubmission": "تقديم المشرح",
+        "profile": "الملف الشخصي"
+      }
+    }
 }
