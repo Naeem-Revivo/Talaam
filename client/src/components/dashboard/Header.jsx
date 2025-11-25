@@ -45,6 +45,24 @@ const Header = ({ onToggleSidebar }) => {
       if (pathname.includes('profile')) return 'Profile';
       return 'Gatherer';
     }
+    if (pathname.startsWith('/creator')) {
+      if (pathname === '/creator') return 'Creator';
+      if (pathname.includes('question-bank')) return 'Creator Dashboard';
+      if (pathname.includes('profile')) return 'Profile';
+      return 'creator';
+    }
+    if (pathname.startsWith('/processor')) {
+      if (pathname === '/processor') return 'Processor';
+      if (pathname.includes('question-bank')) return 'Processor Dashboard';
+      if (pathname.includes('profile')) return 'Profile';
+      return 'processor';
+    }
+    if (pathname.startsWith('/explainer')) {
+      if (pathname === '/explainer') return 'Explainer';
+      if (pathname.includes('question-bank')) return 'Explainer Dashboard';
+      if (pathname.includes('profile')) return 'Profile';
+      return 'Gatherer';
+    }
     // Admin routes
     if (pathname.startsWith('/admin')) {
       if (pathname === '/admin') return 'Admin Dashboard';
