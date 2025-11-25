@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 const Header = ({ onToggleSidebar }) => {
   const { language, toggleLanguage, t } = useLanguage();
   const { user: authUser, logout: doLogout, role } = useAuth();
+  console.log(authUser, "user");
   const location = useLocation();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -37,6 +38,13 @@ const Header = ({ onToggleSidebar }) => {
   };
 
   const getTitleByPath = (pathname) => {
+
+    if (pathname.startsWith('/gatherer')) {
+      if (pathname === '/gatherer') return 'Gatherer Dashboard';
+      if (pathname.includes('question-bank')) return 'Question Bank';
+      if (pathname.includes('profile')) return 'Profile';
+      return 'Gatherer';
+    }
     // Admin routes
     if (pathname.startsWith('/admin')) {
       if (pathname === '/admin') return 'Admin Dashboard';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -17,7 +16,15 @@ export const RoleRoute = ({ allow = [] }) => {
   }
   if (allow.length > 0 && !allow.includes(role)) {
     // If user is logged in but not allowed, redirect them to their home
-    return <Navigate to={role === 'admin' ? '/admin' : '/dashboard'} replace />;
+    const homeRoutes = {
+      admin: '/admin',
+      user: '/dashboard',
+      gatherer: '/gatherer',
+      creator: '/creator',
+      processor: '/processor',
+      explainer: '/explainer'
+    };
+    return <Navigate to={homeRoutes[role] || '/dashboard' } replace />;
   }
   return <Outlet />;
 };
