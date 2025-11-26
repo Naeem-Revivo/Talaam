@@ -50,7 +50,7 @@ const ExplainerQuestionBank = () => {
   ];
 
   // Handler for review action
-  const handleReview = (item) => {
+  const _handleReview = (item) => {
     console.log("Review item:", item);
     // Add your review logic here
   };
