@@ -26,10 +26,36 @@ const SearchFilter = ({
     t("admin.classificationManagement.filters.searchPlaceholder");
 
   return (
-    <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-5 w-full">
-        {/* Search Input */}
-        <div className="w-full lg:w-[580px]">
+    <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6" dir="ltr">
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-5 w-full" dir="ltr" style={{ direction: 'ltr' }}>
+        {/* Topic Dropdown (Status) - First */}
+        <Dropdown
+          label={topicLabel}
+          value={topicValue}
+          options={topicOptions}
+          onChange={onTopicChange}
+        />
+
+        {/* Subject Dropdown - Second */}
+        <Dropdown
+          label={subjectLabel}
+          value={subjectValue}
+          options={subjectOptions}
+          onChange={onSubjectChange}
+        />
+
+        {/* Subtopic Dropdown - Only render if subtopicOptions is provided and not empty */}
+        {subtopicOptions && subtopicOptions.length > 0 && (
+          <Dropdown
+            label={subtopicLabel}
+            value={subtopicValue}
+            options={subtopicOptions}
+            onChange={onSubtopicChange}
+          />
+        )}
+
+        {/* Search Input - Last (Right side) */}
+        <div className="w-full lg:w-[580px] lg:ml-auto">
           <p className="text-sm font-medium text-oxford-blue mb-1 block lg:hidden">
             {placeholder}
           </p>
@@ -64,30 +90,6 @@ const SearchFilter = ({
             />
           </div>
         </div>
-
-        {/* Subject Dropdown */}
-        <Dropdown
-          label={subjectLabel}
-          value={subjectValue}
-          options={subjectOptions}
-          onChange={onSubjectChange}
-        />
-
-        {/* Topic Dropdown */}
-        <Dropdown
-          label={topicLabel}
-          value={topicValue}
-          options={topicOptions}
-          onChange={onTopicChange}
-        />
-
-        {/* Subtopic Dropdown */}
-        <Dropdown
-          label={subtopicLabel}
-          value={subtopicValue}
-          options={subtopicOptions}
-          onChange={onSubtopicChange}
-        />
       </div>
     </section>
   );

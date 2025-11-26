@@ -18,11 +18,11 @@ const AssignedQuestionPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const QuestionsColumns = [
-    { key: 'questionTitle', label: 'QUESTION TITLE' },
-    { key: 'processor', label: 'PROCESSOR' },
-    { key: 'difficulty', label: 'DIFFICULTY' },
-    { key: 'updatedOn', label: 'UPDATED ON' },
-    { key: 'actions', label: 'ACTIONS' }
+    { key: 'questionTitle', label: t("creator.assignedQuestionPage.table.question") },
+    { key: 'processor', label: t("creator.assignedQuestionPage.table.processor") },
+    { key: 'difficulty', label: t("creator.assignedQuestionPage.table.difficulty") },
+    { key: 'updatedOn', label: t("creator.assignedQuestionPage.table.updatedOn") },
+    { key: 'actions', label: t("creator.assignedQuestionPage.table.actions") }
   ];
 
   // Sample data matching the image
@@ -92,13 +92,13 @@ const AssignedQuestionPage = () => {
         <header className="flex justify-between gap-4">
           <div>
             <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue mb-2">
-              Assigned Questions
+              {t("creator.assignedQuestionPage.title")}
             </h1>
             <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
-              Review, refine, and create variant for questions assigned to you.
+              {t("creator.assignedQuestionPage.subtitle")}
             </p>
           </div>
-            <OutlineButton text="Back" className="py-[10px] px-5" onClick={handleCancel}/>
+            <OutlineButton text={t("creator.assignedQuestionPage.back")} className="py-[10px] px-5" onClick={handleCancel}/>
         </header>
 
         <SearchFilter
@@ -113,7 +113,7 @@ const AssignedQuestionPage = () => {
           subjectOptions={subjectOptions}
           topicOptions={topicOptions}
           subtopicOptions={subtopicOptions}
-          searchPlaceholder="Search draft explanations..."
+          searchPlaceholder={t("creator.assignedQuestionPage.searchPlaceholder")}
         />
 
       <Table
@@ -133,7 +133,7 @@ const AssignedQuestionPage = () => {
             handleCreateVariant(item);
           }
         }}
-        emptyMessage="No questions found"
+        emptyMessage={t("creator.assignedQuestionPage.emptyMessage")}
       />
       </div>
     </div>

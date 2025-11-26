@@ -1,16 +1,17 @@
-import { PrimaryButton } from "../../components/common/Button";
+import { useLanguage } from "../../context/LanguageContext";
 import { RoleCard } from "../../components/common/RoleCard";
 import { PerformanceCard } from "../../components/gatherer/performanceCard";
 import { LastLoginCard } from "../../components/gatherer/LastLogin";
 
 const ExplainerDashboard = () => {
+  const { t } = useLanguage();
   const roleData = {
-  role: "Explainer",
+  role: t("explainer.dashboard.role"),
   tasks: [
-    "Add explanations to approved questions",
-    "Add notes / diagrams",
-    "Complete pending explanations",
-    "Maintain quality of explanations"
+    t("explainer.dashboard.tasks.task1"),
+    t("explainer.dashboard.tasks.task2"),
+    t("explainer.dashboard.tasks.task3"),
+    t("explainer.dashboard.tasks.task4")
   ],
   pendingCount: 7
 };
@@ -21,9 +22,9 @@ const performanceData = {
   drafts: 2,
   daysRange: 50,
   fields: [
-    { key: 'explaintionCompletionRate', label: 'Explanation Completion Rate', format: 'percentage' },
-    { key: 'qualityScore', label: 'Quality Score', format: 'percentage' },
-    { key: 'drafts', label: 'Drafts', format: 'number' }
+    { key: 'explaintionCompletionRate', label: t('explainer.dashboard.performance.explanationCompletionRate'), format: 'percentage' },
+    { key: 'qualityScore', label: t('explainer.dashboard.performance.qualityScore'), format: 'percentage' },
+    { key: 'drafts', label: t('explainer.dashboard.performance.drafts'), format: 'number' }
   ]
 };
 
@@ -37,10 +38,10 @@ const lastLoginData = {
         <header className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
           <div className="space-y-6">
             <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
-                Explainer
+                {t("explainer.dashboard.title")}
             </h1>
             <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
-              Welcome back, John Doe add explanations to approved questions and complete pending tasks.
+              {t("explainer.dashboard.subtitle")}
             </p>
           </div>
         </header>

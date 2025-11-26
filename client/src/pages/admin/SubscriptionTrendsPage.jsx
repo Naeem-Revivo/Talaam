@@ -247,7 +247,7 @@ const SubscriptionTrendsPage = () => {
               subtext={card.subtext}
               subtextClassName={card.subtextClassName}
               icon={card.icon}
-              className="w-full"
+              className="w-[262px] h-[107px]"
             />
           ))}
         </div>

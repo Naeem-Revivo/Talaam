@@ -99,6 +99,7 @@ const ManageUserSubscriptionsPage = () => {
   const { t } = useLanguage();
   const [planFilter, setPlanFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("Active");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredSubscriptions = useMemo(() => {
     return allSubscriptions.filter((sub) => {
@@ -107,9 +108,12 @@ const ManageUserSubscriptionsPage = () => {
         (statusFilter === "Active" && sub.paymentstatus === "Active") ||
         (statusFilter === "Expire" && sub.expirydate !== "N/A" && new Date(sub.expirydate.split("-").reverse().join("-")) < new Date()) ||
         (statusFilter === "Pending" && sub.paymentstatus === "Pending");
-      return matchesPlan && matchesStatus;
+      const matchesSearch = searchQuery === "" || 
+        sub.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        sub.email.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesPlan && matchesStatus && matchesSearch;
     });
-  }, [planFilter, statusFilter]);
+  }, [planFilter, statusFilter, searchQuery]);
 
   // Transform data for DataTable - it expects lowercase keys without spaces
   const transformedSubscriptions = useMemo(() => {
@@ -283,20 +287,38 @@ const ManageUserSubscriptionsPage = () => {
 
         {/* Filters */}
         <div className="flex flex-col gap-5">
-          {/* Plan Filter */}
-          <div className="w-[165px]">
-            <Dropdown
-              value={planFilter}
-              options={uniquePlans.map((plan) => ({
-                value: plan,
-                label: plan === "All" ? t('admin.manageUserSubscriptions.filters.plan') : plan,
-              }))}
-              onChange={(value) => setPlanFilter(value)}
-              placeholder={t('admin.manageUserSubscriptions.filters.plan')}
-              showDefaultOnEmpty={true}
-              className="w-full"
-              height="h-[50px]"
-            />
+          {/* Plan Filter and Search Bar */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            {/* Plan Filter */}
+            <div className="w-full sm:w-[165px]">
+              <Dropdown
+                value={planFilter}
+                options={uniquePlans.map((plan) => ({
+                  value: plan,
+                  label: plan === "All" ? t('admin.manageUserSubscriptions.filters.plan') : plan,
+                }))}
+                onChange={(value) => setPlanFilter(value)}
+                placeholder={t('admin.manageUserSubscriptions.filters.plan')}
+                showDefaultOnEmpty={true}
+                className="w-full"
+                height="h-[50px]"
+              />
+            </div>
+            {/* Search Bar */}
+            <div className="relative w-full sm:w-auto sm:flex-1 xl:w-[935px] h-[50px] xl:pl-16">
+              <div className="absolute left-4 xl:left-[85px] top-1/2 transform -translate-y-1/2">
+                <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9.42969 0.25C14.4866 0.25024 18.6084 4.28232 18.6084 9.25C18.6084 11.3724 17.8507 13.3211 16.5938 14.8604L20.3496 18.541C20.7482 18.9316 20.7483 19.5667 20.3496 19.957C20.1511 20.1529 19.8915 20.25 19.6338 20.25C19.3755 20.2499 19.1156 20.1526 18.918 19.959L15.1562 16.2715C13.5849 17.5066 11.5952 18.2499 9.42969 18.25C4.37258 18.25 0.25 14.2178 0.25 9.25C0.25 4.28217 4.37258 0.25 9.42969 0.25ZM9.42969 2.25C5.48306 2.25 2.28027 5.39483 2.28027 9.25C2.28027 13.1052 5.48306 16.25 9.42969 16.25C13.3761 16.2498 16.5781 13.105 16.5781 9.25C16.5781 5.39497 13.3761 2.25024 9.42969 2.25Z" fill="#032746" stroke="#032746" strokeWidth="0.5"/>
+                </svg>
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search User"
+                className="w-full h-full pl-[52px] xl:pl-[60px] pr-4 rounded-lg border border-[#E5E7EB] bg-white text-[#6B7280] placeholder:text-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#E5E7EB] font-roboto font-normal text-[14px] leading-[10px] tracking-[0%] align-middle"
+              />
+            </div>
           </div>
 
           {/* Status Filter Buttons */}

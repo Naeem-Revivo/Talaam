@@ -19,11 +19,11 @@ const GathererSubmission = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
    const gathererSubmissionColumns = [
-    { key: 'questionTitle', label: 'QUESTION TITLE' },
-    { key: 'gatherer', label: 'GATHERER' },
-    { key: 'uploadOn', label: 'UPLOAD ON' },
-    { key: 'status', label: 'STATUS' },
-    { key: 'actions', label: 'ACTIONS' }
+    { key: 'questionTitle', label: t("processor.gathererSubmission.table.question") },
+    { key: 'gatherer', label: t("processor.gathererSubmission.table.gatherer") },
+    { key: 'uploadOn', label: t("processor.gathererSubmission.table.uploadOn") },
+    { key: 'status', label: t("processor.gathererSubmission.table.status") },
+    { key: 'actions', label: t("processor.gathererSubmission.table.actions") }
   ];
 
   // Sample data matching the image
@@ -89,10 +89,10 @@ const GathererSubmission = () => {
         <header className="flex justify-between gap-4">
           <div>
             <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
-              Gatherer Submissions
+              {t("processor.gathererSubmission.title")}
             </h1>
           </div>
-            <OutlineButton text="Back" className="py-[10px] px-5" onClick={handleCancel}/>
+            <OutlineButton text={t("processor.gathererSubmission.back")} className="py-[10px] px-5" onClick={handleCancel}/>
         </header>
 
         <ProcessorFilter
@@ -116,7 +116,7 @@ const GathererSubmission = () => {
         onView={handleView}
         onEdit={handleEdit}
         onCustomAction={handleReview}
-        emptyMessage="No questions found"
+        emptyMessage={t("processor.gathererSubmission.emptyMessage")}
       />
       </div>
     </div>
