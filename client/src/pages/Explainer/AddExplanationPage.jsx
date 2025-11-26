@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { RichTextEditor } from "../../components/common/RichTextEditor";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
+import { useNavigate } from "react-router-dom";
 
 // QuestionDetails Component
 const QuestionDetails = ({
@@ -151,37 +152,12 @@ const TeachingNotes = ({ value, onChange }) => {
   );
 };
 
-// ActionButtons Component
-const ActionButtons = ({ onCancel, onSaveDraft, onSubmit }) => {
-  return (
-    <div className="flex justify-end gap-3">
-      <button
-        onClick={onCancel}
-        className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors font-medium"
-      >
-        Cancel
-      </button>
-      <button
-        onClick={onSaveDraft}
-        className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors font-medium"
-      >
-        Save Draft
-      </button>
-      <button
-        onClick={onSubmit}
-        className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors font-medium"
-      >
-        Submit Explanation
-      </button>
-    </div>
-  );
-};
-
 // Main App Component
 export default function AddExplanationPage() {
   const [explanation, setExplanation] = useState("");
   const [teachingNotes, setTeachingNotes] = useState("");
   const [file, setFile] = useState(null);
+  const navigate = useNavigate();
 
   const questionData = {
     id: "QB-1442",
@@ -198,6 +174,10 @@ export default function AddExplanationPage() {
 
   const handleRemoveFile = () => {
     setFile(null);
+  };
+
+  const handleCancel = () => {
+    navigate("/explainer/question-bank");
   };
 
   return (
@@ -251,7 +231,7 @@ export default function AddExplanationPage() {
         <TeachingNotes value={teachingNotes} onChange={setTeachingNotes} />
 
         <div className="flex flex-col sm:flex-row sm:justify-end gap-3 px-5 pb-6 pt-2">
-          <OutlineButton text="Cancel" className="py-[10px] px-7 text-nowrap" />
+          <OutlineButton text="Cancel" className="py-[10px] px-7 text-nowrap" onClick={handleCancel}/>
           <OutlineButton
             text="Save Draft"
             className="py-[10px] px-7 text-nowrap"
