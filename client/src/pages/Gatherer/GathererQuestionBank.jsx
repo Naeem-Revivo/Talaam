@@ -66,7 +66,7 @@ const GathererQuestionBank = () => {
     },
   ];
 
-  const handleView = (item) => {
+  const handleView = () => {
     navigate("/gatherer/question-bank/Gatherer-QuestionDetail");
   };
 
@@ -131,7 +131,7 @@ const GathererQuestionBank = () => {
     console.log("Dismissed");
   };
 
-  const handleEditNotification = () => {
+  const _handleEditNotification = () => {
     console.log("Edit Question");
   };
 

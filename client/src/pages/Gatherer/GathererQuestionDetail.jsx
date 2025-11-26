@@ -738,7 +738,7 @@ const GathererQuestionDetailsPage = () => {
     );
   };
 
-  const handleDelete = () => {
+  const _handleDelete = () => {
     // TODO: Implement delete functionality
     console.log("Delete question");
   };
