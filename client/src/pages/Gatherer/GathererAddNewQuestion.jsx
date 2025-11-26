@@ -99,7 +99,7 @@ const GathererAddNewQuestionPage = () => {
   };
 
   const handleCancel = () => {
-    navigate("/admin/question-bank");
+    navigate("/gatherer/question-bank");
   };
 
   const handleSaveQuestion = () => {
@@ -914,7 +914,7 @@ const GathererAddNewQuestionPage = () => {
             <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
               <button
                 type="button"
-                onClick={handleSaveDraft}
+                onClick={handleCancel}
                 className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#E5E7EB] bg-white px-3 md:px-5 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
               >
                 Cancel

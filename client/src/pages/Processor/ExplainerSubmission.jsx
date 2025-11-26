@@ -4,6 +4,8 @@ import { OutlineButton } from "../../components/common/Button";
 import { useState } from "react";
 import ProcessorFilter from "../../components/Processor/ProcessorFilter";
 import { Table } from "../../components/common/TableComponent";
+import { useNavigate } from "react-router-dom";
+
 
 const ExplainerSubmission = () => {
   const { t } = useLanguage();
@@ -13,6 +15,8 @@ const ExplainerSubmission = () => {
   const [topic, setTopic] = useState("");
   const [subtopic, setSubtopic] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+    const navigate = useNavigate();
+
 
   const explainerColumns = [
     { key: 'questionTitle', label: 'QUESTION TITLE' },
@@ -74,12 +78,9 @@ const ExplainerSubmission = () => {
     console.log('Edit item:', item);
   };
 
-  const stats=[
-    { label: "New Questions to Review", value: 124, color: "blue" },
-    { label: "Creator Submissions", value: 12, color: "blue" },
-    { label: "Accepted (Today)", value: 32, color: "red" },
-    { label: "Rejected (Today)", value: 8, color: "red" }
-  ]
+ const handleCancel = () => {
+    navigate("/processor/question-bank");
+  };
 
 
   return (
@@ -91,7 +92,7 @@ const ExplainerSubmission = () => {
               Explainer Submission
             </h1>
           </div>
-            <OutlineButton text="Back" className="py-[10px] px-5"/>
+            <OutlineButton text="Back" className="py-[10px] px-5" onClick={handleCancel}/>
         </header>
 
         <ProcessorFilter

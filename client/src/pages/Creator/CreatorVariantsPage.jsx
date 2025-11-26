@@ -106,7 +106,7 @@ const CreatorVariantsPage = () => {
   };
 
   const handleCancel = () => {
-    navigate("/admin/question-bank");
+    navigate("/creator/question-bank");
   };
 
   const handleSaveQuestion = () => {
@@ -1271,7 +1271,7 @@ const CreatorVariantsPage = () => {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row sm:justify-end gap-3 px-5 pb-6 pt-2">
-            <OutlineButton text="Cancel" className="py-[10px] px-7 text-nowrap"/>
+            <OutlineButton text="Cancel" className="py-[10px] px-7 text-nowrap" onClick={handleCancel}/>
             <OutlineButton text="Save Draft" className="py-[10px] px-7 text-nowrap"/>
             <PrimaryButton text="Submit Variant" className="py-[10px] px-7 text-nowrap"/>
           </div>

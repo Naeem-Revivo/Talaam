@@ -4,9 +4,13 @@ import { OutlineButton } from "../../components/common/Button";
 import { useState } from "react";
 import ProcessorFilter from "../../components/Processor/ProcessorFilter";
 import { Table } from "../../components/common/TableComponent";
+import { useNavigate } from "react-router-dom";
+
 
 const GathererSubmission = () => {
   const { t } = useLanguage();
+    const navigate = useNavigate();
+
 
   const [search, setSearch] = useState("");
   const [subject, setSubject] = useState("");
@@ -74,12 +78,9 @@ const GathererSubmission = () => {
     console.log('Edit item:', item);
   };
 
-  const stats=[
-    { label: "New Questions to Review", value: 124, color: "blue" },
-    { label: "Creator Submissions", value: 12, color: "blue" },
-    { label: "Accepted (Today)", value: 32, color: "red" },
-    { label: "Rejected (Today)", value: 8, color: "red" }
-  ]
+  const handleCancel = () => {
+    navigate("/processor/question-bank");
+  };
 
 
   return (
@@ -91,7 +92,7 @@ const GathererSubmission = () => {
               Gatherer Submissions
             </h1>
           </div>
-            <OutlineButton text="Back" className="py-[10px] px-5"/>
+            <OutlineButton text="Back" className="py-[10px] px-5" onClick={handleCancel}/>
         </header>
 
         <ProcessorFilter
