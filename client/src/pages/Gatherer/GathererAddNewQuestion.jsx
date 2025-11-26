@@ -79,7 +79,7 @@ const GathererAddNewQuestionPage = () => {
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
   const [source, setSource] = useState("");
-  const [explanation, setExplanation] = useState(
+  const [_explanation, _setExplanation] = useState(
     "Red and yellow are primary colors. When mixed, they create the secondary color orange."
   );
 
@@ -87,7 +87,7 @@ const GathererAddNewQuestionPage = () => {
     setOptions((prev) => ({ ...prev, [option]: value }));
   };
 
-  const handleSaveDraft = () => {
+  const _handleSaveDraft = () => {
     // TODO: Implement save draft functionality
     console.log("Save draft");
   };
@@ -101,7 +101,7 @@ const GathererAddNewQuestionPage = () => {
     navigate("/gatherer/question-bank");
   };
 
-  const handleSaveQuestion = () => {
+  const _handleSaveQuestion = () => {
     // TODO: Implement save question functionality
     console.log("Save question");
     // Navigate to question details page after saving

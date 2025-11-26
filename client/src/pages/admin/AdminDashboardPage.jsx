@@ -66,11 +66,11 @@ const AdminDashboardPage = () => {
     },
   ];
 
-  const subscriptionSegments = [
+  const subscriptionSegments = useMemo(() => [
     { label: t('admin.dashboard.charts.planLabels.free'), value: 70.8, color: "#E5E7EB", isBase: true },
     { label: t('admin.dashboard.charts.planLabels.premium'), value: 21.1, color: "#ED4122" },
     { label: t('admin.dashboard.charts.planLabels.organization'), value: 5.1, color: "#6CA6C1" },
-  ];
+  ], [t]);
 
   const latestSignups = [
     {
@@ -206,7 +206,7 @@ const AdminDashboardPage = () => {
       trackColor: "#EEF2F6",
       highlighted,
     };
-  }, []);
+  }, [subscriptionSegments]);
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-8 2xl:px-16">
