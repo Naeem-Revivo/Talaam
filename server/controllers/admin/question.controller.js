@@ -1,12 +1,21 @@
-const questionService = require('../../services/admin/question.service');
+const questionService = require('../../services/admin');
 
 /**
- * Get all questions for superadmin with optional search
- * GET /admin/questions/all?search=...&status=...
+ * Get all questions for superadmin with optional search, filters, and pagination
+ * GET /admin/questions/all?tab=all&search=...&exam=...&subject=...&topic=...&status=...&page=1&limit=5
  */
 const getAllQuestionsForSuperadmin = async (req, res, next) => {
   try {
-    const { search, status } = req.query;
+    const { 
+      tab = 'all', 
+      search, 
+      exam, 
+      subject, 
+      topic, 
+      status, 
+      page = 1, 
+      limit = 5 
+    } = req.query;
 
     if (req.user.role !== 'superadmin') {
       return res.status(403).json({
@@ -15,49 +24,201 @@ const getAllQuestionsForSuperadmin = async (req, res, next) => {
       });
     }
 
-    const filters = {};
-    if (status) {
-      filters.status = status;
+    // Validate tab
+    const validTabs = ['all', 'approved', 'pending', 'rejected'];
+    if (tab && !validTabs.includes(tab)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'tab',
+            message: `Tab must be one of: ${validTabs.join(', ')}`,
+          },
+        ],
+      });
     }
 
-    const [questions, counts] = await Promise.all([
-      questionService.getAllQuestionsForSuperadmin(filters, search),
-      questionService.getQuestionCounts({}, '', false),
+    // Validate status if provided
+    const validStatuses = [
+      'pending_processor',
+      'pending_creator',
+      'pending_explainer',
+      'completed',
+      'rejected',
+    ];
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'status',
+            message: `Status must be one of: ${validStatuses.join(', ')}`,
+          },
+        ],
+      });
+    }
+
+    // Validate ObjectIds for exam, subject, topic
+    const mongoose = require('mongoose');
+    const errors = [];
+    
+    if (exam && !mongoose.Types.ObjectId.isValid(exam)) {
+      errors.push({
+        field: 'exam',
+        message: 'Invalid exam ID format',
+      });
+    }
+    
+    if (subject && !mongoose.Types.ObjectId.isValid(subject)) {
+      errors.push({
+        field: 'subject',
+        message: 'Invalid subject ID format',
+      });
+    }
+    
+    if (topic && !mongoose.Types.ObjectId.isValid(topic)) {
+      errors.push({
+        field: 'topic',
+        message: 'Invalid topic ID format',
+      });
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors,
+      });
+    }
+
+    // Build filters
+    const filters = { tab };
+    if (exam) filters.exam = exam;
+    if (subject) filters.subject = subject;
+    if (topic) filters.topic = topic;
+    if (status) filters.status = status;
+
+    // Pagination
+    const pagination = {
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 5,
+    };
+
+    // Validate pagination
+    if (pagination.page < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Page number must be greater than 0',
+      });
+    }
+
+    if (pagination.limit < 1 || pagination.limit > 100) {
+      return res.status(400).json({
+        success: false,
+        message: 'Limit must be between 1 and 100',
+      });
+    }
+
+    // Get questions with pagination and counts
+    const [result, counts] = await Promise.all([
+      questionService.getAllQuestionsForSuperadmin(filters, search || '', pagination),
+      questionService.getQuestionCounts(filters, search || '', true),
     ]);
+
+    // Build base URL for pagination links
+    const baseUrl = `${req.protocol}://${req.get('host')}${req.baseUrl}${req.path}`;
+    
+    // Helper function to build URL with query params
+    const buildUrl = (pageNum) => {
+      const queryParams = new URLSearchParams();
+      
+      // Add filters to query params
+      if (tab) queryParams.append('tab', tab);
+      if (search) queryParams.append('search', search);
+      if (exam) queryParams.append('exam', exam);
+      if (subject) queryParams.append('subject', subject);
+      if (topic) queryParams.append('topic', topic);
+      if (status) queryParams.append('status', status);
+      
+      // Add pagination
+      queryParams.append('page', pageNum);
+      queryParams.append('limit', pagination.limit);
+      
+      return `${baseUrl}?${queryParams.toString()}`;
+    };
+
+    // Build pagination URLs
+    const paginationUrls = {
+      first: buildUrl(1),
+      last: buildUrl(result.pagination.totalPages),
+      next: result.pagination.hasNextPage ? buildUrl(pagination.page + 1) : null,
+      previous: result.pagination.hasPreviousPage ? buildUrl(pagination.page - 1) : null,
+      current: buildUrl(pagination.page),
+    };
 
     const response = {
       success: true,
+      message: 'Questions retrieved successfully',
       data: {
-        summary: counts,
-        questions: questions.map((q) => ({
+        summary: {
+          total: counts.total,
+          approved: counts.approved,
+          pending: counts.pending,
+          rejected: counts.rejected,
+        },
+        questions: result.questions.map((q) => ({
           id: q._id,
-          exam: q.exam,
-          subject: q.subject,
-          topic: q.topic,
-          questionText: q.questionText,
-          questionType: q.questionType,
-          options: q.options,
-          correctAnswer: q.correctAnswer,
-          explanation: q.explanation,
+          question: {
+            text: q.questionText,
+            type: q.questionType,
+          },
+          subject: q.subject ? {
+            id: q.subject._id,
+            name: q.subject.name,
+          } : null,
+          topic: q.topic ? {
+            id: q.topic._id,
+            name: q.topic.name,
+          } : null,
+          stage: q.exam ? {
+            id: q.exam._id,
+            name: q.exam.name,
+          } : null,
           status: q.status,
-          createdBy: q.createdBy,
-          lastModifiedBy: q.lastModifiedBy,
-          approvedBy: q.approvedBy,
-          rejectedBy: q.rejectedBy,
-          rejectionReason: q.rejectionReason,
-          createdAt: q.createdAt,
-          updatedAt: q.updatedAt,
         })),
+        pagination: {
+          ...result.pagination,
+          urls: paginationUrls,
+        },
+        filters: {
+          tab,
+          search: search || null,
+          exam: exam || null,
+          subject: subject || null,
+          topic: topic || null,
+          status: status || null,
+        },
       },
     };
 
     console.log('[QUESTION] GET /admin/questions/all → 200 (ok)', {
-      count: questions.length,
+      count: result.questions.length,
+      totalItems: result.pagination.totalItems,
+      currentPage: result.pagination.currentPage,
+      totalPages: result.pagination.totalPages,
       summary: counts,
     });
     res.status(200).json(response);
   } catch (error) {
     console.error('[QUESTION] GET /admin/questions/all → error', error);
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid filter parameter',
+      });
+    }
     next(error);
   }
 };
@@ -83,26 +244,102 @@ const getQuestionDetailForSuperadmin = async (req, res, next) => {
       req.user.role
     );
 
+    // Format dates
+    const formatDate = (date) => {
+      if (!date) return null;
+      const d = new Date(date);
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}-${month}-${year}`;
+    };
+
+    // Get creation date from history or createdAt
+    const creationHistory = question.history.find(h => h.action === 'created');
+    const submittedDate = creationHistory ? creationHistory.timestamp : question.createdAt;
+
     const response = {
       success: true,
+      message: 'Question details retrieved successfully',
       data: {
         question: {
+          // Question Info
           id: question._id,
-          exam: question.exam,
-          subject: question.subject,
-          topic: question.topic,
+          questionId: `Q-${question.subject?.name?.substring(0, 3).toUpperCase() || 'GEN'}-${String(question._id).slice(-4).toUpperCase()}`,
+          status: question.status,
           questionText: question.questionText,
           questionType: question.questionType,
-          options: question.options,
-          correctAnswer: question.correctAnswer,
-          explanation: question.explanation,
-          status: question.status,
-          createdBy: question.createdBy,
-          lastModifiedBy: question.lastModifiedBy,
-          approvedBy: question.approvedBy,
-          rejectedBy: question.rejectedBy,
-          rejectionReason: question.rejectionReason,
-          history: question.history,
+          options: question.options || null,
+          
+          // Correct Answer
+          correctAnswer: question.correctAnswer ? {
+            option: question.correctAnswer,
+            text: question.options?.[question.correctAnswer] || null,
+          } : null,
+          
+          // Explanation
+          explanation: question.explanation || null,
+          
+          // Classification
+          classification: {
+            exam: question.exam ? {
+              id: question.exam._id,
+              name: question.exam.name,
+            } : null,
+            subject: question.subject ? {
+              id: question.subject._id,
+              name: question.subject.name,
+            } : null,
+            topic: question.topic ? {
+              id: question.topic._id,
+              name: question.topic.name,
+            } : null,
+            cognitiveLevel: null, // Not stored in current model
+          },
+          
+          // Workflow Information
+          workflow: {
+            createdBy: question.createdBy ? {
+              id: question.createdBy._id,
+              name: question.createdBy.name || question.createdBy.fullName || 'Unknown',
+              email: question.createdBy.email,
+            } : null,
+            submittedOn: formatDate(submittedDate),
+            lastModifiedBy: question.lastModifiedBy ? {
+              id: question.lastModifiedBy._id,
+              name: question.lastModifiedBy.name || question.lastModifiedBy.fullName || 'Unknown',
+              email: question.lastModifiedBy.email,
+            } : null,
+            lastUpdate: formatDate(question.updatedAt),
+            approvedBy: question.approvedBy ? {
+              id: question.approvedBy._id,
+              name: question.approvedBy.name || question.approvedBy.fullName || 'Unknown',
+              email: question.approvedBy.email,
+            } : null,
+            rejectedBy: question.rejectedBy ? {
+              id: question.rejectedBy._id,
+              name: question.rejectedBy.name || question.rejectedBy.fullName || 'Unknown',
+              email: question.rejectedBy.email,
+            } : null,
+            rejectionReason: question.rejectionReason || null,
+          },
+          
+          // Comments
+          comments: question.comments && question.comments.length > 0 ? question.comments.map((comment) => ({
+            id: comment._id,
+            comment: comment.comment,
+            commentedBy: comment.commentedBy ? {
+              id: comment.commentedBy._id,
+              name: comment.commentedBy.name || comment.commentedBy.fullName || 'Unknown',
+            } : null,
+            createdAt: comment.createdAt,
+            formattedDate: formatDate(comment.createdAt),
+          })) : [],
+          
+          // History
+          history: question.history || [],
+          
+          // Timestamps
           createdAt: question.createdAt,
           updatedAt: question.updatedAt,
         },
@@ -373,6 +610,8 @@ const getQuestionById = async (req, res, next) => {
           approvedBy: question.approvedBy,
           rejectedBy: question.rejectedBy,
           rejectionReason: question.rejectionReason,
+          originalQuestion: question.originalQuestion,
+          isVariant: question.isVariant,
           history: question.history,
           createdAt: question.createdAt,
           updatedAt: question.updatedAt,
@@ -541,6 +780,145 @@ const updateQuestion = async (req, res, next) => {
 };
 
 /**
+ * Create question variant by Creator
+ * POST /admin/questions/creator/:questionId/variant
+ */
+const createQuestionVariant = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const {
+      exam,
+      subject,
+      topic,
+      questionText,
+      questionType,
+      options,
+      correctAnswer,
+      explanation,
+    } = req.body;
+
+    console.log('[QUESTION] POST /admin/questions/creator/:questionId/variant → requested', {
+      questionId,
+      requestedBy: req.user.id,
+      requesterRole: req.user.adminRole,
+    });
+
+    // Validation will be done in the service layer
+    // Basic validation here for immediate feedback
+    const errors = [];
+    const finalQuestionType = questionType;
+    if (finalQuestionType === 'MCQ') {
+      if (options && (!options.A || !options.B || !options.C || !options.D)) {
+        errors.push({
+          field: 'options',
+          message: 'All four options (A, B, C, D) are required for MCQ questions',
+        });
+      }
+      if (correctAnswer && !['A', 'B', 'C', 'D'].includes(correctAnswer)) {
+        errors.push({
+          field: 'correctAnswer',
+          message: 'Correct answer must be A, B, C, or D for MCQ questions',
+        });
+      }
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors,
+      });
+    }
+
+    // Prepare variant data
+    const variantData = {};
+    if (exam !== undefined) variantData.exam = exam;
+    if (subject !== undefined) variantData.subject = subject;
+    if (topic !== undefined) variantData.topic = topic;
+    if (questionText !== undefined) variantData.questionText = questionText.trim();
+    if (questionType !== undefined) variantData.questionType = questionType;
+    if (options !== undefined) {
+      variantData.options = {
+        A: options.A.trim(),
+        B: options.B.trim(),
+        C: options.C.trim(),
+        D: options.D.trim(),
+      };
+    }
+    if (correctAnswer !== undefined) variantData.correctAnswer = correctAnswer;
+    if (explanation !== undefined) variantData.explanation = explanation.trim();
+
+    const variantQuestion = await questionService.createQuestionVariant(
+      questionId,
+      variantData,
+      req.user.id
+    );
+
+    const response = {
+      success: true,
+      message: 'Question variant created successfully',
+      data: {
+        question: {
+          id: variantQuestion._id,
+          exam: variantQuestion.exam,
+          subject: variantQuestion.subject,
+          topic: variantQuestion.topic,
+          questionText: variantQuestion.questionText,
+          questionType: variantQuestion.questionType,
+          options: variantQuestion.options,
+          correctAnswer: variantQuestion.correctAnswer,
+          explanation: variantQuestion.explanation,
+          originalQuestion: variantQuestion.originalQuestion,
+          isVariant: variantQuestion.isVariant,
+          status: variantQuestion.status,
+          createdBy: variantQuestion.createdBy,
+          createdAt: variantQuestion.createdAt,
+          updatedAt: variantQuestion.updatedAt,
+        },
+      },
+    };
+
+    console.log('[QUESTION] POST /admin/questions/creator/:questionId/variant → 200 (created)', {
+      variantQuestionId: variantQuestion._id,
+      originalQuestionId: questionId,
+    });
+    res.status(201).json(response);
+  } catch (error) {
+    console.error('[QUESTION] POST /admin/questions/creator/:questionId/variant → error', error);
+    if (
+      error.message === 'Original question not found' ||
+      error.message === 'Exam not found' ||
+      error.message === 'Subject not found' ||
+      error.message === 'Topic not found or does not belong to the selected subject' ||
+      error.message === 'All four options (A, B, C, D) are required for MCQ questions' ||
+      error.message === 'Correct answer is required for MCQ questions'
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid question ID',
+      });
+    }
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: Object.values(error.errors).map((err) => ({
+          field: err.path,
+          message: err.message,
+        })),
+      });
+    }
+    next(error);
+  }
+};
+
+/**
  * Update explanation by Explainer
  * PUT /admin/questions/:questionId/explanation
  */
@@ -616,40 +994,74 @@ const updateExplanation = async (req, res, next) => {
 };
 
 /**
- * Approve question by Processor
- * POST /admin/questions/:questionId/approve
+ * Process question by Processor (Approve or Reject)
+ * POST /admin/questions/processor/:questionId/approve
+ * Body: { status: 'approve' | 'reject', rejectionReason?: string }
  */
 const approveQuestion = async (req, res, next) => {
   try {
     const { questionId } = req.params;
+    const { status, rejectionReason } = req.body;
 
-    console.log('[QUESTION] POST /admin/questions/:questionId/approve → requested', {
+    // Validate status
+    if (!status || (status !== 'approve' && status !== 'reject')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Status is required and must be either "approve" or "reject"',
+      });
+    }
+
+    // Validate rejectionReason for reject status
+    if (status === 'reject' && !rejectionReason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rejection reason is required when status is "reject"',
+      });
+    }
+
+    console.log('[QUESTION] POST /admin/questions/processor/:questionId/approve → requested', {
       questionId,
+      status,
       requestedBy: req.user.id,
       requesterRole: req.user.adminRole,
     });
 
-    const question = await questionService.approveQuestion(questionId, req.user.id);
+    let question;
+    if (status === 'approve') {
+      question = await questionService.approveQuestion(questionId, req.user.id);
+    } else {
+      question = await questionService.rejectQuestion(
+        questionId,
+        rejectionReason,
+        req.user.id
+      );
+    }
 
     const response = {
       success: true,
-      message: 'Question approved successfully',
+      message: status === 'approve' ? 'Question approved successfully' : 'Question rejected',
       data: {
         question: {
           id: question._id,
           status: question.status,
-          approvedBy: question.approvedBy,
+          ...(status === 'approve' 
+            ? { approvedBy: question.approvedBy }
+            : { 
+                rejectedBy: question.rejectedBy,
+                rejectionReason: question.rejectionReason 
+              }
+          ),
           updatedAt: question.updatedAt,
         },
       },
     };
 
-    console.log('[QUESTION] POST /admin/questions/:questionId/approve → 200 (approved)', {
+    console.log(`[QUESTION] POST /admin/questions/processor/:questionId/approve → 200 (${status})`, {
       questionId: question._id,
     });
     res.status(200).json(response);
   } catch (error) {
-    console.error('[QUESTION] POST /admin/questions/:questionId/approve → error', error);
+    console.error('[QUESTION] POST /admin/questions/processor/:questionId/approve → error', error);
     if (
       error.message === 'Question not found' ||
       error.message === 'Question is not in pending_processor status'
@@ -672,15 +1084,23 @@ const approveQuestion = async (req, res, next) => {
 };
 
 /**
- * Reject question by Processor
- * POST /admin/questions/:questionId/reject
+ * Reject question by Processor (kept for backward compatibility, but now uses body status)
+ * POST /admin/questions/processor/:questionId/reject
+ * Body: { status: 'reject', rejectionReason: string }
  */
 const rejectQuestion = async (req, res, next) => {
   try {
     const { questionId } = req.params;
-    const { rejectionReason } = req.body;
+    const { status = 'reject', rejectionReason } = req.body;
 
-    console.log('[QUESTION] POST /admin/questions/:questionId/reject → requested', {
+    if (!rejectionReason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rejection reason is required',
+      });
+    }
+
+    console.log('[QUESTION] POST /admin/questions/processor/:questionId/reject → requested', {
       questionId,
       requestedBy: req.user.id,
       requesterRole: req.user.adminRole,
@@ -706,12 +1126,12 @@ const rejectQuestion = async (req, res, next) => {
       },
     };
 
-    console.log('[QUESTION] POST /admin/questions/:questionId/reject → 200 (rejected)', {
+    console.log('[QUESTION] POST /admin/questions/processor/:questionId/reject → 200 (rejected)', {
       questionId: question._id,
     });
     res.status(200).json(response);
   } catch (error) {
-    console.error('[QUESTION] POST /admin/questions/:questionId/reject → error', error);
+    console.error('[QUESTION] POST /admin/questions/processor/:questionId/reject → error', error);
     if (
       error.message === 'Question not found' ||
       error.message === 'Question is not in pending_processor status'
@@ -781,6 +1201,104 @@ const getTopicsBySubject = async (req, res, next) => {
   }
 };
 
+/**
+ * Add comment to question
+ * POST /admin/questions/all/:questionId/comment
+ */
+const addCommentToQuestion = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const { comment } = req.body;
+
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only superadmin can add comments',
+      });
+    }
+
+    if (!comment || !comment.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'comment',
+            message: 'Comment is required',
+          },
+        ],
+      });
+    }
+
+    const question = await questionService.addCommentToQuestion(
+      questionId,
+      comment,
+      req.user.id
+    );
+
+    // Format date helper
+    const formatDate = (date) => {
+      if (!date) return null;
+      const d = new Date(date);
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}-${month}-${year}`;
+    };
+
+    // Get the newly added comment (last one)
+    const newComment = question.comments[question.comments.length - 1];
+
+    const response = {
+      success: true,
+      message: 'Comment added successfully',
+      data: {
+        comment: {
+          id: newComment._id,
+          comment: newComment.comment,
+          commentedBy: newComment.commentedBy ? {
+            id: newComment.commentedBy._id,
+            name: newComment.commentedBy.name || newComment.commentedBy.fullName || 'Unknown',
+          } : null,
+          createdAt: newComment.createdAt,
+          formattedDate: formatDate(newComment.createdAt),
+        },
+        question: {
+          id: question._id,
+          totalComments: question.comments.length,
+        },
+      },
+    };
+
+    console.log('[QUESTION] POST /admin/questions/all/:questionId/comment → 201 (created)', {
+      questionId: question._id,
+      commentId: newComment._id,
+    });
+    res.status(201).json(response);
+  } catch (error) {
+    console.error('[QUESTION] POST /admin/questions/all/:questionId/comment → error', error);
+    if (error.message === 'Question not found') {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.message === 'Comment is required') {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid question ID',
+      });
+    }
+    next(error);
+  }
+};
+
 module.exports = {
   getAllQuestionsForSuperadmin,
   getQuestionDetailForSuperadmin,
@@ -788,9 +1306,11 @@ module.exports = {
   getQuestions,
   getQuestionById,
   updateQuestion,
+  createQuestionVariant,
   updateExplanation,
   approveQuestion,
   rejectQuestion,
   getTopicsBySubject,
+  addCommentToQuestion,
 };
 

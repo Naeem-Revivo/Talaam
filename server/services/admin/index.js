@@ -1,8 +1,10 @@
 const adminService = require('./admin.service');
-const examService = require('./exam.service');
-const subjectService = require('./subject.service');
-const topicService = require('./topic.service');
-const questionService = require('./question.service');
+const examService = require('./exam');
+const subjectService = require('./subject');
+const topicService = require('./topic');
+const questionService = require('./question');
+const classificationService = require('./classification');
+const planService = require('./plan');
 
 module.exports = {
   ...adminService,
@@ -10,5 +12,7 @@ module.exports = {
   ...subjectService,
   ...topicService,
   ...questionService,
+  ...classificationService,
+  ...planService,
 };
 

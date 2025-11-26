@@ -1,4 +1,4 @@
-const Exam = require('../../models/exam');
+const Exam = require('../../../models/exam');
 
 /**
  * Create exam

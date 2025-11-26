@@ -2,218 +2,15 @@ const express = require('express');
 const router = express.Router();
 const adminController = require('../../controllers/admin');
 const { authMiddleware, superadminMiddleware } = require('../../middlewares/auth');
-
-// Custom validation middleware for creating admin
-const validateCreateAdmin = (req, res, next) => {
-  const { name, email, password, status, adminRole } = req.body;
-  
-  const errors = [];
-  
-  // Validate name
-  if (!name || typeof name !== 'string' || !name.trim()) {
-    errors.push({
-      field: 'name',
-      message: 'Name is required',
-    });
-  }
-  
-  // Validate email
-  if (!email || typeof email !== 'string' || !email.trim()) {
-    errors.push({
-      field: 'email',
-      message: 'Email is required',
-    });
-  } else {
-    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    if (!emailRegex.test(email.trim())) {
-      errors.push({
-        field: 'email',
-        message: 'Please provide a valid email',
-      });
-    }
-  }
-  
-  // Validate password (optional, but if provided must be at least 6 characters)
-  if (password && (typeof password !== 'string' || password.length < 6)) {
-    errors.push({
-      field: 'password',
-      message: 'Password must be at least 6 characters',
-    });
-  }
-  
-  // Validate status
-  if (status && !['active', 'suspended'].includes(status)) {
-    errors.push({
-      field: 'status',
-      message: 'Status must be either active or suspended',
-    });
-  }
-  
-  // Validate adminRole (workflow role)
-  if (!adminRole || typeof adminRole !== 'string' || !adminRole.trim()) {
-    errors.push({
-      field: 'adminRole',
-      message: 'Workflow role is required',
-    });
-  } else {
-    const validAdminRoles = ['gatherer', 'creator', 'explainer', 'processor'];
-    if (!validAdminRoles.includes(adminRole.trim())) {
-      errors.push({
-        field: 'adminRole',
-        message: 'Workflow role must be one of: gatherer, creator, explainer, processor',
-      });
-    }
-  }
-  
-  if (errors.length > 0) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors,
-    });
-  }
-  
-  // Trim and set values
-  req.body.name = name.trim();
-  req.body.email = email.trim().toLowerCase();
-  req.body.adminRole = adminRole.trim();
-  if (status) {
-    req.body.status = status;
-  }
-  
-  next();
-};
-
-// Custom validation middleware for updating user status
-const validateUpdateStatus = (req, res, next) => {
-  const { status } = req.body;
-  
-  if (!status || typeof status !== 'string' || !status.trim()) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors: [
-        {
-          field: 'status',
-          message: 'Status is required',
-        },
-      ],
-    });
-  }
-  
-  const trimmedStatus = status.trim().toLowerCase();
-  if (!['active', 'suspended'].includes(trimmedStatus)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors: [
-        {
-          field: 'status',
-          message: 'Status must be either active or suspended',
-        },
-      ],
-    });
-  }
-  
-  req.body.status = trimmedStatus;
-  next();
-};
-
-// Custom validation middleware for updating admin details
-const validateUpdateAdmin = (req, res, next) => {
-  const { name, email, status, adminRole } = req.body;
-  const errors = [];
-
-  if (
-    name === undefined &&
-    email === undefined &&
-    status === undefined &&
-    adminRole === undefined
-  ) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors: [
-        {
-          field: 'request',
-          message: 'At least one field (name, email, status, adminRole) must be provided',
-        },
-      ],
-    });
-  }
-
-  if (name !== undefined) {
-    if (typeof name !== 'string' || !name.trim()) {
-      errors.push({
-        field: 'name',
-        message: 'Name must be a non-empty string',
-      });
-    } else {
-      req.body.name = name.trim();
-    }
-  }
-
-  if (email !== undefined) {
-    if (typeof email !== 'string' || !email.trim()) {
-      errors.push({
-        field: 'email',
-        message: 'Email must be a non-empty string',
-      });
-    } else {
-      const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-      if (!emailRegex.test(email.trim())) {
-        errors.push({
-          field: 'email',
-          message: 'Please provide a valid email',
-        });
-      } else {
-        req.body.email = email.trim().toLowerCase();
-      }
-    }
-  }
-
-  if (status !== undefined) {
-    if (!['active', 'suspended'].includes(status)) {
-      errors.push({
-        field: 'status',
-        message: 'Status must be either active or suspended',
-      });
-    } else {
-      req.body.status = status;
-    }
-  }
-
-  if (adminRole !== undefined) {
-    if (typeof adminRole !== 'string' || !adminRole.trim()) {
-      errors.push({
-        field: 'adminRole',
-        message: 'Workflow role must be a non-empty string',
-      });
-    } else {
-      const validAdminRoles = ['gatherer', 'creator', 'explainer', 'processor'];
-      if (!validAdminRoles.includes(adminRole.trim())) {
-        errors.push({
-          field: 'adminRole',
-          message: 'Workflow role must be one of: gatherer, creator, explainer, processor',
-        });
-      } else {
-        req.body.adminRole = adminRole.trim();
-      }
-    }
-  }
-
-  if (errors.length > 0) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors,
-    });
-  }
-
-  next();
-};
+const {
+  validateCreateAdmin,
+  validateUpdateStatus,
+  validateUpdateAdmin,
+} = require('../../middlewares/admin');
 
 // Routes (all require superadmin access)
+router.get('/dashboard/statistics', authMiddleware, superadminMiddleware, adminController.getDashboardStatistics);
+router.get('/users/management', authMiddleware, superadminMiddleware, adminController.getUserManagementStatistics);
 router.get('/users', authMiddleware, superadminMiddleware, adminController.getAllAdmins);
 router.post(
   '/create',
@@ -236,6 +33,13 @@ router.put(
   superadminMiddleware,
   validateUpdateAdmin,
   adminController.updateAdmin
+);
+
+router.delete(
+  '/:userId',
+  authMiddleware,
+  superadminMiddleware,
+  adminController.deleteAdmin
 );
 
 // Import exam routes
@@ -261,6 +65,47 @@ const questionRoutes = require('./question.routes');
 
 // Use question routes
 router.use('/questions', questionRoutes);
+
+// Classification Management Routes (all require superadmin access)
+// These must be defined BEFORE the classification routes to avoid conflicts
+router.get('/classification/statistics', authMiddleware, superadminMiddleware, adminController.getClassificationStatistics);
+router.get('/classification/subjects', authMiddleware, superadminMiddleware, adminController.getSubjectsPaginated);
+router.get('/classification/topics', authMiddleware, superadminMiddleware, adminController.getTopicsPaginated);
+router.get('/classification/subjects/:subjectId/topics', authMiddleware, superadminMiddleware, adminController.getTopicsBySubject);
+router.post('/classification/subjects', authMiddleware, superadminMiddleware, adminController.createSubject);
+router.put('/classification/subjects/:subjectId', authMiddleware, superadminMiddleware, adminController.updateSubject);
+router.delete('/classification/subjects/:subjectId', authMiddleware, superadminMiddleware, adminController.deleteSubject);
+router.post('/classification/subjects/:subjectId/topics', authMiddleware, superadminMiddleware, adminController.createTopic);
+router.put('/classification/topics/:topicId', authMiddleware, superadminMiddleware, adminController.updateTopic);
+router.delete('/classification/topics/:topicId', authMiddleware, superadminMiddleware, adminController.deleteTopic);
+
+// Import classification routes
+const classificationRoutes = require('./classification.routes');
+
+// Use classification routes (these are for general classification data, not management)
+router.use('/classification', classificationRoutes);
+
+// Import plan routes
+const planRoutes = require('./plan.routes');
+
+// Use plan routes
+router.use('/plans', planRoutes);
+
+// Subscription Management Routes (all require superadmin access)
+router.get('/subscriptions', authMiddleware, superadminMiddleware, adminController.getAllUserSubscriptions);
+router.get('/subscriptions/:subscriptionId', authMiddleware, superadminMiddleware, adminController.getSubscriptionDetails);
+router.get('/payments/history', authMiddleware, superadminMiddleware, adminController.getPaymentHistory);
+
+// Analytics & Reports Routes (all require superadmin access)
+// User Analytics
+router.get('/analytics/user/hero', authMiddleware, superadminMiddleware, adminController.getUserAnalyticsHero);
+router.get('/analytics/user/growth', authMiddleware, superadminMiddleware, adminController.getUserGrowthChart);
+router.get('/analytics/user/performance', authMiddleware, superadminMiddleware, adminController.getTopPerformanceUsers);
+
+// Subscription Analytics
+router.get('/analytics/subscription/trend', authMiddleware, superadminMiddleware, adminController.getSubscriptionTrendMetrics);
+router.get('/analytics/subscription/revenue-trend', authMiddleware, superadminMiddleware, adminController.getRevenueTrendChart);
+router.get('/analytics/subscription/plan-breakdown', authMiddleware, superadminMiddleware, adminController.getPlanWiseBreakdown);
 
 module.exports = router;
 

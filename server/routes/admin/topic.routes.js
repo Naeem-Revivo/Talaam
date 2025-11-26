@@ -1,124 +1,37 @@
 const express = require('express');
 const router = express.Router();
 const topicController = require('../../controllers/admin/topic.controller');
-const { authMiddleware, adminMiddleware, adminOrSuperadminMiddleware } = require('../../middlewares/auth');
-
-// Custom validation middleware for creating topic
-const validateCreateTopic = (req, res, next) => {
-  const { parentSubject, name, description } = req.body;
-  
-  const errors = [];
-  
-  // Validate parent subject
-  if (!parentSubject || typeof parentSubject !== 'string' || !parentSubject.trim()) {
-    errors.push({
-      field: 'parentSubject',
-      message: 'Parent subject is required',
-    });
-  }
-  
-  // Validate name
-  if (!name || typeof name !== 'string' || !name.trim()) {
-    errors.push({
-      field: 'name',
-      message: 'Topic name is required',
-    });
-  }
-  
-  if (errors.length > 0) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors,
-    });
-  }
-  
-  // Trim and set values
-  req.body.parentSubject = parentSubject.trim();
-  req.body.name = name.trim();
-  if (description) {
-    req.body.description = description.trim();
-  }
-  
-  next();
-};
-
-// Custom validation middleware for updating topic
-const validateUpdateTopic = (req, res, next) => {
-  const { parentSubject, name, description } = req.body;
-  
-  const errors = [];
-  
-  // Validate parent subject if provided
-  if (parentSubject !== undefined) {
-    if (typeof parentSubject !== 'string' || !parentSubject.trim()) {
-      errors.push({
-        field: 'parentSubject',
-        message: 'Parent subject cannot be empty',
-      });
-    }
-  }
-  
-  // Validate name if provided
-  if (name !== undefined && (typeof name !== 'string' || !name.trim())) {
-    errors.push({
-      field: 'name',
-      message: 'Topic name cannot be empty',
-    });
-  }
-  
-  if (errors.length > 0) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors,
-    });
-  }
-  
-  // Trim and set values
-  if (parentSubject !== undefined) {
-    req.body.parentSubject = parentSubject.trim();
-  }
-  if (name !== undefined) {
-    req.body.name = name.trim();
-  }
-  if (description !== undefined) {
-    req.body.description = description.trim();
-  }
-  
-  next();
-};
+const { authMiddleware, superadminMiddleware } = require('../../middlewares/auth');
+const { validateCreateTopic, validateUpdateTopic } = require('../../middlewares/admin');
 
 // Routes
-// Create, Update, Delete - Only admin
+// Create, Update, Delete - Only superadmin
 router.post(
   '/',
   authMiddleware,
-  adminMiddleware,
+  superadminMiddleware,
   validateCreateTopic,
   topicController.createTopic
 );
 
-// View - Both admin and superadmin
+// View - All admin roles and students
 router.get(
   '/',
   authMiddleware,
-  adminOrSuperadminMiddleware,
   topicController.getAllTopics
 );
 
 router.get(
   '/:topicId',
   authMiddleware,
-  adminOrSuperadminMiddleware,
   topicController.getTopicById
 );
 
-// Update, Delete - Only admin
+// Update, Delete - Only superadmin
 router.put(
   '/:topicId',
   authMiddleware,
-  adminMiddleware,
+  superadminMiddleware,
   validateUpdateTopic,
   topicController.updateTopic
 );
@@ -126,7 +39,7 @@ router.put(
 router.delete(
   '/:topicId',
   authMiddleware,
-  adminMiddleware,
+  superadminMiddleware,
   topicController.deleteTopic
 );
 

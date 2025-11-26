@@ -39,6 +39,7 @@ const createSubject = async (req, res, next) => {
     // Create subject
     const subjectData = {
       name: name.trim(),
+      description: req.body.description ? req.body.description.trim() : '',
     };
 
     const subject = await subjectService.createSubject(subjectData);
@@ -204,6 +205,9 @@ const updateSubject = async (req, res, next) => {
     const updateData = {};
     if (name !== undefined) {
       updateData.name = name.trim();
+    }
+    if (req.body.description !== undefined) {
+      updateData.description = req.body.description.trim();
     }
 
     const updatedSubject = await subjectService.updateSubject(subject, updateData);

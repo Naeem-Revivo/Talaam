@@ -15,6 +15,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api', require('./routes/profile'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/student', require('./routes/student'));
+app.use('/api/subscription', require('./routes/subscription'));
 
 // Error handling middleware
 const errorHandler = require('./middlewares/error');
@@ -24,6 +26,15 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await connectDB();
+    
+    // Start subscription expiry scheduled job
+    // Runs daily at midnight (00:00) to update expired subscriptions
+    // Set ENABLE_SUBSCRIPTION_CRON=false in .env to disable
+    if (process.env.ENABLE_SUBSCRIPTION_CRON !== 'false') {
+      const { startSubscriptionExpiryJob } = require('./jobs/subscription');
+      startSubscriptionExpiryJob();
+    }
+    
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);

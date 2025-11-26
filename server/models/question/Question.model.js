@@ -72,6 +72,17 @@ const questionSchema = new mongoose.Schema(
       default: '',
     },
     
+    // Variant tracking
+    originalQuestion: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Question',
+      default: null,
+    },
+    isVariant: {
+      type: Boolean,
+      default: false,
+    },
+    
     // Workflow tracking
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -100,7 +111,7 @@ const questionSchema = new mongoose.Schema(
       {
         action: {
           type: String,
-          enum: ['created', 'updated', 'approved', 'rejected', 'submitted'],
+          enum: ['created', 'updated', 'approved', 'rejected', 'submitted', 'variant_created'],
         },
         performedBy: {
           type: mongoose.Schema.Types.ObjectId,
@@ -114,6 +125,26 @@ const questionSchema = new mongoose.Schema(
         notes: String,
       },
     ],
+    
+    // Comments (optional)
+    comments: [
+      {
+        comment: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        commentedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,
@@ -124,6 +155,7 @@ const questionSchema = new mongoose.Schema(
 questionSchema.index({ exam: 1, subject: 1, topic: 1 });
 questionSchema.index({ status: 1 });
 questionSchema.index({ createdBy: 1 });
+questionSchema.index({ originalQuestion: 1 });
 
 module.exports = mongoose.model('Question', questionSchema);
 
