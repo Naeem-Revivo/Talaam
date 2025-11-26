@@ -45,6 +45,25 @@ const subscriptionSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    // Moyassar Payment Fields
+    paymentMethod: {
+      type: String,
+      enum: ['moyassar', 'manual'],
+      default: 'manual',
+    },
+    moyassarPaymentId: {
+      type: String,
+      trim: true,
+    },
+    moyassarPaymentStatus: {
+      type: String,
+      enum: ['initiated', 'paid', 'failed', 'cancelled'],
+      trim: true,
+    },
+    paymentUrl: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true,

@@ -43,12 +43,18 @@ export const LanguageProvider = ({ children }) => {
     document.documentElement.lang = newLanguage;
   };
 
-  const t = (path) => {
+  const t = (path, variables = {}) => {
     const keys = path.split('.');
     let result = translations;
     for (const key of keys) {
       result = result?.[key];
       if (!result) return path;
+    }
+    // Handle variable interpolation (e.g., {{days}})
+    if (typeof result === 'string' && variables) {
+      Object.keys(variables).forEach(key => {
+        result = result.replace(new RegExp(`{{${key}}}`, 'g'), variables[key]);
+      });
     }
     return result;
   };

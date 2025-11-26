@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../common/Button";
 
 export const UploadFileModal = ({ isOpen, onClose, onSubmit }) => {
+  const { t } = useLanguage();
   const [documentType, setDocumentType] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -33,7 +35,7 @@ export const UploadFileModal = ({ isOpen, onClose, onSubmit }) => {
         {/* Header */}
         <div className="bg-gray-100 px-6 py-4 rounded-t-lg border-b border-gray-200">
           <h2 className="text-[24px] leading-[100%] font-semibold text-blue-dark font-archivo">
-            Upload File
+            {t("gatherer.uploadModal.title")}
           </h2>
         </div>
 
@@ -41,11 +43,11 @@ export const UploadFileModal = ({ isOpen, onClose, onSubmit }) => {
         <div className="p-6">
           <div className="mb-6">
             <label className="block text-blue-dark font-semibold mb-3 text-[18px] leading-[100%]">
-              Document Type
+              {t("gatherer.uploadModal.documentType")}
             </label>
             <input
               type="text"
-              placeholder="Select document type or type your own"
+              placeholder={t("gatherer.uploadModal.placeholder")}
               value={documentType}
               onChange={(e) => setDocumentType(e.target.value)}
               className="w-full placeholder:text-sm font-normal placeholder:text-[#6B7280] px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-700"
@@ -72,26 +74,26 @@ export const UploadFileModal = ({ isOpen, onClose, onSubmit }) => {
                     fill="white"
                   />
                 </svg>
-                Upload Document
+                {t("gatherer.uploadModal.uploadDocument")}
               </span>
             </label>
 
             <button className="px-5 rounded-md py-2.5 text-blue-dark text-sm font-roboto font-medium hover:text-gray-900 transition-colors border border-[#E5E7EB]">
-              Add
+              {t("gatherer.uploadModal.add")}
             </button>
           </div>
 
           {selectedFile && (
             <div className="mt-4 text-sm text-gray-600">
-              Selected: {selectedFile.name}
+              {t("gatherer.uploadModal.selected")}: {selectedFile.name}
             </div>
           )}
         </div>
 
         {/* Footer */}
         <div className="bg-gray-100 px-6 py-4 rounded-b-lg border-t border-gray-200 flex justify-end gap-3">
-          <OutlineButton text="Cancel" className="py-[10px] px-7 text-nowrap w-[110px]" onClick={handleClose}/>
-          <PrimaryButton text="Done" className="py-[10px] px-7 text-nowrap w-[110px]" onClick={handleSubmit}/>
+          <OutlineButton text={t("gatherer.uploadModal.cancel")} className="py-[10px] px-7 text-nowrap w-[110px]" onClick={handleClose}/>
+          <PrimaryButton text={t("gatherer.uploadModal.done")} className="py-[10px] px-7 text-nowrap w-[110px]" onClick={handleSubmit}/>
         </div>
       </div>
     </div>

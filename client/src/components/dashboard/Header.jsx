@@ -46,7 +46,7 @@ const Header = ({ onToggleSidebar }) => {
   const getTitleByPath = (pathname) => {
 
     if (pathname.startsWith('/gatherer')) {
-      if (pathname === '/gatherer') return 'Gatherer Dashboard';
+      if (pathname === '/gatherer') return 'Gatherer';
       if (pathname.includes('question-bank')) return 'Question Bank';
       if (pathname.includes('profile')) return 'Profile';
       return 'Gatherer';
@@ -59,7 +59,7 @@ const Header = ({ onToggleSidebar }) => {
     }
     if (pathname.startsWith('/processor')) {
       if (pathname === '/processor') return 'Processor';
-      if (pathname.includes('question-bank')) return 'Processor Dashboard';
+      if (pathname.includes('question-bank')) return 'Processor';
       if (pathname.includes('profile')) return 'Profile';
       return 'processor';
     }

@@ -19,11 +19,11 @@ const ExplainerSubmission = () => {
 
 
   const explainerColumns = [
-    { key: 'questionTitle', label: 'QUESTION TITLE' },
-    { key: 'explainer', label: 'EXPLAINER' },
-    { key: 'explanationSummary', label: 'EXPLANATION SUMMARY' },
-    { key: 'submittedOn', label: 'SUBMITTED ON' },
-    { key: 'actions', label: 'ACTIONS' }
+    { key: 'questionTitle', label: t("processor.explainerSubmission.table.question") },
+    { key: 'explainer', label: t("processor.explainerSubmission.table.explainer") },
+    { key: 'explanationSummary', label: t("processor.explainerSubmission.table.explanationSummary") },
+    { key: 'submittedOn', label: t("processor.explainerSubmission.table.submittedOn") },
+    { key: 'actions', label: t("processor.explainerSubmission.table.actions") }
   ];
 
   // Sample data matching the image
@@ -89,10 +89,10 @@ const ExplainerSubmission = () => {
         <header className="flex justify-between gap-4">
           <div>
             <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
-              Explainer Submission
+              {t("processor.explainerSubmission.title")}
             </h1>
           </div>
-            <OutlineButton text="Back" className="py-[10px] px-5" onClick={handleCancel}/>
+            <OutlineButton text={t("processor.explainerSubmission.back")} className="py-[10px] px-5" onClick={handleCancel}/>
         </header>
 
         <ProcessorFilter
@@ -116,7 +116,7 @@ const ExplainerSubmission = () => {
         onView={handleView}
         onEdit={handleEdit}
         onCustomAction={handleReview}
-        emptyMessage="No questions found"
+        emptyMessage={t("processor.explainerSubmission.emptyMessage")}
       />
       </div>
     </div>

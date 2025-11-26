@@ -1,7 +1,9 @@
+import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../common/Button";
 
 // ReviewFeedback.jsx
 const ReviewFeedback = ({ title, message, author, onDismiss, onEdit }) => {
+  const { t } = useLanguage();
   return (
     <div className="border-2 border-dashed border-[#ED4122] rounded-[12px] p-10 bg-white">
       <div className="flex items-center gap-3 mb-2">
@@ -36,13 +38,13 @@ const ReviewFeedback = ({ title, message, author, onDismiss, onEdit }) => {
 
       <div className="flex justify-end gap-3 ml-7">
         <OutlineButton
-          text="Dismiss"
+          text={t("gatherer.questionBank.feedback.dismiss")}
           onClick={onDismiss}
           className="py-[10px] px-[14px] w-[176px]"
         />
 
         <PrimaryButton
-          text="Edit Question"
+          text={t("gatherer.questionBank.feedback.editQuestion")}
           className="py-[10px] px-5 w-[176px]"
           onClick={onEdit}
         />

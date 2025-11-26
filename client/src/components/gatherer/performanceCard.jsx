@@ -1,12 +1,21 @@
-export const PerformanceCard = ({ data, daysRange = 50 }) => {
+import { useLanguage } from "../../context/LanguageContext";
+
+export const PerformanceCard = ({ data, daysRange = 50, title, subtitle, fields: customFields }) => {
+  const { t } = useLanguage();
+  
   // Default configuration for common performance metrics
   const defaultFields = [
-    { key: 'acceptanceRate', label: 'Acceptance rate', format: 'percentage' },
-    { key: 'rejectionRate', label: 'Rejection rate', format: 'percentage' }
+    { key: 'acceptanceRate', label: t('gatherer.dashboard.performance.acceptanceRate'), format: 'percentage' },
+    { key: 'rejectionRate', label: t('gatherer.dashboard.performance.rejectionRate'), format: 'percentage' }
   ];
 
   // Determine which fields to display based on available data
   const getFieldsToDisplay = () => {
+    // If custom fields are provided as prop, use those
+    if (customFields) {
+      return customFields;
+    }
+    
     // If custom fields are provided in data, use those
     if (data.fields) {
       return data.fields;
@@ -35,14 +44,17 @@ export const PerformanceCard = ({ data, daysRange = 50 }) => {
     return 'grid-cols-2'; // fallback
   };
 
+  const displayTitle = title || t('gatherer.dashboard.performance.title');
+  const displaySubtitle = subtitle || t('gatherer.dashboard.performance.subtitle', { days: data.daysRange || daysRange });
+
   return (
     <div className="rounded-[14px] shadow-[0px_4px_50px_0px_#0327461F] border border-[#03274633] overflow-hidden w-full">
       <div className="border-b border-[#CDD4DA] px-8 py-4">
         <h2 className="text-[20px] leading-[100%] font-archivo font-bold text-blue-dark">
-          Your Performance
+          {displayTitle}
         </h2>
         <p className="text-[12px] leading-5 text-[#6B7280] font-normal font-roboto mt-1">
-          Based on the last {data.daysRange || daysRange} days.
+          {displaySubtitle}
         </p>
       </div>
 

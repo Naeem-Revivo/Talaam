@@ -17,11 +17,11 @@ const AllProcessedQuestion = () => {
   const navigate = useNavigate();
 
    const processedColumns = [
-    { key: 'questionTitle', label: 'QUESTION TITLE' },
-    { key: 'status', label: 'STATUS' },
-    { key: 'reviewedOn', label: 'REVIEWED ON' },
-    { key: 'decision', label: 'DECISION' },
-    { key: 'actions', label: 'ACTIONS' }
+    { key: 'questionTitle', label: t("processor.allProcessedQuestions.table.questionTitle") },
+    { key: 'status', label: t("processor.allProcessedQuestions.table.status") },
+    { key: 'reviewedOn', label: t("processor.allProcessedQuestions.table.reviewedOn") },
+    { key: 'decision', label: t("processor.allProcessedQuestions.table.decision") },
+    { key: 'actions', label: t("processor.allProcessedQuestions.table.actions") }
   ];
 
   // Sample data matching the image
@@ -87,10 +87,10 @@ const AllProcessedQuestion = () => {
         <header className="flex justify-between gap-4">
           <div>
             <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
-              All Processed Questions
+              {t("processor.allProcessedQuestions.title")}
             </h1>
           </div>
-            <OutlineButton text="Back" className="py-[10px] px-5" onClick={handleCancel}/>
+            <OutlineButton text={t("processor.allProcessedQuestions.back")} className="py-[10px] px-5" onClick={handleCancel}/>
         </header>
 
         <ProcessorFilter
@@ -114,7 +114,7 @@ const AllProcessedQuestion = () => {
         onView={handleView}
         onEdit={handleEdit}
         onCustomAction={handleReview}
-        emptyMessage="No questions found"
+        emptyMessage={t("processor.allProcessedQuestions.emptyMessage")}
       />
       </div>
     </div>

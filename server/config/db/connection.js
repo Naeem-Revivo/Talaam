@@ -10,7 +10,7 @@ const connectDB = async () => {
       return mongoose.connection;
     }
 
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/talaam', {
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

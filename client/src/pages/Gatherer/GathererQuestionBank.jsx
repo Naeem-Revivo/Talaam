@@ -21,11 +21,11 @@ const GathererQuestionBank = () => {
   };
 
   const gathererColumns = [
-    { key: "questionTitle", label: "QUESTION TITLE" },
-    { key: "processor", label: "PROCESSOR" },
-    { key: "lastUpdate", label: "LAST UPDATE" },
-    { key: "status", label: "STATUS" },
-    { key: "actions", label: "ACTIONS" },
+    { key: "questionTitle", label: t("gatherer.questionBank.table.question") },
+    { key: "processor", label: t("gatherer.questionBank.table.processor") },
+    { key: "lastUpdate", label: t("gatherer.questionBank.table.lastUpdate") },
+    { key: "status", label: t("gatherer.questionBank.table.status") },
+    { key: "actions", label: t("gatherer.questionBank.table.actions") },
   ];
   const handleAddQuestion = () => {
     navigate("/gatherer/question-bank/Gatherer-addQuestion");
@@ -79,10 +79,10 @@ const GathererQuestionBank = () => {
   };
 
   const stats = [
-    { label: "Question Added", value: 128, color: "blue" },
-    { label: "Pending Review", value: 12, color: "red" },
-    { label: "Accepted By Processor", value: 95, color: "red" },
-    { label: "Rejected", value: 8, color: "red" },
+    { label: t("gatherer.questionBank.stats.questionAdded"), value: 128, color: "blue" },
+    { label: t("gatherer.questionBank.stats.pendingReview"), value: 12, color: "red" },
+    { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: 95, color: "red" },
+    { label: t("gatherer.questionBank.stats.rejected"), value: 8, color: "red" },
   ];
 
   const feedbackData = {
@@ -95,36 +95,36 @@ const GathererQuestionBank = () => {
   const activityData = [
     {
       icon: "submit",
-      title: "You submitted 2 new questions.",
+      title: t("gatherer.questionBank.activity.submitted"),
       timestamp: "Today",
       variant: "default",
     },
     {
       icon: "reject",
-      title: 'Possessor A rejected Q-ID-112345 for "Improve wording"',
+      title: t("gatherer.questionBank.activity.rejected"),
       timestamp: "Today",
       variant: "default",
     },
     {
       icon: "approve",
-      title: "Your submission for Q-ID-12345 was approved.",
+      title: t("gatherer.questionBank.activity.approved"),
       timestamp: "Yesterday",
       variant: "approved",
     },
     {
       icon: "assign",
-      title: "John smith assigned you Q-ID-2345 for variant creation.",
+      title: t("gatherer.questionBank.activity.assigned"),
       timestamp: "2 days ago",
       variant: "default",
     },
   ];
 
   const workflowSteps = [
-    "Gatherer",
-    "Processor",
-    "Creator",
-    "Processor",
-    "Explainer",
+    t("gatherer.questionBank.workflowSteps.gatherer"),
+    t("gatherer.questionBank.workflowSteps.processor"),
+    t("gatherer.questionBank.workflowSteps.creator"),
+    t("gatherer.questionBank.workflowSteps.processor"),
+    t("gatherer.questionBank.workflowSteps.explainer"),
   ];
 
   const handleDismiss = () => {
@@ -141,21 +141,21 @@ const GathererQuestionBank = () => {
         <header className="flex flex-col gap-4">
           <div>
             <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
-              Gatherer Dashboard
+              {t("gatherer.questionBank.title")}
             </h1>
             <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
-              Submit Questions and track their review progress.
+              {t("gatherer.questionBank.subtitle")}
             </p>
           </div>
           <div className="flex flex-wrap gap-3 justify-end">
             <OutlineButton
-              text="Bulk Upload"
+              text={t("gatherer.questionBank.bulkUpload")}
               onClick={() => setIsModalOpen(true)}
               className="py-[10px] px-[14px]"
             />
 
             <PrimaryButton
-              text="+ Add New Questions"
+              text={t("gatherer.questionBank.addNewQuestions")}
               className="py-[10px] px-5"
               onClick={handleAddQuestion}
             />
@@ -166,7 +166,7 @@ const GathererQuestionBank = () => {
 
         <div>
           <div className="text-[24px] leading-[32px] font-bold text-blue-dark font-archivo mb-5">
-            My Submissions
+            {t("gatherer.questionBank.mySubmissions")}
           </div>
           <Table
             items={gathererData}
@@ -178,13 +178,13 @@ const GathererQuestionBank = () => {
             onView={handleView}
             onEdit={handleEdit}
             onCustomAction={handleCustomAction}
-            emptyMessage="No questions found"
+            emptyMessage={t("gatherer.questionBank.emptyMessage")}
           />
         </div>
 
         <div className="max-w-7xl mx-auto">
           <h1 className="text-[24px] leading-[32px] font-bold font-archivo text-blue-dark mb-4">
-            Review Feedback
+            {t("gatherer.questionBank.reviewFeedback")}
           </h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -199,7 +199,7 @@ const GathererQuestionBank = () => {
               />
               <div>
                 <h2 className="text-[24px] leading-[32px] font-bold font-archivo text-blue-dark mb-5">
-                  Workflow Progress
+                  {t("gatherer.questionBank.workflowProgress")}
                 </h2>
                 <WorkflowProgress steps={workflowSteps} currentStep={1} />
               </div>
@@ -209,7 +209,7 @@ const GathererQuestionBank = () => {
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg p-6 border border-[#E5E7EB]">
                 <h2 className="text-[20px] leading-[28px] font-semibold font-archivo text-blue-dark mb-4">
-                  Recent Activity
+                  {t("gatherer.questionBank.recentActivity")}
                 </h2>
 
                 <div className="space-y-3">

@@ -17,12 +17,12 @@ const CreaterSubmission = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
     const createSubmissionColumns = [
-    { key: 'questionTitle', label: 'QUESTION TITLE' },
-    { key: 'creator', label: 'CREATOR' },
-    { key: 'variants', label: 'VARIANTS' },
-    { key: 'status', label: 'STATUS' },
-    { key: 'submittedOn', label: 'SUBMITTED ON' },
-    { key: 'actions', label: 'ACTIONS' }
+    { key: 'questionTitle', label: t("processor.creatorSubmission.table.question") },
+    { key: 'creator', label: t("processor.creatorSubmission.table.creator") },
+    { key: 'variants', label: t("processor.creatorSubmission.table.variants") },
+    { key: 'status', label: t("processor.creatorSubmission.table.status") },
+    { key: 'submittedOn', label: t("processor.creatorSubmission.table.submittedOn") },
+    { key: 'actions', label: t("processor.creatorSubmission.table.actions") }
   ];
 
   // Sample data matching the image
@@ -92,10 +92,10 @@ const CreaterSubmission = () => {
         <header className="flex justify-between gap-4">
           <div>
             <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
-                Creator Submissions
+                {t("processor.creatorSubmission.title")}
             </h1>
           </div>
-            <OutlineButton text="Back" className="py-[10px] px-5" onClick={handleCancel}/>
+            <OutlineButton text={t("processor.creatorSubmission.back")} className="py-[10px] px-5" onClick={handleCancel}/>
         </header>
 
         <ProcessorFilter
@@ -119,7 +119,7 @@ const CreaterSubmission = () => {
         onView={handleView}
         onEdit={handleEdit}
         onCustomAction={handleReview}
-        emptyMessage="No questions found"
+        emptyMessage={t("processor.creatorSubmission.emptyMessage")}
       />
       </div>
     </div>
