@@ -43,7 +43,7 @@ const StudyModeLayout = ({
         onNavigate={onNavigate}
       />
 
-      <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-120px)] pb-[180px] md:pb-0">
+      <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-170px)] pb-[180px] md:pb-0">
         <StudyQuestionNavigator
           questions={questions}
           currentIndex={currentIndex}
