@@ -1,23 +1,57 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { showErrorToast, showLogoutToast, showSuccessToast } from '../utils/toastConfig';
-import '../styles/customToast.css'
-import { loginFailed, loginSuccess } from '../assets/svg/toast';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  showErrorToast,
+  showLogoutToast,
+  showSuccessToast,
+} from "../utils/toastConfig";
+import "../styles/customToast.css";
+import { loginFailed, loginSuccess } from "../assets/svg/toast";
 
 const AuthContext = createContext(null);
 
 const STATIC_CREDENTIALS = {
   admin: {
-    email: 'admin@talaam.com',
-    password: 'Admin@123',
-    role: 'admin',
-    name: 'Admin',
+    email: "admin@talaam.com",
+    password: "Admin@123",
+    role: "admin",
+    name: "Admin",
   },
   user: {
-    email: 'user@talaam.com',
-    password: 'User@123',
-    role: 'user',
-    name: 'John Smith',
+    email: "user@talaam.com",
+    password: "User@123",
+    role: "user",
+    name: "John Smith",
+  },
+  gatherer: {
+    email: "gatherer@talaam.com",
+    password: "123",
+    role: "gatherer",
+    name: "Data Gatherer",
+  },
+  creator: {
+    email: "creator@talaam.com",
+    password: "123",
+    role: "creator",
+    name: "Content Creator",
+  },
+  processor: {
+    email: "processor@talaam.com",
+    password: "123",
+    role: "processor",
+    name: "Data Processor",
+  },
+  explainer: {
+    email: "explainer@talaam.com",
+    password: "123",
+    role: "explainer",
+    name: "Content Explainer",
   },
 };
 
@@ -27,12 +61,12 @@ export const AuthProvider = ({ children }) => {
 
   // Load from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('talaam_auth_user');
+    const saved = localStorage.getItem("talaam_auth_user");
     if (saved) {
       try {
         setCurrentUser(JSON.parse(saved));
       } catch {
-        localStorage.removeItem('talaam_auth_user');
+        localStorage.removeItem("talaam_auth_user");
       }
     }
   }, []);
@@ -40,61 +74,73 @@ export const AuthProvider = ({ children }) => {
   // Persist to localStorage when user changes
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem('talaam_auth_user', JSON.stringify(currentUser));
+      localStorage.setItem("talaam_auth_user", JSON.stringify(currentUser));
     } else {
-      localStorage.removeItem('talaam_auth_user');
+      localStorage.removeItem("talaam_auth_user");
     }
   }, [currentUser]);
 
   const login = (email, password) => {
-    const matchAdmin =
-      email.trim().toLowerCase() === STATIC_CREDENTIALS.admin.email &&
-      password === STATIC_CREDENTIALS.admin.password;
-    const matchUser =
-      email.trim().toLowerCase() === STATIC_CREDENTIALS.user.email &&
-      password === STATIC_CREDENTIALS.user.password;
+    const credentials = Object.values(STATIC_CREDENTIALS);
+    const matchedUser = credentials.find(
+      (cred) =>
+        cred.email.toLowerCase() === email.trim().toLowerCase() &&
+        cred.password === password
+    );
 
-    if (matchAdmin) {
+    if (matchedUser) {
       const user = {
-        email: STATIC_CREDENTIALS.admin.email,
-        role: STATIC_CREDENTIALS.admin.role,
-        name: STATIC_CREDENTIALS.admin.name,
+        email: matchedUser.email,
+        role: matchedUser.role,
+        name: matchedUser.name,
       };
       setCurrentUser(user);
-      showSuccessToast('You have successfully logged in.', {icon: loginSuccess});
-      
+      showSuccessToast("You have successfully logged in.", {
+        icon: loginSuccess,
+      });
+
       // Navigate after delay to show toast
       setTimeout(() => {
-        navigate('/admin', { replace: true });
+        // Redirect based on role
+        switch (matchedUser.role) {
+          case "admin":
+            navigate("/admin", { replace: true });
+            break;
+          case "user":
+            navigate("/dashboard", { replace: true });
+            break;
+          case "gatherer":
+            navigate("/gatherer", { replace: true });
+            break;
+          case "creator":
+            navigate("/creator", { replace: true });
+            break;
+          case "processor":
+            navigate("/processor", { replace: true });
+            break;
+          case "explainer":
+            navigate("/explainer", { replace: true });
+            break;
+          default:
+            navigate("/", { replace: true });
+        }
       }, 1500);
-      return { ok: true, role: 'admin' };
+      return { ok: true, role: matchedUser.role };
     }
-    if (matchUser) {
-      const user = {
-        email: STATIC_CREDENTIALS.user.email,
-        role: STATIC_CREDENTIALS.user.role,
-        name: STATIC_CREDENTIALS.user.name,
-      };
-      setCurrentUser(user);
-       showSuccessToast('You have successfully logged in.', {icon: loginSuccess});
-      
-      // Navigate after delay to show toast
-      setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 1500);
-      return { ok: true, role: 'user' };
-    }
-    showErrorToast('Incorrect email or password.', {icon: loginFailed});
-    return { ok: false, message: 'Invalid credentials' };
+
+    showErrorToast("Incorrect email or password.", { icon: loginFailed });
+    return { ok: false, message: "Invalid credentials" };
   };
 
   const logout = () => {
     setCurrentUser(null);
-    showLogoutToast('You have been logged out successfully.', {icon: loginSuccess});
-    
+    showLogoutToast("You have been logged out successfully.", {
+      icon: loginSuccess,
+    });
+
     // Navigate after delay to show toast
     setTimeout(() => {
-      navigate('/login', { replace: true });
+      navigate("/login", { replace: true });
     }, 1500);
   };
 
@@ -106,7 +152,7 @@ export const AuthProvider = ({ children }) => {
       login,
       logout,
     }),
-    [currentUser, login, logout]
+    [currentUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -115,9 +161,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
   if (!ctx) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return ctx;
 };
-
-

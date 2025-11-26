@@ -11,9 +11,13 @@ function AppContent() {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith('/dashboard');
   const isAdmin = location.pathname.startsWith('/admin');
+  const isgatherer = location.pathname.startsWith('/gatherer');
+  const isprocessor = location.pathname.startsWith('/processor');
+  const iscreator = location.pathname.startsWith('/creator');
+  const isexplainer = location.pathname.startsWith('/explainer');
 
   // Don't wrap dashboard routes with the global Layout
-  if (isDashboard || isAdmin) {
+  if (isDashboard || isAdmin || isgatherer || isprocessor || iscreator || isexplainer) {
     return <AppRoutes />;
   }
 

@@ -5,13 +5,16 @@ import { user, notif } from '../../assets/svg/dashboard/header';
 import { setting as settings, profile, logout } from '../../assets/svg/dashboard';
 import { hamburger } from '../../assets/svg';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Header = ({ onToggleSidebar }) => {
   const { language, toggleLanguage, t } = useLanguage();
   const { user: authUser, logout: doLogout, role } = useAuth();
+  console.log(authUser, "user");
   const location = useLocation();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -36,7 +39,36 @@ const Header = ({ onToggleSidebar }) => {
     // Add your navigation logic here
   };
 
+  const handleSetting = () => {
+    navigate("/dashboard/setting")
+  };
+
   const getTitleByPath = (pathname) => {
+
+    if (pathname.startsWith('/gatherer')) {
+      if (pathname === '/gatherer') return 'Gatherer';
+      if (pathname.includes('question-bank')) return 'Question Bank';
+      if (pathname.includes('profile')) return 'Profile';
+      return 'Gatherer';
+    }
+    if (pathname.startsWith('/creator')) {
+      if (pathname === '/creator') return 'Creator';
+      if (pathname.includes('question-bank')) return 'Creator Dashboard';
+      if (pathname.includes('profile')) return 'Profile';
+      return 'creator';
+    }
+    if (pathname.startsWith('/processor')) {
+      if (pathname === '/processor') return 'Processor';
+      if (pathname.includes('question-bank')) return 'Processor';
+      if (pathname.includes('profile')) return 'Profile';
+      return 'processor';
+    }
+    if (pathname.startsWith('/explainer')) {
+      if (pathname === '/explainer') return 'Explainer';
+      if (pathname.includes('question-bank')) return 'Explainer Dashboard';
+      if (pathname.includes('profile')) return 'Profile';
+      return 'Gatherer';
+    }
     // Admin routes
     if (pathname.startsWith('/admin')) {
       if (pathname === '/admin') return 'Admin Dashboard';
@@ -56,7 +88,7 @@ const Header = ({ onToggleSidebar }) => {
       if (pathname.startsWith('/admin/reports')) return 'Reports & Analytics';
       if (pathname.startsWith('/admin/moderation')) return 'Content Moderation';
       if (pathname.startsWith('/admin/settings')) return 'System Settings';
-      if (pathname.startsWith('/admin/security')) return 'Security & Permissions';
+      if (pathname.startsWith('/admin/security')) return 'Security Permissions';
       return 'Admin';
     }
     // User dashboard routes
@@ -83,6 +115,9 @@ const Header = ({ onToggleSidebar }) => {
 
   if (pathname.startsWith("/dashboard/session"))
     return t("dashboard.sidebar.questionSession");
+
+  if (pathname.startsWith("/dashboard/subscription-billings"))
+    return t("dashboard.sidebar.subscriptionsBilling");
 
   return t("dashboard.header.title");
   };
@@ -137,9 +172,9 @@ const Header = ({ onToggleSidebar }) => {
           </button>
 
           {/* Notifications */}
-          <button className="relative p-2 rounded-lg hover:bg-gray-200 transition-colors">
+          {/* <button className="relative p-2 rounded-lg hover:bg-gray-200 transition-colors">
             <img src={notif} alt="Notifications" className="" />
-          </button>
+          </button> */}
 
           {/* User Info */}
           <div className="flex items-center relative" ref={menuRef}>
@@ -161,21 +196,18 @@ const Header = ({ onToggleSidebar }) => {
             {/* User Dropdown Menu */}
             {isUserMenuOpen && (
               <div 
-                className="absolute top-full right-0 mt-2 w-[192px] h-[154.4px] bg-white border border-[#E5E7EB] rounded-lg shadow-header-dropdown z-50"
+                className="absolute top-full right-0 mt-2 w-[192px] h-auto bg-white border border-[#E5E7EB] rounded-lg shadow-header-dropdown z-50"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-2">
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleMenuItemClick('Settings');
-                    }}
+                    onClick={handleSetting}
                     className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-md transition-colors"
                   >
                     <img src={settings} alt="Settings" className="w-5 h-5" />
                     <span className="text-[14px] text-gray-700 font-roboto font-[400]">Settings</span>
                   </button>
-                  <button
+                  {/* <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleMenuItemClick('My Profile');
@@ -184,7 +216,7 @@ const Header = ({ onToggleSidebar }) => {
                   >
                     <img src={profile} alt="My Profile" className="w-5 h-5" />
                     <span className="text-[14px] text-gray-700 font-roboto font-[400]">My Profile</span>
-                  </button>
+                  </button> */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

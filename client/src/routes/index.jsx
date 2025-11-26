@@ -42,7 +42,6 @@ import AddTopicPage from '../pages/admin/AddTopicPage';
 import AddSubTopicPage from '../pages/admin/AddSubTopicPage';
 import AddConceptPage from '../pages/admin/AddConceptPage';
 import ReportsAndAnalyticsPage from '../pages/admin/ReportsAndAnalyticsPage';
-import UserGrowthAnalyticsPage from '../pages/admin/UserGrowthAnalyticsPage';
 import SubscriptionTrendsPage from '../pages/admin/SubscriptionTrendsPage';
 import SubscriptionPlanPage from '../pages/admin/SubscriptionPlanPage';
 import AddNewPlanPage from '../pages/admin/AddNewPlanPage';
@@ -50,7 +49,6 @@ import ManageUserSubscriptionsPage from '../pages/admin/ManageUserSubscriptionsP
 import SubscriptionDetailsPage from '../pages/admin/SubscriptionDetailsPage';
 import PaymentHistoryPage from '../pages/admin/PaymentHistoryPage';
 import CreateNewQuestionBankPage from '../pages/admin/CreateNewQuestionBankPage';
-import PerformanceAnalyticsPage from '../pages/admin/PerformanceAnalyticsPage';
 import ExportReportsPage from '../pages/admin/ExportReportsPage';
 import ContentModerationPage from '../pages/admin/ContentModerationPage';
 import ContentDetailsPage from '../pages/admin/ContentDetailsPage';
@@ -65,7 +63,37 @@ import SecuritySettingsPage from '../pages/admin/SecurityPage';
 import AuditLogsPage from '../pages/admin/AuditLogsPage';
 import RolesPermissionsPage from '../pages/admin/RolesPermissionsPage';
 import ViewLogDetails from '../pages/admin/ViewLogsDetailPage';
-import Dashboard from '../pages/Processor/Dashboard';
+import GathererLayout from '../components/gatherer/GathererLayout';
+import GathererDashboard from '../pages/Gatherer/GathererDashboard';
+import GathererQuestionBank from '../pages/Gatherer/GathererQuestionBank';
+import GathererAddNewQuestionPage from '../pages/Gatherer/GathererAddNewQuestion';
+import GathererQuestionDetailsPage from '../pages/Gatherer/GathererQuestionDetail';
+import ProcessorDashboard from '../pages/Processor/ProcessorDashboard';
+import ProcessorLayout from '../components/Processor/ProcessorLayout';
+import AllProcessedQuestion from '../pages/Processor/AllProcessedQuestion';
+import GathererSubmission from '../pages/Processor/GathererSubmission';
+import ExplainerSubmission from '../pages/Processor/ExplainerSubmission';
+import CreaterSubmission from '../pages/Processor/CreatorSubmission';
+import ProcessorViewQuestion from '../pages/Processor/ProcessorViewQuestion';
+import CreatorLayout from '../components/creator/CreatorLayout';
+import CreatorDashboard from '../pages/Creator/CreatorDashboard';
+import CreatorQuestionBank from '../pages/Creator/CreatorQuestionBank';
+import AssignedQuestionPage from '../pages/Creator/AssignedQuestionPage';
+import CompletedQuestionPage from '../pages/Creator/CompletedQuestionPage';
+import CreatorVariantsPage from '../pages/Creator/CreatorVariantsPage';
+import ExplainerDashboard from '../pages/Explainer/ExplainerDashbaord';
+import ExplainerLayout from '../components/explainer/ExplainerLayout';
+import ExplainerQuestionBank from '../pages/Explainer/ExplainerQuestionBank';
+import AddExplanationPage from '../pages/Explainer/AddExplanationPage';
+import CompletedExplanationPage from '../pages/Explainer/CompletedExplanation';
+import DraftExplanationPage from '../pages/Explainer/DraftExplanation';
+import AccountSettingPage from '../pages/dashboard/AccountSettingPage';
+import ProcessorQuestionBank from '../pages/Processor/ProcessorQuestionBank';
+import SubscriptionBillingPage from '../pages/dashboard/SubscriptionBillingPage';
+import GathererProfile from '../pages/Gatherer/GathererProfile';
+import CreatorProfile from '../pages/Creator/CreatorProfile';
+import ProcessorProfile from '../pages/Processor/ProcessorProfile';
+import ExplainerProfile from '../pages/Explainer/ExplainerProfile';
 
 export const AppRoutes = () => {
   return (
@@ -90,9 +118,11 @@ export const AppRoutes = () => {
       <Route element={<RoleRoute allow={['user']} />}>
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardPage />} />
+          <Route path="setting" element={<AccountSettingPage />} />
           <Route path="practice" element={<PracticePage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="review" element={<ReviewPage />} />
+          <Route path="subscription-billings" element={<SubscriptionBillingPage />} />
         </Route>
         {/* Review Pages - No sidebar */}
         <Route path="/dashboard/review-incorrect" element={<ReviewIncorrectPage />} />
@@ -134,11 +164,8 @@ export const AppRoutes = () => {
           <Route path="variant-question-review" element={<VariantQuestionReviewPage />} />
           <Route path="subscriptions" element={<SubscriptionPlanPage />} />
           <Route path="reports" element={<ReportsAndAnalyticsPage />} />
-          <Route path="reports/user-growth" element={<UserGrowthAnalyticsPage />} />
           <Route path="reports/subscription-trends" element={<SubscriptionTrendsPage />} />
-          <Route path="reports/performance-analytics" element={<PerformanceAnalyticsPage />} />
           <Route path="reports/export" element={<ExportReportsPage />} />
-          <Route path="reports" element={<ReportsAndAnalyticsPage />} />
           <Route path="moderation" element={<ContentModerationPage />} />
           <Route path="moderation/details" element={<ContentDetailsPage />} />
           <Route path="settings" element={<SystemSettingPlan />} />
@@ -151,10 +178,58 @@ export const AppRoutes = () => {
           <Route path="security" element={<SecuritySettingsPage />} />
           <Route path="security/audit-logs" element={<AuditLogsPage />} />
           <Route path="security/view-logs" element={<ViewLogDetails />} />
-          {/* <Route path="security/roles-permissions" element={<RolesPermissionsPage />} /> */}
-          <Route path="security/roles-permissions" element={<Dashboard />} />
+          <Route path="security/roles-permissions" element={<RolesPermissionsPage />} />
         </Route>
       </Route>
+
+      {/* Gatherer Routes */}
+      <Route element={<RoleRoute allow={['gatherer']} />}>
+        <Route path="/gatherer" element={<GathererLayout />}>
+          <Route index element={<GathererDashboard />} />
+          <Route path="profile" element={<GathererProfile />} />
+          <Route path="question-bank" element={<GathererQuestionBank />} />
+          <Route path="question-bank/Gatherer-addQuestion" element={<GathererAddNewQuestionPage />} />
+          <Route path="question-bank/Gatherer-QuestionDetail" element={<GathererQuestionDetailsPage />} />
+          {/* Add gatherer specific routes here */}
+        </Route>
+      </Route>
+
+      {/* Processer dashboard */}
+      <Route element={<RoleRoute allow={['processor']} />}>
+        <Route path="/processor" element={<ProcessorLayout />}>
+          <Route index element={<ProcessorDashboard />} />
+          <Route path="profile" element={<ProcessorProfile />} />
+          <Route path="question-bank" element={<ProcessorQuestionBank />} />
+          <Route path="Processed-Question" element={<AllProcessedQuestion />} />
+          <Route path="Processed-ViewQuestion" element={<ProcessorViewQuestion />} />
+          <Route path="question-bank/gatherer-submission" element={<GathererSubmission />} />
+          <Route path="question-bank/explainer-submission" element={<ExplainerSubmission />} />
+          <Route path="question-bank/creator-submission" element={<CreaterSubmission />} />
+        </Route>
+      </Route>
+
+      <Route element={<RoleRoute allow={['creator']} />}>
+        <Route path="/creator" element={<CreatorLayout />}>
+          <Route index element={<CreatorDashboard />} />
+          <Route path="profile" element={<CreatorProfile />} />
+          <Route path="question-bank" element={<CreatorQuestionBank />} />
+          <Route path="question-bank/assigned-question" element={<AssignedQuestionPage />} />
+          <Route path="question-bank/completed-question" element={<CompletedQuestionPage />} />
+          <Route path="question-bank/create-variants" element={<CreatorVariantsPage />} />
+        </Route>
+      </Route>
+
+      <Route element={<RoleRoute allow={['explainer']} />}>
+        <Route path="/explainer" element={<ExplainerLayout />}>
+          <Route index element={<ExplainerDashboard />} />
+          <Route path="profile" element={<ExplainerProfile />} />
+          <Route path="question-bank" element={<ExplainerQuestionBank />} />
+          <Route path="question-bank/add-explanation" element={<AddExplanationPage />} />
+          <Route path="question-bank/completed-explanation" element={<CompletedExplanationPage />} />
+          <Route path="question-bank/draft-explanation" element={<DraftExplanationPage />} />
+        </Route>
+      </Route>
+      
     </Routes>
   );
 };

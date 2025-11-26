@@ -32,6 +32,12 @@ const Sidebar = ({ isOpen, onClose }) => {
       iconBlue: bluereview,
       label: 'dashboard.sidebar.reviewSessions',
     },
+    {
+      path: '/dashboard/subscription-billings',
+      icon: review,
+      iconBlue: bluereview,
+      label: 'dashboard.sidebar.subscriptionsBilling',
+    },
   ];
 
   const isActive = (path) => location.pathname === path;

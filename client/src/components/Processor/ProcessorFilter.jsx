@@ -3,14 +3,14 @@ import Dropdown from "../shared/Dropdown";
 
 // Demo options (replace later with real dynamic data)
 const getSubjectOptions = (t) => [
-  t("admin.classificationManagement.filters.allSubjects"),
+  "Subject",
   "Math",
   "Science",
   "History",
 ];
 
 const getTopicOptions = (t) => [
-  t("admin.classificationManagement.filters.allTopics"),
+  "Gatherer",
   "Algebra",
   "Geometry",
   "Biology",
@@ -18,7 +18,7 @@ const getTopicOptions = (t) => [
 ];
 
 const getSubtopicOptions = (t) => [
-  t("admin.classificationManagement.filters.allSubtopics"),
+  "Status",
   "Equations",
   "Triangles",
   "Cells",
@@ -47,10 +47,34 @@ const ProcessorFilter = ({
   const subtopicOptions = getSubtopicOptions(t);
 
   return (
-    <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-5 w-full">
-        {/* Search Input */}
-        <div className="w-full lg:w-[580px]">
+    <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6" dir="ltr">
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-5 w-full" dir="ltr" style={{ direction: 'ltr' }}>
+        {/* Status Dropdown (Subtopic) - First (Left) */}
+        <Dropdown
+          label="Status"
+          value={subtopicValue}
+          options={subtopicOptions}
+          onChange={onSubtopicChange}
+        />
+
+        {/* Gatherer Dropdown (Topic) - Second (Middle) */}
+        <Dropdown
+          label="Gatherer"
+          value={topicValue}
+          options={topicOptions}
+          onChange={onTopicChange}
+        />
+
+        {/* Subject Dropdown - Third */}
+        <Dropdown
+          label="Subject"
+          value={subjectValue}
+          options={subjectOptions}
+          onChange={onSubjectChange}
+        />
+
+        {/* Search Input - Last (Right) */}
+        <div className="w-full lg:w-[580px] lg:ml-auto">
           <p className="text-sm font-medium text-oxford-blue mb-1 block lg:hidden">
             {placeholder}
           </p>
@@ -85,29 +109,6 @@ const ProcessorFilter = ({
             />
           </div>
         </div>
-        {/* Subject Dropdown */}
-        <Dropdown
-          label={t("admin.classificationManagement.filters.selectSubject")}
-          value={subjectValue}
-          options={subjectOptions}
-          onChange={onSubjectChange}
-        />
-
-        {/* Topic Dropdown */}
-        <Dropdown
-          label={t("admin.classificationManagement.filters.selectTopic")}
-          value={topicValue}
-          options={topicOptions}
-          onChange={onTopicChange}
-        />
-
-        {/* Subtopic Dropdown */}
-        <Dropdown
-          label={t("admin.classificationManagement.filters.selectSubtopic")}
-          value={subtopicValue}
-          options={subtopicOptions}
-          onChange={onSubtopicChange}
-        />
       </div>
     </section>
   );

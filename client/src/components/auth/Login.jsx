@@ -137,6 +137,38 @@ const Login = () => {
                 Use User
               </button>
             </div>
+            <div className="flex gap-3 justify-between">
+              <button
+                type="button"
+                onClick={() => setFormData({ email: 'gatherer@talaam.com', password: '123' })}
+                className="text-xs text-gray-600 underline"
+              >
+                use gatherer
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ email: 'processor@talaam.com', password: '123' })}
+                className="text-xs text-gray-600 underline"
+              >
+                Use processor
+              </button>
+            </div>
+            <div className="flex gap-3 justify-between">
+              <button
+                type="button"
+                onClick={() => setFormData({ email: 'explainer@talaam.com', password: '123' })}
+                className="text-xs text-gray-600 underline"
+              >
+                Use explainer
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ email: 'creator@talaam.com', password: '123' })}
+                className="text-xs text-gray-600 underline"
+              >
+                Use creator
+              </button>
+            </div>
 
             {/* Divider */}
             <div className="flex px-4 lg:px-9 pt-6 justify-center items-center">
