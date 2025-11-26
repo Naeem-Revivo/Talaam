@@ -152,40 +152,6 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Section Breakdown */}
-      <div className="w-full h-[491px] md:h-[508px]">
-        <h2 className="font-archivo font-bold text-[20px] leading-[32px] text-oxford-blue mb-4 md:mb-3">
-          {t("dashboard.overview.sectionBreakdown")}
-        </h2>
-        <div className="rounded-xl shadow-dashboard w-full bg-white p-4 md:p-5">
-          <div className="space-y-3 w-full">
-            {sectionData.map((section, index) => (
-              <div
-                key={index}
-                className={`min-h-[70px] md:h-[77.6px] border border-[#E5E7EB]  rounded-lg mb-[18px] last:mb-0 px-4 md:px-5 py-3 md:py-4 flex flex-col justify-center ${
-                  index === 0 ? "bg-[#F7F7F7]" : "bg-white"
-                }`}
-              >
-                <div className="flex justify-between items-center mb-3">
-                  <span className="font-roboto text-[16px] leading-[24px] text-[#374151] font-medium">
-                    {section.name}
-                  </span>
-                  <span className="font-roboto text-[16px] leading-[24px] text-[#4B5563] font-semibold">
-                    {section.progress}%
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-[12px]">
-                  <div
-                    className={`${section.color} h-[12px] rounded-full transition-all duration-300`}
-                    style={{ width: `${section.progress}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* Performance Chart */}
       <div className="bg-white my-20 border border-[#E5E7EB] shadow-dashboard w-full h-auto md:h-auto rounded-[12px] overflow-x-hidden overflow-y-visible pb-8">
         <h2 className="font-archivo font-semibold pl-4 md:pl-6 lg:pl-10 pb-4 md:pb-5 pt-6 md:pt-10 text-[20px] leading-[28px] text-oxford-blue">

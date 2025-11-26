@@ -89,6 +89,13 @@ import ExplainerQuestionBank from '../pages/Explainer/ExplainerQuestionBank';
 import AddExplanationPage from '../pages/Explainer/AddExplanationPage';
 import CompletedExplanationPage from '../pages/Explainer/CompletedExplanation';
 import DraftExplanationPage from '../pages/Explainer/DraftExplanation';
+import AccountSettingPage from '../pages/dashboard/AccountSettingPage';
+import ProcessorQuestionBank from '../pages/Processor/ProcessorQuestionBank';
+import SubscriptionBillingPage from '../pages/dashboard/SubscriptionBillingPage';
+import GathererProfile from '../pages/Gatherer/GathererProfile';
+import CreatorProfile from '../pages/Creator/CreatorProfile';
+import ProcessorProfile from '../pages/Processor/ProcessorProfile';
+import ExplainerProfile from '../pages/Explainer/ExplainerProfile';
 
 export const AppRoutes = () => {
   return (
@@ -113,9 +120,11 @@ export const AppRoutes = () => {
       <Route element={<RoleRoute allow={['user']} />}>
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardPage />} />
+          <Route path="setting" element={<AccountSettingPage />} />
           <Route path="practice" element={<PracticePage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="review" element={<ReviewPage />} />
+          <Route path="subscription-billings" element={<SubscriptionBillingPage />} />
         </Route>
         {/* Review Pages - No sidebar */}
         <Route path="/dashboard/review-incorrect" element={<ReviewIncorrectPage />} />
@@ -182,6 +191,7 @@ export const AppRoutes = () => {
       <Route element={<RoleRoute allow={['gatherer']} />}>
         <Route path="/gatherer" element={<GathererLayout />}>
           <Route index element={<GathererDashboard />} />
+          <Route path="profile" element={<GathererProfile />} />
           <Route path="question-bank" element={<GathererQuestionBank />} />
           <Route path="question-bank/Gatherer-addQuestion" element={<GathererAddNewQuestionPage />} />
           <Route path="question-bank/Gatherer-QuestionDetail" element={<GathererQuestionDetailsPage />} />
@@ -193,6 +203,8 @@ export const AppRoutes = () => {
       <Route element={<RoleRoute allow={['processor']} />}>
         <Route path="/processor" element={<ProcessorLayout />}>
           <Route index element={<ProcessorDashboard />} />
+          <Route path="profile" element={<ProcessorProfile />} />
+          <Route path="question-bank" element={<ProcessorQuestionBank />} />
           <Route path="Processed-Question" element={<AllProcessedQuestion />} />
           <Route path="Processed-ViewQuestion" element={<ProcessorViewQuestion />} />
           <Route path="question-bank/gatherer-submission" element={<GathererSubmission />} />
@@ -204,6 +216,7 @@ export const AppRoutes = () => {
       <Route element={<RoleRoute allow={['creator']} />}>
         <Route path="/creator" element={<CreatorLayout />}>
           <Route index element={<CreatorDashboard />} />
+          <Route path="profile" element={<CreatorProfile />} />
           <Route path="question-bank" element={<CreatorQuestionBank />} />
           <Route path="question-bank/assigned-question" element={<AssignedQuestionPage />} />
           <Route path="question-bank/completed-question" element={<CompletedQuestionPage />} />
@@ -214,6 +227,7 @@ export const AppRoutes = () => {
       <Route element={<RoleRoute allow={['explainer']} />}>
         <Route path="/explainer" element={<ExplainerLayout />}>
           <Route index element={<ExplainerDashboard />} />
+          <Route path="profile" element={<ExplainerProfile />} />
           <Route path="question-bank" element={<ExplainerQuestionBank />} />
           <Route path="question-bank/add-explanation" element={<AddExplanationPage />} />
           <Route path="question-bank/completed-explanation" element={<CompletedExplanationPage />} />

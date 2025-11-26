@@ -2,7 +2,7 @@
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
 import { useState } from "react";
-import ProcessorFilter from "../../components/Processor/ProcessorFilter";
+import SearchFilter from "../../components/common/SearchFilter";
 import { Table } from "../../components/common/TableComponent";
 
 const AssignedQuestionPage = () => {
@@ -74,12 +74,9 @@ const AssignedQuestionPage = () => {
     console.log('Edit item:', item);
   };
 
-  const stats=[
-    { label: "New Questions to Review", value: 124, color: "blue" },
-    { label: "Creator Submissions", value: 12, color: "blue" },
-    { label: "Accepted (Today)", value: 32, color: "red" },
-    { label: "Rejected (Today)", value: 8, color: "red" }
-  ]
+  const subjectOptions = ["Subject", "Mathematics", "Physics", "Chemistry", "Biology"];
+  const topicOptions = ["Difficulty", "Medium", "Easy", "Hard"];
+  const subtopicOptions = ["Status", "Approved", "Failed", "Reject"];
 
 
   return (
@@ -97,16 +94,20 @@ const AssignedQuestionPage = () => {
             <OutlineButton text="Back" className="py-[10px] px-5"/>
         </header>
 
-        <ProcessorFilter
-        searchValue={search}
-        subjectValue={subject}
-        topicValue={topic}
-        subtopicValue={subtopic}
-        onSearchChange={setSearch}
-        onSubjectChange={setSubject}
-        onTopicChange={setTopic}
-        onSubtopicChange={setSubtopic}
-      />
+        <SearchFilter
+          searchValue={search}
+          subjectValue={subject}
+          topicValue={topic}
+          subtopicValue={subtopic}
+          onSearchChange={setSearch}
+          onSubjectChange={setSubject}
+          onTopicChange={setTopic}
+          onSubtopicChange={setSubtopic}
+          subjectOptions={subjectOptions}
+          topicOptions={topicOptions}
+          subtopicOptions={subtopicOptions}
+          searchPlaceholder="Search draft explanations..."
+        />
 
       <Table
         items={QuestionsData}

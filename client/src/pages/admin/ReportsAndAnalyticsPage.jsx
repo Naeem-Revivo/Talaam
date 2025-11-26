@@ -4,20 +4,25 @@ import { useLanguage } from "../../context/LanguageContext";
 import Dropdown from "../../components/shared/Dropdown";
 
 // Reusable KPI Card Component
-const KPICard = ({ title, value, icon, valueWeight = "font-semibold", marginBottom = "mb-1" }) => {
+const KPICard = ({ title, value, subtitle, icon, valueWeight = "font-semibold", subtitlecolor }) => {
   return (
-    <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-4 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full min-h-[90px] md:h-[106px]">
-      <div className={`flex items-center justify-between ${marginBottom}`}>
-        <h3 className="font-roboto text-[14px] md:text-[16px] font-normal leading-[18px] md:leading-[20px] text-dark-gray flex-1 pr-2">
+    <div className="rounded-[12px] border border-[#03274633] bg-white pb-6 px-5 pt-5 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full flex items-center justify-between gap-4">
+      <div className="flex flex-col justify-between flex-1 h-full min-h-[66px]">
+        <h3 className="font-roboto text-[14px] md:text-[16px] font-normal leading-[18px] md:leading-[20px] text-dark-gray">
           {title}
         </h3>
-        <div className="flex-shrink-0">
-        {icon}
-        </div>
+        <p className={`font-archivo text-[24px] md:text-[30px] ${valueWeight} leading-[32px] md:leading-[40px] text-oxford-blue`}>
+          {value}
+        </p>
+        {subtitle && (
+          <p className={`font-roboto text-[12px] md:text-[16px] font-normal leading-[16px] md:leading-[20px] ${subtitlecolor}`}>
+            {subtitle}
+          </p>
+        )}
       </div>
-      <p className={`font-archivo text-[24px] md:text-[30px] ${valueWeight} leading-[32px] md:leading-[40px] text-oxford-blue`}>
-        {value}
-      </p>
+      <div className="flex-shrink-0">
+        {icon}
+      </div>
     </div>
   );
 };
@@ -60,6 +65,8 @@ const ReportsAndAnalyticsPage = () => {
       id: 1,
       title: t('admin.reportsAndAnalytics.kpi.totalQuestions'),
       value: "2,000",
+      subtitle: "+15% from last month",
+      subtitlecolor: "text-[#ED4122]",
       titleSize: "text-[16px]",
       valueSize: "text-[30px]",
       valueWeight: "font-semibold",
@@ -84,6 +91,8 @@ const ReportsAndAnalyticsPage = () => {
       id: 2,
       title: t('admin.reportsAndAnalytics.kpi.averageAccuracy'),
       value: "78%",
+      subtitle: "+ 8% vs last month",
+      subtitlecolor: "text-[#6B7280]",
       titleSize: "text-[16px]",
       valueSize: "text-[30px]",
       valueWeight: "font-semibold",
@@ -413,6 +422,8 @@ const ReportsAndAnalyticsPage = () => {
                   title={card.title}
                   value={card.value}
                   icon={card.icon}
+                  subtitle={card?.subtitle}
+                  subtitlecolor={card?.subtitlecolor}
                   valueWeight={card.valueWeight}
                   marginBottom={card.marginBottom}
                 />
@@ -591,8 +602,7 @@ const ReportsAndAnalyticsPage = () => {
         </div>
 
         {/* Bottom Row - Recent Reports and System Insights */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          {/* Recent Reports Generated */}
+        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full">
             <h2 className="mb-4 md:mb-6 font-archivo text-[18px] md:text-[20px] font-semibold leading-[24px] md:leading-[28px] text-oxford-blue">
               {t('admin.reportsAndAnalytics.sections.recentReports')}
@@ -633,15 +643,12 @@ const ReportsAndAnalyticsPage = () => {
               ))}
             </div>
           </div>
-
-          {/* System Insights */}
           <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full">
             <h2 className="mb-4 md:mb-6 font-archivo text-[18px] md:text-[20px] font-bold leading-[24px] md:leading-[28px] text-oxford-blue">
               {t('admin.reportsAndAnalytics.sections.systemInsights')}
             </h2>
             <div className="space-y-3 md:space-y-4">
               {systemInsights.map((insight, index) => {
-                // Parse insight text to highlight specific parts
                 let formattedText = insight;
                 if (insight.includes("Analysis")) {
                   formattedText = (
@@ -678,7 +685,7 @@ const ReportsAndAnalyticsPage = () => {
               })}
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

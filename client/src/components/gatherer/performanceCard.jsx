@@ -50,7 +50,7 @@ export const PerformanceCard = ({ data, daysRange = 50 }) => {
         <div className={`grid ${getGridClass()} gap-6`}>
           {fields.map((field) => (
             <div key={field.key}>
-              <p className="text-[12px] leading-5 font-normal font-roboto text-[#6B7280] mb-2">
+              <p className="text-[14px] leading-5 font-normal font-roboto text-[#6B7280] mb-2">
                 {field.label}
               </p>
               <p className="text-[24px] leading-7 font-semibold font-archivo text-blue-dark">

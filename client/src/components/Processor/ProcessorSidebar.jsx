@@ -121,7 +121,29 @@ const ProcessorSidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [isQuestionBankOpen, setIsQuestionBankOpen] = useState(false);
+  const [openSubmenus, setOpenSubmenus] = useState({});
+
+  const submenuItems = {
+    questionBank: [
+      {
+        path: "/processor/question-bank",
+        labelKey: "processor.sidebar.questionBank",
+        isMain: true,
+      },
+      {
+        path: "/processor/question-bank/gatherer-submission",
+        labelKey: "processor.sidebar.gathererSubmission",
+      },
+      {
+        path: "/processor/question-bank/creator-submission",
+        labelKey: "processor.sidebar.creatorSubmission",
+      },
+      {
+        path: "/processor/question-bank/explainer-submission",
+        labelKey: "processor.sidebar.explainerSubmission",
+      },
+    ],
+  };
 
   const menuItems = [
     {
@@ -133,21 +155,7 @@ const ProcessorSidebar = ({ isOpen, onClose }) => {
       path: "/processor/question-bank",
       labelKey: "processor.sidebar.questionBank",
       icon: QuestionBankIcon,
-      hasSubmenu: true,
-      submenuItems: [
-        {
-          path: "/processor/question-bank/gatherer-submission",
-          labelKey: "processor.sidebar.gathererSubmission",
-        },
-        {
-          path: "/processor/question-bank/creator-submission",
-          labelKey: "processor.sidebar.creatorSubmission",
-        },
-        {
-          path: "/processor/question-bank/explainer-submission",
-          labelKey: "processor.sidebar.explainerSubmission",
-        },
-      ]
+      submenuKey: "questionBank",
     },
     {
       path: "/processor/profile",
@@ -165,29 +173,49 @@ const ProcessorSidebar = ({ isOpen, onClose }) => {
     );
   };
 
-  const isSubmenuActive = () => {
-    return menuItems[1].submenuItems.some(item => isActive(item.path));
+  const isSubmenuActive = (submenuKey) => {
+    const subItems = submenuItems[submenuKey];
+    return subItems ? subItems.some((item) => isActive(item.path)) : false;
   };
 
   const handleLinkClick = () => {
     if (window.innerWidth < 1024) onClose();
   };
 
-  const toggleQuestionBank = () => {
-    setIsQuestionBankOpen(!isQuestionBankOpen);
+  const handleMainItemClick = (item) => {
+    if (item.submenuKey) {
+      // For items with submenu, navigate to main page and toggle submenu
+      const mainPage = submenuItems[item.submenuKey]?.find(
+        (subItem) => subItem.isMain
+      );
+      if (mainPage) {
+        navigate(mainPage.path);
+      }
+      toggleSubmenu(item.submenuKey);
+    } else {
+      // Regular navigation for items without submenu
+      navigate(item.path);
+      handleLinkClick();
+    }
   };
 
-  const handleQuestionBankClick = () => {
-    if (window.innerWidth < 1024) onClose();
-    toggleQuestionBank();
+  const toggleSubmenu = (submenuKey) => {
+    setOpenSubmenus((prev) => ({
+      ...prev,
+      [submenuKey]: !prev[submenuKey],
+    }));
   };
 
-  const renderSubmenu = () => {
-    const questionBankItem = menuItems[1];
-    
+  const renderSubmenu = (submenuKey) => {
+    const items = submenuItems[submenuKey];
+    if (!items) return null;
+
+    // Filter out the main page from submenu items (it's already handled by the main button)
+    const subItems = items.filter((item) => !item.isMain);
+
     return (
       <div className="ml-8 mt-2 space-y-1">
-        {questionBankItem.submenuItems.map((subItem) => {
+        {subItems.map((subItem) => {
           const subActive = isActive(subItem.path);
           return (
             <NavLink
@@ -221,31 +249,34 @@ const ProcessorSidebar = ({ isOpen, onClose }) => {
         {menuItems.map((item) => {
           const active = isActive(item.path);
           const Icon = item.icon;
-          const hasSubmenu = item.hasSubmenu;
-          const submenuActive = hasSubmenu ? isSubmenuActive() : false;
+          const hasSubmenu = !!item.submenuKey;
+          const submenuActive = hasSubmenu
+            ? isSubmenuActive(item.submenuKey)
+            : false;
+          const isSubmenuOpen = openSubmenus[item.submenuKey];
 
           if (hasSubmenu) {
             return (
               <div key={item.path} className="relative">
                 <button
-                  onClick={handleQuestionBankClick}
+                  onClick={() => handleMainItemClick(item)}
                   className={`relative flex items-center justify-between text-nowrap gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full max-w-[256px] h-[44px] ${
-                    submenuActive || isQuestionBankOpen
+                    submenuActive
                       ? "bg-white text-oxford-blue"
                       : "text-white hover:bg-blue-900"
                   }`}
                 >
-                  {(submenuActive || isQuestionBankOpen) && (
+                  {active && (
                     <div className="absolute left-0 top-0 h-full w-[5px] bg-orange-dark rounded-l-lg"></div>
                   )}
                   <div className="flex items-center gap-3 text-nowrap">
-                    {Icon && <Icon active={submenuActive || isQuestionBankOpen} />}
+                    {Icon && <Icon active={submenuActive} />}
                     <span className="font-medium">{t(item.labelKey)}</span>
                   </div>
-                  <ChevronIcon isOpen={isQuestionBankOpen} />
+                  <ChevronIcon isOpen={isSubmenuOpen} />
                 </button>
 
-                {isQuestionBankOpen && renderSubmenu()}
+                {isSubmenuOpen && renderSubmenu(item.submenuKey)}
               </div>
             );
           }
