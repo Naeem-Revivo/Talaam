@@ -1,7 +1,8 @@
-const Question = require('../../models/question');
-const Exam = require('../../models/exam');
-const Subject = require('../../models/subject');
-const Topic = require('../../models/topic');
+const Question = require('../../../models/question');
+const Exam = require('../../../models/exam');
+const Subject = require('../../../models/subject');
+const Topic = require('../../../models/topic');
+const Classification = require('../../../models/classification');
 
 /**
  * Create question by Gatherer
@@ -27,6 +28,25 @@ const createQuestion = async (questionData, userId) => {
   if (!topic) {
     throw new Error('Topic not found or does not belong to the selected subject');
   }
+
+  // Create or update classification
+  await Classification.findOneAndUpdate(
+    {
+      exam: questionData.exam,
+      subject: questionData.subject,
+      topic: questionData.topic,
+    },
+    {
+      exam: questionData.exam,
+      subject: questionData.subject,
+      topic: questionData.topic,
+      status: 'active',
+    },
+    {
+      upsert: true,
+      new: true,
+    }
+  );
 
   // Create question
   const question = await Question.create({
@@ -72,6 +92,118 @@ const getQuestionsByStatus = async (status, userId, role) => {
 };
 
 /**
+ * Create question variant by Creator
+ * Creates a new question based on an existing question
+ */
+const createQuestionVariant = async (originalQuestionId, variantData, userId) => {
+  // Find the original question
+  const originalQuestion = await Question.findById(originalQuestionId);
+  
+  if (!originalQuestion) {
+    throw new Error('Original question not found');
+  }
+
+  // Validate exam if provided, otherwise use original question's exam
+  const examId = variantData.exam || originalQuestion.exam;
+  const exam = await Exam.findById(examId);
+  if (!exam) {
+    throw new Error('Exam not found');
+  }
+
+  // Validate subject if provided, otherwise use original question's subject
+  const subjectId = variantData.subject || originalQuestion.subject;
+  const subject = await Subject.findById(subjectId);
+  if (!subject) {
+    throw new Error('Subject not found');
+  }
+
+  // Validate topic if provided, otherwise use original question's topic
+  const topicId = variantData.topic || originalQuestion.topic;
+  const topic = await Topic.findOne({
+    _id: topicId,
+    parentSubject: subjectId,
+  });
+  if (!topic) {
+    throw new Error('Topic not found or does not belong to the selected subject');
+  }
+
+  // Create or update classification
+  await Classification.findOneAndUpdate(
+    {
+      exam: examId,
+      subject: subjectId,
+      topic: topicId,
+    },
+    {
+      exam: examId,
+      subject: subjectId,
+      topic: topicId,
+      status: 'active',
+    },
+    {
+      upsert: true,
+      new: true,
+    }
+  );
+
+  // Determine question type (use variant data or original)
+  const questionType = variantData.questionType || originalQuestion.questionType;
+
+  // Validate MCQ requirements if it's an MCQ
+  if (questionType === 'MCQ') {
+    const options = variantData.options || originalQuestion.options;
+    if (!options || !options.A || !options.B || !options.C || !options.D) {
+      throw new Error('All four options (A, B, C, D) are required for MCQ questions');
+    }
+    if (!variantData.correctAnswer && !originalQuestion.correctAnswer) {
+      throw new Error('Correct answer is required for MCQ questions');
+    }
+  }
+
+  // Create the variant question
+  const variantQuestion = await Question.create({
+    exam: examId,
+    subject: subjectId,
+    topic: topicId,
+    questionText: variantData.questionText || originalQuestion.questionText,
+    questionType: questionType,
+    options: variantData.options || originalQuestion.options,
+    correctAnswer: variantData.correctAnswer || originalQuestion.correctAnswer,
+    explanation: variantData.explanation || originalQuestion.explanation || '',
+    originalQuestion: originalQuestionId,
+    isVariant: true,
+    createdBy: userId,
+    status: 'pending_processor',
+    history: [
+      {
+        action: 'variant_created',
+        performedBy: userId,
+        role: 'creator',
+        timestamp: new Date(),
+        notes: `Variant created from question ${originalQuestionId}`,
+      },
+    ],
+  });
+
+  // Add history entry to original question
+  originalQuestion.history.push({
+    action: 'variant_created',
+    performedBy: userId,
+    role: 'creator',
+    timestamp: new Date(),
+    notes: `Variant question ${variantQuestion._id} created from this question`,
+  });
+  await originalQuestion.save();
+
+  return await Question.findById(variantQuestion._id)
+    .populate('exam', 'name')
+    .populate('subject', 'name')
+    .populate('topic', 'name')
+    .populate('createdBy', 'name email')
+    .populate('originalQuestion', 'questionText questionType');
+};
+
+/**
  * Get question by ID
  */
 const getQuestionById = async (questionId, userId, role) => {
@@ -79,10 +211,11 @@ const getQuestionById = async (questionId, userId, role) => {
     .populate('exam', 'name')
     .populate('subject', 'name')
     .populate('topic', 'name')
-    .populate('createdBy', 'name email')
-    .populate('lastModifiedBy', 'name email')
-    .populate('approvedBy', 'name email')
-    .populate('rejectedBy', 'name email');
+    .populate('createdBy', 'name fullName email')
+    .populate('lastModifiedBy', 'name fullName email')
+    .populate('approvedBy', 'name fullName email')
+    .populate('rejectedBy', 'name fullName email')
+    .populate('comments.commentedBy', 'name fullName email');
 
   if (!question) {
     throw new Error('Question not found');
@@ -174,14 +307,45 @@ const updateQuestionByCreator = async (questionId, updateData, userId) => {
   if (updateData.correctAnswer !== undefined) {
     question.correctAnswer = updateData.correctAnswer;
   }
+  
+  // Track if classification changed
+  let classificationChanged = false;
   if (updateData.exam !== undefined) {
     question.exam = updateData.exam;
+    classificationChanged = true;
   }
   if (updateData.subject !== undefined) {
     question.subject = updateData.subject;
+    classificationChanged = true;
   }
   if (updateData.topic !== undefined) {
     question.topic = updateData.topic;
+    classificationChanged = true;
+  }
+
+  // Update classification if exam, subject, or topic changed
+  if (classificationChanged) {
+    const finalExam = updateData.exam !== undefined ? updateData.exam : question.exam;
+    const finalSubject = updateData.subject !== undefined ? updateData.subject : question.subject;
+    const finalTopic = updateData.topic !== undefined ? updateData.topic : question.topic;
+
+    await Classification.findOneAndUpdate(
+      {
+        exam: finalExam,
+        subject: finalSubject,
+        topic: finalTopic,
+      },
+      {
+        exam: finalExam,
+        subject: finalSubject,
+        topic: finalTopic,
+        status: 'active',
+      },
+      {
+        upsert: true,
+        new: true,
+      }
+    );
   }
 
   question.lastModifiedBy = userId;
@@ -443,44 +607,130 @@ const getQuestionsCountByStatus = async (status, userId = null, role = null) => 
 };
 
 /**
- * Get all questions for superadmin with optional search
+ * Get all questions for superadmin with optional search and pagination
  */
-const getAllQuestionsForSuperadmin = async (filters = {}, searchTerm = '') => {
-  return await getQuestionsWithFilters(filters, null, null, searchTerm);
+const getAllQuestionsForSuperadmin = async (filters = {}, searchTerm = '', pagination = { page: 1, limit: 5 }) => {
+  const baseFilters = { ...filters };
+
+  // Handle tab filters - only apply if status is not explicitly provided
+  if (filters.tab && !filters.status) {
+    switch (filters.tab) {
+      case 'approved':
+        baseFilters.status = 'completed';
+        break;
+      case 'pending':
+        baseFilters.status = { $in: ['pending_processor', 'pending_creator', 'pending_explainer'] };
+        break;
+      case 'rejected':
+        baseFilters.status = 'rejected';
+        break;
+      case 'all':
+      default:
+        // No status filter for 'all'
+        break;
+    }
+  }
+  delete baseFilters.tab; // Remove tab from filters as it's not a DB field
+
+  const query = buildSearchQuery(baseFilters, searchTerm);
+
+  // Pagination
+  const page = parseInt(pagination.page) || 1;
+  const limit = parseInt(pagination.limit) || 5;
+  const skip = (page - 1) * limit;
+
+  // Get total count for pagination
+  const totalItems = await Question.countDocuments(query);
+
+  // Get paginated questions
+  const questions = await Question.find(query)
+    .populate('exam', 'name')
+    .populate('subject', 'name')
+    .populate('topic', 'name')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return {
+    questions,
+    pagination: {
+      currentPage: page,
+      totalPages,
+      totalItems,
+      itemsPerPage: limit,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    },
+  };
 };
 
 /**
- * Get question counts (total, completed, pending)
+ * Get question counts for tabs (all, approved, pending, rejected)
  * By default respects filters/search, but can be forced to ignore them
  */
 const getQuestionCounts = async (filters = {}, searchTerm = '', applyFilters = true) => {
   const baseFilters = applyFilters ? { ...filters } : {};
   const search = applyFilters ? searchTerm : '';
 
-  const totalQuery = buildSearchQuery(baseFilters, search);
+  // Remove tab from filters for count queries
+  const countFilters = { ...baseFilters };
+  delete countFilters.tab;
 
-  const completedFilters = baseFilters.status
-    ? { ...baseFilters }
-    : { ...baseFilters, status: 'completed' };
-  const completedQuery = buildSearchQuery(completedFilters, search);
+  const totalQuery = buildSearchQuery(countFilters, search);
+
+  const approvedFilters = { ...countFilters, status: 'completed' };
+  const approvedQuery = buildSearchQuery(approvedFilters, search);
 
   const pendingStatuses = ['pending_processor', 'pending_creator', 'pending_explainer'];
-  const pendingFilters = baseFilters.status
-    ? { ...baseFilters }
-    : { ...baseFilters, status: { $in: pendingStatuses } };
+  const pendingFilters = { ...countFilters, status: { $in: pendingStatuses } };
   const pendingQuery = buildSearchQuery(pendingFilters, search);
 
-  const [total, completed, pending] = await Promise.all([
+  const rejectedFilters = { ...countFilters, status: 'rejected' };
+  const rejectedQuery = buildSearchQuery(rejectedFilters, search);
+
+  const [total, approved, pending, rejected] = await Promise.all([
     Question.countDocuments(totalQuery),
-    Question.countDocuments(completedQuery),
+    Question.countDocuments(approvedQuery),
     Question.countDocuments(pendingQuery),
+    Question.countDocuments(rejectedQuery),
   ]);
 
   return {
     total,
-    completed,
+    approved,
     pending,
+    rejected,
   };
+};
+
+/**
+ * Add comment to question
+ */
+const addCommentToQuestion = async (questionId, comment, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (!comment || !comment.trim()) {
+    throw new Error('Comment is required');
+  }
+
+  // Add comment
+  question.comments.push({
+    comment: comment.trim(),
+    commentedBy: userId,
+    createdAt: new Date(),
+  });
+
+  await question.save();
+
+  // Return question with populated comment data
+  return await Question.findById(questionId)
+    .populate('comments.commentedBy', 'name fullName email');
 };
 
 module.exports = {
@@ -488,6 +738,7 @@ module.exports = {
   getQuestionsByStatus,
   getQuestionById,
   updateQuestionByCreator,
+  createQuestionVariant,
   updateExplanationByExplainer,
   approveQuestion,
   rejectQuestion,
@@ -500,5 +751,6 @@ module.exports = {
   getQuestionsCountByStatus,
   getAllQuestionsForSuperadmin,
   getQuestionCounts,
+  addCommentToQuestion,
 };
 

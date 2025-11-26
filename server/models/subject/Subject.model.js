@@ -7,6 +7,11 @@ const subjectSchema = new mongoose.Schema(
       required: [true, 'Subject name is required'],
       trim: true,
     },
+    description: {
+      type: String,
+      trim: true,
+      default: '',
+    },
   },
   {
     timestamps: true,

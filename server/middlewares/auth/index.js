@@ -2,6 +2,7 @@ const authMiddleware = require('./auth.middleware');
 const superadminMiddleware = require('./superadmin.middleware');
 const adminMiddleware = require('./admin.middleware');
 const adminOrSuperadminMiddleware = require('./adminOrSuperadmin.middleware');
+const studentMiddleware = require('./student.middleware');
 const {
   validateSignup,
   validateLogin,
@@ -23,6 +24,7 @@ module.exports = {
   superadminMiddleware,
   adminMiddleware,
   adminOrSuperadminMiddleware,
+  studentMiddleware,
   validateSignup,
   validateLogin,
   validateOTP,

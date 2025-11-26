@@ -2,7 +2,7 @@ const topicService = require('../../services/admin');
 
 /**
  * Create topic
- * Only admin can create topics
+ * Only superadmin can create topics
  */
 const createTopic = async (req, res, next) => {
   try {
@@ -15,11 +15,11 @@ const createTopic = async (req, res, next) => {
       requesterRole: req.user.role,
     });
 
-    // Ensure only admin can create topics
-    if (req.user.role !== 'admin') {
+    // Ensure only superadmin can create topics
+    if (req.user.role !== 'superadmin') {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Only admin can create topics',
+        message: 'Access denied. Only superadmin can create topics',
       });
     }
 
@@ -107,7 +107,7 @@ const createTopic = async (req, res, next) => {
 
 /**
  * Get all topics
- * Both admin and superadmin can access this
+ * All admin roles and students can access this
  */
 const getAllTopics = async (req, res, next) => {
   try {
@@ -150,7 +150,7 @@ const getAllTopics = async (req, res, next) => {
 
 /**
  * Get single topic by ID
- * Both admin and superadmin can access this
+ * All admin roles and students can access this
  */
 const getTopicById = async (req, res, next) => {
   try {
@@ -203,7 +203,7 @@ const getTopicById = async (req, res, next) => {
 
 /**
  * Update topic
- * Only admin can update topics
+ * Only superadmin can update topics
  */
 const updateTopic = async (req, res, next) => {
   try {
@@ -216,11 +216,11 @@ const updateTopic = async (req, res, next) => {
       requesterRole: req.user.role,
     });
 
-    // Ensure only admin can update topics
-    if (req.user.role !== 'admin') {
+    // Ensure only superadmin can update topics
+    if (req.user.role !== 'superadmin') {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Only admin can update topics',
+        message: 'Access denied. Only superadmin can update topics',
       });
     }
 
@@ -333,7 +333,7 @@ const updateTopic = async (req, res, next) => {
 
 /**
  * Delete topic
- * Only admin can delete topics
+ * Only superadmin can delete topics
  */
 const deleteTopic = async (req, res, next) => {
   try {
@@ -345,11 +345,11 @@ const deleteTopic = async (req, res, next) => {
       requesterRole: req.user.role,
     });
 
-    // Ensure only admin can delete topics
-    if (req.user.role !== 'admin') {
+    // Ensure only superadmin can delete topics
+    if (req.user.role !== 'superadmin') {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Only admin can delete topics',
+        message: 'Access denied. Only superadmin can delete topics',
       });
     }
 

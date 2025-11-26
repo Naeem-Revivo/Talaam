@@ -34,6 +34,13 @@ router.get(
   questionController.getQuestionDetailForSuperadmin
 );
 
+router.post(
+  '/all/:questionId/comment',
+  authMiddleware,
+  superadminMiddleware,
+  questionController.addCommentToQuestion
+);
+
 // Gatherer routes
 router.post(
   '/',
@@ -69,6 +76,13 @@ router.put(
   authMiddleware,
   creatorMiddleware,
   questionController.updateQuestion
+);
+
+router.post(
+  '/creator/:questionId/variant',
+  authMiddleware,
+  creatorMiddleware,
+  questionController.createQuestionVariant
 );
 
 // Explainer routes (must be before /:questionId to avoid route conflicts)
@@ -108,6 +122,7 @@ router.get(
   questionController.getQuestionById
 );
 
+// Specific routes must come before the general POST route
 router.post(
   '/processor/:questionId/approve',
   authMiddleware,
@@ -120,6 +135,14 @@ router.post(
   authMiddleware,
   processorMiddleware,
   questionController.rejectQuestion
+);
+
+// General POST route for processor (handles both approve and reject via body status)
+router.post(
+  '/processor/:questionId',
+  authMiddleware,
+  processorMiddleware,
+  questionController.approveQuestion
 );
 
 // Gatherer route for getting question by ID (must be last to avoid conflicts with specific routes)
