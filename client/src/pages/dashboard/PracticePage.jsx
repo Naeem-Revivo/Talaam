@@ -201,7 +201,7 @@ const PracticePage = () => {
                 45
               </span>
             </label>
-            <label className="flex items-center gap-3 cursor-pointer">
+            {/* <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={selectedStatuses.flagged}
@@ -214,7 +214,7 @@ const PracticePage = () => {
               <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
                 12
               </span>
-            </label>
+            </label> */}
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"

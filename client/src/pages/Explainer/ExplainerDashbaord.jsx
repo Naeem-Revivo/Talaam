@@ -43,9 +43,6 @@ const lastLoginData = {
               Welcome back, John Doe add explanations to approved questions and complete pending tasks.
             </p>
           </div>
-          <div className="">
-            <PrimaryButton text="Continue to Question Bank" className="py-[10px] px-10 w-full text-nowrap"/>
-          </div>
         </header>
          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column - Role Card */}
