@@ -4,9 +4,12 @@ import { OutlineButton } from "../../components/common/Button";
 import { useState } from "react";
 import SearchFilter from "../../components/common/SearchFilter";
 import { Table } from "../../components/common/TableComponent";
+import { useNavigate } from "react-router-dom";
+
 
 const CompletedQuestionPage = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
   const [subject, setSubject] = useState("");
@@ -75,6 +78,10 @@ const CompletedQuestionPage = () => {
     console.log('Edit item:', item);
   };
 
+  const handleCancel = () => {
+    navigate("/creator/question-bank");
+  };
+
   const subjectOptions = ["Subject", "Mathematics", "Physics", "Chemistry", "Biology"];
   const topicOptions = ["Processor", "Approved", "Failed", "Reject"];
   const subtopicOptions = ["Date", "Medium", "Easy", "Hard"];
@@ -92,7 +99,7 @@ const CompletedQuestionPage = () => {
               Review, refine, and create variant for questions assigned to you.
             </p>
           </div>
-            <OutlineButton text="Back" className="py-[10px] px-5"/>
+            <OutlineButton text="Back" className="py-[10px] px-5" onClick={handleCancel}/>
         </header>
 
         <SearchFilter

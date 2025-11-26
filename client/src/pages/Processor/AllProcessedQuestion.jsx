@@ -4,6 +4,7 @@ import { OutlineButton } from "../../components/common/Button";
 import { useState } from "react";
 import ProcessorFilter from "../../components/Processor/ProcessorFilter";
 import { Table } from "../../components/common/TableComponent";
+import { useNavigate } from "react-router-dom";
 
 const AllProcessedQuestion = () => {
   const { t } = useLanguage();
@@ -13,6 +14,7 @@ const AllProcessedQuestion = () => {
   const [topic, setTopic] = useState("");
   const [subtopic, setSubtopic] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const navigate = useNavigate();
 
    const processedColumns = [
     { key: 'questionTitle', label: 'QUESTION TITLE' },
@@ -74,12 +76,9 @@ const AllProcessedQuestion = () => {
     console.log('Edit item:', item);
   };
 
-  const stats=[
-    { label: "New Questions to Review", value: 124, color: "blue" },
-    { label: "Creator Submissions", value: 12, color: "blue" },
-    { label: "Accepted (Today)", value: 32, color: "red" },
-    { label: "Rejected (Today)", value: 8, color: "red" }
-  ]
+  const handleCancel = () => {
+    navigate("/processor/question-bank");
+  };
 
 
   return (
@@ -91,7 +90,7 @@ const AllProcessedQuestion = () => {
               All Processed Questions
             </h1>
           </div>
-            <OutlineButton text="Back" className="py-[10px] px-5"/>
+            <OutlineButton text="Back" className="py-[10px] px-5" onClick={handleCancel}/>
         </header>
 
         <ProcessorFilter
