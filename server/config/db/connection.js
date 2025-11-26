@@ -5,6 +5,11 @@ const mongoose = require('mongoose');
  */
 const connectDB = async () => {
   try {
+    // If already connected, return existing connection
+    if (mongoose.connection.readyState === 1) {
+      return mongoose.connection;
+    }
+
     const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/talaam', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -14,7 +19,11 @@ const connectDB = async () => {
     return conn;
   } catch (error) {
     console.error('MongoDB connection error:', error.message);
-    process.exit(1);
+    // Don't exit process in serverless environments
+    if (process.env.VERCEL !== '1') {
+      process.exit(1);
+    }
+    throw error;
   }
 };
 

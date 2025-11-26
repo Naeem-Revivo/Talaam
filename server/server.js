@@ -23,6 +23,8 @@ const errorHandler = require('./middlewares/error');
 app.use(errorHandler);
 
 // Database connection - connect on first request in serverless
+// Don't connect at module load time in serverless (Vercel)
+// Connection will be handled by the API handler
 let dbConnected = false;
 const connectDBOnce = async () => {
   if (!dbConnected) {
@@ -30,9 +32,6 @@ const connectDBOnce = async () => {
     dbConnected = true;
   }
 };
-
-// Initialize database connection
-connectDBOnce().catch(console.error);
 
 // Start subscription expiry scheduled job
 // Runs daily at midnight (00:00) to update expired subscriptions
