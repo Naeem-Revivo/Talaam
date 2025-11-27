@@ -181,12 +181,6 @@ const CreatorQuestionBank = () => {
               className="py-[10px] px-[14px]"
             />
 
-            <OutlineButton
-              text={t("creator.questionBank.createVariants")}
-              onClick={handleCreateVariant}
-              className="py-[10px] px-[14px]"
-            />
-
             <PrimaryButton
               text={t("creator.questionBank.assignedQuestions")}
               className="py-[10px] px-5"

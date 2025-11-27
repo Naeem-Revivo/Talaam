@@ -1,4 +1,68 @@
 {
+  "header": {
+    "titles": {
+      "gatherer": {
+        "dashboard": "Gatherer Dashboard",
+        "questionBank": "Question Bank",
+        "profile": "Profile",
+        "default": "Gatherer Dashboard"
+      },
+      "creator": {
+        "dashboard": "Creator Dashboard",
+        "questionBank": "Question Bank",
+        "profile": "Profile",
+        "default": "Creator Dashboard"
+      },
+      "processor": {
+        "dashboard": "Processor Dashboard",
+        "questionBank": "Question Bank",
+        "gathererSubmission": "Gatherer Submission",
+        "creatorSubmission": "Creator Submission",
+        "explainerSubmission": "Explainer Submission",
+        "profile": "Profile",
+        "default": "Processor Dashboard"
+      },
+      "explainer": {
+        "dashboard": "Explainer Dashboard",
+        "questionBank": "Question Bank",
+        "profile": "Profile",
+        "default": "Explainer Dashboard"
+      },
+      "admin": {
+        "dashboard": "Admin Dashboard",
+        "addAnnouncements": "New Announcements",
+        "announcements": "Site-wide Announcements",
+        "languageManagement": "Language Management",
+        "emailTemplate": "Email Templates",
+        "rolesPermissions": "Admin Roles & Permissions",
+        "userManagement": "User Management",
+        "questionBank": "Question Bank",
+        "questionManagement": "Question Management",
+        "addQuestion": "Add New Question",
+        "questionDetails": "View Question Details",
+        "createVariant": "Create Variant",
+        "classification": "Classification Management",
+        "subscriptions": "Subscriptions & Billing",
+        "reports": "Reports & Analytics",
+        "moderation": "Content Moderation",
+        "settings": "System Settings",
+        "security": "Security Permissions",
+        "default": "Admin Dashboard"
+      },
+      "user": {
+        "dashboard": "Dashboard",
+        "practiceSession": "Practice Session",
+        "performanceAnalytics": "Performance Analytics",
+        "reviewIncorrect": "Review Incorrect",
+        "reviewAll": "Review All",
+        "reviewSessions": "Review Sessions",
+        "sessionSummary": "Session Summary",
+        "questionSession": "Question Session",
+        "subscriptionsBilling": "Subscriptions & Billing",
+        "default": "Dashboard"
+      }
+    }
+  },
   "navbar": {
     "howItWorks": "How it works",
     "products": "Products",
@@ -2716,6 +2780,7 @@
         "task4": "Maintain quality of explanations"
       },
       "pendingTasks": "Pending Tasks",
+      "roleLabel": "Role",
       "performance": {
         "title": "Your Performance",
         "subtitle": "Based on the last {{days}} days.",
