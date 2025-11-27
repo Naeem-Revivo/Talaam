@@ -3,13 +3,13 @@ import { useLanguage } from "../../../context/LanguageContext";
 export default function Tabs({ activeTab, onTabChange }) {
   const { t } = useLanguage();
   const tabs = [
-    { key: "Exams", label: "Exams" },
+    { key: "Exams", label: t('admin.classificationManagement.tabs.exams') },
     { key: "Subject", label: t('admin.classificationManagement.tabs.subject') },
     { key: "Topics", label: t('admin.classificationManagement.tabs.topics') },
   ];
 
   return (
-    <div className="flex space-x-2">
+    <div className="flex gap-2">
       {tabs.map((tab) => (
         <button
           key={tab.key}

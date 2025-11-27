@@ -38,7 +38,7 @@ const GathererQuestionBank = () => {
       processor: "John Doe",
       lastUpdate: "Today",
       status: "Approved",
-      actionType: "view",
+      actionType: "viewicon",
     },
     {
       id: 2,
@@ -46,7 +46,7 @@ const GathererQuestionBank = () => {
       processor: "John Smith",
       lastUpdate: "Today",
       status: "Approved",
-      actionType: "update",
+      actionType: "viewicon",
     },
     {
       id: 3,
@@ -54,7 +54,7 @@ const GathererQuestionBank = () => {
       processor: "Admin",
       lastUpdate: "Yesterday",
       status: "Sent back",
-      actionType: "fix",
+      actionType: "viewicon",
     },
     {
       id: 4,
@@ -62,7 +62,7 @@ const GathererQuestionBank = () => {
       processor: "John Doe",
       lastUpdate: "2 days ago",
       status: "Reject",
-      actionType: "fix",
+      actionType: "viewicon",
     },
   ];
 
