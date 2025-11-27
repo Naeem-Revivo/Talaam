@@ -11,11 +11,10 @@ const SearchFilter = ({
   onTopicChange,
   onSubtopicChange,
   searchPlaceholder,
-  // New props for labels and options
   subjectLabel = "Subject",
-  topicLabel = "Gatherer", 
+  topicLabel = "Gatherer",
   subtopicLabel = "Status",
-  subjectOptions = [],
+  subjectOptions,
   topicOptions = [],
   subtopicOptions = [],
 }) => {
@@ -29,14 +28,16 @@ const SearchFilter = ({
     <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-5 w-full">
         {/* Search Input */}
-        <div className="w-full lg:w-[580px]">
+        <div className="w-full">
           <p className="text-sm font-medium text-oxford-blue mb-1 block lg:hidden">
             {placeholder}
           </p>
 
-          <div className="relative flex items-center h-[48px] rounded-lg bg-white shadow-filter 
+          <div
+            className="relative flex items-center h-[48px] w-full rounded-lg bg-white shadow-filter 
                 focus-within:border-[#032746] focus-within:ring-2 focus-within:ring-[#D6E3F0] 
-                border border-transparent transition-all duration-150">
+                border border-transparent transition-all duration-150"
+          >
             <span className="pl-3 flex items-center justify-center">
               <svg
                 width="20"
@@ -59,35 +60,45 @@ const SearchFilter = ({
               value={searchValue}
               onChange={(e) => onSearchChange?.(e.target.value)}
               placeholder={placeholder}
-              className="flex-1 h-full rounded-lg bg-transparent px-3 text-sm font-roboto 
+              className="flex-1 h-full w-full rounded-lg bg-transparent px-3 text-sm font-roboto 
                         text-oxford-blue placeholder:text-[#9CA3AF] focus:outline-none"
             />
           </div>
         </div>
 
-        {/* Subject Dropdown */}
-        <Dropdown
-          label={subjectLabel}
-          value={subjectValue}
-          options={subjectOptions}
-          onChange={onSubjectChange}
-        />
+        <div className="flex flex-col lg:flex-row items-center gap-5 w-full">
+          {/* Subject Dropdown - Only show if subjectOptions is provided */}
+          {subjectOptions && subjectOptions.length > 0 && (
+            <Dropdown
+              label={subjectLabel}
+              value={subjectValue}
+              options={subjectOptions}
+              onChange={onSubjectChange}
+              className="w-full"
+            />
+          )}
 
-        {/* Topic Dropdown */}
-        <Dropdown
-          label={topicLabel}
-          value={topicValue}
-          options={topicOptions}
-          onChange={onTopicChange}
-        />
+          {/* Topic Dropdown */}
+          {topicOptions && topicOptions.length > 0 && (
+            <Dropdown
+              label={topicLabel}
+              value={topicValue}
+              options={topicOptions}
+              onChange={onTopicChange}
+              className="w-full"
+            />
+          )}
 
-        {/* Subtopic Dropdown */}
-        <Dropdown
-          label={subtopicLabel}
-          value={subtopicValue}
-          options={subtopicOptions}
-          onChange={onSubtopicChange}
-        />
+          {/* Subtopic Dropdown */}
+          {subtopicOptions && subtopicOptions.length > 0 && (
+            <Dropdown
+              label={subtopicLabel}
+              value={subtopicValue}
+              options={subtopicOptions}
+              onChange={onSubtopicChange}
+            />
+          )}
+        </div>
       </div>
     </section>
   );

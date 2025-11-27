@@ -30,28 +30,28 @@ const DraftExplanationPage = () => {
       id: 1,
       questionTitle: "Newton MCQ",
       lastEdited: "2 days ago",
-      status: "Draft",
+      status: "Pending",
       actionType: "continue",
     },
     {
       id: 2,
       questionTitle: "Plant Nutrition",
       lastEdited: "5 days ago",
-      status: "Draft",
+      status: "Pending",
       actionType: "continue",
     },
     {
       id: 3,
       questionTitle: "Force & Motion",
       lastEdited: "John Doe", // Inconsistent data as shown in image
-      status: "Draft",
+      status: "Pending",
       actionType: "continue",
     },
     {
       id: 4,
       questionTitle: "Newton MCQ",
       lastEdited: "Ali Raza", // Inconsistent data as shown in image
-      status: "Draft",
+      status: "Pending",
       actionType: "continue",
     },
   ];
@@ -86,7 +86,7 @@ const DraftExplanationPage = () => {
         <header className="flex justify-between gap-4">
           <div>
             <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue mb-2">
-              Draft Explanations
+              Pending Explanations
             </h1>
           </div>
           <OutlineButton text="Back" className="py-[10px] px-5" onClick={handleCancel}/>
@@ -94,17 +94,13 @@ const DraftExplanationPage = () => {
 
         <SearchFilter
           searchValue={search}
-          subjectValue={subject}
-          topicValue={topic}
           subtopicValue={subtopic}
           onSearchChange={setSearch}
           onSubjectChange={setSubject}
           onTopicChange={setTopic}
           onSubtopicChange={setSubtopic}
-          subjectOptions={subjectOptions}
-          topicOptions={topicOptions}
           subtopicOptions={subtopicOptions}
-          searchPlaceholder="Search draft explanations..."
+          searchPlaceholder="Search Pending explanations..."
         />
 
         <Table

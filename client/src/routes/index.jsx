@@ -96,6 +96,7 @@ import GathererProfile from '../pages/Gatherer/GathererProfile';
 import CreatorProfile from '../pages/Creator/CreatorProfile';
 import ProcessorProfile from '../pages/Processor/ProcessorProfile';
 import ExplainerProfile from '../pages/Explainer/ExplainerProfile';
+import AddNewExam from '../pages/admin/AddNewExam';
 
 export const AppRoutes = () => {
   return (
@@ -158,6 +159,7 @@ export const AppRoutes = () => {
           <Route path="classification/add-topic" element={<AddTopicPage />} />
           <Route path="classification/add-subtopic" element={<AddSubTopicPage />} />
           <Route path="classification/add-concept" element={<AddConceptPage />} />
+          <Route path="classification/add-exam" element={<AddNewExam />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
           <Route path="question-management" element={<QuestionManagementPage />} />
           <Route path="add-question" element={<AddNewQuestionPage />} />

@@ -1031,7 +1031,9 @@
         "subject": "Subject",
         "topic": "Topic",
         "cognitiveLevel": "Cognitive Level",
-        "source": "Source (Optional)"
+        "source": "Source (Optional)",
+        "exam": "Exam",
+        "reference": "Reference"
       },
       "placeholders": {
         "questionText": "Enter your question text here...",
@@ -1039,7 +1041,9 @@
         "selectSubject": "Select Subject",
         "selectTopic": "Select Topic",
         "selectLevel": "Select Level",
-        "selectSource": "Select Source"
+        "selectSource": "Select Source",
+        "selectExam": "Select Exam",
+        "addReference": "Add Reference"
       },
       "questionTypes": {
         "multipleChoice": "Multiple Choice (MCQ)",
@@ -1065,6 +1069,26 @@
         "textbook": "Textbook",
         "pastExam": "Past Exam",
         "custom": "Custom"
+      }
+    },
+    "addExam": {
+      "hero": {
+        "title": "Add New Exam",
+        "subtitle": "Organize questions by subject, topic, subtopic, and concept"
+      },
+      "fields": {
+        "parentSubject": "Parent Subject",
+        "topicName": "Topic Name",
+        "description": "Description"
+      },
+      "placeholders": {
+        "parentSubject": "e.g. Mathematics",
+        "topicName": "e.g. Algebraic Expression",
+        "description": "A brief description of the Exam"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "saveExam": "Save Exam"
       }
     },
     "questionDetails": {
@@ -2339,20 +2363,20 @@
     }
   },
   "gatherer": {
-      "sidebar": {
-        "dashboard": "Dashboard",
-        "questionBank": "Question Bank",
-        "profile": "Profile"
-      }
-    },
-     "processor": {
-      "sidebar": {
-        "dashboard": "Dashboard",
-        "questionBank": "Question Bank",
-        "gathererSubmission": "Gatherer Submission",
-        "creatorSubmission": "Creator Submission",
-        "explainerSubmission": "Explainer Submission",
-        "profile": "Profile"
-      }
+    "sidebar": {
+      "dashboard": "Dashboard",
+      "questionBank": "Question Bank",
+      "profile": "Profile"
     }
+  },
+  "processor": {
+    "sidebar": {
+      "dashboard": "Dashboard",
+      "questionBank": "Question Bank",
+      "gathererSubmission": "Gatherer Submission",
+      "creatorSubmission": "Creator Submission",
+      "explainerSubmission": "Explainer Submission",
+      "profile": "Profile"
+    }
+  }
 }
