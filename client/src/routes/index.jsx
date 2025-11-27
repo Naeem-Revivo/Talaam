@@ -160,7 +160,7 @@ export const AppRoutes = () => {
           <Route path="classification/add-exam" element={<AddNewExam />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
           <Route path="question-management" element={<QuestionManagementPage />} />
-          <Route path="add-question" element={<AddNewQuestionPage />} />
+          <Route path="question-bank/add-question" element={<AddNewQuestionPage />} />
           <Route path="question-details" element={<QuestionDetailsPage />} />
           <Route path="create-variant" element={<CreateVariantPage />} />
           <Route path="variant-question-review" element={<VariantQuestionReviewPage />} />

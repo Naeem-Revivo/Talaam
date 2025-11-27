@@ -917,7 +917,7 @@ const GathererQuestionDetailsPage = () => {
             </div>
 
             {/* Explanation Card */}
-            <div
+            {/* <div
               className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full h-auto lg:h-[199px]"
               style={{}}
             >
@@ -935,7 +935,7 @@ const GathererQuestionDetailsPage = () => {
                   miles).
                 </p>
               </div>
-            </div>
+            </div> */}
 
             {/* Comments Card */}
             <div

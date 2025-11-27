@@ -93,23 +93,23 @@ const getTabConfig = (subjects, topics, subtopics, exams, t) => ({
     data: exams,
     columns: [
       {
-        label: "EXAM",
+        label: t("admin.classificationManagement.table.columns.examName"),
         key: "name",
       },
       {
-        label: "DESCRIPTION",
+        label:  t("admin.classificationManagement.table.columns.description"),
         key: "description",
       },
       {
-        label: "DATE",
+        label: t("admin.classificationManagement.table.columns.date"),
         key: "date",
       },
       {
-        label: "ACTIONS",
+        label: t("admin.classificationManagement.table.columns.actions"),
         key: "actions",
       },
     ],
-    addButtonText: "Add New Exam",
+    addButtonText: t('admin.classificationManagement.actions.addNewExam'),
     addRoute: "/admin/classification/add-exam",
     emptyMessage: "No exams found",
     heading: "Exam",
@@ -121,31 +121,31 @@ const getTabConfig = (subjects, topics, subtopics, exams, t) => ({
 const mockExams = [
   {
     id: 1,
-    name: "Mathematics",
+    name: "Tahseely",
     description: "The study of numbers, shapes, and...",
     date: "01-10-2023",
   },
   {
     id: 2,
-    name: "Physics",
+    name: "Qudrat",
     description: "The study of matter and energy and th...",
     date: "02-10-2023",
   },
   {
     id: 3,
-    name: "Chemistry",
+    name: "Qudrat",
     description: "The study of substances and their prop...",
     date: "03-10-2023",
   },
   {
     id: 4,
-    name: "Biology",
+    name: "Qudrat",
     description: "The study of living organisms and their...",
     date: "04-10-2023",
   },
   {
     id: 5,
-    name: "History",
+    name: "Tahseely",
     description: "The study of past events, particularly th...",
     date: "05-10-2023",
   },
@@ -235,20 +235,16 @@ const ClassificationManagement = () => {
 
   const statsData = [
     {
+      label: t("admin.classificationManagement.stats.exam"),
+      value: exams.length,
+    },
+    {
       label: t("admin.classificationManagement.stats.subjects"),
       value: subjects.length,
     },
     {
-      label: "Exams",
-      value: exams.length,
-    },
-    {
       label: t("admin.classificationManagement.stats.topics"),
       value: topics.length,
-    },
-    {
-      label: t("admin.classificationManagement.stats.subtopics"),
-      value: subtopics.length,
     },
   ];
 

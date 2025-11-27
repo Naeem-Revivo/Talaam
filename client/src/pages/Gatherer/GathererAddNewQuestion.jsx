@@ -77,6 +77,7 @@ const GathererAddNewQuestionPage = () => {
   const [options, setOptions] = useState({ A: "", B: "", C: "", D: "" });
   const [correctAnswer, setCorrectAnswer] = useState("Option A");
   const [subject, setSubject] = useState("");
+  const [exam, setExam] = useState("");
   const [topic, setTopic] = useState("");
   const [source, setSource] = useState("");
   const [_explanation, _setExplanation] = useState(
@@ -1046,6 +1047,21 @@ const GathererAddNewQuestionPage = () => {
 
               <div className="space-y-6">
                 {/* Subject */}
+
+                <div>
+                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                    {t('gatherer.addNewQuestion.classification.exam')}
+                  </label>
+                  <Dropdown
+                    value={exam}
+                    onChange={setExam}
+                    options={[
+                      'Tahseely',
+                      'Qudrat',
+                    ]}
+                  />
+                </div>
+
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                     {t('gatherer.addNewQuestion.classification.subject')}
@@ -1081,7 +1097,7 @@ const GathererAddNewQuestionPage = () => {
                 {/* Reference */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.classification.source')}
+                    {t('gatherer.addNewQuestion.classification.reference')}
                   </label>
                   <input
                     type="text"

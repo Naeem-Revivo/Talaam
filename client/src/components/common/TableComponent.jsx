@@ -98,10 +98,18 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
               onClick={() => onCustomAction?.(item)}
               className="text-orange-dark text-[14px] flex items-center gap-3 font-normal leading-[16px] font-roboto hover:underline transition"
             >
-              <svg width="14" height="14" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M1.21997 10.28C0.926971 9.98703 0.926971 9.51199 1.21997 9.21899C1.51297 8.92599 1.98801 8.92599 2.28101 9.21899L6.00098 12.939V0.75C6.00098 0.336 6.33698 0 6.75098 0C7.16498 0 7.50098 0.336 7.50098 0.75V12.939L11.2209 9.21899C11.5139 8.92599 11.989 8.92599 12.282 9.21899C12.575 9.51199 12.575 9.98703 12.282 10.28L7.28198 15.28C7.21298 15.349 7.13006 15.4039 7.03906 15.4419C6.94806 15.4799 6.84995 15.5 6.75195 15.5C6.65395 15.5 6.55709 15.4799 6.46509 15.4419C6.37309 15.4039 6.29092 15.349 6.22192 15.28L1.21997 10.28ZM12.75 18H0.75C0.336 18 0 18.336 0 18.75C0 19.164 0.336 19.5 0.75 19.5H12.75C13.164 19.5 13.5 19.164 13.5 18.75C13.5 18.336 13.164 18 12.75 18Z" fill="#ED4122"/>
-</svg>
-
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M1.21997 10.28C0.926971 9.98703 0.926971 9.51199 1.21997 9.21899C1.51297 8.92599 1.98801 8.92599 2.28101 9.21899L6.00098 12.939V0.75C6.00098 0.336 6.33698 0 6.75098 0C7.16498 0 7.50098 0.336 7.50098 0.75V12.939L11.2209 9.21899C11.5139 8.92599 11.989 8.92599 12.282 9.21899C12.575 9.51199 12.575 9.98703 12.282 10.28L7.28198 15.28C7.21298 15.349 7.13006 15.4039 7.03906 15.4419C6.94806 15.4799 6.84995 15.5 6.75195 15.5C6.65395 15.5 6.55709 15.4799 6.46509 15.4419C6.37309 15.4039 6.29092 15.349 6.22192 15.28L1.21997 10.28ZM12.75 18H0.75C0.336 18 0 18.336 0 18.75C0 19.164 0.336 19.5 0.75 19.5H12.75C13.164 19.5 13.5 19.164 13.5 18.75C13.5 18.336 13.164 18 12.75 18Z"
+                  fill="#ED4122"
+                />
+              </svg>
               Download
             </button>
           )}
@@ -113,6 +121,33 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
               className="text-orange-dark text-[14px] font-normal leading-[16px] font-roboto hover:underline transition"
             >
               View
+            </button>
+          )}
+          {item.actionType === "viewicon" && (
+            <button
+              type="button"
+              onClick={() => onView?.(item)}
+              className="text-blue-dark text-[14px] font-normal leading-[16px] font-roboto hover:underline transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                className="h-5 w-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M2.036 12.322a1 1 0 0 1 0-.644C3.423 7.51 7.36 4.5 12 4.5s8.577 3.01 9.964 7.178a1 1 0 0 1 0 .644C20.577 16.49 16.64 19.5 12 19.5s-8.577-3.01-9.964-7.178Z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                />
+              </svg>
             </button>
           )}
           {item.actionType === "update" && (
@@ -288,6 +323,33 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction }) => {
             className="text-orange-dark text-[14px] font-normal leading-[16px] font-roboto hover:underline transition"
           >
             View
+          </button>
+        )}
+        {item.actionType === "viewicon" && (
+          <button
+            type="button"
+            onClick={() => onView?.(item)}
+            className="text-orange-dark text-[14px] font-normal leading-[16px] font-roboto hover:underline transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              className="h-5 w-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M2.036 12.322a1 1 0 0 1 0-.644C3.423 7.51 7.36 4.5 12 4.5s8.577 3.01 9.964 7.178a1 1 0 0 1 0 .644C20.577 16.49 16.64 19.5 12 19.5s-8.577-3.01-9.964-7.178Z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+              />
+            </svg>
           </button>
         )}
         {item.actionType === "update" && (
