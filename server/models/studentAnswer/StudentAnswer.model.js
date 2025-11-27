@@ -33,7 +33,6 @@ const studentAnswerSchema = new mongoose.Schema(
     },
     selectedAnswer: {
       type: String,
-      required: [true, 'Selected answer is required'],
     },
     isCorrect: {
       type: Boolean,

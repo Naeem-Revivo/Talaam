@@ -42,6 +42,20 @@ router.post(
 );
 
 // Gatherer routes
+router.get(
+  '/gatherer/stats',
+  authMiddleware,
+  gathererMiddleware,
+  questionController.getGathererStats
+);
+
+router.get(
+  '/gatherer/list',
+  authMiddleware,
+  gathererMiddleware,
+  questionController.getGathererQuestions
+);
+
 router.post(
   '/',
   authMiddleware,

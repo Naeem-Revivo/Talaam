@@ -4,22 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { DataTable } from "../../components/admin/SystemSetting/Table";
 import basePlansData from "../../data/subscriptionPlansData.json";
-import Dropdown from "../../components/shared/Dropdown";
 
 // Mock data for subscription plans
 // DataTable converts column names to keys by: columnName.toLowerCase().replace(/ /g, "")
 // So "PLAN NAME" becomes "planname", "PRICE" becomes "price", etc.
 const allPlans = [
     ...basePlansData,
-    // Add more mock data to reach 25 total
-    ...Array.from({ length: 22 }, (_, i) => ({
-      id: i + 4,
-      planname: `Plan ${i + 4}`,
-      price: `$${((i + 4) * 10).toFixed(2)}`,
-      duration: i % 2 === 0 ? "Monthly" : "Yearly",
-      subscriber: Math.floor(Math.random() * 300) + 10,
-      status: i % 3 === 0 ? "Inactive" : "Active",
-    })),
 ];
 
 const SubscriptionPlan = () => {
@@ -98,7 +88,7 @@ const SubscriptionPlan = () => {
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 sm:px-6 2xl:px-[66px]">
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-5">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-[110px]">
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
@@ -139,7 +129,7 @@ const SubscriptionPlan = () => {
         </header>
 
         {/* Status Filter */}
-        <div className="w-[165px]">
+        {/* <div className="w-[165px]">
           <Dropdown
             value={statusFilter || ""}
             options={[
@@ -156,7 +146,7 @@ const SubscriptionPlan = () => {
             className="w-full"
             height="h-[50px]"
           />
-        </div>
+        </div> */}
 
         {/* Table */}
         <DataTable
