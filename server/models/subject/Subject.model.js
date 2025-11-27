@@ -12,6 +12,12 @@ const subjectSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    plan: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Plan',
+      required: [true, 'Plan reference is required'],
+      index: true,
+    },
   },
   {
     timestamps: true,

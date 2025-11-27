@@ -230,6 +230,109 @@ const getQuestionById = async (questionId, userId, role) => {
 };
 
 /**
+ * Get gatherer-level question statistics
+ */
+const getGathererQuestionStats = async (gathererId) => {
+  const totalSubmitted = await Question.countDocuments({ createdBy: gathererId });
+  const totalApproved = await Question.countDocuments({
+    createdBy: gathererId,
+    status: 'completed',
+  });
+  const totalRejected = await Question.countDocuments({
+    createdBy: gathererId,
+    status: 'rejected',
+  });
+
+  const totalPending = Math.max(
+    totalSubmitted - totalApproved - totalRejected,
+    0
+  );
+
+  const acceptanceRate =
+    totalSubmitted > 0
+      ? Number(((totalApproved / totalSubmitted) * 100).toFixed(2))
+      : 0;
+  const rejectionRate =
+    totalSubmitted > 0
+      ? Number(((totalRejected / totalSubmitted) * 100).toFixed(2))
+      : 0;
+
+  return {
+    totalSubmitted,
+    totalApproved,
+    totalRejected,
+    totalPending,
+    acceptanceRate,
+    rejectionRate,
+  };
+};
+
+/**
+ * Get gatherer questions for dashboard table (with pagination)
+ */
+const getGathererQuestions = async (gathererId, { page = 1, limit = 20 } = {}) => {
+  const normalizedPage = Math.max(parseInt(page, 10) || 1, 1);
+  const normalizedLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+  const skip = (normalizedPage - 1) * normalizedLimit;
+
+  const query = { createdBy: gathererId };
+
+  const [questions, totalSubmitted, stats] = await Promise.all([
+    Question.find(query)
+      .populate('exam', 'name')
+      .populate('subject', 'name')
+      .populate('topic', 'name')
+      .populate('createdBy', 'name fullName email')
+      .populate('approvedBy', 'name fullName email')
+      .populate('rejectedBy', 'name fullName email')
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(normalizedLimit),
+    Question.countDocuments(query),
+    getGathererQuestionStats(gathererId),
+  ]);
+
+  const rows = questions.map((q) => {
+    const processorUser = q.approvedBy || q.rejectedBy || null;
+    return {
+      id: q._id,
+      questionText: q.questionText,
+      exam: q.exam ? { id: q.exam._id, name: q.exam.name } : null,
+      subject: q.subject ? { id: q.subject._id, name: q.subject.name } : null,
+      topic: q.topic ? { id: q.topic._id, name: q.topic.name } : null,
+      status: q.status,
+      updatedAt: q.updatedAt,
+      processor: processorUser
+        ? {
+            id: processorUser._id,
+            name:
+              processorUser.name ||
+              processorUser.fullName ||
+              'Processor',
+            email: processorUser.email,
+          }
+        : null,
+    };
+  });
+
+  return {
+    summary: {
+      ...stats,
+      totalSubmitted,
+    },
+    questions: rows,
+    pagination: {
+      page: normalizedPage,
+      limit: normalizedLimit,
+      totalItems: totalSubmitted,
+      totalPages: Math.ceil(totalSubmitted / normalizedLimit),
+      hasNextPage: skip + rows.length < totalSubmitted,
+      hasPreviousPage: normalizedPage > 1,
+    },
+  };
+};
+
+/**
  * Update question by Creator
  */
 const updateQuestionByCreator = async (questionId, updateData, userId) => {
@@ -752,5 +855,7 @@ module.exports = {
   getAllQuestionsForSuperadmin,
   getQuestionCounts,
   addCommentToQuestion,
+  getGathererQuestionStats,
+  getGathererQuestions,
 };
 
