@@ -55,7 +55,7 @@ const QuestionBankFilters = ({
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:items-center">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 w-full gap-4 md:items-center">
         <div className="w-full">
           <Dropdown
             value={filters.exam || ""}
@@ -63,7 +63,7 @@ const QuestionBankFilters = ({
             onChange={(value) => onFilterChange?.("exam", value)}
             placeholder={t('admin.questionBank.filters.exam')}
             showDefaultOnEmpty={false}
-            className="w-full"
+            className="w-full lg:w-full"
             height="h-[50px]"
           />
         </div>
@@ -74,7 +74,7 @@ const QuestionBankFilters = ({
             onChange={(value) => onFilterChange?.("subject", value)}
             placeholder={t('admin.questionBank.filters.subject')}
             showDefaultOnEmpty={false}
-            className="w-full"
+            className="w-full lg:w-full"
             height="h-[50px]"
           />
         </div>
@@ -85,11 +85,11 @@ const QuestionBankFilters = ({
             onChange={(value) => onFilterChange?.("topic", value)}
             placeholder={t('admin.questionBank.filters.topic')}
             showDefaultOnEmpty={false}
-            className="w-full"
+            className="w-full lg:w-full"
             height="h-[50px]"
           />
         </div>
-        <div className="w-full">
+        {/* <div className="w-full">
           <Dropdown
             value={filters.level || ""}
             options={levelOptions}
@@ -99,7 +99,7 @@ const QuestionBankFilters = ({
             className="w-full"
             height="h-[50px]"
           />
-        </div>
+        </div> */}
         <div className="w-full">
           <Dropdown
             value={filters.status || ""}
@@ -107,7 +107,7 @@ const QuestionBankFilters = ({
             onChange={(value) => onFilterChange?.("status", value)}
             placeholder={t('admin.questionBank.filters.status')}
             showDefaultOnEmpty={false}
-            className="w-full"
+            className="w-full lg:w-full"
             height="h-[50px]"
           />
         </div>

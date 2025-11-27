@@ -3,20 +3,20 @@ import { useLanguage } from "../../context/LanguageContext";
 
 export default function AddNewExam() {
     const { t } = useLanguage();
-    const [parentSubject, setParentSubject] = useState("");
-    const [topicName, setTopicName] = useState("");
+    const [examName, setExamName] = useState("");
+    const [subject, setSubject] = useState("");
     const [description, setDescription] = useState("");
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const examData = { parentSubject, topicName, description };
+        const examData = { examName, subject, description };
         console.log("Created Exam:", examData);
         // TODO: Add API call or database save logic here
     };
 
     const handleCancel = () => {
-        setParentSubject("");
-        setTopicName("");
+        setExamName("");
+        setSubject("");
         setDescription("");
     };
 
@@ -39,31 +39,31 @@ export default function AddNewExam() {
                     </h3>
                     
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Parent Subject Input */}
+                        {/* Exam Name Input */}
                         <div>
                             <label className="block text-base font-normal text-blue-dark mb-3">
-                                {t('admin.addExam.fields.parentSubject')}
+                                {t('admin.addExam.fields.examName')}
                             </label>
                             <input
                                 type="text"
-                                placeholder={t('admin.addExam.placeholders.parentSubject')}
-                                value={parentSubject}
-                                onChange={(e) => setParentSubject(e.target.value)}
+                                placeholder={t('admin.addExam.placeholders.examName')}
+                                value={examName}
+                                onChange={(e) => setExamName(e.target.value)}
                                 className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
                                 required
                             />
                         </div>
 
-                        {/* Topic Name */}
+                        {/* Subject Input */}
                         <div>
                             <label className="block text-base font-normal text-blue-dark mb-3">
-                                {t('admin.addExam.fields.topicName')}
+                                {t('admin.addExam.fields.subject')}
                             </label>
                             <input
                                 type="text"
-                                placeholder={t('admin.addExam.placeholders.topicName')}
-                                value={topicName}
-                                onChange={(e) => setTopicName(e.target.value)}
+                                placeholder={t('admin.addExam.placeholders.subject')}
+                                value={subject}
+                                onChange={(e) => setSubject(e.target.value)}
                                 className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
                                 required
                             />

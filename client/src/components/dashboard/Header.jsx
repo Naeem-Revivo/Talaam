@@ -40,8 +40,37 @@ const Header = ({ onToggleSidebar }) => {
   };
 
   const handleSetting = () => {
-    navigate("/dashboard/setting")
-  };
+  const currentPath = location.pathname;
+
+  if (currentPath.startsWith("/gatherer")) {
+    navigate("/gatherer/profile");
+    return;
+  }
+
+  if (currentPath.startsWith("/creator")) {
+    navigate("/creator/profile");
+    return;
+  }
+
+  if (currentPath.startsWith("/processor")) {
+    navigate("/processor/profile");
+    return;
+  }
+
+  if (currentPath.startsWith("/explainer")) {
+    navigate("/explainer/profile");
+    return;
+  }
+
+  if (currentPath.startsWith("/admin")) {
+    navigate("/admin/settings");
+    return;
+  }
+
+  // Default: student dashboard
+  navigate("/dashboard/setting");
+};
+
 
   const getTitleByPath = (pathname) => {
 
