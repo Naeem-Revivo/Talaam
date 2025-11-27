@@ -23,7 +23,6 @@ const SearchFilter = ({
   const placeholder =
     searchPlaceholder ||
     t("admin.classificationManagement.filters.searchPlaceholder");
-
   return (
     <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-5 w-full">
