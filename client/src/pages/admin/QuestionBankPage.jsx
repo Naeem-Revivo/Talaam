@@ -334,7 +334,7 @@ const QuestionBankPage = () => {
           pageSize={pageSize}
           total={filteredQuestions.length}
           onPageChange={setPage}
-          onView={(question) => navigate(`/admin/question-details?id=${question.id}`)}
+          onView={(question) => navigate(`/admin/question-bank/question-details?id=${question.id}`)}
         />
       </div>
     </div>
