@@ -30,28 +30,28 @@ const DraftExplanationPage = () => {
       id: 1,
       questionTitle: "Newton MCQ",
       lastEdited: "2 days ago",
-      status: "Draft",
+      status: "Pending",
       actionType: "continue",
     },
     {
       id: 2,
       questionTitle: "Plant Nutrition",
       lastEdited: "5 days ago",
-      status: "Draft",
+      status: "Pending",
       actionType: "continue",
     },
     {
       id: 3,
       questionTitle: "Force & Motion",
       lastEdited: "John Doe", // Inconsistent data as shown in image
-      status: "Draft",
+      status: "Pending",
       actionType: "continue",
     },
     {
       id: 4,
       questionTitle: "Newton MCQ",
       lastEdited: "Ali Raza", // Inconsistent data as shown in image
-      status: "Draft",
+      status: "Pending",
       actionType: "continue",
     },
   ];
@@ -97,15 +97,11 @@ const DraftExplanationPage = () => {
 
         <SearchFilter
           searchValue={search}
-          subjectValue={subject}
-          topicValue={topic}
           subtopicValue={subtopic}
           onSearchChange={setSearch}
           onSubjectChange={setSubject}
           onTopicChange={setTopic}
           onSubtopicChange={setSubtopic}
-          subjectOptions={subjectOptions}
-          topicOptions={topicOptions}
           subtopicOptions={subtopicOptions}
           searchPlaceholder={t("explainer.draftExplanation.searchPlaceholder")}
         />

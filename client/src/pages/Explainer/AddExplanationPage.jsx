@@ -208,7 +208,7 @@ export default function AddExplanationPage() {
 
           <div>
             <h2 className="text-[20px] leading-[32px] font-bold text-blue-dark font-archivo mb-[18px]">
-              Final Approve Question
+              Explanation Editor
             </h2>
             <p className="text-[16px] leading-[100%] font-medium font-roboto text-blue-dark mb-5">
               Explanation
@@ -228,7 +228,7 @@ export default function AddExplanationPage() {
           onRemove={handleRemoveFile}
         />
 
-        <TeachingNotes value={teachingNotes} onChange={setTeachingNotes} />
+        {/* <TeachingNotes value={teachingNotes} onChange={setTeachingNotes} /> */}
 
         <div className="flex flex-col sm:flex-row sm:justify-end gap-3 px-5 pb-6 pt-2">
           <OutlineButton text="Cancel" className="py-[10px] px-7 text-nowrap" onClick={handleCancel}/>

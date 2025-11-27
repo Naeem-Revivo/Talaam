@@ -1041,7 +1041,9 @@
         "subject": "الموضوع",
         "topic": "الموضوع",
         "cognitiveLevel": "المستوى المعرفي",
-        "source": "المصدر (اختياري)"
+        "source": "المصدر (اختياري)",
+        "exam": "الامتحان",
+        "reference": "المرجع"
       },
       "placeholders": {
         "questionText": "أدخل نص السؤال هنا...",
@@ -1049,7 +1051,9 @@
         "selectSubject": "اختر الموضوع",
         "selectTopic": "اختر الموضوع",
         "selectLevel": "اختر المستوى",
-        "selectSource": "اختر المصدر"
+        "selectSource": "اختر المصدر",
+        "selectExam": "اختر الامتحان",
+        "addReference": "إضافة مرجع"
       },
       "questionTypes": {
         "multipleChoice": "اختيار متعدد (MCQ)",
@@ -1075,6 +1079,26 @@
         "textbook": "كتاب مدرسي",
         "pastExam": "امتحان سابق",
         "custom": "مخصص"
+      }
+    },
+    "addExam": {
+      "hero": {
+        "title": "إضافة امتحان جديد",
+        "subtitle": "تنظيم الأسئلة حسب المادة، الموضوع، الموضوع الفرعي، والمفهوم"
+      },
+      "fields": {
+        "parentSubject": "المادة الرئيسية",
+        "topicName": "اسم الموضوع",
+        "description": "الوصف"
+      },
+      "placeholders": {
+        "parentSubject": "مثال: الرياضيات",
+        "topicName": "مثال: التعبير الجبري",
+        "description": "وصف موجز للامتحان"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "saveExam": "حفظ الامتحان"
       }
     },
     "questionDetails": {
@@ -2948,4 +2972,4 @@
         "saveSettings": "حفظ الإعدادات"
       }
     }
-}
+  }

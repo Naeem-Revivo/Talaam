@@ -11,11 +11,10 @@ const SearchFilter = ({
   onTopicChange,
   onSubtopicChange,
   searchPlaceholder,
-  // New props for labels and options
   subjectLabel = "Subject",
-  topicLabel = "Gatherer", 
+  topicLabel = "Gatherer",
   subtopicLabel = "Status",
-  subjectOptions = [],
+  subjectOptions,
   topicOptions = [],
   subtopicOptions = [],
 }) => {
@@ -24,45 +23,20 @@ const SearchFilter = ({
   const placeholder =
     searchPlaceholder ||
     t("admin.classificationManagement.filters.searchPlaceholder");
-
   return (
-    <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6" dir="ltr">
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-5 w-full" dir="ltr" style={{ direction: 'ltr' }}>
-        {/* Topic Dropdown (Status) - First */}
-        <Dropdown
-          label={topicLabel}
-          value={topicValue}
-          options={topicOptions}
-          onChange={onTopicChange}
-        />
-
-        {/* Subject Dropdown - Second */}
-        <Dropdown
-          label={subjectLabel}
-          value={subjectValue}
-          options={subjectOptions}
-          onChange={onSubjectChange}
-        />
-
-        {/* Subtopic Dropdown - Only render if subtopicOptions is provided and not empty */}
-        {subtopicOptions && subtopicOptions.length > 0 && (
-          <Dropdown
-            label={subtopicLabel}
-            value={subtopicValue}
-            options={subtopicOptions}
-            onChange={onSubtopicChange}
-          />
-        )}
-
-        {/* Search Input - Last (Right side) */}
-        <div className="w-full lg:w-[580px] lg:ml-auto">
+    <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-5 w-full">
+        {/* Search Input */}
+        <div className="w-full">
           <p className="text-sm font-medium text-oxford-blue mb-1 block lg:hidden">
             {placeholder}
           </p>
 
-          <div className="relative flex items-center h-[48px] rounded-lg bg-white shadow-filter 
+          <div
+            className="relative flex items-center h-[48px] w-full rounded-lg bg-white shadow-filter 
                 focus-within:border-[#032746] focus-within:ring-2 focus-within:ring-[#D6E3F0] 
-                border border-transparent transition-all duration-150">
+                border border-transparent transition-all duration-150"
+          >
             <span className="pl-3 flex items-center justify-center">
               <svg
                 width="20"
@@ -85,10 +59,44 @@ const SearchFilter = ({
               value={searchValue}
               onChange={(e) => onSearchChange?.(e.target.value)}
               placeholder={placeholder}
-              className="flex-1 h-full rounded-lg bg-transparent px-3 text-sm font-roboto 
+              className="flex-1 h-full w-full rounded-lg bg-transparent px-3 text-sm font-roboto 
                         text-oxford-blue placeholder:text-[#9CA3AF] focus:outline-none"
             />
           </div>
+        </div>
+
+        <div className="flex flex-col lg:flex-row items-center gap-5 w-full">
+          {/* Subject Dropdown - Only show if subjectOptions is provided */}
+          {subjectOptions && subjectOptions.length > 0 && (
+            <Dropdown
+              label={subjectLabel}
+              value={subjectValue}
+              options={subjectOptions}
+              onChange={onSubjectChange}
+              className="w-full"
+            />
+          )}
+
+          {/* Topic Dropdown */}
+          {topicOptions && topicOptions.length > 0 && (
+            <Dropdown
+              label={topicLabel}
+              value={topicValue}
+              options={topicOptions}
+              onChange={onTopicChange}
+              className="w-full"
+            />
+          )}
+
+          {/* Subtopic Dropdown */}
+          {subtopicOptions && subtopicOptions.length > 0 && (
+            <Dropdown
+              label={subtopicLabel}
+              value={subtopicValue}
+              options={subtopicOptions}
+              onChange={onSubtopicChange}
+            />
+          )}
         </div>
       </div>
     </section>

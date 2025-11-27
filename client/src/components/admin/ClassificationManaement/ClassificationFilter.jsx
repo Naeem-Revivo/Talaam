@@ -24,13 +24,14 @@ const ClassificationFilter = ({
 
   return (
     <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-5 w-full">
+      <div className="flex flex-col lg:flex-row items-center gap-7 w-full">
         {/* Subject Dropdown */}
         <Dropdown
           label={t('admin.classificationManagement.filters.selectSubject')}
           value={subjectValue}
           options={subjectOptions}
           onChange={onSubjectChange}
+          className="w-[180px]"
         />
 
         {/* Topic Dropdown */}
@@ -39,18 +40,11 @@ const ClassificationFilter = ({
           value={topicValue}
           options={topicOptions}
           onChange={onTopicChange}
-        />
-
-        {/* Subtopic Dropdown */}
-        <Dropdown
-          label={t('admin.classificationManagement.filters.selectSubtopic')}
-          value={subtopicValue}
-          options={subtopicOptions}
-          onChange={onSubtopicChange}
+          className="w-[180px]"
         />
 
         {/* Search Input */}
-        <div className="w-full lg:w-[580px]">
+        <div className="w-full lg:max-w-[713px]">
           <p className="text-sm font-medium text-oxford-blue mb-1 block lg:hidden">
             {placeholder}
           </p>

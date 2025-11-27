@@ -3,10 +3,9 @@ import { useLanguage } from "../../../context/LanguageContext";
 export default function Tabs({ activeTab, onTabChange }) {
   const { t } = useLanguage();
   const tabs = [
+    { key: "Exams", label: "Exams" },
     { key: "Subject", label: t('admin.classificationManagement.tabs.subject') },
     { key: "Topics", label: t('admin.classificationManagement.tabs.topics') },
-    { key: "Subtopics", label: t('admin.classificationManagement.tabs.subtopics') },
-    { key: "Concepts", label: t('admin.classificationManagement.tabs.concepts') }
   ];
 
   return (

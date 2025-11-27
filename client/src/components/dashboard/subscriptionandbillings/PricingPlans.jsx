@@ -93,7 +93,7 @@ function PlanCard({ plan }) {
           </span>
           {plan.currency && (
             <>
-              <span className="text-[20px] leading-[100%] font-semibold font-archivo text-orange-dark">
+              <span className="ml-1 text-[20px] leading-[100%] font-semibold font-archivo text-orange-dark">
                 {plan.currency}
               </span>
               <span className="text-[20px] leading-[100%] font-semibold font-archivo text-orange-dark">

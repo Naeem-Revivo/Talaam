@@ -62,7 +62,7 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
                     : isReject
                     ? "bg-[#C6D8D3] text-blue-dark"
                     : isPending
-                    ? "bg-[#C6D8D3] text-blue-dark"
+                    ? "bg-[#FDF0D5] text-[#ED4122]"
                     : "bg-gray-200 text-gray-700"
                 }`}
               >
@@ -225,7 +225,7 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction }) => {
                       : isReject
                       ? "bg-[#C6D8D3] text-blue-dark"
                       : isPending
-                      ? "bg-[#C6D8D3] text-blue-dark"
+                      ? "bg-[#FDF0D5] text-[#ED4122]"
                       : "bg-gray-200 text-gray-700"
                   }`}
                 >

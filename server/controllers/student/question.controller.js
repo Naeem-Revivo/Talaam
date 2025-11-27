@@ -220,6 +220,141 @@ const getTestResultById = async (req, res, next) => {
 };
 
 /**
+ * Get overall test summary for a student
+ * GET /api/student/questions/test/summary?exam=...
+ */
+const getTestSummary = async (req, res, next) => {
+  try {
+    const { exam } = req.query;
+    const studentId = req.user.id;
+    const filters = {};
+
+    if (exam) {
+      filters.exam = exam;
+    }
+
+    const summary = await questionService.getTestSummary(studentId, filters);
+
+    res.status(200).json({
+      success: true,
+      data: summary,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get combined session history (test + study)
+ * GET /api/student/questions/sessions?mode=all&page=1&limit=10
+ */
+const getSessionHistory = async (req, res, next) => {
+  try {
+    const { mode = 'all', page = 1, limit = 10 } = req.query;
+    const studentId = req.user.id;
+
+    const result = await questionService.getSessionHistory(studentId, {
+      mode,
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+    });
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get session detail (test or study)
+ * GET /api/student/questions/sessions/:sessionId
+ */
+const getSessionDetail = async (req, res, next) => {
+  try {
+    const { sessionId } = req.params;
+    const studentId = req.user.id;
+
+    const detail = await questionService.getSessionDetail(studentId, sessionId);
+
+    res.status(200).json({
+      success: true,
+      data: detail,
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * Get incorrect items for a session
+ * GET /api/student/questions/sessions/:sessionId/incorrect
+ */
+const getSessionIncorrect = async (req, res, next) => {
+  try {
+    const { sessionId } = req.params;
+    const studentId = req.user.id;
+
+    const detail = await questionService.getSessionIncorrectItems(
+      studentId,
+      sessionId
+    );
+
+    res.status(200).json({
+      success: true,
+      data: detail,
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * Get plan structure (subjects → topics → questions) for a given plan
+ * GET /api/student/questions/plan/structure?planId=...
+ */
+const getPlanStructure = async (req, res, next) => {
+  try {
+    const { planId } = req.query;
+    if (!planId) {
+      return res.status(400).json({
+        success: false,
+        message: 'planId query parameter is required',
+      });
+    }
+
+    const structure = await questionService.getPlanStructure(planId);
+
+    res.status(200).json({
+      success: true,
+      data: structure,
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+/**
  * Get student's study history
  * GET /api/student/questions/study/history?exam=...&question=...&limit=...
  */
@@ -255,6 +390,11 @@ module.exports = {
   submitTestAnswers,
   getTestHistory,
   getTestResultById,
+  getTestSummary,
+  getSessionHistory,
+  getSessionDetail,
+  getSessionIncorrect,
+  getPlanStructure,
   getStudyHistory,
 };
 

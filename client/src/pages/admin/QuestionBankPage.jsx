@@ -11,7 +11,6 @@ const pageSize = 5;
 
 const getTabs = (t) => [
   { label: t('admin.questionBank.tabs.all'), value: "all" },
-  { label: t('admin.questionBank.tabs.rawPending'), value: "rawPending" },
   { label: t('admin.questionBank.tabs.variantPending'), value: "variantPending" },
   { label: t('admin.questionBank.tabs.rejected'), value: "rejected" },
 ];
@@ -295,13 +294,6 @@ const QuestionBankPage = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-4">
-            <button
-              type="button"
-              onClick={() => navigate("/admin/question-management")}
-              className="flex h-[36px] w-[195px] items-center justify-center rounded-[8px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
-            >
-              {t('admin.questionBank.actions.questionManagement')}
-            </button>
             <button
               type="button"
               onClick={() => navigate("/admin/add-question")}
