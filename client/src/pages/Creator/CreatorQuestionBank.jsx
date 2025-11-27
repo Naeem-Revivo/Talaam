@@ -19,10 +19,10 @@ const CreatorQuestionBank = () => {
   };
 
   const questionReasonsColumns = [
-    { key: "questionTitle", label: "QUESTION TITLE" },
-    { key: "reason", label: "REASON" },
-    { key: "processor", label: "PROCESSOR" },
-    { key: "actions", label: "ACTIONS" },
+    { key: "questionTitle", label: t("creator.questionBank.table.question") },
+    { key: "reason", label: t("creator.questionBank.table.reason") },
+    { key: "processor", label: t("creator.questionBank.table.processor") },
+    { key: "actions", label: t("creator.questionBank.table.actions") },
   ];
 
   // Sample data matching the image
@@ -45,11 +45,11 @@ const CreatorQuestionBank = () => {
 
   // Define columns for the assigned questions table
   const assignedQuestionsColumns = [
-    { key: "questionTitle", label: "QUESTION TITLE" },
-    { key: "fromProcessor", label: "FROM PROCESSOR" },
-    { key: "difficulty", label: "DIFFICULTY" },
-    { key: "updateOn", label: "UPDATE ON" },
-    { key: "actions", label: "ACTIONS" },
+    { key: "questionTitle", label: t("creator.questionBank.table.question") },
+    { key: "fromProcessor", label: t("creator.questionBank.table.fromProcessor") },
+    { key: "difficulty", label: t("creator.questionBank.table.difficulty") },
+    { key: "updateOn", label: t("creator.questionBank.table.updateOn") },
+    { key: "actions", label: t("creator.questionBank.table.actions") },
   ];
 
   // Sample data matching the image
@@ -112,10 +112,10 @@ const CreatorQuestionBank = () => {
   };
 
   const stats = [
-    { label: "Questions Assigned", value: 128, color: "blue" },
-    { label: "Variants Pending", value: 12, color: "blue" },
-    { label: "Completed", value: 95, color: "red" },
-    { label: "Sent back by processor", value: 8, color: "red" },
+    { label: t("creator.questionBank.stats.questionsAssigned"), value: 128, color: "blue" },
+    { label: t("creator.questionBank.stats.variantsPending"), value: 12, color: "blue" },
+    { label: t("creator.questionBank.stats.completed"), value: 95, color: "red" },
+    { label: t("creator.questionBank.stats.sentBackByProcessor"), value: 8, color: "red" },
   ];
 
   const feedbackData = {
@@ -168,28 +168,27 @@ const CreatorQuestionBank = () => {
         <header className="flex flex-col gap-4">
           <div>
             <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
-              Creator Dashboard
+              {t("creator.questionBank.title")}
             </h1>
             <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
-              Improve questions,create variants,and submit enhanced versions for
-              final review.
+              {t("creator.questionBank.subtitle")}
             </p>
           </div>
           <div className="flex flex-wrap gap-3 justify-start lg:justify-end">
             <OutlineButton
-              text="Completed Questions"
+              text={t("creator.questionBank.completedQuestions")}
               onClick={handleCompletedQuestion}
               className="py-[10px] px-[14px]"
             />
 
             <OutlineButton
-              text="Create Variants"
+              text={t("creator.questionBank.createVariants")}
               onClick={handleCreateVariant}
               className="py-[10px] px-[14px]"
             />
 
             <PrimaryButton
-              text="Assigned Questions"
+              text={t("creator.questionBank.assignedQuestions")}
               className="py-[10px] px-5"
               onClick={handleAssignQuestion}
             />
@@ -200,7 +199,7 @@ const CreatorQuestionBank = () => {
 
         <div>
           <div className="text-[24px] leading-[32px] font-bold text-blue-dark font-archivo mb-5">
-            Sent Back by Processor
+            {t("creator.questionBank.sentBackByProcessor")}
           </div>
           <Table
             items={questionReasonsData}
@@ -210,14 +209,14 @@ const CreatorQuestionBank = () => {
             total={3}
             onPageChange={() => {}}
             // onCustomAction={handleFix}
-            emptyMessage="No questions with reasons found"
+            emptyMessage={t("creator.questionBank.emptyMessage")}
             showPagination={false} 
           />
         </div>
 
         <div>
           <h2 className="text-[24px] leading-[32px] font-bold font-archivo text-blue-dark mb-5">
-            Workflow Progress
+            {t("creator.questionBank.workflowProgress")}
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             {/* Left Column - Feedback Card and Workflow */}
@@ -229,7 +228,7 @@ const CreatorQuestionBank = () => {
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg p-6 border border-[#E5E7EB]">
                 <h2 className="text-[20px] leading-[28px] font-semibold font-archivo text-blue-dark mb-4">
-                  Recent Activity
+                  {t("creator.questionBank.recentActivity")}
                 </h2>
 
                 <div className="space-y-3">

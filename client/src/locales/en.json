@@ -2363,20 +2363,604 @@
     }
   },
   "gatherer": {
-    "sidebar": {
-      "dashboard": "Dashboard",
-      "questionBank": "Question Bank",
-      "profile": "Profile"
-    }
-  },
-  "processor": {
-    "sidebar": {
-      "dashboard": "Dashboard",
-      "questionBank": "Question Bank",
-      "gathererSubmission": "Gatherer Submission",
-      "creatorSubmission": "Creator Submission",
-      "explainerSubmission": "Explainer Submission",
-      "profile": "Profile"
+      "sidebar": {
+        "dashboard": "Dashboard",
+        "questionBank": "Question Bank",
+        "profile": "Profile"
+      },
+      "dashboard": {
+        "title": "Dashboard",
+        "subtitle": "Welcome back, John Doe submit question and track your review progress.",
+        "role": "Gatherer",
+        "tasks": {
+          "task1": "Add new questions",
+          "task2": "Upload bulk questions",
+          "task3": "Track your submission",
+          "task4": "Fix rejected questions"
+        },
+        "pendingTasks": "Pending Tasks",
+        "performance": {
+          "title": "Your Performance",
+          "subtitle": "Based on the last {{days}} days.",
+          "acceptanceRate": "Acceptance rate",
+          "rejectionRate": "Rejection rate"
+        },
+        "lastLogin": {
+          "title": "Last Login"
+        }
+      },
+      "questionBank": {
+        "title": "Question Bank",
+        "subtitle": "Submit Questions and track their review progress.",
+        "bulkUpload": "Bulk Upload",
+        "addNewQuestions": "+ Add New Questions",
+        "mySubmissions": "My Submissions",
+        "reviewFeedback": "Review Feedback",
+        "workflowProgress": "Workflow Progress",
+        "recentActivity": "Recent Activity",
+        "workflowSteps": {
+          "gatherer": "Gatherer",
+          "processor": "Processor",
+          "creator": "Creator",
+          "explainer": "Explainer"
+        },
+        "activity": {
+          "submitted": "You submitted 2 new questions.",
+          "rejected": "Possessor A rejected Q-ID-112345 for \"Improve wording\"",
+          "approved": "Your submission for Q-ID-12345 was approved.",
+          "assigned": "John smith assigned you Q-ID-2345 for variant creation."
+        },
+        "feedback": {
+          "dismiss": "Dismiss",
+          "editQuestion": "Edit Question"
+        },
+        "stats": {
+          "questionAdded": "Question Added",
+          "pendingReview": "Pending Review",
+          "acceptedByProcessor": "Accepted By Processor",
+          "rejected": "Rejected"
+        },
+        "table": {
+          "question": "QUESTION",
+          "processor": "PROCESSOR",
+          "lastUpdate": "LAST UPDATE",
+          "status": "STATUS",
+          "actions": "ACTIONS"
+        },
+        "emptyMessage": "No questions found"
+      },
+      "addNewQuestion": {
+        "title": "Add New Question",
+        "cancel": "Cancel",
+        "saveDraft": "Save Draft",
+        "submit": "Submit",
+        "questionText": "Question Text",
+        "questionType": "Question Type",
+        "options": {
+          "optionA": "Option A",
+          "optionB": "Option B",
+          "optionC": "Option C",
+          "optionD": "Option D"
+        },
+        "correctAnswer": "Correct Answer",
+        "classification": {
+          "title": "Classification",
+          "subject": "Subject",
+          "topic": "Topic",
+          "subtopic": "Subtopic",
+          "source": "Source"
+        },
+        "placeholders": {
+          "questionText": "Enter your question here...",
+          "option": "Enter option text",
+          "reference": "Enter reference"
+        }
+      },
+      "questionDetail": {
+        "title": "Question Details",
+        "edit": "Edit",
+        "continue": "Continue",
+        "questionInfo": "Question Info",
+        "options": "Options:",
+        "correctAnswer": "Correct Answer",
+        "classification": "Classification",
+        "comments": {
+          "title": "Comments",
+          "placeholder": "Add your comment here...",
+          "addComment": "Add Comment"
+        },
+        "attachments": "Attachments",
+        "questionHistory": "Question History"
+      },
+      "profile": {
+        "title": "Account Settings",
+        "subtitle": "Manage your profile, password, and application settings.",
+        "profileInformation": "Profile Information",
+        "name": "Name",
+        "currentPlan": "Current Plan",
+        "email": "Email",
+        "phone": "Phone",
+        "saveChanges": "Save Changes",
+        "changePassword": "Change Password",
+        "currentPassword": "Current Password",
+        "enterEmail": "Enter Email address",
+        "sendCode": "Send Code",
+        "enterCode": "Enter Code",
+        "newPassword": "New Password",
+        "confirmNewPassword": "Confirm New Password",
+        "updatePassword": "Update Password",
+        "applicationSettings": "Application Settings",
+        "language": "Language",
+        "notifications": "Notifications",
+        "notificationsDescription": "Enable or disable email notifications for important updates.",
+        "saveSettings": "Save Settings",
+        "placeholders": {
+          "currentPassword": "Enter your current password",
+          "email": "Enter your email address",
+          "code": "6-digit Code",
+          "newPassword": "Enter new password",
+          "confirmPassword": "Confirm new password"
+        },
+        "languageOptions": {
+          "english": "English (US)",
+          "arabic": "Arabic"
+        }
+      },
+      "uploadModal": {
+        "title": "Upload File",
+        "documentType": "Document Type",
+        "uploadDocument": "Upload Document",
+        "add": "Add",
+        "selected": "Selected",
+        "cancel": "Cancel",
+        "done": "Done",
+        "placeholder": "Select document type or type your own"
+      }
+    },
+  "creator": {
+      "sidebar": {
+        "dashboard": "Dashboard",
+        "questionBank": "Question Bank",
+        "profile": "Profile"
+      },
+      "dashboard": {
+        "title": "Creator",
+        "subtitle": "Welcome back, John Doe create variants, improve questions, and submit refined versions.",
+        "role": "Creator",
+        "tasks": {
+          "task1": "Create question variants",
+          "task2": "Improve questions (rewriting)",
+          "task3": "Submit revised versions",
+          "task4": "Fix Processor feedback"
+        },
+        "pendingTasks": "Pending Tasks",
+        "performance": {
+          "title": "Your Performance",
+          "subtitle": "Based on the last {{days}} days.",
+          "variantCompletionRate": "Variant Completion Rate",
+          "sentBackRate": "Sent Back Rate",
+          "approvedVariants": "Approved Variants"
+        },
+        "lastLogin": {
+          "title": "Last Login"
+        }
+      },
+      "questionBank": {
+        "title": "Creator Dashboard",
+        "subtitle": "Improve questions,create variants,and submit enhanced versions for final review.",
+        "completedQuestions": "Completed Questions",
+        "createVariants": "Create Variants",
+        "assignedQuestions": "Assigned Questions",
+        "sentBackByProcessor": "Sent Back by Processor",
+        "workflowProgress": "Workflow Progress",
+        "recentActivity": "Recent Activity",
+        "stats": {
+          "questionsAssigned": "Questions Assigned",
+          "variantsPending": "Variants Pending",
+          "completed": "Completed",
+          "sentBackByProcessor": "Sent back by processor"
+        },
+        "table": {
+          "question": "QUESTION",
+          "reason": "REASON",
+          "processor": "PROCESSOR",
+          "fromProcessor": "FROM PROCESSOR",
+          "difficulty": "DIFFICULTY",
+          "updateOn": "UPDATE ON",
+          "updatedOn": "UPDATED ON",
+          "actions": "ACTIONS"
+        },
+        "emptyMessage": "No questions with reasons found"
+      },
+      "assignedQuestionPage": {
+        "title": "Assigned Questions",
+        "subtitle": "Review, refine, and create variant for questions assigned to you.",
+        "back": "Back",
+        "searchPlaceholder": "Search draft explanations...",
+        "table": {
+          "question": "QUESTION",
+          "processor": "PROCESSOR",
+          "difficulty": "DIFFICULTY",
+          "updatedOn": "UPDATED ON",
+          "actions": "ACTIONS"
+        },
+        "emptyMessage": "No questions found"
+      },
+      "completedQuestionPage": {
+        "title": "Completed Questions",
+        "subtitle": "Review, refine, and create variant for questions assigned to you.",
+        "back": "Back",
+        "searchPlaceholder": "Search draft explanations...",
+        "table": {
+          "question": "QUESTION",
+          "processor": "PROCESSOR",
+          "variants": "VARIANTS",
+          "completedOn": "COMPLETED ON",
+          "actions": "ACTIONS"
+        },
+        "emptyMessage": "No questions found"
+      },
+      "createVariants": {
+        "title": "Create Variants",
+        "cancel": "Cancel",
+        "saveDraft": "Save Draft",
+        "submitVariant": "Submit Variant",
+        "fields": {
+          "questionText": "Question Text",
+          "questionType": "Question Type",
+          "optionA": "Option A",
+          "optionB": "Option B",
+          "optionC": "Option C",
+          "optionD": "Option D",
+          "correctAnswer": "Correct Answer",
+          "subject": "Subject",
+          "topic": "Topic",
+          "cognitiveLevel": "Cognitive Level",
+          "source": "Source"
+        },
+        "questionTypes": {
+          "multipleChoice": "Multiple Choice (MCQ)",
+          "trueFalse": "True/False",
+          "shortAnswer": "Short Answer",
+          "essay": "Essay"
+        },
+        "correctAnswerOptions": {
+          "optionA": "Option A",
+          "optionB": "Option B",
+          "optionC": "Option C",
+          "optionD": "Option D"
+        },
+        "classification": {
+          "title": "Classification"
+        },
+        "placeholders": {
+          "questionText": "Enter your question here...",
+          "selectSubject": "Select Subject",
+          "selectTopic": "Select Topic",
+          "selectLevel": "Select Level",
+          "selectSource": "Select Source"
+        },
+        "cognitiveLevels": {
+          "remember": "Remember",
+          "understand": "Understand",
+          "apply": "Apply",
+          "analyze": "Analyze",
+          "evaluate": "Evaluate",
+          "create": "Create"
+        },
+        "sources": {
+          "textbook": "Textbook",
+          "pastExam": "Past Exam",
+          "custom": "Custom"
+        }
+      },
+      "profile": {
+        "title": "Account Settings",
+        "subtitle": "Manage your profile, password, and application settings.",
+        "profileInformation": "Profile Information",
+        "name": "Name",
+        "currentPlan": "Current Plan",
+        "email": "Email",
+        "phone": "Phone",
+        "saveChanges": "Save Changes",
+        "changePassword": "Change Password",
+        "currentPassword": "Current Password",
+        "enterEmail": "Enter Email address",
+        "sendCode": "Send Code",
+        "enterCode": "Enter Code",
+        "newPassword": "New Password",
+        "confirmNewPassword": "Confirm New Password",
+        "updatePassword": "Update Password",
+        "applicationSettings": "Application Settings",
+        "language": "Language",
+        "notifications": "Notifications",
+        "notificationsDescription": "Enable or disable email notifications for important updates.",
+        "saveSettings": "Save Settings",
+        "placeholders": {
+          "currentPassword": "Enter your current password",
+          "email": "Enter your email address",
+          "code": "6-digit Code",
+          "newPassword": "Enter new password",
+          "confirmPassword": "Confirm new password"
+        },
+        "languageOptions": {
+          "english": "English (US)",
+          "arabic": "Arabic"
+        }
+      }
+    },
+  "explainer": {
+      "sidebar": {
+        "dashboard": "Dashboard",
+        "questionBank": "Question Bank",
+        "profile": "Profile"
+      },
+      "dashboard": {
+        "title": "Explainer",
+        "subtitle": "Welcome back, John Doe add explanations to approved questions and complete pending tasks.",
+        "role": "Explainer",
+        "tasks": {
+          "task1": "Add explanations to approved questions",
+          "task2": "Add notes / diagrams",
+          "task3": "Complete pending explanations",
+          "task4": "Maintain quality of explanations"
+        },
+        "pendingTasks": "Pending Tasks",
+        "performance": {
+          "title": "Your Performance",
+          "subtitle": "Based on the last {{days}} days.",
+          "explanationCompletionRate": "Explanation Completion Rate",
+          "qualityScore": "Quality Score",
+          "drafts": "Drafts"
+        },
+        "lastLogin": {
+          "title": "Last Login"
+        }
+      },
+      "questionBank": {
+        "title": "Explainer Dashboard",
+        "subtitle": "Add explanations, diagrams, and supporting notes to finalized Questions.",
+        "draft": "Draft",
+        "completed": "Completed",
+        "addExplanation": "+ Add Explanation",
+        "pendingExplanations": "Pending Explanations",
+        "workflowProgress": "Workflow Progress",
+        "recentActivity": "Recent Activity",
+        "workflowSteps": {
+          "gatherer": "Gatherer",
+          "processor": "Processor",
+          "creator": "Creator",
+          "explainer": "Explainer"
+        },
+        "activity": {
+          "addedDiagrams": "You added {{count}} new diagrams.",
+          "sentBack": "Processor sent back \"{{item}}\".",
+          "completedExplanation": "You completed explanation for \"{{item}}\""
+        },
+        "stats": {
+          "questionsNeedingExplanation": "Questions Needing Explanation",
+          "completedExplanations": "Completed Explanations",
+          "draftExplanations": "Draft Explanations",
+          "sentBackForRevision": "Sent Back for Revision"
+        },
+        "table": {
+          "question": "QUESTION",
+          "fromProcessor": "FROM PROCESSOR",
+          "difficulty": "DIFFICULTY",
+          "finalUpdate": "FINAL UPDATE",
+          "actions": "ACTIONS"
+        },
+        "emptyMessage": "No questions found"
+      },
+      "draftExplanation": {
+        "title": "Draft Explanations",
+        "subtitle": "Continue editing your draft explanations.",
+        "back": "Back",
+        "searchPlaceholder": "Search draft explanations...",
+        "table": {
+          "question": "QUESTION",
+          "lastEdited": "LAST EDITED",
+          "status": "STATUS",
+          "action": "ACTION"
+        },
+        "emptyMessage": "No draft explanations found"
+      },
+      "completedExplanation": {
+        "title": "Completed Explanations",
+        "subtitle": "View your completed explanations.",
+        "back": "Back",
+        "searchPlaceholder": "Search draft explanations...",
+        "table": {
+          "question": "QUESTION",
+          "processor": "PROCESSOR",
+          "completedOn": "COMPLETED ON",
+          "action": "ACTION"
+        },
+        "emptyMessage": "No completed explanations found"
+      },
+      "profile": {
+        "title": "Account Settings",
+        "subtitle": "Manage your profile, password, and application settings.",
+        "profileInformation": "Profile Information",
+        "name": "Name",
+        "currentPlan": "Current Plan",
+        "email": "Email",
+        "phone": "Phone",
+        "saveChanges": "Save Changes",
+        "changePassword": "Change Password",
+        "currentPassword": "Current Password",
+        "enterEmail": "Enter Email address",
+        "sendCode": "Send Code",
+        "enterCode": "Enter Code",
+        "newPassword": "New Password",
+        "confirmNewPassword": "Confirm New Password",
+        "updatePassword": "Update Password",
+        "applicationSettings": "Application Settings",
+        "language": "Language",
+        "notifications": "Notifications",
+        "notificationsDescription": "Enable or disable email notifications for important updates.",
+        "saveSettings": "Save Settings",
+        "placeholders": {
+          "currentPassword": "Enter your current password",
+          "email": "Enter your email address",
+          "code": "6-digit Code",
+          "newPassword": "Enter new password",
+          "confirmPassword": "Confirm new password"
+        },
+        "languageOptions": {
+          "english": "English (US)",
+          "arabic": "Arabic"
+        }
+      }
+    },
+     "processor": {
+      "sidebar": {
+        "dashboard": "Dashboard",
+        "questionBank": "Question Bank",
+        "gathererSubmission": "Gatherer Submission",
+        "creatorSubmission": "Creator Submission",
+        "explainerSubmission": "Explainer Submission",
+        "profile": "Profile"
+      },
+      "dashboard": {
+        "title": "Dashboard",
+        "subtitle": "Welcome back, John Doe submit question and track your review progress.",
+        "role": "Processor",
+        "roleLabel": "Role",
+        "tasks": {
+          "task1": "Review newly submitted questions and creator submissions",
+          "task2": "Approve or reject questions with clear feedback",
+          "task3": "Return questions to the Creator for corrections",
+          "task4": "Send approved questions to the Explainer for finalization"
+        },
+        "performance": {
+          "title": "Your Performance",
+          "subtitle": "Based on the last {{days}} days.",
+          "approvalRate": "Approval Rate",
+          "feedbackAccuracy": "Feedback Accuracy",
+          "returnedCases": "Returned Cases"
+        },
+        "lastLogin": {
+          "title": "Last Login"
+        },
+        "pendingTasks": "Pending Tasks"
+      },
+      "questionBank": {
+        "title": "Processor Dashboard",
+        "subtitle": "Review incoming questions, accept or reject, and pass them to creators.",
+        "allProcessedQuestions": "All Processed Questions",
+        "stats": {
+          "newQuestionGatherer": "New Question (Gatherer)",
+          "explanationPending": "Explanation Pending",
+          "finalApprovalToday": "Final Approval Today"
+        },
+        "table": {
+          "question": "QUESTION",
+          "gatherer": "GATHERER",
+          "dateSubmitted": "DATE SUBMITTED",
+          "subject": "SUBJECT",
+          "actions": "ACTIONS"
+        },
+        "workflowProgress": "Workflow Progress",
+        "recentActivity": "Recent Activity",
+        "searchPlaceholder": "Search draft explanations...",
+        "emptyMessage": "No questions found"
+      },
+      "creatorSubmission": {
+        "title": "Creator Submissions",
+        "back": "Back",
+        "table": {
+          "question": "QUESTION",
+          "creator": "CREATOR",
+          "variants": "VARIANTS",
+          "status": "STATUS",
+          "submittedOn": "SUBMITTED ON",
+          "actions": "ACTIONS"
+        },
+        "emptyMessage": "No questions found"
+      },
+      "gathererSubmission": {
+        "title": "Gatherer Submissions",
+        "back": "Back",
+        "table": {
+          "question": "QUESTION",
+          "gatherer": "GATHERER",
+          "uploadOn": "UPLOAD ON",
+          "status": "STATUS",
+          "actions": "ACTIONS"
+        },
+        "emptyMessage": "No questions found"
+      },
+      "explainerSubmission": {
+        "title": "Explainer Submission",
+        "back": "Back",
+        "table": {
+          "question": "QUESTION",
+          "explainer": "EXPLAINER",
+          "explanationSummary": "EXPLANATION SUMMARY",
+          "submittedOn": "SUBMITTED ON",
+          "actions": "ACTIONS"
+        },
+        "emptyMessage": "No questions found"
+      },
+      "allProcessedQuestions": {
+        "title": "All Processed Questions",
+        "back": "Back",
+        "table": {
+          "questionTitle": "QUESTION",
+          "status": "STATUS",
+          "reviewedOn": "REVIEWED ON",
+          "decision": "DECISION",
+          "actions": "ACTIONS"
+        },
+        "emptyMessage": "No questions found"
+      },
+      "viewQuestion": {
+        "title": "View Question",
+        "close": "Close",
+        "reject": "Reject",
+        "acceptAndSend": "Accept & Sent to Creator",
+        "questionInfo": "Question Info",
+        "options": "Options:",
+        "correctAnswer": "Correct Answer",
+        "classification": "Classification",
+        "difficulty": "Difficulty",
+        "subject": "Subject",
+        "topic": "Topic",
+        "subtopic": "Subtopic",
+        "variant": "variant",
+        "status": "Status",
+        "creatorGathererNotes": "Creator / Gatherer Notes",
+        "attachments": "Attachments",
+        "questionHistory": "Question History"
+      },
+      "profile": {
+        "title": "Account Settings",
+        "subtitle": "Manage your profile, password, and application settings.",
+        "profileInformation": "Profile Information",
+        "name": "Name",
+        "currentPlan": "Current Plan",
+        "email": "Email",
+        "phone": "Phone",
+        "saveChanges": "Save Changes",
+        "changePassword": "Change Password",
+        "currentPassword": "Current Password",
+        "enterEmail": "Enter Email address",
+        "enterEmailPlaceholder": "Enter your email address",
+        "sendCode": "Send Code",
+        "enterCode": "Enter Code",
+        "enterCodePlaceholder": "6-digit Code",
+        "newPassword": "New Password",
+        "newPasswordPlaceholder": "Enter new password",
+        "confirmNewPassword": "Confirm New Password",
+        "confirmNewPasswordPlaceholder": "Confirm new password",
+        "updatePassword": "Update Password",
+        "applicationSettings": "Application Settings",
+        "language": "Language",
+        "notifications": "Notifications",
+        "notificationsDescription": "Enable or disable email notifications for important updates.",
+        "saveSettings": "Save Settings"
+      }
     }
   }
-}
+

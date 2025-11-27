@@ -14,21 +14,21 @@ const ProcessorQuestionBank = () => {
   const [search, setSearch] = useState("");
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
-  const [subtopic, setSubtopic] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
 
    const subjectOptions = ["Subject", "Mathematics", "Physics", "Chemistry", "Biology"];
   const topicOptions = ["Status", "Approved", "Failed", "Reject"];
-  const subtopicOptions = ["Difficulty", "Medium", "Easy", "Hard"];
+  
+  // Note: topicLabel is used for Status dropdown, subjectLabel for Subject dropdown
 
   // Define columns for the gatherer table
   const gathererColumns = [
-    { key: "questionTitle", label: "QUESTION TITLE" },
-    { key: "gatherer", label: "GATHERER" },
-    { key: "dateSubmitted", label: "DATE SUBMITTED" },
-    { key: "difficulty", label: "DIFFICULTY" },
-    { key: "actions", label: "ACTIONS" },
+    { key: "questionTitle", label: t("processor.questionBank.table.question") },
+    { key: "gatherer", label: t("processor.questionBank.table.gatherer") },
+    { key: "dateSubmitted", label: t("processor.questionBank.table.dateSubmitted") },
+    { key: "difficulty", label: t("processor.questionBank.table.subject") },
+    { key: "actions", label: t("processor.questionBank.table.actions") },
   ];
 
   // Sample data matching the image
@@ -113,9 +113,9 @@ const ProcessorQuestionBank = () => {
   ];
 
   const stats = [
-    { label: "New Question (Gatherer) ", value: 14, color: "blue" },
-    { label: "Explanation Pending", value: 4, color: "blue" },
-    { label: "Final Approval Today", value: 5, color: "red" },
+    { label: t("processor.questionBank.stats.newQuestionGatherer"), value: 14, color: "blue" },
+    { label: t("processor.questionBank.stats.explanationPending"), value: 4, color: "blue" },
+    { label: t("processor.questionBank.stats.finalApprovalToday"), value: 5, color: "red" },
   ];
 
   const handleProcessedQuestion = () => {
@@ -128,16 +128,15 @@ const ProcessorQuestionBank = () => {
         <header className="flex flex-col gap-4">
           <div>
             <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
-              Processor Dashboard
+              {t("processor.questionBank.title")}
             </h1>
             <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
-              Review incoming questions, accept or reject, and pass them to
-              creators.
+              {t("processor.questionBank.subtitle")}
             </p>
           </div>
           <div className="flex flex-wrap gap-3 justify-end">
             <PrimaryButton
-              text="All Processed Questions"
+              text={t("processor.questionBank.allProcessedQuestions")}
               className="py-[10px] px-5"
               onClick={handleProcessedQuestion}
             />
@@ -150,15 +149,14 @@ const ProcessorQuestionBank = () => {
           searchValue={search}
           subjectValue={subject}
           topicValue={topic}
-          subtopicValue={subtopic}
           onSearchChange={setSearch}
           onSubjectChange={setSubject}
           onTopicChange={setTopic}
-          onSubtopicChange={setSubtopic}
           subjectOptions={subjectOptions}
           topicOptions={topicOptions}
-          subtopicOptions={subtopicOptions}
-          searchPlaceholder="Search draft explanations..."
+          topicLabel="Status"
+          subjectLabel="Subject"
+          searchPlaceholder={t("processor.questionBank.searchPlaceholder")}
         />
 
         <Table
@@ -171,12 +169,12 @@ const ProcessorQuestionBank = () => {
           onView={handleView}
           onEdit={handleEdit}
           onCustomAction={handleReview}
-          emptyMessage="No questions found"
+          emptyMessage={t("processor.questionBank.emptyMessage")}
         />
 
         <div>
           <h2 className="text-[24px] leading-[32px] font-bold font-archivo text-blue-dark mb-5">
-            Workflow Progress
+            {t("processor.questionBank.workflowProgress")}
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             {/* Left Column - Feedback Card and Workflow */}
@@ -188,7 +186,7 @@ const ProcessorQuestionBank = () => {
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg p-6 border border-[#E5E7EB]">
                 <h2 className="text-[20px] leading-[28px] font-semibold font-archivo text-blue-dark mb-4">
-                  Recent Activity
+                  {t("processor.questionBank.recentActivity")}
                 </h2>
 
                 <div className="space-y-3">

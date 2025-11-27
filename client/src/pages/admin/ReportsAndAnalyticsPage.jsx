@@ -1,7 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useLanguage } from "../../context/LanguageContext";
-import Dropdown from "../../components/shared/Dropdown";
 
 // Reusable KPI Card Component
 const KPICard = ({ title, value, subtitle, icon, valueWeight = "font-semibold", subtitlecolor }) => {
@@ -29,26 +27,13 @@ const KPICard = ({ title, value, subtitle, icon, valueWeight = "font-semibold", 
 
 const ReportsAndAnalyticsPage = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
-  const [exam, setExam] = useState("");
-  const [subject, setSubject] = useState("");
-  const [cognitiveLevel, setCognitiveLevel] = useState("");
-  const [dateRange, setDateRange] = useState("");
 
-  // Mock data for charts
-  const performanceData = [
-    { month: "Jan", accuracy: 12 },
-    { month: "Feb", accuracy: 18 },
-    { month: "Mar", accuracy: 25 },
-    { month: "Apr", accuracy: 35 },
-    { month: "May", accuracy: 45 },
-    { month: "Jun", accuracy: 55 },
-    { month: "Jul", accuracy: 65 },
-    { month: "Aug", accuracy: 72 },
-    { month: "Sep", accuracy: 78 },
-    { month: "Oct", accuracy: 82 },
-    { month: "Nov", accuracy: 85 },
-    { month: "Dec", accuracy: 88 },
+  // Overall User Growth Chart Data (Week 1-4)
+  const userGrowthData = [
+    { week: "Week 1", users: 70 },
+    { week: "Week 2", users: 190 },
+    { week: "Week 3", users: 120 },
+    { week: "Week 4", users: 170 },
   ];
 
   const practiceDistribution = [
@@ -63,8 +48,8 @@ const ReportsAndAnalyticsPage = () => {
   const kpiCards = [
     {
       id: 1,
-      title: t('admin.reportsAndAnalytics.kpi.totalQuestions'),
-      value: "2,000",
+      title: "New Sign-ups",
+      value: "10,884",
       subtitle: "+15% from last month",
       subtitlecolor: "text-[#ED4122]",
       titleSize: "text-[16px]",
@@ -81,7 +66,7 @@ const ReportsAndAnalyticsPage = () => {
         >
           <rect width="40" height="40" rx="6" fill="#ED4122" />
           <path
-            d="M26.25 10H14.75C12.332 10 11 11.332 11 13.75V25.75C11 27.993 12.507 29.5 14.75 29.5H26.25C27.49 29.5 28.5 28.491 28.5 27.25V21.25V12.25C28.5 11.009 27.49 10 26.25 10ZM16.75 14H22.75C23.164 14 23.5 14.336 23.5 14.75C23.5 15.164 23.164 15.5 22.75 15.5H16.75C16.336 15.5 16 15.164 16 14.75C16 14.336 16.336 14 16.75 14ZM16.75 17H20.75C21.164 17 21.5 17.336 21.5 17.75C21.5 18.164 21.164 18.5 20.75 18.5H16.75C16.336 18.5 16 18.164 16 17.75C16 17.336 16.336 17 16.75 17ZM27 27.25C27 27.664 26.663 28 26.25 28H14.75C12.72 28 12.5 26.426 12.5 25.75C12.5 25.074 12.72 23.5 14.75 23.5H26.25C26.395 23.5 26.5351 23.483 26.6721 23.457C26.7161 23.449 26.758 23.434 26.801 23.423C26.867 23.406 26.936 23.394 27 23.371V27.25Z"
+            d="M29.25 18.528C29.25 18.942 28.914 19.278 28.5 19.278H26.75V21.028C26.75 21.442 26.414 21.778 26 21.778C25.586 21.778 25.25 21.442 25.25 21.028V19.278H23.5C23.086 19.278 22.75 18.942 22.75 18.528C22.75 18.114 23.086 17.778 23.5 17.778H25.25V16.028C25.25 15.614 25.586 15.278 26 15.278C26.414 15.278 26.75 15.614 26.75 16.028V17.778H28.5C28.914 17.778 29.25 18.114 29.25 18.528ZM17.509 19C19.715 19 21.509 17.206 21.509 15C21.509 12.794 19.715 11 17.509 11C15.303 11 13.509 12.794 13.509 15C13.509 17.206 15.303 19 17.509 19ZM19.5 21H15.5C11.44 21 10 23.973 10 26.519C10 28.796 11.2111 30 13.5031 30H21.4969C23.7889 30 25 28.796 25 26.519C25 23.973 23.56 21 19.5 21Z"
             fill="white"
           />
         </svg>
@@ -89,10 +74,10 @@ const ReportsAndAnalyticsPage = () => {
     },
     {
       id: 2,
-      title: t('admin.reportsAndAnalytics.kpi.averageAccuracy'),
-      value: "78%",
-      subtitle: "+ 8% vs last month",
-      subtitlecolor: "text-[#6B7280]",
+      title: "Active Users",
+      value: "5,432",
+      subtitle: "+8% vs last month",
+      subtitlecolor: "text-[#ED4122]",
       titleSize: "text-[16px]",
       valueSize: "text-[30px]",
       valueWeight: "font-semibold",
@@ -107,7 +92,7 @@ const ReportsAndAnalyticsPage = () => {
         >
           <rect width="40" height="40" rx="6" fill="#ED4122" />
           <path
-            d="M19 25.5004C16.243 25.5004 14 23.2574 14 20.5004C14 18.2124 15.544 16.2233 17.754 15.6613C18.281 15.5273 18.833 15.8484 18.969 16.3844C19.106 16.9204 18.781 17.4645 18.246 17.6005C16.924 17.9365 16 19.1294 16 20.5014C16 22.1554 17.346 23.5014 19 23.5014C20.371 23.5014 21.564 22.5773 21.901 21.2543C22.037 20.7183 22.582 20.3944 23.117 20.5314C23.652 20.6674 23.975 21.2125 23.839 21.7475C23.276 23.9575 21.287 25.5004 19 25.5004ZM28 20.5004C28 20.2824 27.988 20.0653 27.963 19.8473C27.901 19.2993 27.423 18.8994 26.857 18.9674C26.308 19.0294 25.915 19.5254 25.977 20.0744C25.993 20.2164 26 20.3584 26 20.5014C26 24.3614 22.859 27.5014 19 27.5014C15.141 27.5014 12 24.3614 12 20.5014C12 16.6414 15.141 13.5014 19 13.5014C19.143 13.5014 19.286 13.5093 19.43 13.5243C19.973 13.5923 20.473 13.1915 20.534 12.6415C20.595 12.0925 20.199 11.5985 19.65 11.5375C19.434 11.5135 19.216 11.5014 19 11.5014C14.037 11.5014 10 15.5394 10 20.5014C10 25.4634 14.037 29.5014 19 29.5014C23.963 29.5014 28 25.4624 28 20.5004ZM29.462 14.3095C29.385 14.1225 29.202 14.0004 29 14.0004H25.5V10.5004C25.5 10.2984 25.378 10.1155 25.191 10.0385C25.005 9.96047 24.79 10.0034 24.646 10.1464L22.085 12.7074C21.713 13.0794 21.499 13.5955 21.499 14.1215V16.5863L18.292 19.7934C17.901 20.1844 17.901 20.8164 18.292 21.2074C18.487 21.4024 18.743 21.5004 18.999 21.5004C19.255 21.5004 19.511 21.4024 19.706 21.2074L22.913 18.0004H25.378C25.904 18.0004 26.42 17.7874 26.792 17.4144L29.353 14.8534C29.496 14.7104 29.539 14.4965 29.462 14.3095Z"
+            d="M26.8929 27.5186C26.8929 29.7644 25.6542 31 23.4067 31H15.5933C13.3458 31 12.1071 29.7632 12.1071 27.5186C12.1071 24.9899 13.5309 22.0368 17.545 22.0368H21.454C25.4691 22.0357 26.8929 24.9899 26.8929 27.5186ZM19.5088 19.9612C21.6358 19.9612 23.3652 18.2227 23.3652 16.0863C23.3652 13.9489 21.6347 12.2115 19.5088 12.2115C17.383 12.2115 15.6536 13.95 15.6536 16.0863C15.6536 18.2227 17.3819 19.9612 19.5088 19.9612ZM26.9367 17.1076H25.1734C25.0201 17.1076 24.8886 17.2181 24.8557 17.3618C24.6148 18.4117 24.0671 19.3511 23.3114 20.0695C23.1252 20.2463 23.2348 20.5558 23.4867 20.6221C25.4253 21.0863 26.7724 22.2357 27.5719 23.6946C27.6267 23.8162 27.7362 23.8935 27.8786 23.8935H28.3385C30.058 23.8935 31 22.9431 31 21.219C31 19.329 29.9377 17.1076 26.9367 17.1076ZM25.5348 10.0011C24.4417 10.0011 23.4877 10.6056 22.9872 11.4997C22.9467 11.5726 22.9489 11.6533 22.9642 11.723C22.9806 11.7959 23.0125 11.8347 23.0804 11.8922C24.1526 12.8039 24.8678 14.1246 24.985 15.6178C24.9916 15.7018 25.0201 15.7537 25.0704 15.8079C25.1208 15.862 25.1963 15.8951 25.296 15.9039C25.3738 15.9106 25.4537 15.915 25.5348 15.915C27.1448 15.915 28.4591 14.5888 28.4591 12.9531C28.4591 11.3273 27.1448 10.0011 25.5348 10.0011ZM8 21.219C8 22.9431 8.94196 23.8935 10.6615 23.8935H11.1214C11.2638 23.8935 11.3733 23.8162 11.4281 23.6946C12.2276 22.2357 13.5747 21.0863 15.5133 20.6221C15.7652 20.5558 15.8748 20.2463 15.6886 20.0695C14.9329 19.3511 14.3852 18.4117 14.1443 17.3618C14.1114 17.2181 13.9799 17.1076 13.8266 17.1076H12.0633C9.06234 17.1076 8 19.329 8 21.219ZM10.5409 12.952C10.5409 14.5877 11.8552 15.9139 13.4652 15.9139C13.5463 15.9139 13.6262 15.9095 13.704 15.9028C13.8048 15.894 13.8792 15.8609 13.9296 15.8068C13.9799 15.7526 14.0084 15.7007 14.015 15.6167C14.1322 14.1236 14.8474 12.8027 15.9196 11.8909C15.9864 11.8335 17.0194 11.7948 17.0358 11.7219C17.0511 11.6523 17.0533 11.5727 17.0128 11.4986C16.5112 10.6045 15.5583 10 14.4652 10C12.8552 10.0011 11.5409 11.3274 11.5409 12.952Z"
             fill="white"
           />
         </svg>
@@ -115,7 +100,7 @@ const ReportsAndAnalyticsPage = () => {
     },
     {
       id: 3,
-      title: t('admin.reportsAndAnalytics.kpi.mostAttemptedSubject'),
+      title: "Most Attempted Subject",
       value: "Mathematics",
       titleSize: "text-[16px]",
       valueSize: "text-[30px]",
@@ -141,7 +126,7 @@ const ReportsAndAnalyticsPage = () => {
     },
     {
       id: 4,
-      title: t('admin.reportsAndAnalytics.kpi.averageTimePerQuestion'),
+      title: "Average Time/ Question",
       value: "45s",
       titleSize: "text-[16px]",
       valueSize: "text-[30px]",
@@ -256,6 +241,8 @@ const ReportsAndAnalyticsPage = () => {
     return { ...item, path };
   });
 
+  // Remove filters section - not shown in the new design
+
 
   return (
     <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 2xl:px-0">
@@ -264,10 +251,10 @@ const ReportsAndAnalyticsPage = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
-              {t('admin.reportsAndAnalytics.hero.title')}
+              Reports & Analytics
             </h1>
             <p className="mt-2 font-roboto text-[14px] md:text-[18px] font-normal leading-[20px] md:leading-[24px] text-dark-gray">
-              {t('admin.reportsAndAnalytics.hero.subtitle')}
+              Monitor student performance, question usage, and test activity.
             </p>
           </div>
           <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto py-8">
@@ -287,7 +274,7 @@ const ReportsAndAnalyticsPage = () => {
                   fill="#25314C"
                 />
               </svg>
-              {t('admin.reportsAndAnalytics.actions.comparePeriod')}
+              Compare period
             </button>
             <button
               type="button"
@@ -306,115 +293,13 @@ const ReportsAndAnalyticsPage = () => {
                   fill="white"
                 />
               </svg>
-              {t('admin.reportsAndAnalytics.actions.exportReport')}
-            </button>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3 md:flex-nowrap md:gap-3">
-          {/* Exam Dropdown */}
-          <div className="w-full md:w-[135px] md:flex-shrink-0 md:max-w-[135px]">
-            <Dropdown
-              value={exam || ""}
-              options={[
-                { value: "exam1", label: "Exam 1" },
-                { value: "exam2", label: "Exam 2" },
-              ]}
-              onChange={(value) => setExam(value)}
-              placeholder={t('admin.reportsAndAnalytics.filters.exam')}
-              showDefaultOnEmpty={false}
-              className="!w-full md:!w-[135px]"
-              height="h-[50px]"
-              textClassName="font-archivo text-[16px] font-semibold"
-            />
-          </div>
-
-          {/* Subject Dropdown */}
-          <div className="w-full md:w-[184px] md:flex-shrink-0 md:max-w-[184px]">
-            <Dropdown
-              value={subject || ""}
-              options={[
-                { value: "math", label: "Mathematics" },
-                { value: "science", label: "Science" },
-              ]}
-              onChange={(value) => setSubject(value)}
-              placeholder={t('admin.reportsAndAnalytics.filters.subject')}
-              showDefaultOnEmpty={false}
-              className="!w-full md:!w-[184px]"
-              height="h-[50px]"
-              textClassName="font-archivo text-[16px] font-semibold"
-            />
-          </div>
-
-          {/* Cognitive Level Dropdown */}
-          <div className="w-full md:w-[206px] md:flex-shrink-0 md:max-w-[206px]">
-            <Dropdown
-              value={cognitiveLevel || ""}
-              options={[
-                { value: "recall", label: "Recall" },
-                { value: "analysis", label: "Analysis" },
-              ]}
-              onChange={(value) => setCognitiveLevel(value)}
-              placeholder={t('admin.reportsAndAnalytics.filters.cognitiveLevel')}
-              showDefaultOnEmpty={false}
-              className="!w-full md:!w-[206px]"
-              height="h-[50px]"
-              textClassName="font-archivo text-[16px] font-semibold"
-            />
-          </div>
-
-          {/* Date Range Dropdown */}
-          <div className="w-full md:w-[206px] md:flex-shrink-0 md:max-w-[206px]">
-            <Dropdown
-              value={dateRange || ""}
-              options={[
-                { value: "week", label: t('admin.reportsAndAnalytics.filters.lastWeek') },
-                { value: "month", label: t('admin.reportsAndAnalytics.filters.lastMonth') },
-                { value: "year", label: t('admin.reportsAndAnalytics.filters.lastYear') },
-              ]}
-              onChange={(value) => setDateRange(value)}
-              placeholder={t('admin.reportsAndAnalytics.filters.dateRange')}
-              showDefaultOnEmpty={false}
-              className="!w-full md:!w-[206px]"
-              height="h-[50px]"
-              textClassName="font-archivo text-[16px] font-semibold"
-            />
-          </div>
-
-          {/* View Details Button */}
-          <div className="flex gap-5 md:ml-auto md:flex-shrink-0">
-            <button
-              type="button"
-              className="flex items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 font-roboto text-[16px] font-medium leading-[20px] text-oxford-blue transition hover:bg-[#F9FAFB] whitespace-nowrap w-[130px] h-9"
-            >
-              {t('admin.reportsAndAnalytics.filters.viewDetails')}
-            </button>
-
-            {/* Apply Filter Button */}
-            <button
-              type="button"
-              className="flex items-center justify-center gap-2 rounded-[8px] bg-[#ED4122] px-4 font-roboto text-[16px] font-medium leading-[20px] text-white transition hover:bg-[#d43a1f] whitespace-nowrap w-[157px] h-9"
-            >
-              <svg
-                width="14"
-                height="16"
-                viewBox="0 0 14 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8.6 16C8.4728 16 8.34644 15.9582 8.24004 15.8769L5.04004 13.4154C4.88964 13.2989 4.8 13.1167 4.8 12.9231V9.64103C4.8 9.47692 4.73762 9.32184 4.62402 9.20533L0.527246 5.00348C0.187246 4.65394 0 4.19117 0 3.69804V1.84615C0 0.827897 0.808 0 1.8 0H12.2C13.192 0 14 0.827897 14 1.84615V3.69804C14 4.19117 13.8128 4.65476 13.4728 5.00348L9.37598 9.20533C9.26238 9.32184 9.2 9.4761 9.2 9.64103V15.3846C9.2 15.6176 9.07197 15.831 8.86797 15.9352C8.78317 15.9787 8.6912 16 8.6 16ZM6 12.6154L8 14.1538V9.64103C8 9.1479 8.18725 8.68431 8.52725 8.33559L12.624 4.13374C12.7376 4.01723 12.8 3.86297 12.8 3.69804V1.84615C12.8 1.50646 12.5304 1.23077 12.2 1.23077H1.8C1.4696 1.23077 1.2 1.50646 1.2 1.84615V3.69804C1.2 3.86214 1.26238 4.01723 1.37598 4.13374L5.47275 8.33559C5.81275 8.68513 6 9.1479 6 9.64103V12.6154Z"
-                  fill="white"
-                />
-              </svg>
-              {t('admin.reportsAndAnalytics.filters.applyFilter')}
+              Export Report
             </button>
           </div>
         </div>
 
         {/* KPI Summary Cards */}
-            <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue pt-4">{t('admin.reportsAndAnalytics.charts.kpiSummary')}</h2>
+        <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue pt-4">KPI Summary Cards</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {kpiCards.map((card) => (
                 <KPICard
@@ -432,69 +317,88 @@ const ReportsAndAnalyticsPage = () => {
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Performance Trend Chart */}
+          {/* Overall User Growth Chart */}
           <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
             <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
-              {t('admin.reportsAndAnalytics.charts.performanceTrend')}
+              Overall User Growth
             </h2>
-            <div className="h-[300px] relative">
+            <p className="mt-1 font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+              New users over the last 30 days
+            </p>
+            <div className="h-[300px] relative mt-6">
               <svg width="100%" height="100%" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <linearGradient id="userGrowthGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ED4122" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#ED4122" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
                 {/* Y-axis labels */}
-                {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((val) => (
+                {[0, 100, 200, 300].map((val) => (
                   <g key={val}>
                     <line
                       x1="50"
-                      y1={280 - (val / 100) * 240}
+                      y1={280 - (val / 300) * 240}
                       x2="550"
-                      y2={280 - (val / 100) * 240}
+                      y2={280 - (val / 300) * 240}
                       stroke="#E5E7EB"
                       strokeWidth="1"
                       strokeDasharray="4 4"
                     />
                     <text
                       x="45"
-                      y={280 - (val / 100) * 240 + 5}
+                      y={280 - (val / 300) * 240 + 5}
                       textAnchor="end"
                       className="font-roboto text-[12px] fill-[#6B7280]"
                     >
-                      {val}%
+                      {val}
                     </text>
                   </g>
                 ))}
                 {/* X-axis labels */}
-                {performanceData.map((data, index) => (
+                {userGrowthData.map((data, index) => (
                   <text
-                    key={data.month}
-                    x={70 + (index * 480) / 11}
+                    key={data.week}
+                    x={100 + (index * 450) / 3}
                     y="295"
                     textAnchor="middle"
                     className="font-roboto text-[12px] fill-[#6B7280]"
                   >
-                    {data.month}
+                    {data.week}
                   </text>
                 ))}
-                {/* Line chart */}
-                <polyline
-                  points={performanceData
+                {/* Area chart */}
+                <path
+                  d={`M${100 + (0 * 450) / 3},${280 - (userGrowthData[0].users / 300) * 240} ${userGrowthData
                     .map(
                       (data, index) =>
-                        `${70 + (index * 480) / 11},${280 - (data.accuracy / 100) * 240}`
+                        `L${100 + (index * 450) / 3},${280 - (data.users / 300) * 240}`
+                    )
+                    .join(" ")} L${100 + ((userGrowthData.length - 1) * 450) / 3},280 L100,280 Z`}
+                  fill="url(#userGrowthGradient)"
+                />
+                {/* Line chart */}
+                <polyline
+                  points={userGrowthData
+                    .map(
+                      (data, index) =>
+                        `${100 + (index * 450) / 3},${280 - (data.users / 300) * 240}`
                     )
                     .join(" ")}
                   fill="none"
-                  stroke="#3B82F6"
+                  stroke="#ED4122"
                   strokeWidth="3"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 {/* Data points */}
-                {performanceData.map((data, index) => (
+                {userGrowthData.map((data, index) => (
                   <circle
-                    key={data.month}
-                    cx={70 + (index * 480) / 11}
-                    cy={280 - (data.accuracy / 100) * 240}
+                    key={data.week}
+                    cx={100 + (index * 450) / 3}
+                    cy={280 - (data.users / 300) * 240}
                     r="4"
-                    fill="#3B82F6"
+                    fill="#ED4122"
                   />
                 ))}
               </svg>
@@ -504,7 +408,7 @@ const ReportsAndAnalyticsPage = () => {
           {/* Practice Distribution Chart */}
           <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
             <h2 className="pt-3 font-archivo text-[20px] font-semibold leading-[28px] text-oxford-blue">
-              {t('admin.reportsAndAnalytics.charts.practiceDistribution')}
+              Practice Distribution by subject
             </h2>
             <div className="flex flex-col items-center justify-center gap-6">
               <div className="relative">
@@ -536,34 +440,34 @@ const ReportsAndAnalyticsPage = () => {
         </div>
 
         {/* Top Performance User Table */}
-          <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue pt-6">
-            {t('admin.reportsAndAnalytics.table.topPerformanceUser')}
-          </h2>
+        <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue pt-6">
+          Top Performance User
+        </h2>
         <div className="rounded-[12px] border border-[#03274633] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse min-w-[600px]">
               <thead>
                 <tr className="bg-oxford-blue">
                   <th className="text-left py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
-                    {t('admin.reportsAndAnalytics.table.columns.number')}
+                    #
                   </th>
                   <th className="text-left py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
-                    {t('admin.reportsAndAnalytics.table.columns.user')}
+                    USER
                   </th>
                   <th className="text-left py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
-                    {t('admin.reportsAndAnalytics.table.columns.email')}
+                    EMAIL
                   </th>
                   <th className="text-center py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
-                    {t('admin.reportsAndAnalytics.table.columns.attempts')}
+                    ATTEMPTS
                   </th>
                   <th className="text-center py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
-                    {t('admin.reportsAndAnalytics.table.columns.accuracy')}
+                    ACCURACY %
                   </th>
                   <th className="text-center py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
-                    {t('admin.reportsAndAnalytics.table.columns.averageTime')}
+                    AVERAGE TIME / QUESTION
                   </th>
                   <th className="text-left py-3 px-3 md:px-6 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
-                    {t('admin.reportsAndAnalytics.table.columns.lastActive')}
+                    LAST ACTIVE
                   </th>
                 </tr>
               </thead>

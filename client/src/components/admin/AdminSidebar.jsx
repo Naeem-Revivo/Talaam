@@ -273,16 +273,8 @@ const AdminSidebar = ({ isOpen, onClose }) => {
         isMain: true,
       },
       {
-        path: "/admin/reports/user-growth",
-        labelKey: "admin.sidebar.userGrowthAnalytics",
-      },
-      {
         path: "/admin/reports/subscription-trends",
         labelKey: "admin.sidebar.subscriptionTrends",
-      },
-      {
-        path: "/admin/reports/performance-analytics",
-        labelKey: "admin.sidebar.performanceAnalytics",
       },
       {
         path: "/admin/reports/export",

@@ -16,10 +16,10 @@ const CompletedExplanationPage = () => {
 
   // Define columns for the completed explanations table
   const completedExplanationsColumns = [
-    { key: 'questionTitle', label: 'QUESTION TITLE' },
-    { key: 'processor', label: 'PROCESSOR' },
-    { key: 'completedOn', label: 'COMPLETED ON' },
-    { key: 'actions', label: 'ACTION' }
+    { key: 'questionTitle', label: t("explainer.completedExplanation.table.question") },
+    { key: 'processor', label: t("explainer.completedExplanation.table.processor") },
+    { key: 'completedOn', label: t("explainer.completedExplanation.table.completedOn") },
+    { key: 'actions', label: t("explainer.completedExplanation.table.action") }
   ];
 
   // Sample data matching the image
@@ -77,10 +77,13 @@ const CompletedExplanationPage = () => {
         <header className="flex justify-between gap-4">
           <div>
             <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue mb-2">
-              Completed Explanations
+              {t("explainer.completedExplanation.title")}
             </h1>
+            <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
+              {t("explainer.completedExplanation.subtitle")}
+            </p>
           </div>
-            <OutlineButton text="Back" className="py-[10px] px-5" onClick={handleCancel}/>
+            <OutlineButton text={t("explainer.completedExplanation.back")} className="py-[10px] px-5" onClick={handleCancel}/>
         </header>
 
         <SearchFilter
@@ -92,7 +95,7 @@ const CompletedExplanationPage = () => {
           onSubtopicChange={setSubtopic}
           topicOptions={topicOptions}
           subtopicOptions={subtopicOptions}
-          searchPlaceholder="Search completed explanations..."
+          searchPlaceholder={t("explainer.completedExplanation.searchPlaceholder")}
         />
 
       <Table
@@ -104,7 +107,15 @@ const CompletedExplanationPage = () => {
         onPageChange={setCurrentPage}
         onView={handleView}
         onEdit={handleEdit}
-        emptyMessage="No completed explanations found"
+        onCustomAction={(item) => {
+          // Handle different custom actions based on actionType
+          if (item.actionType === 'open') {
+            handleOpen(item);
+          } else if (item.actionType === 'createVariant') {
+            handleCreateVariant(item);
+          }
+        }}
+        emptyMessage={t("explainer.completedExplanation.emptyMessage")}
       />
       </div>
     </div>

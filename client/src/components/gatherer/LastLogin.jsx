@@ -1,9 +1,14 @@
-export const LastLoginCard = ({ loginTime }) => {
+import { useLanguage } from "../../context/LanguageContext";
+
+export const LastLoginCard = ({ loginTime, title }) => {
+  const { t } = useLanguage();
+  const displayTitle = title || t('gatherer.dashboard.lastLogin.title');
+  
   return (
     <div className="rounded-[14px] shadow-[0px_4px_50px_0px_#0327461F] border border-[#03274633] overflow-hidden w-full">
       <div className="border-b border-[#CDD4DA] px-8 py-6">
         <h2 className="text-[20px] leading-[28px] font-semibold text-blue-dark font-archivo">
-          last Login
+          {displayTitle}
         </h2>
       </div>
 

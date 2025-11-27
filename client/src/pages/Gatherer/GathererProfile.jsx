@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import { PrimaryButton } from "../../components/common/Button";
 import Dropdown from "../../components/shared/Dropdown";
 
 const GathererProfile = () => {
+  const { t } = useLanguage();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [language, setLanguage] = useState("English (US)");
   const [profileData, setProfileData] = useState({
@@ -19,8 +21,8 @@ const GathererProfile = () => {
   });
 
   const languageOptions = [
-    { value: "English (US)", label: "English (US)" },
-    { value: "Arabic", label: "Arabic" },
+    { value: t("gatherer.profile.languageOptions.english"), label: t("gatherer.profile.languageOptions.english") },
+    { value: t("gatherer.profile.languageOptions.arabic"), label: t("gatherer.profile.languageOptions.arabic") },
   ];
 
   const handleSaveChanges = () => {
@@ -63,10 +65,10 @@ const GathererProfile = () => {
         <header className="flex gap-4">
           <div>
             <h1 className="font-archivo text-[36px] mb-2 leading-[40px] font-bold text-oxford-blue">
-              Account Settings
+              {t("gatherer.profile.title")}
             </h1>
             <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
-              Manage your profile, password, and application settings.
+              {t("gatherer.profile.subtitle")}
             </p>
           </div>
         </header>
@@ -75,7 +77,7 @@ const GathererProfile = () => {
         <div className="bg-white rounded-[12px] shadow-[0px_2px_25px_0px_#0000001A]">
           <div className="pt-[42px] pb-[28px] px-[30px] border-b border-[#E2E2E2]">
             <h2 className="font-archivo text-[20px] leading-[100%] font-bold text-oxford-blue">
-              Profile Information
+              {t("gatherer.profile.profileInformation")}
             </h2>
           </div>
 
@@ -83,7 +85,7 @@ const GathererProfile = () => {
             {/* Name */}
             <div>
               <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
-                Name
+                {t("gatherer.profile.name")}
               </label>
               <input
                 type="text"
@@ -96,7 +98,7 @@ const GathererProfile = () => {
             {/* Current Plan */}
             <div>
               <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
-                Current Plan
+                {t("gatherer.profile.currentPlan")}
               </label>
               <div className="p-3 rounded-[12px] shadow-sm border border-[#03274633]">
                 <span className="font-roboto text-[14px] text-[#6B7280] font-normal">
@@ -108,7 +110,7 @@ const GathererProfile = () => {
             {/* Email */}
             <div>
               <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
-                Email
+                {t("gatherer.profile.email")}
               </label>
               <input
                 type="email"
@@ -121,7 +123,7 @@ const GathererProfile = () => {
             {/* Phone */}
             <div>
               <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
-                Phone
+                {t("gatherer.profile.phone")}
               </label>
               <input
                 type="tel"
@@ -133,7 +135,7 @@ const GathererProfile = () => {
 
             <div className="mt-[70px] w-full flex justify-end col-span-2">
               <PrimaryButton
-                text="Save Changes"
+                text={t("gatherer.profile.saveChanges")}
                 className="py-[10px] px-7 text-nowrap"
                 onClick={handleSaveChanges}
               />
@@ -145,7 +147,7 @@ const GathererProfile = () => {
         <div className="bg-white rounded-[12px] shadow-[0px_2px_25px_0px_#0000001A]">
           <div className="pt-[42px] pb-[28px] px-[30px] border-b border-[#E2E2E2]">
             <h2 className="font-archivo text-[20px] leading-[100%] font-bold text-oxford-blue">
-              Change Password
+              {t("gatherer.profile.changePassword")}
             </h2>
           </div>
 
@@ -153,32 +155,32 @@ const GathererProfile = () => {
             {/* Current Password */}
             <div>
               <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
-                Current Password
+                {t("gatherer.profile.currentPassword")}
               </label>
               <input
                 type="password"
                 value={passwordData.currentPassword}
                 onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
-                placeholder="Enter your current password"
+                placeholder={t("gatherer.profile.placeholders.currentPassword")}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
             </div>
 
             <div>
                 <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
-                  Enter Email address
+                  {t("gatherer.profile.enterEmail")}
                 </label>
                 <input
                   type="email"
                   value={passwordData.email}
                   onChange={(e) => handlePasswordChange('email', e.target.value)}
-                  placeholder="Enter your email address"
+                  placeholder={t("gatherer.profile.placeholders.email")}
                   className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
                 />
               </div>
               <div className="flex justify-end">
                 <PrimaryButton
-                  text="Send Code"
+                  text={t("gatherer.profile.sendCode")}
                   className="py-[10px] px-7 text-nowrap"
                   onClick={handleSendCode}
                 />
@@ -188,13 +190,13 @@ const GathererProfile = () => {
             {/* Verification Code */}
             <div>
               <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
-                Enter Code
+                {t("gatherer.profile.enterCode")}
               </label>
               <input
                 type="text"
                 value={passwordData.code}
                 onChange={(e) => handlePasswordChange('code', e.target.value)}
-                placeholder="6-digit Code"
+                placeholder={t("gatherer.profile.placeholders.code")}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
             </div>
@@ -203,26 +205,26 @@ const GathererProfile = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
-                  New Password
+                  {t("gatherer.profile.newPassword")}
                 </label>
                 <input
                   type="password"
                   value={passwordData.newPassword}
                   onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
-                  placeholder="Enter new password"
+                  placeholder={t("gatherer.profile.placeholders.newPassword")}
                   className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
                 />
               </div>
 
               <div>
                 <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
-                  Confirm New Password
+                  {t("gatherer.profile.confirmNewPassword")}
                 </label>
                 <input
                   type="password"
                   value={passwordData.confirmPassword}
                   onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
-                  placeholder="Confirm new password"
+                  placeholder={t("gatherer.profile.placeholders.confirmPassword")}
                   className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
                 />
               </div>
@@ -230,7 +232,7 @@ const GathererProfile = () => {
 
             <div className="mt-8 w-full flex justify-end">
               <PrimaryButton
-                text="Update Password"
+                text={t("gatherer.profile.updatePassword")}
                 className="py-[10px] px-7 text-nowrap"
                 onClick={handleUpdatePassword}
               />
@@ -242,7 +244,7 @@ const GathererProfile = () => {
         <div className="bg-white rounded-[12px] shadow-[0px_2px_25px_0px_#0000001A]">
           <div className="pt-[42px] pb-[28px] px-[30px] border-b border-[#E2E2E2]">
             <h2 className="font-archivo text-[20px] leading-[100%] font-bold text-oxford-blue">
-              Application Settings
+              {t("gatherer.profile.applicationSettings")}
             </h2>
           </div>
 
@@ -251,7 +253,7 @@ const GathererProfile = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div className="flex-1">
                 <h3 className="font-roboto text-[18px] leading-[100%] font-medium text-oxford-blue mb-2">
-                  Language
+                  {t("gatherer.profile.language")}
                 </h3>
               </div>
               <div className="w-full lg:w-[180px]">
@@ -269,10 +271,10 @@ const GathererProfile = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-2">
               <div className="flex-1">
                 <h3 className="font-roboto text-[18px] leading-[100%] font-medium text-oxford-blue mb-2">
-                  Notifications
+                  {t("gatherer.profile.notifications")}
                 </h3>
                 <p className="font-roboto text-[16px] leading-[100%] font-normal text-[#6B7280]">
-                  Enable or disable email notifications for important updates.
+                  {t("gatherer.profile.notificationsDescription")}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -293,7 +295,7 @@ const GathererProfile = () => {
 
             <div className="mt-8 w-full flex justify-end">
               <PrimaryButton
-                text="Save Settings"
+                text={t("gatherer.profile.saveSettings")}
                 className="py-[10px] px-7 text-nowrap"
                 onClick={handleSaveApplicationSettings}
               />

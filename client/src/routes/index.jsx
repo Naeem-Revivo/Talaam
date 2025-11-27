@@ -42,7 +42,6 @@ import AddTopicPage from '../pages/admin/AddTopicPage';
 import AddSubTopicPage from '../pages/admin/AddSubTopicPage';
 import AddConceptPage from '../pages/admin/AddConceptPage';
 import ReportsAndAnalyticsPage from '../pages/admin/ReportsAndAnalyticsPage';
-import UserGrowthAnalyticsPage from '../pages/admin/UserGrowthAnalyticsPage';
 import SubscriptionTrendsPage from '../pages/admin/SubscriptionTrendsPage';
 import SubscriptionPlanPage from '../pages/admin/SubscriptionPlanPage';
 import AddNewPlanPage from '../pages/admin/AddNewPlanPage';
@@ -50,7 +49,6 @@ import ManageUserSubscriptionsPage from '../pages/admin/ManageUserSubscriptionsP
 import SubscriptionDetailsPage from '../pages/admin/SubscriptionDetailsPage';
 import PaymentHistoryPage from '../pages/admin/PaymentHistoryPage';
 import CreateNewQuestionBankPage from '../pages/admin/CreateNewQuestionBankPage';
-import PerformanceAnalyticsPage from '../pages/admin/PerformanceAnalyticsPage';
 import ExportReportsPage from '../pages/admin/ExportReportsPage';
 import ContentModerationPage from '../pages/admin/ContentModerationPage';
 import ContentDetailsPage from '../pages/admin/ContentDetailsPage';
@@ -168,11 +166,8 @@ export const AppRoutes = () => {
           <Route path="variant-question-review" element={<VariantQuestionReviewPage />} />
           <Route path="subscriptions" element={<SubscriptionPlanPage />} />
           <Route path="reports" element={<ReportsAndAnalyticsPage />} />
-          <Route path="reports/user-growth" element={<UserGrowthAnalyticsPage />} />
           <Route path="reports/subscription-trends" element={<SubscriptionTrendsPage />} />
-          <Route path="reports/performance-analytics" element={<PerformanceAnalyticsPage />} />
           <Route path="reports/export" element={<ExportReportsPage />} />
-          <Route path="reports" element={<ReportsAndAnalyticsPage />} />
           <Route path="moderation" element={<ContentModerationPage />} />
           <Route path="moderation/details" element={<ContentDetailsPage />} />
           <Route path="settings" element={<SystemSettingPlan />} />

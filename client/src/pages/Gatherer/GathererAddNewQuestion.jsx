@@ -78,9 +78,8 @@ const GathererAddNewQuestionPage = () => {
   const [correctAnswer, setCorrectAnswer] = useState("Option A");
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
-  const [cognitiveLevel, setCognitiveLevel] = useState("");
   const [source, setSource] = useState("");
-  const [explanation, setExplanation] = useState(
+  const [_explanation, _setExplanation] = useState(
     "Red and yellow are primary colors. When mixed, they create the secondary color orange."
   );
 
@@ -88,7 +87,7 @@ const GathererAddNewQuestionPage = () => {
     setOptions((prev) => ({ ...prev, [option]: value }));
   };
 
-  const handleSaveDraft = () => {
+  const _handleSaveDraft = () => {
     // TODO: Implement save draft functionality
     console.log("Save draft");
   };
@@ -102,7 +101,7 @@ const GathererAddNewQuestionPage = () => {
     navigate("/gatherer/question-bank");
   };
 
-  const handleSaveQuestion = () => {
+  const _handleSaveQuestion = () => {
     // TODO: Implement save question functionality
     console.log("Save question");
     // Navigate to question details page after saving
@@ -909,7 +908,7 @@ const GathererAddNewQuestionPage = () => {
           {/* Header */}
           <header className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center mb-10">
             <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
-              {t('admin.addNewQuestion.hero.title')}
+              {t('gatherer.addNewQuestion.title')}
             </h1>
             <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
               <button
@@ -917,21 +916,14 @@ const GathererAddNewQuestionPage = () => {
                 onClick={handleCancel}
                 className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#E5E7EB] bg-white px-3 md:px-5 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
               >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveDraft}
-                className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#E5E7EB] bg-white px-3 md:px-5 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
-              >
-                Save as Draft
+                {t('gatherer.addNewQuestion.cancel')}
               </button>
               <button
                 type="button"
                 onClick={handleSubmit}
                 className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 md:px-6 text-[14px] md:text-[16px] font-archivo font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]"
               >
-                Submit for Review
+                {t('gatherer.addNewQuestion.submit')}
               </button>
             </div>
           </header>
@@ -941,19 +933,19 @@ const GathererAddNewQuestionPage = () => {
             {/* Left Column - Question Details (2/3 width on xl screens) */}
             <div className="xl:col-span-2 bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
               <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark mb-[30px]">
-                {t('admin.addNewQuestion.sections.questionDetails')}
+                {t('gatherer.addNewQuestion.questionText')}
               </h2>
 
               <div className="space-y-6">
                 {/* Question Text */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-5">
-                    {t('admin.addNewQuestion.fields.questionText')}
+                    {t('gatherer.addNewQuestion.questionText')}
                   </label>
                   <RichTextEditor
                     value={questionText}
                     onChange={setQuestionText}
-                    placeholder={t('admin.addNewQuestion.placeholders.questionText')}
+                    placeholder={t('gatherer.addNewQuestion.placeholders.questionText')}
                     minHeight="200px"
                   />
                 </div>
@@ -961,7 +953,7 @@ const GathererAddNewQuestionPage = () => {
                 {/* Question Type */}
                 <div>
                   <label className="block  text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('admin.addNewQuestion.fields.questionType')}
+                    {t('gatherer.addNewQuestion.questionType')}
                   </label>
                   <Dropdown
                     value={questionType}
@@ -980,7 +972,7 @@ const GathererAddNewQuestionPage = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('admin.addNewQuestion.fields.optionA')}
+                        {t('gatherer.addNewQuestion.options.optionA')}
                       </label>
                       <input
                         type="text"
@@ -991,7 +983,7 @@ const GathererAddNewQuestionPage = () => {
                     </div>
                     <div>
                       <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('admin.addNewQuestion.fields.optionC')}
+                        {t('gatherer.addNewQuestion.options.optionC')}
                       </label>
                       <input
                         type="text"
@@ -1004,7 +996,7 @@ const GathererAddNewQuestionPage = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('admin.addNewQuestion.fields.optionB')}
+                        {t('gatherer.addNewQuestion.options.optionB')}
                       </label>
                       <input
                         type="text"
@@ -1015,7 +1007,7 @@ const GathererAddNewQuestionPage = () => {
                     </div>
                     <div>
                       <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('admin.addNewQuestion.fields.optionD')}
+                        {t('gatherer.addNewQuestion.options.optionD')}
                       </label>
                       <input
                         type="text"
@@ -1030,7 +1022,7 @@ const GathererAddNewQuestionPage = () => {
                 {/* Correct Answer */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('admin.addNewQuestion.fields.correctAnswer')}
+                    {t('gatherer.addNewQuestion.correctAnswer')}
                   </label>
                   <Dropdown
                     value={correctAnswer}
@@ -1049,36 +1041,19 @@ const GathererAddNewQuestionPage = () => {
             {/* Right Column - Classification (1/3 width on xl screens) */}
             <div className="bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10 h-[725px]">
               <h2 className="text-[20px] leading-[100%] font-bold font-archivo text-blue-dark mb-6">
-                {t('admin.addNewQuestion.sections.classification')}
+                {t('gatherer.addNewQuestion.classification.title')}
               </h2>
 
               <div className="space-y-6">
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    Exam
-                  </label>
-                  <Dropdown
-                    value={subject}
-                    onChange={setSubject}
-                    options={[
-                      "Select Exam",
-                      'Math',
-                      'Science',
-                      'History',
-                      'Geography'
-                    ]}
-                  />
-                </div>
                 {/* Subject */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('admin.addNewQuestion.fields.subject')}
+                    {t('gatherer.addNewQuestion.classification.subject')}
                   </label>
                   <Dropdown
                     value={subject}
                     onChange={setSubject}
                     options={[
-                      t('admin.addNewQuestion.placeholders.selectSubject'),
                       'Math',
                       'Science',
                       'History',
@@ -1090,13 +1065,12 @@ const GathererAddNewQuestionPage = () => {
                 {/* Topic */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('admin.addNewQuestion.fields.topic')}
+                    {t('gatherer.addNewQuestion.classification.topic')}
                   </label>
                   <Dropdown
                     value={topic}
                     onChange={setTopic}
                     options={[
-                      t('admin.addNewQuestion.placeholders.selectTopic'),
                       'Algebra',
                       'Geometry',
                       'Calculus'
@@ -1104,40 +1078,17 @@ const GathererAddNewQuestionPage = () => {
                   />
                 </div>
 
-                {/* Cognitive Level */}
+                {/* Reference */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('admin.addNewQuestion.fields.cognitiveLevel')}
+                    {t('gatherer.addNewQuestion.classification.source')}
                   </label>
-                  <Dropdown
-                    value={cognitiveLevel}
-                    onChange={setCognitiveLevel}
-                    options={[
-                      t('admin.addNewQuestion.placeholders.selectLevel'),
-                      t('admin.addNewQuestion.cognitiveLevels.remember'),
-                      t('admin.addNewQuestion.cognitiveLevels.understand'),
-                      t('admin.addNewQuestion.cognitiveLevels.apply'),
-                      t('admin.addNewQuestion.cognitiveLevels.analyze'),
-                      t('admin.addNewQuestion.cognitiveLevels.evaluate'),
-                      t('admin.addNewQuestion.cognitiveLevels.create')
-                    ]}
-                  />
-                </div>
-
-                {/* Source */}
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('admin.addNewQuestion.fields.source')}
-                  </label>
-                  <Dropdown
+                  <input
+                    type="text"
                     value={source}
-                    onChange={setSource}
-                    options={[
-                      t('admin.addNewQuestion.placeholders.selectSource'),
-                      t('admin.addNewQuestion.sources.textbook'),
-                      t('admin.addNewQuestion.sources.pastExam'),
-                      t('admin.addNewQuestion.sources.custom')
-                    ]}
+                    onChange={(e) => setSource(e.target.value)}
+                    className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                    placeholder={t('gatherer.addNewQuestion.placeholders.reference')}
                   />
                 </div>
               </div>

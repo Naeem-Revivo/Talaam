@@ -18,10 +18,10 @@ const DraftExplanationPage = () => {
 
   // Define columns for the draft explanation table
   const draftExplanationColumns = [
-    { key: "questionTitle", label: "QUESTION TITLE" },
-    { key: "lastEdited", label: "LAST EDITED" },
-    { key: "status", label: "STATUS" },
-    { key: "actions", label: "ACTION" },
+    { key: "questionTitle", label: t("explainer.draftExplanation.table.question") },
+    { key: "lastEdited", label: t("explainer.draftExplanation.table.lastEdited") },
+    { key: "status", label: t("explainer.draftExplanation.table.status") },
+    { key: "actions", label: t("explainer.draftExplanation.table.action") },
   ];
 
   // Sample data matching the image (with the inconsistencies as shown)
@@ -86,10 +86,13 @@ const DraftExplanationPage = () => {
         <header className="flex justify-between gap-4">
           <div>
             <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue mb-2">
-              Pending Explanations
+              {t("explainer.draftExplanation.title")}
             </h1>
+            <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
+              {t("explainer.draftExplanation.subtitle")}
+            </p>
           </div>
-          <OutlineButton text="Back" className="py-[10px] px-5" onClick={handleCancel}/>
+          <OutlineButton text={t("explainer.draftExplanation.back")} className="py-[10px] px-5" onClick={handleCancel}/>
         </header>
 
         <SearchFilter
@@ -100,7 +103,7 @@ const DraftExplanationPage = () => {
           onTopicChange={setTopic}
           onSubtopicChange={setSubtopic}
           subtopicOptions={subtopicOptions}
-          searchPlaceholder="Search Pending explanations..."
+          searchPlaceholder={t("explainer.draftExplanation.searchPlaceholder")}
         />
 
         <Table
@@ -120,7 +123,7 @@ const DraftExplanationPage = () => {
               handleCreateVariant(item);
             }
           }}
-          emptyMessage="No questions found"
+          emptyMessage={t("explainer.draftExplanation.emptyMessage")}
         />
       </div>
     </div>

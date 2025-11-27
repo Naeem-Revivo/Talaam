@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
 
-const Attachments = ({ files }) => {
+const Attachments = ({ files, t }) => {
   return (
     <div className="bg-white border border-[#BCBCBD] rounded-lg p-5">
       <h3 className="text-blue-dark font-bold text-[20px] leading-[32px] font-archivo mb-5">
-        Attachments
+        {t("processor.viewQuestion.attachments")}
       </h3>
       <div className="flex flex-wrap gap-2">
         {files.map((file, index) => (
@@ -37,11 +37,11 @@ const Attachments = ({ files }) => {
 };
 
 // Question History Component
-const QuestionHistory = ({ historyItems }) => {
+const QuestionHistory = ({ historyItems, t }) => {
   return (
     <div className="bg-white border border-[#BCBCBD] rounded-lg p-5">
       <h3 className="text-blue-dark font-bold text-[20px] leading-[32px] font-archivo mb-5">
-        Question History
+        {t("processor.viewQuestion.questionHistory")}
       </h3>
       <div className="space-y-3">
         {historyItems.map((item, index) => (
@@ -112,22 +112,22 @@ const ProcessorViewQuestion = () => {
         {/* Header */}
         <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
-            View Question
+            {t("processor.viewQuestion.title")}
           </h1>
           <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
             <OutlineButton
-              text="Close"
+              text={t("processor.viewQuestion.close")}
               //   onClick={() => setIsModalOpen(true)}
               className="py-[10px], px-[14px]"
             />
             <OutlineButton
-              text="Reject"
+              text={t("processor.viewQuestion.reject")}
               //   onClick={() => setIsModalOpen(true)}
               className="py-[10px], px-[14px]"
             />
 
             <PrimaryButton
-              text="Accept & Sent to Creator"
+              text={t("processor.viewQuestion.acceptAndSend")}
               className="py-[10px] px-5"
               //   onClick={handleAddQuestion}
             />
@@ -144,7 +144,7 @@ const ProcessorViewQuestion = () => {
               style={{}}
             >
               <h2 className="mb-2 font-archivo text-[20px] font-bold leading-[32px] text-oxford-blue">
-                Question Info
+                {t("processor.viewQuestion.questionInfo")}
               </h2>
               <div className="flex items-center justify-between">
                 <span className="font-roboto text-[16px] font-normal leading-[100%] text-[#6B7280]">
@@ -164,7 +164,7 @@ const ProcessorViewQuestion = () => {
             >
               <div>
                 <div className="text-[16px] leading-[100%] font-normal font-roboto mb-[30px]">
-                  Options:
+                  {t("processor.viewQuestion.options")}
                 </div>
                 {/* Options */}
                 <div className="space-y-5" dir="ltr">
@@ -243,8 +243,8 @@ const ProcessorViewQuestion = () => {
               </div>
             </div>
 
-            <Attachments files={attachments} />
-            <QuestionHistory historyItems={history} />
+            <Attachments files={attachments} t={t} />
+            <QuestionHistory historyItems={history} t={t} />
           </div>
 
           <div className="flex flex-col gap-4 lg:w-[376px]">
@@ -252,7 +252,7 @@ const ProcessorViewQuestion = () => {
             <div className="rounded-lg border border-[#CDD4DA] bg-white">
               <div className="pt-10 px-6 pb-6 border-b border-[#CDD4DA]">
               <h2 className="text-[20px] leading-[100%] font-bold font-archivo text-blue-dark">
-                Classification
+                {t("processor.viewQuestion.classification")}
               </h2>
               </div>
               <div className="space-y-5 text-[18px] leading-[100%] font-normal text-blue-dark pt-10 px-6 pb-6">
@@ -287,7 +287,7 @@ const ProcessorViewQuestion = () => {
             <div className="rounded-lg border border-[#CDD4DA] bg-white">
               <div className="border-b border-[#CDD4DA] pt-10 px-6 pb-6 ">
               <h2 className="text-[20px] leading-[100%] font-bold font-archivo text-blue-dark">
-                Creator / Gatherer Notes
+                {t("processor.viewQuestion.creatorGathererNotes")}
               </h2>
               </div>
               <p className="text-[16px] leading-[100%] font-normal font-roboto text-[#6B7280] pb-[60px] pt-[30px] px-6">
