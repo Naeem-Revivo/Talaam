@@ -71,7 +71,7 @@ const SiteWideAnnouncements = () => {
                     columns={[
                         {label: t('admin.siteWideAnnouncements.table.columns.title'), key: "title"},
                         {label: t('admin.siteWideAnnouncements.table.columns.message'), key: "message"},
-                        {label: t('admin.siteWideAnnouncements.table.columns.schedule'), key: "sehedule"},
+                        {label: t('admin.siteWideAnnouncements.table.columns.schedule'), key: "schedule"},
                         {label: t('admin.siteWideAnnouncements.table.columns.status'), key: "status"},
                         {label: t('admin.siteWideAnnouncements.table.columns.actions'), key: "actions"},
                     ]}

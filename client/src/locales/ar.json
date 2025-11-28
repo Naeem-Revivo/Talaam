@@ -603,6 +603,127 @@
       },
       "beginSession": "بدء الجلسة"
     },
+    "subscriptionBilling": {
+      "hero": {
+        "title": "الاشتراك والفوترة",
+        "subtitle": "إدارة خطتك وطرق الدفع وعرض سجل الفواتير"
+      },
+      "currentPlan": {
+        "title": "خطتك الحالية",
+        "planName": "الخطة الاحترافية",
+        "statusActive": "نشط",
+        "cancelSubscription": "إلغاء الاشتراك",
+        "upgradePlan": "ترقية الخطة",
+        "plan": "الخطة:",
+        "renewsOn": "تجديد في:",
+        "access": "الوصول:",
+        "autoRenew": "التجديد التلقائي:",
+        "monthly": "شهري",
+        "questionBankAccess": "الوصول إلى بنك الأسئلة",
+        "on": "تشغيل"
+      },
+      "pricingPlans": {
+        "title": "اختر الخطة المناسبة لك",
+        "mostPopular": "الأكثر شيوعًا",
+        "starter": {
+          "name": "الخطة المبدئية",
+          "currency": "ريال",
+          "period": "شهر",
+          "buttonText": "اشترك الآن",
+          "features": [
+            "الوصول إلى بنك الأسئلة",
+            "50 سؤال في الشهر",
+            "تحليلات أساسية",
+            "دعم عبر البريد الإلكتروني"
+          ]
+        },
+        "professional": {
+          "name": "الخطة الاحترافية",
+          "currency": "ريال",
+          "period": "شهر",
+          "buttonText": "الخطة الحالية",
+          "features": [
+            "وصول غير محدود",
+            "المتغيرات والتفسيرات",
+            "ميزات التصدير",
+            "دعم متميز"
+          ]
+        },
+        "enterprise": {
+          "name": "الخطة المؤسسية",
+          "price": "مخصص",
+          "currency": "",
+          "period": "",
+          "buttonText": "اتصل بالمبيعات",
+          "features": [
+            "ترخيص متعدد المستخدمين",
+            "ميزات الرفع الجماعي",
+            "لوحة تحكم المشرف",
+            "دعم مخصص 24/7"
+          ]
+        }
+      },
+      "billingHistory": {
+        "title": "سجل الفواتير",
+        "emptyMessage": "لا توجد فواتير",
+        "columns": {
+          "invoice": "الفاتورة",
+          "amount": "المبلغ",
+          "date": "التاريخ",
+          "status": "الحالة",
+          "actions": "الإجراءات"
+        },
+        "status": {
+          "paid": "مدفوع",
+          "failed": "فشل"
+        }
+      }
+    },
+    "accountSettings": {
+      "hero": {
+        "title": "إعدادات الحساب",
+        "subtitle": "إدارة ملفك الشخصي وكلمة المرور وإعدادات التطبيق."
+      },
+      "profileInformation": {
+        "title": "معلومات الملف الشخصي",
+        "name": "الاسم",
+        "currentPlan": "الخطة الحالية",
+        "email": "البريد الإلكتروني",
+        "phone": "الهاتف",
+        "professionalPlan": "الخطة الاحترافية",
+        "saveChanges": "حفظ التغييرات"
+      },
+      "changePassword": {
+        "title": "تغيير كلمة المرور",
+        "currentPassword": "كلمة المرور الحالية",
+        "currentPasswordPlaceholder": "أدخل كلمة المرور الحالية",
+        "enterEmail": "أدخل عنوان البريد الإلكتروني",
+        "emailPlaceholder": "أدخل عنوان بريدك الإلكتروني",
+        "sendCode": "إرسال الرمز",
+        "enterCode": "أدخل الرمز",
+        "codePlaceholder": "رمز 6 أرقام",
+        "newPassword": "كلمة المرور الجديدة",
+        "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
+        "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
+        "confirmPasswordPlaceholder": "تأكيد كلمة المرور الجديدة",
+        "updatePassword": "تحديث كلمة المرور"
+      },
+      "applicationSettings": {
+        "title": "إعدادات التطبيق",
+        "language": {
+          "label": "اللغة"
+        },
+        "notifications": {
+          "label": "الإشعارات",
+          "description": "تمكين أو تعطيل إشعارات البريد الإلكتروني للتحديثات المهمة."
+        },
+        "saveSettings": "حفظ الإعدادات"
+      },
+      "languageOptions": {
+        "english": "الإنجليزية (أمريكا)",
+        "arabic": "العربية"
+      }
+    },
     "analytics": {
       "hero": {
         "title": "تحليلات الأداء",
@@ -1597,36 +1718,18 @@
         "subtitle": "راقب أداء الطلاب واستخدام الأسئلة ونشاط الاختبارات."
       },
       "actions": {
-        "comparePeriod": "مقارنة الفترة",
         "exportReport": "تصدير التقرير"
       },
-      "filters": {
-        "exam": "الامتحان",
-        "subject": "الموضوع",
-        "cognitiveLevel": "المستوى المعرفي",
-        "dateRange": "نطاق التاريخ",
-        "lastWeek": "الأسبوع الماضي",
-        "lastMonth": "الشهر الماضي",
-        "lastYear": "العام الماضي",
-        "viewDetails": "عرض التفاصيل",
-        "applyFilter": "تطبيق المرشح"
-      },
-      "tabs": {
-        "userGrowthAnalytics": "تحليلات نمو المستخدمين",
-        "subscriptionTrends": "اتجاهات الاشتراك",
-        "performanceAnalytics": "تحليلات الأداء",
-        "exportReports": "تصدير التقارير"
-      },
       "kpi": {
-        "totalQuestions": "إجمالي الأسئلة",
-        "averageAccuracy": "متوسط الدقة",
+        "newSignups": "المشتركون الجدد",
+        "activeUsers": "المستخدمون النشطون",
         "mostAttemptedSubject": "الموضوع الأكثر محاولة",
         "averageTimePerQuestion": "متوسط الوقت/السؤال"
       },
       "charts": {
-        "performanceTrend": "اتجاه الأداء (الدقة بمرور الوقت)",
-        "practiceDistribution": "توزيع الممارسة حسب الموضوع",
-        "kpiSummary": "بطاقات ملخص مؤشرات الأداء"
+        "kpiSummary": "بطاقات ملخص مؤشرات الأداء",
+        "performanceTrend": "النمو الإجمالي للمستخدمين",
+        "practiceDistribution": "توزيع الممارسة حسب الموضوع"
       },
       "table": {
         "topPerformanceUser": "أفضل مستخدم أداء",
@@ -1639,16 +1742,6 @@
           "averageTime": "متوسط الوقت / السؤال",
           "lastActive": "آخر نشاط"
         }
-      },
-      "sections": {
-        "recentReports": "التقارير المولدة مؤخراً",
-        "systemInsights": "رؤى النظام",
-        "generated": "تم الإنشاء {{date}}"
-      },
-      "insights": {
-        "mostDifficultCognitiveLevel": "أصعب مستوى معرفي:",
-        "peakActivity": "نشاط الذروة:",
-        "lowAccuracy": "دقة منخفضة في الكيمياء ("
       }
     },
     "exportReports": {
@@ -3046,5 +3139,10 @@
       "notificationsDescription": "تفعيل أو تعطيل إشعارات البريد الإلكتروني للتحديثات المهمة.",
       "saveSettings": "حفظ الإعدادات"
     }
+  },
+  "filter": {
+    "subject": "المادة",
+    "role": "الدور",
+    "status": "الحالة"
   }
 }

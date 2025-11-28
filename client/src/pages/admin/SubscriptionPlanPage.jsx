@@ -89,7 +89,7 @@ const SubscriptionPlan = () => {
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 sm:px-6 2xl:px-[66px]">
       <div className="mx-auto flex max-w-[1200px] flex-col gap-[110px]">
-        <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <header className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
               {t('admin.subscriptionPlans.hero.title')}

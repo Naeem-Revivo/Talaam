@@ -1,50 +1,38 @@
+import React from "react";
+import { useLanguage } from "../../../context/LanguageContext";
+
 export default function PricingPlans() {
+  const { t } = useLanguage();
+
   const plans = [
     {
-      name: "Starter Plan",
+      name: t("dashboard.subscriptionBilling.pricingPlans.starter.name"),
       price: "9.99",
-      currency: "SAR",
-      period: "month",
-      features: [
-        "Access to Question Bank",
-        "50 Question per month",
-        "Basic analytics",
-        "Email support",
-      ],
-      buttonText: "SUBSCRIBE NOW",
-      buttonStyle:
-        "border border-oxford-blue text-[14px] leading-[14px]  text-oxford-blue hover:bg-gray-800 hover:text-white",
+      currency: t("dashboard.subscriptionBilling.pricingPlans.starter.currency"),
+      period: t("dashboard.subscriptionBilling.pricingPlans.starter.period"),
+      features: t("dashboard.subscriptionBilling.pricingPlans.starter.features", { returnObjects: true }),
+      buttonText: t("dashboard.subscriptionBilling.pricingPlans.starter.buttonText"),
+      buttonStyle: "border border-oxford-blue text-[14px] leading-[14px] text-oxford-blue hover:bg-gray-800 hover:text-white",
       isPopular: false,
     },
     {
-      name: "Professional Plan",
+      name: t("dashboard.subscriptionBilling.pricingPlans.professional.name"),
       price: "24.99",
-      currency: "SAR",
-      period: "month",
-      features: [
-        "Unlimited access",
-        "Variants & explanations",
-        "Export features",
-        "Priority support",
-      ],
-      buttonText: "CURRENT PLAN",
-      buttonStyle: " bg-gradient-to-r from-[#ED4122] to-[#FF8B67] font-[14px] leading-[100%] font-bold text-white hover:bg-orange-600",
+      currency: t("dashboard.subscriptionBilling.pricingPlans.professional.currency"),
+      period: t("dashboard.subscriptionBilling.pricingPlans.professional.period"),
+      features: t("dashboard.subscriptionBilling.pricingPlans.professional.features", { returnObjects: true }),
+      buttonText: t("dashboard.subscriptionBilling.pricingPlans.professional.buttonText"),
+      buttonStyle: "bg-gradient-to-r from-[#ED4122] to-[#FF8B67] font-[14px] leading-[100%] font-bold text-white hover:bg-orange-600",
       isPopular: true,
     },
     {
-      name: "Enterprise Plan",
-      price: "Custom",
-      currency: "",
-      period: "",
-      features: [
-        "Multi-user license",
-        "Bulk upload features",
-        "Admin dashboard",
-        "24/7 dedicated support",
-      ],
-      buttonText: "CONTACT SALES",
-      buttonStyle:
-        "border border-oxford-blue text-[14px] leading-[14px]  text-oxford-blue hover:bg-gray-800 hover:text-white",
+      name: t("dashboard.subscriptionBilling.pricingPlans.enterprise.name"),
+      price: t("dashboard.subscriptionBilling.pricingPlans.enterprise.price"),
+      // currency: t("dashboard.subscriptionBilling.pricingPlans.enterprise.currency"),
+      period: t("dashboard.subscriptionBilling.pricingPlans.enterprise.period"),
+      features: t("dashboard.subscriptionBilling.pricingPlans.enterprise.features", { returnObjects: true }),
+      buttonText: t("dashboard.subscriptionBilling.pricingPlans.enterprise.buttonText"),
+      buttonStyle: "border border-oxford-blue text-[14px] leading-[14px] text-oxford-blue hover:bg-gray-800 hover:text-white",
       isPopular: false,
     },
   ];
@@ -52,7 +40,7 @@ export default function PricingPlans() {
   return (
     <div className="w-full">
       <h2 className="text-[24px] leading-7 font-semibold text-oxford-blue font-archivo mb-7">
-        Choose the Right Plan for You
+        {t("dashboard.subscriptionBilling.pricingPlans.title")}
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -65,6 +53,8 @@ export default function PricingPlans() {
 }
 
 function PlanCard({ plan }) {
+  const { t } = useLanguage();
+
   return (
     <div
       className={`bg-white rounded-[12px] shadow-[0px_2px_10px_0px_#0327461A] ${
@@ -76,7 +66,7 @@ function PlanCard({ plan }) {
       {plan.isPopular && (
         <div className="absolute -top-3 left-4">
           <span className="bg-[#E43F21] text-[#FBFCFB] text-[14px] leading-[100%] font-normal font-roboto px-[21px] py-1.5 rounded-full">
-            Most Popular
+            {t("dashboard.subscriptionBilling.pricingPlans.mostPopular")}
           </span>
         </div>
       )}

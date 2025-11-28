@@ -593,6 +593,127 @@
       },
       "beginSession": "Begin Session"
     },
+    "subscriptionBilling": {
+      "hero": {
+        "title": "Subscription & Billing",
+        "subtitle": "Manage Your Plan, payment methods, and view your billing history"
+      },
+      "currentPlan": {
+        "title": "Your Current Plan",
+        "planName": "Professional Plan",
+        "statusActive": "Active",
+        "cancelSubscription": "Cancel Subscription",
+        "upgradePlan": "Upgrade Plan",
+        "plan": "Plan:",
+        "renewsOn": "Renews on:",
+        "access": "Access:",
+        "autoRenew": "Auto-Renew:",
+        "monthly": "Monthly",
+        "questionBankAccess": "Question Bank Access",
+        "on": "On"
+      },
+      "pricingPlans": {
+        "title": "Choose the Right Plan for You",
+        "mostPopular": "Most Popular",
+        "starter": {
+          "name": "Starter Plan",
+          "currency": "SAR",
+          "period": "month",
+          "buttonText": "SUBSCRIBE NOW",
+          "features": [
+            "Access to Question Bank",
+            "50 Question per month",
+            "Basic analytics",
+            "Email support"
+          ]
+        },
+        "professional": {
+          "name": "Professional Plan",
+          "currency": "SAR",
+          "period": "month",
+          "buttonText": "CURRENT PLAN",
+          "features": [
+            "Unlimited access",
+            "Variants & explanations",
+            "Export features",
+            "Priority support"
+          ]
+        },
+        "enterprise": {
+          "name": "Enterprise Plan",
+          "price": "Custom",
+          "currency": "",
+          "period": "",
+          "buttonText": "CONTACT SALES",
+          "features": [
+            "Multi-user license",
+            "Bulk upload features",
+            "Admin dashboard",
+            "24/7 dedicated support"
+          ]
+        }
+      },
+      "billingHistory": {
+        "title": "Billing History",
+        "emptyMessage": "No billing history found",
+        "columns": {
+          "invoice": "INVOICE",
+          "amount": "AMOUNT",
+          "date": "DATE",
+          "status": "STATUS",
+          "actions": "ACTIONS"
+        },
+        "status": {
+          "paid": "Paid",
+          "failed": "Failed"
+        }
+      }
+    },
+    "accountSettings": {
+      "hero": {
+        "title": "Account Settings",
+        "subtitle": "Manage your profile, password, and application settings."
+      },
+      "profileInformation": {
+        "title": "Profile Information",
+        "name": "Name",
+        "currentPlan": "Current Plan",
+        "email": "Email",
+        "phone": "Phone",
+        "professionalPlan": "Professional Plan",
+        "saveChanges": "Save Changes"
+      },
+      "changePassword": {
+        "title": "Change Password",
+        "currentPassword": "Current Password",
+        "currentPasswordPlaceholder": "Enter your current password",
+        "enterEmail": "Enter Email address",
+        "emailPlaceholder": "Enter your email address",
+        "sendCode": "Send Code",
+        "enterCode": "Enter Code",
+        "codePlaceholder": "6-digit Code",
+        "newPassword": "New Password",
+        "newPasswordPlaceholder": "Enter new password",
+        "confirmNewPassword": "Confirm New Password",
+        "confirmPasswordPlaceholder": "Confirm new password",
+        "updatePassword": "Update Password"
+      },
+      "applicationSettings": {
+        "title": "Application Settings",
+        "language": {
+          "label": "Language"
+        },
+        "notifications": {
+          "label": "Notifications",
+          "description": "Enable or disable email notifications for important updates."
+        },
+        "saveSettings": "Save Settings"
+      },
+      "languageOptions": {
+        "english": "English (US)",
+        "arabic": "Arabic"
+      }
+    },
     "analytics": {
       "hero": {
         "title": "Performance Analytics",
@@ -1587,36 +1708,18 @@
         "subtitle": "Monitor student performance, question usage, and test activity."
       },
       "actions": {
-        "comparePeriod": "Compare period",
         "exportReport": "Export Report"
       },
-      "filters": {
-        "exam": "Exam",
-        "subject": "Subject",
-        "cognitiveLevel": "Cognitive Level",
-        "dateRange": "Date Range",
-        "lastWeek": "Last Week",
-        "lastMonth": "Last Month",
-        "lastYear": "Last Year",
-        "viewDetails": "View Details",
-        "applyFilter": "Apply Filter"
-      },
-      "tabs": {
-        "userGrowthAnalytics": "User Growth Analytics",
-        "subscriptionTrends": "Subscription Trends",
-        "performanceAnalytics": "Performance Analytics",
-        "exportReports": "Export Reports"
-      },
       "kpi": {
-        "totalQuestions": "Total Questions",
-        "averageAccuracy": "Average Accuracy",
+        "newSignups": "New Sign-ups",
+        "activeUsers": "Active Users",
         "mostAttemptedSubject": "Most Attempted Subject",
-        "averageTimePerQuestion": "Average Time/Question"
+        "averageTimePerQuestion": "Average Time/ Question"
       },
       "charts": {
-        "performanceTrend": "Performance Trend (Accuracy over Time)",
-        "practiceDistribution": "Practice Distribution by subject",
-        "kpiSummary": "KPI Summary Cards"
+        "kpiSummary": "KPI Summary Cards",
+        "performanceTrend": "Overall User Growth",
+        "practiceDistribution": "Practice Distribution by subject"
       },
       "table": {
         "topPerformanceUser": "Top Performance User",
@@ -1629,16 +1732,6 @@
           "averageTime": "AVERAGE TIME / QUESTION",
           "lastActive": "LAST ACTIVE"
         }
-      },
-      "sections": {
-        "recentReports": "Recent Reports Generated",
-        "systemInsights": "System Insights",
-        "generated": "Generated {{date}}"
-      },
-      "insights": {
-        "mostDifficultCognitiveLevel": "Most Difficult Cognitive Level:",
-        "peakActivity": "Peak Activity:",
-        "lowAccuracy": "Low Accuracy in Chemistry ("
       }
     },
     "exportReports": {
@@ -3037,5 +3130,10 @@
       "notificationsDescription": "Enable or disable email notifications for important updates.",
       "saveSettings": "Save Settings"
     }
+  },
+  "filter": {
+    "subject": "Subject",
+    "role": "Role",
+    "status": "Status"
   }
 }

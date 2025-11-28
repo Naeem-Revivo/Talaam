@@ -63,7 +63,7 @@ const TableRow = ({ question, onView, t, dir }) => {
         <div className={`w-[218px] ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
           <p 
             className="text-[12px] font-roboto leading-[16px] text-oxford-blue break-words"
-            dir={dir}
+            dir="ltr"
             style={{ wordBreak: 'break-word', lineHeight: '1.4' }}
           >
             {question.prompt}

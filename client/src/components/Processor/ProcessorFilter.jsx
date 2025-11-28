@@ -1,30 +1,6 @@
 import { useLanguage } from "../../context/LanguageContext";
 import Dropdown from "../shared/Dropdown";
 
-// Demo options (replace later with real dynamic data)
-const getSubjectOptions = (t) => [
-  "Subject",
-  "Math",
-  "Science",
-  "History",
-];
-
-const getTopicOptions = (t) => [
-  "Role",
-  "Gatherer",
-  "Processor",
-  "Creator",
-  "Explainer",
-];
-
-const getSubtopicOptions = (t) => [
-  "Status",
-  "Equations",
-  "Triangles",
-  "Cells",
-  "Motion",
-];
-
 const ProcessorFilter = ({
   searchValue,
   subjectValue,
@@ -37,7 +13,32 @@ const ProcessorFilter = ({
   searchPlaceholder,
   showRole=true
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dir = language === 'ar' ? 'rtl' : 'ltr'
+
+
+  const getSubjectOptions = (t) => [
+  t("filter.subject"),
+  "Math",
+  "Science",
+  "History",
+];
+
+const getTopicOptions = (t) => [
+  t("filter.role"),
+  "Gatherer",
+  "Processor",
+  "Creator",
+  "Explainer",
+];
+
+const getSubtopicOptions = (t) => [
+  t("filter.status"),
+  "Equations",
+  "Triangles",
+  "Cells",
+  "Motion",
+];
 
   const placeholder =
     searchPlaceholder ||
