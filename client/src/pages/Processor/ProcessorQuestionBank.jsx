@@ -17,8 +17,8 @@ const ProcessorQuestionBank = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
 
-   const subjectOptions = ["Subject", "Mathematics", "Physics", "Chemistry", "Biology"];
-  const topicOptions = ["Status", "Approved", "Failed", "Reject"];
+   const subjectOptions = [t("filter.subject"), "Mathematics", "Physics", "Chemistry", "Biology"];
+  const topicOptions = [t("filter.status"), "Approved", "Failed", "Reject"];
   
   // Note: topicLabel is used for Status dropdown, subjectLabel for Subject dropdown
 

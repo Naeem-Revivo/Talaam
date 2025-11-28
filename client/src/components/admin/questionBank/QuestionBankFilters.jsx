@@ -18,12 +18,13 @@ const QuestionBankFilters = ({
   statusOptions,
   children,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dir = language === 'ar' ? 'rtl' : 'ltr';
   
   return (
     <section className="mx-auto flex w-full flex-col gap-5 rounded-[16px] border border-[#E5E7EB] bg-white p-6 shadow-filter-lg md:gap-6 min-h-[326px]">
       <div className="relative flex justify-start">
-        <span className="pointer-events-none absolute left-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-oxford-blue">
+        <span className={`pointer-events-none absolute top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-oxford-blue ${dir === "rtl" ? "right-4" : "left-4"}`}>
           <svg
             width="21"
             height="21"
@@ -49,7 +50,7 @@ const QuestionBankFilters = ({
         <button
           type="button"
           onClick={onReset}
-          className="absolute right-3 top-1/2 hidden h-[30px] w-[120px] -translate-y-1/2 items-center justify-center rounded-full bg-[#FDF0D5] text-[14px] font-roboto font-medium leading-[16px] text-[#ED4122] transition md:flex"
+          className={`absolute top-1/2 hidden h-[30px] w-[120px] -translate-y-1/2 items-center justify-center rounded-full bg-[#FDF0D5] text-[14px] font-roboto font-medium leading-[16px] text-[#ED4122] transition md:flex ${dir === "rtl" ? "left-3" : "right-3"}`}
         >
           {t('admin.questionBank.filters.resetFilter')}
         </button>

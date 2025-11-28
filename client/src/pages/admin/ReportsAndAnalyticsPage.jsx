@@ -1,31 +1,47 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 
 // Reusable KPI Card Component
-const KPICard = ({ title, value, subtitle, icon, valueWeight = "font-semibold", subtitlecolor }) => {
+const KPICard = ({
+  title,
+  value,
+  subtitle,
+  icon,
+  valueWeight = "font-semibold",
+  subtitlecolor,
+}) => {
+  const { isRTL } = useLanguage();
+
   return (
-    <div className="rounded-[12px] border border-[#03274633] bg-white pb-6 px-5 pt-5 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full flex items-center justify-between gap-4">
+    <div
+      className="rounded-[12px] border border-[#03274633] bg-white pb-6 px-5 pt-5 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full flex items-center justify-between gap-4"
+      dir={isRTL ? "rtl" : "ltr"}
+    >
       <div className="flex flex-col justify-between flex-1 h-full min-h-[66px]">
         <h3 className="font-roboto text-[14px] md:text-[16px] font-normal leading-[18px] md:leading-[20px] text-dark-gray">
           {title}
         </h3>
-        <p className={`font-archivo text-[24px] md:text-[30px] ${valueWeight} leading-[32px] md:leading-[40px] text-oxford-blue`}>
+        <p
+          className={`font-archivo text-[24px] md:text-[30px] ${valueWeight} leading-[32px] md:leading-[40px] text-oxford-blue`}
+        >
           {value}
         </p>
         {subtitle && (
-          <p className={`font-roboto text-[12px] md:text-[16px] font-normal leading-[16px] md:leading-[20px] ${subtitlecolor}`}>
+          <p
+            className={`font-roboto text-[12px] md:text-[16px] font-normal leading-[16px] md:leading-[20px] ${subtitlecolor}`}
+          >
             {subtitle}
           </p>
         )}
       </div>
-      <div className="flex-shrink-0">
-        {icon}
-      </div>
+      <div className="flex-shrink-0">{icon}</div>
     </div>
   );
 };
 
 const ReportsAndAnalyticsPage = () => {
+  const { t, isRTL } = useLanguage();
   const navigate = useNavigate();
 
   // Overall User Growth Chart Data (Week 1-4)
@@ -48,14 +64,11 @@ const ReportsAndAnalyticsPage = () => {
   const kpiCards = [
     {
       id: 1,
-      title: "New Sign-ups",
+      title: t("admin.reportsAndAnalytics.kpi.newSignups"),
       value: "10,884",
       subtitle: "+15% from last month",
       subtitlecolor: "text-[#ED4122]",
-      titleSize: "text-[16px]",
-      valueSize: "text-[30px]",
       valueWeight: "font-semibold",
-      marginBottom: "mb-0",
       icon: (
         <svg
           width="40"
@@ -74,14 +87,11 @@ const ReportsAndAnalyticsPage = () => {
     },
     {
       id: 2,
-      title: "Active Users",
+      title: t("admin.reportsAndAnalytics.kpi.activeUsers"),
       value: "5,432",
       subtitle: "+8% vs last month",
       subtitlecolor: "text-[#ED4122]",
-      titleSize: "text-[16px]",
-      valueSize: "text-[30px]",
       valueWeight: "font-semibold",
-      marginBottom: "mb-0",
       icon: (
         <svg
           width="40"
@@ -100,12 +110,9 @@ const ReportsAndAnalyticsPage = () => {
     },
     {
       id: 3,
-      title: "Most Attempted Subject",
+      title: t("admin.reportsAndAnalytics.kpi.mostAttemptedSubject"),
       value: "Mathematics",
-      titleSize: "text-[16px]",
-      valueSize: "text-[30px]",
       valueWeight: "font-semibold",
-      marginBottom: "mb-0",
       icon: (
         <svg
           width="40"
@@ -126,12 +133,9 @@ const ReportsAndAnalyticsPage = () => {
     },
     {
       id: 4,
-      title: "Average Time/ Question",
+      title: t("admin.reportsAndAnalytics.kpi.averageTimePerQuestion"),
       value: "45s",
-      titleSize: "text-[16px]",
-      valueSize: "text-[30px]",
       valueWeight: "font-semibold",
-      marginBottom: "mb-0",
       icon: (
         <svg
           width="40"
@@ -144,7 +148,7 @@ const ReportsAndAnalyticsPage = () => {
           <path
             fillRule="evenodd"
             clipRule="evenodd"
-            d="M20 10C14.477 10 10 14.477 10 20C10 25.523 14.477 30 20 30C25.523 30 30 25.523 30 20C30 14.477 25.523 10 20 10ZM23.53 23.53C23.384 23.676 23.192 23.75 23 23.75C22.808 23.75 22.616 23.677 22.47 23.53L19.47 20.53C19.329 20.389 19.25 20.198 19.25 20V15C19.25 14.586 19.586 14.25 20 14.25C20.414 14.25 20.75 14.586 20.75 15V19.689L23.53 22.469C23.823 22.763 23.823 23.237 23.53 23.53Z"
+            d="M20 10C14.477 10 10 14.477 10 20C10 25.523 14.477 30 20 30C25.523 30 30 25.523 30 20C30 14.477 25.523 10 20 10ZM23.53 23.53C23.384 23.676 23.192 23.75 23 23.75C22.808 23.75 22.616 23.677 22.47 23.53L19.47 20.53C19.329 20.389 19.25 20.198 19.25 20V15C19.25 14.586 19.586 14.25 20 14.25C20.414 14.25 20.75 14.586 20.75 15V19.689L23.53 22.469C23.823 23.763 23.823 23.237 23.53 23.53Z"
             fill="white"
           />
         </svg>
@@ -200,18 +204,6 @@ const ReportsAndAnalyticsPage = () => {
     },
   ];
 
-  const recentReports = [
-    { name: "Q1 Student Performance", date: "25-12-2024" },
-    { name: "Mathematics Subject Analysis", date: "25-12-2024" },
-    { name: "Q1 Student Performance", date: "25-12-2024" },
-  ];
-
-  const systemInsights = [
-    "Most Difficult Cognitive Level: Analysis",
-    "Peak Activity: 8-10 PM",
-    "Low Accuracy in Chemistry (58%)",
-  ];
-
   // Calculate donut chart path
   const getDonutPath = (percentage, startAngle, radius, innerRadius) => {
     const angle = (percentage / 100) * 360;
@@ -241,9 +233,6 @@ const ReportsAndAnalyticsPage = () => {
     return { ...item, path };
   });
 
-  // Remove filters section - not shown in the new design
-
-
   return (
     <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 2xl:px-0">
       <div className="mx-auto flex max-w-[1200px] flex-col gap-6">
@@ -251,10 +240,10 @@ const ReportsAndAnalyticsPage = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
-              Reports & Analytics
+              {t("admin.reportsAndAnalytics.hero.title")}
             </h1>
             <p className="mt-2 font-roboto text-[14px] md:text-[18px] font-normal leading-[20px] md:leading-[24px] text-dark-gray">
-              Monitor student performance, question usage, and test activity.
+              {t("admin.reportsAndAnalytics.hero.subtitle")}
             </p>
           </div>
           <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto py-8">
@@ -275,42 +264,55 @@ const ReportsAndAnalyticsPage = () => {
                   fill="white"
                 />
               </svg>
-              Export Report
+              {t("admin.reportsAndAnalytics.actions.exportReport")}
             </button>
           </div>
         </div>
 
         {/* KPI Summary Cards */}
-        <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue pt-4">KPI Summary Cards</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {kpiCards.map((card) => (
-                <KPICard
-                  key={card.id}
-                  title={card.title}
-                  value={card.value}
-                  icon={card.icon}
-                  subtitle={card?.subtitle}
-                  subtitlecolor={card?.subtitlecolor}
-                  valueWeight={card.valueWeight}
-                  marginBottom={card.marginBottom}
-                />
-              ))}
-            </div>
+        <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue pt-4">
+          {t("admin.reportsAndAnalytics.charts.kpiSummary")}
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-4 md:gap-6">
+          {kpiCards.map((card) => (
+            <KPICard
+              key={card.id}
+              title={card.title}
+              value={card.value}
+              icon={card.icon}
+              subtitle={card?.subtitle}
+              subtitlecolor={card?.subtitlecolor}
+              valueWeight={card.valueWeight}
+              marginBottom={card.marginBottom}
+            />
+          ))}
+        </div>
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Overall User Growth Chart */}
           <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
             <h2 className="pt-3 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
-              Overall User Growth
+              {t("admin.reportsAndAnalytics.charts.performanceTrend")}
             </h2>
             <p className="mt-1 font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
               New users over the last 30 days
             </p>
             <div className="h-[300px] relative mt-6">
-              <svg width="100%" height="100%" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid meet">
+              <svg
+                width="100%"
+                height="100%"
+                viewBox="0 0 600 300"
+                preserveAspectRatio="xMidYMid meet"
+              >
                 <defs>
-                  <linearGradient id="userGrowthGradient" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient
+                    id="userGrowthGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
                     <stop offset="0%" stopColor="#ED4122" stopOpacity="0.3" />
                     <stop offset="100%" stopColor="#ED4122" stopOpacity="0" />
                   </linearGradient>
@@ -328,9 +330,9 @@ const ReportsAndAnalyticsPage = () => {
                       strokeDasharray="4 4"
                     />
                     <text
-                      x="45"
+                      x={isRTL ? "555" : "45"}
                       y={280 - (val / 300) * 240 + 5}
-                      textAnchor="end"
+                      textAnchor={isRTL ? "start" : "end"}
                       className="font-roboto text-[12px] fill-[#6B7280]"
                     >
                       {val}
@@ -351,12 +353,18 @@ const ReportsAndAnalyticsPage = () => {
                 ))}
                 {/* Area chart */}
                 <path
-                  d={`M${100 + (0 * 450) / 3},${280 - (userGrowthData[0].users / 300) * 240} ${userGrowthData
+                  d={`M${100 + (0 * 450) / 3},${
+                    280 - (userGrowthData[0].users / 300) * 240
+                  } ${userGrowthData
                     .map(
                       (data, index) =>
-                        `L${100 + (index * 450) / 3},${280 - (data.users / 300) * 240}`
+                        `L${100 + (index * 450) / 3},${
+                          280 - (data.users / 300) * 240
+                        }`
                     )
-                    .join(" ")} L${100 + ((userGrowthData.length - 1) * 450) / 3},280 L100,280 Z`}
+                    .join(" ")} L${
+                    100 + ((userGrowthData.length - 1) * 450) / 3
+                  },280 L100,280 Z`}
                   fill="url(#userGrowthGradient)"
                 />
                 {/* Line chart */}
@@ -364,7 +372,9 @@ const ReportsAndAnalyticsPage = () => {
                   points={userGrowthData
                     .map(
                       (data, index) =>
-                        `${100 + (index * 450) / 3},${280 - (data.users / 300) * 240}`
+                        `${100 + (index * 450) / 3},${
+                          280 - (data.users / 300) * 240
+                        }`
                     )
                     .join(" ")}
                   fill="none"
@@ -390,17 +400,13 @@ const ReportsAndAnalyticsPage = () => {
           {/* Practice Distribution Chart */}
           <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
             <h2 className="pt-3 font-archivo text-[20px] font-semibold leading-[28px] text-oxford-blue">
-              Practice Distribution by subject
+              {t("admin.reportsAndAnalytics.charts.practiceDistribution")}
             </h2>
             <div className="flex flex-col items-center justify-center gap-6">
               <div className="relative">
                 <svg width="200" height="200" viewBox="0 0 200 200">
                   {donutPaths.map((item, index) => (
-                    <path
-                      key={index}
-                      d={item.path}
-                      fill={item.color}
-                    />
+                    <path key={index} d={item.path} fill={item.color} />
                   ))}
                 </svg>
               </div>
@@ -423,7 +429,7 @@ const ReportsAndAnalyticsPage = () => {
 
         {/* Top Performance User Table */}
         <h2 className="font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue pt-6">
-          Top Performance User
+          {t("admin.reportsAndAnalytics.table.topPerformanceUser")}
         </h2>
         <div className="rounded-[12px] border border-[#03274633] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="overflow-x-auto">
@@ -431,25 +437,25 @@ const ReportsAndAnalyticsPage = () => {
               <thead>
                 <tr className="bg-oxford-blue">
                   <th className="text-left py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
-                    #
+                    {t("admin.reportsAndAnalytics.table.columns.number")}
                   </th>
                   <th className="text-left py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
-                    USER
+                    {t("admin.reportsAndAnalytics.table.columns.user")}
                   </th>
                   <th className="text-left py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
-                    EMAIL
+                    {t("admin.reportsAndAnalytics.table.columns.email")}
                   </th>
                   <th className="text-center py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
-                    ATTEMPTS
+                    {t("admin.reportsAndAnalytics.table.columns.attempts")}
                   </th>
                   <th className="text-center py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
-                    ACCURACY %
+                    {t("admin.reportsAndAnalytics.table.columns.accuracy")}
                   </th>
                   <th className="text-center py-3 px-3 md:px-4 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
-                    AVERAGE TIME / QUESTION
+                    {t("admin.reportsAndAnalytics.table.columns.averageTime")}
                   </th>
                   <th className="text-left py-3 px-3 md:px-6 font-roboto text-[14px] md:text-[16px] font-semibold leading-[20px] text-white whitespace-nowrap">
-                    LAST ACTIVE
+                    {t("admin.reportsAndAnalytics.table.columns.lastActive")}
                   </th>
                 </tr>
               </thead>
@@ -458,6 +464,7 @@ const ReportsAndAnalyticsPage = () => {
                   <tr
                     key={user.id}
                     className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition"
+                    dir={isRTL ? "rtl" : "ltr"}
                   >
                     <td className="py-4 px-3 md:px-4 font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
                       {user.id}
@@ -486,96 +493,9 @@ const ReportsAndAnalyticsPage = () => {
             </table>
           </div>
         </div>
-
-        {/* Bottom Row - Recent Reports and System Insights */}
-        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full">
-            <h2 className="mb-4 md:mb-6 font-archivo text-[18px] md:text-[20px] font-semibold leading-[24px] md:leading-[28px] text-oxford-blue">
-              {t('admin.reportsAndAnalytics.sections.recentReports')}
-            </h2>
-            <div className="space-y-3 md:space-y-4">
-              {recentReports.map((report, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between rounded-[8px] border border-[#6CA6C1] bg-[#F9FAFB] w-full min-h-[70px] md:h-[86px] p-3 md:p-4"
-                >
-                  <div className="flex flex-col justify-center flex-1 min-w-0 pr-2">
-                    <h3 className="font-roboto text-[13px] md:text-[16px] font-medium leading-[18px] md:leading-[20px] text-oxford-blue break-words">
-                      {report.name}
-                    </h3>
-                    <p className="font-roboto text-[11px] md:text-[12px] font-normal leading-[16px] md:leading-[20px] text-dark-gray mt-1">
-                      {t('admin.reportsAndAnalytics.sections.generated').replace('{{date}}', report.date)}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    className="p-2 rounded-[8px] hover:bg-[#E5E7EB] transition flex-shrink-0"
-                    aria-label="Download report"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M6.21997 11.28C5.92697 10.987 5.92697 10.512 6.21997 10.219C6.51297 9.92599 6.98801 9.92599 7.28101 10.219L9.00098 11.939V0.75C9.00098 0.336 9.33698 0 9.75098 0C10.165 0 10.501 0.336 10.501 0.75V11.939L12.2209 10.219C12.5139 9.92599 12.989 9.92599 13.282 10.219C13.575 10.512 13.575 10.987 13.282 11.28L10.282 14.28C10.213 14.349 10.1301 14.404 10.0381 14.442C9.94609 14.48 9.84898 14.5 9.75098 14.5C9.65298 14.5 9.55611 14.48 9.46411 14.442C9.37211 14.404 9.28897 14.349 9.21997 14.28L6.21997 11.28ZM15.75 7C15.336 7 15 7.336 15 7.75C15 8.164 15.336 8.5 15.75 8.5C17.327 8.5 18 9.173 18 10.75V15.75C18 17.327 17.327 18 15.75 18H3.75C2.173 18 1.5 17.327 1.5 15.75V10.75C1.5 9.173 2.173 8.5 3.75 8.5C4.164 8.5 4.5 8.164 4.5 7.75C4.5 7.336 4.164 7 3.75 7C1.332 7 0 8.332 0 10.75V15.75C0 18.168 1.332 19.5 3.75 19.5H15.75C18.168 19.5 19.5 18.168 19.5 15.75V10.75C19.5 8.332 18.168 7 15.75 7Z"
-                        fill="#032746"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] w-full">
-            <h2 className="mb-4 md:mb-6 font-archivo text-[18px] md:text-[20px] font-bold leading-[24px] md:leading-[28px] text-oxford-blue">
-              {t('admin.reportsAndAnalytics.sections.systemInsights')}
-            </h2>
-            <div className="space-y-3 md:space-y-4">
-              {systemInsights.map((insight, index) => {
-                let formattedText = insight;
-                if (insight.includes("Analysis")) {
-                  formattedText = (
-                    <>
-                      {t('admin.reportsAndAnalytics.insights.mostDifficultCognitiveLevel')}{" "}
-                      <span className="font-medium">Analysis</span>
-                    </>
-                  );
-                } else if (insight.includes("8-10 PM")) {
-                  formattedText = (
-                    <>
-                      {t('admin.reportsAndAnalytics.insights.peakActivity')} <span className="font-medium">8-10 PM</span>
-                    </>
-                  );
-                } else if (insight.includes("58%")) {
-                  formattedText = (
-                    <>
-                      {t('admin.reportsAndAnalytics.insights.lowAccuracy')}
-                      <span className="font-medium">58%</span>)
-                    </>
-                  );
-                }
-
-                return (
-                  <div
-                    key={index}
-                    className="flex items-center rounded-[8px] border border-[#ED4122] bg-[#FEF2F2] w-full min-h-[70px] md:h-[86px] p-3 md:p-4"
-                  >
-                    <p className="font-roboto text-[14px] md:text-[16px] font-normal leading-[20px] md:leading-[24px] text-oxford-blue flex items-center break-words">
-                      {formattedText}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div> */}
       </div>
     </div>
   );
 };
 
 export default ReportsAndAnalyticsPage;
-

@@ -4,25 +4,35 @@ import { PrimaryButton } from "../../components/common/Button";
 import Dropdown from "../../components/shared/Dropdown";
 
 const CreatorProfile = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [language, setLanguage] = useState("English (US)");
+  const [islanguage, setIsLanguage] = useState("English (US)");
   const [profileData, setProfileData] = useState({
     name: "John Doe",
     email: "johndoe@gmail.com",
-    phone: "+1 (555) 123-4567"
+    phone: "+1 (555) 123-4567",
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     email: "",
     code: "",
     newPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
+  const dir = language === "ar" ? "rtl" : "ltr";
+
+  const isRTL = dir === "rtl";
+
   const languageOptions = [
-    { value: t("creator.profile.languageOptions.english"), label: t("creator.profile.languageOptions.english") },
-    { value: t("creator.profile.languageOptions.arabic"), label: t("creator.profile.languageOptions.arabic") },
+    {
+      value: t("creator.profile.languageOptions.english"),
+      label: t("creator.profile.languageOptions.english"),
+    },
+    {
+      value: t("creator.profile.languageOptions.arabic"),
+      label: t("creator.profile.languageOptions.arabic"),
+    },
   ];
 
   const handleSaveChanges = () => {
@@ -46,16 +56,16 @@ const CreatorProfile = () => {
   };
 
   const handleProfileChange = (field, value) => {
-    setProfileData(prev => ({
+    setProfileData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handlePasswordChange = (field, value) => {
-    setPasswordData(prev => ({
+    setPasswordData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -90,7 +100,7 @@ const CreatorProfile = () => {
               <input
                 type="text"
                 value={profileData.name}
-                onChange={(e) => handleProfileChange('name', e.target.value)}
+                onChange={(e) => handleProfileChange("name", e.target.value)}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] font-normal rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
             </div>
@@ -115,7 +125,7 @@ const CreatorProfile = () => {
               <input
                 type="email"
                 value={profileData.email}
-                onChange={(e) => handleProfileChange('email', e.target.value)}
+                onChange={(e) => handleProfileChange("email", e.target.value)}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
             </div>
@@ -128,7 +138,7 @@ const CreatorProfile = () => {
               <input
                 type="tel"
                 value={profileData.phone}
-                onChange={(e) => handleProfileChange('phone', e.target.value)}
+                onChange={(e) => handleProfileChange("phone", e.target.value)}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
             </div>
@@ -160,32 +170,33 @@ const CreatorProfile = () => {
               <input
                 type="password"
                 value={passwordData.currentPassword}
-                onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
+                onChange={(e) =>
+                  handlePasswordChange("currentPassword", e.target.value)
+                }
                 placeholder={t("creator.profile.placeholders.currentPassword")}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
             </div>
 
             <div>
-                <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
-                  {t("creator.profile.enterEmail")}
-                </label>
-                <input
-                  type="email"
-                  value={passwordData.email}
-                  onChange={(e) => handlePasswordChange('email', e.target.value)}
-                  placeholder={t("creator.profile.placeholders.email")}
-                  className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
-                />
-              </div>
-              <div className="flex justify-end">
-                <PrimaryButton
-                  text={t("creator.profile.sendCode")}
-                  className="py-[10px] px-7 text-nowrap"
-                  onClick={handleSendCode}
-                />
-              </div>
-
+              <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
+                {t("creator.profile.enterEmail")}
+              </label>
+              <input
+                type="email"
+                value={passwordData.email}
+                onChange={(e) => handlePasswordChange("email", e.target.value)}
+                placeholder={t("creator.profile.placeholders.email")}
+                className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
+              />
+            </div>
+            <div className="flex justify-end">
+              <PrimaryButton
+                text={t("creator.profile.sendCode")}
+                className="py-[10px] px-7 text-nowrap"
+                onClick={handleSendCode}
+              />
+            </div>
 
             {/* Verification Code */}
             <div>
@@ -195,7 +206,7 @@ const CreatorProfile = () => {
               <input
                 type="text"
                 value={passwordData.code}
-                onChange={(e) => handlePasswordChange('code', e.target.value)}
+                onChange={(e) => handlePasswordChange("code", e.target.value)}
                 placeholder={t("creator.profile.placeholders.code")}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
@@ -210,7 +221,9 @@ const CreatorProfile = () => {
                 <input
                   type="password"
                   value={passwordData.newPassword}
-                  onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                  onChange={(e) =>
+                    handlePasswordChange("newPassword", e.target.value)
+                  }
                   placeholder={t("creator.profile.placeholders.newPassword")}
                   className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
                 />
@@ -223,8 +236,12 @@ const CreatorProfile = () => {
                 <input
                   type="password"
                   value={passwordData.confirmPassword}
-                  onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
-                  placeholder={t("creator.profile.placeholders.confirmPassword")}
+                  onChange={(e) =>
+                    handlePasswordChange("confirmPassword", e.target.value)
+                  }
+                  placeholder={t(
+                    "creator.profile.placeholders.confirmPassword"
+                  )}
                   className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
                 />
               </div>
@@ -258,9 +275,9 @@ const CreatorProfile = () => {
               </div>
               <div className="w-full lg:w-[180px]">
                 <Dropdown
-                  value={language}
+                  value={islanguage}
                   options={languageOptions}
-                  onChange={setLanguage}
+                  onChange={setIsLanguage}
                   height="h-[50px]"
                   textClassName="font-roboto text-[16px] text-oxford-blue"
                 />
@@ -286,7 +303,13 @@ const CreatorProfile = () => {
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      notificationsEnabled ? "translate-x-6" : "translate-x-1"
+                      notificationsEnabled
+                        ? isRTL
+                          ? "-translate-x-6"
+                          : "translate-x-6"
+                        : isRTL
+                        ? "-translate-x-1"
+                        : "translate-x-1"
                     }`}
                   />
                 </button>
