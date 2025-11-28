@@ -147,11 +147,11 @@ const CreatorQuestionBank = () => {
   ];
 
   const workflowSteps = [
-    "Gatherer",
-    "Processor",
-    "Creator",
-    "Processor",
-    "Explainer",
+    t("gatherer.questionBank.workflowSteps.gatherer"),
+    t("gatherer.questionBank.workflowSteps.processor"),
+    t("gatherer.questionBank.workflowSteps.creator"),
+    t("gatherer.questionBank.workflowSteps.processor"),
+    t("gatherer.questionBank.workflowSteps.explainer"),
   ];
 
   const handleDismiss = () => {
@@ -178,12 +178,6 @@ const CreatorQuestionBank = () => {
             <OutlineButton
               text={t("creator.questionBank.completedQuestions")}
               onClick={handleCompletedQuestion}
-              className="py-[10px] px-[14px]"
-            />
-
-            <OutlineButton
-              text={t("creator.questionBank.createVariants")}
-              onClick={handleCreateVariant}
               className="py-[10px] px-[14px]"
             />
 

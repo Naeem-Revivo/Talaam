@@ -104,6 +104,7 @@ const GathererSubmission = () => {
         onSubjectChange={setSubject}
         onTopicChange={setTopic}
         onSubtopicChange={setSubtopic}
+        showRole={false}
       />
 
       <Table

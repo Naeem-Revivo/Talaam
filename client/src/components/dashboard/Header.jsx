@@ -75,51 +75,61 @@ const Header = ({ onToggleSidebar }) => {
   const getTitleByPath = (pathname) => {
 
     if (pathname.startsWith('/gatherer')) {
-      if (pathname === '/gatherer') return 'Gatherer';
-      if (pathname.includes('question-bank')) return 'Question Bank';
-      if (pathname.includes('profile')) return 'Profile';
-      return 'Gatherer';
-    }
-    if (pathname.startsWith('/creator')) {
-      if (pathname === '/creator') return 'Creator';
-      if (pathname.includes('question-bank')) return 'Creator Dashboard';
-      if (pathname.includes('profile')) return 'Profile';
-      return 'creator';
-    }
-    if (pathname.startsWith('/processor')) {
-      if (pathname === '/processor') return 'Processor';
-      if (pathname.includes('question-bank')) return 'Processor';
-      if (pathname.includes('profile')) return 'Profile';
-      return 'processor';
-    }
-    if (pathname.startsWith('/explainer')) {
-      if (pathname === '/explainer') return 'Explainer';
-      if (pathname.includes('question-bank')) return 'Explainer Dashboard';
-      if (pathname.includes('profile')) return 'Profile';
-      return 'Gatherer';
-    }
-    // Admin routes
-    if (pathname.startsWith('/admin')) {
-      if (pathname === '/admin') return 'Admin Dashboard';
-      if (pathname.includes('add-announcements')) return 'New Announcements';
-      if (pathname.includes('announcements')) return 'Site-wide Announcements';
-      if (pathname.includes('language-management')) return 'Language Management';
-      if (pathname.includes('email-template')) return 'Email Templates';
-      if (pathname.includes('roles-permissions')) return 'Admin Roles & Permissions';
-      if (pathname.startsWith('/admin/users')) return 'User Management';
-      if (pathname.startsWith('/admin/question-bank')) return 'Question Bank';
-      if (pathname.startsWith('/admin/question-management')) return 'Question Management';
-      if (pathname.startsWith('/admin/add-question')) return 'Add New Question';
-      if (pathname.startsWith('/admin/question-details')) return 'View Question Details';
-      if (pathname.startsWith('/admin/create-variant')) return 'Create Variant';
-      if (pathname.startsWith('/admin/classification')) return 'Classification Management';
-      if (pathname.startsWith('/admin/subscriptions')) return 'Subscriptions & Billing';
-      if (pathname.startsWith('/admin/reports')) return 'Reports & Analytics';
-      if (pathname.startsWith('/admin/moderation')) return 'Content Moderation';
-      if (pathname.startsWith('/admin/settings')) return 'System Settings';
-      if (pathname.startsWith('/admin/security')) return 'Security Permissions';
-      return 'Admin';
-    }
+    if (pathname === '/gatherer') return t('header.titles.gatherer.dashboard');
+    if (pathname.includes('question-bank')) return t('header.titles.gatherer.questionBank');
+    if (pathname.includes('profile')) return t('header.titles.gatherer.profile');
+    return t('header.titles.gatherer.default');
+  }
+  
+  // Creator routes
+  if (pathname.startsWith('/creator')) {
+    if (pathname === '/creator') return t('header.titles.creator.dashboard');
+    if (pathname.includes('question-bank')) return t('header.titles.creator.questionBank');
+    if (pathname.includes('profile')) return t('header.titles.creator.profile');
+    return t('header.titles.creator.default');
+  }
+  
+  // Processor routes
+  if (pathname.startsWith('/processor')) {
+    if (pathname === '/processor') return t('header.titles.processor.dashboard');
+    if (pathname === '/processor/question-bank') return t('header.titles.processor.questionBank');
+    if (pathname.includes('gatherer-submission')) return t('header.titles.processor.gathererSubmission');
+    if (pathname.includes('creator-submission')) return t('header.titles.processor.creatorSubmission');
+    if (pathname.includes('explainer-submission')) return t('header.titles.processor.explainerSubmission');
+    if (pathname.includes('profile')) return t('header.titles.processor.profile');
+    return t('header.titles.processor.default');
+  }
+  
+  // Explainer routes
+  if (pathname.startsWith('/explainer')) {
+    if (pathname === '/explainer') return t('header.titles.explainer.dashboard');
+    if (pathname.includes('question-bank')) return t('header.titles.explainer.questionBank');
+    if (pathname.includes('profile')) return t('header.titles.explainer.profile');
+    return t('header.titles.explainer.default');
+  }
+  
+  // Admin routes
+  if (pathname.startsWith('/admin')) {
+    if (pathname === '/admin') return t('header.titles.admin.dashboard');
+    if (pathname.includes('add-announcements')) return t('header.titles.admin.addAnnouncements');
+    if (pathname.includes('announcements')) return t('header.titles.admin.announcements');
+    if (pathname.includes('language-management')) return t('header.titles.admin.languageManagement');
+    if (pathname.includes('email-template')) return t('header.titles.admin.emailTemplate');
+    if (pathname.includes('roles-permissions')) return t('header.titles.admin.rolesPermissions');
+    if (pathname.startsWith('/admin/users')) return t('header.titles.admin.userManagement');
+    if (pathname.startsWith('/admin/question-bank')) return t('header.titles.admin.questionBank');
+    if (pathname.startsWith('/admin/question-management')) return t('header.titles.admin.questionManagement');
+    if (pathname.startsWith('/admin/add-question')) return t('header.titles.admin.addQuestion');
+    if (pathname.startsWith('/admin/question-details')) return t('header.titles.admin.questionDetails');
+    if (pathname.startsWith('/admin/create-variant')) return t('header.titles.admin.createVariant');
+    if (pathname.startsWith('/admin/classification')) return t('header.titles.admin.classification');
+    if (pathname.startsWith('/admin/subscriptions')) return t('header.titles.admin.subscriptions');
+    if (pathname.startsWith('/admin/reports')) return t('header.titles.admin.reports');
+    if (pathname.startsWith('/admin/moderation')) return t('header.titles.admin.moderation');
+    if (pathname.startsWith('/admin/settings')) return t('header.titles.admin.settings');
+    if (pathname.startsWith('/admin/security')) return t('header.titles.admin.security');
+    return t('header.titles.admin.default');
+  }
     // User dashboard routes
    if (pathname === "/dashboard")
     return t("dashboard.sidebar.dashboard");

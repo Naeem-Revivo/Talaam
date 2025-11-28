@@ -1,4 +1,68 @@
 {
+  "header": {
+    "titles": {
+      "gatherer": {
+        "dashboard": "لوحة تحكم المجمع",
+        "questionBank": "بنك الأسئلة",
+        "profile": "الملف الشخصي",
+        "default": "لوحة تحكم المجمع"
+      },
+      "creator": {
+        "dashboard": "لوحة تحكم المنشئ",
+        "questionBank": "بنك الأسئلة",
+        "profile": "الملف الشخصي",
+        "default": "لوحة تحكم المنشئ"
+      },
+      "processor": {
+        "dashboard": "لوحة تحكم المعالج",
+        "questionBank": "بنك الأسئلة",
+        "gathererSubmission": "تقديم المجمع",
+        "creatorSubmission": "تقديم المنشئ",
+        "explainerSubmission": "تقديم المشرح",
+        "profile": "الملف الشخصي",
+        "default": "لوحة تحكم المعالج"
+      },
+      "explainer": {
+        "dashboard": "لوحة تحكم المشرح",
+        "questionBank": "بنك الأسئلة",
+        "profile": "الملف الشخصي",
+        "default": "لوحة تحكم المشرح"
+      },
+      "admin": {
+        "dashboard": "لوحة تحكم المسؤول",
+        "addAnnouncements": "إعلانات جديدة",
+        "announcements": "الإعلانات العامة",
+        "languageManagement": "إدارة اللغات",
+        "emailTemplate": "قوالب البريد الإلكتروني",
+        "rolesPermissions": "أدوار المسؤولين والصلاحيات",
+        "userManagement": "إدارة المستخدمين",
+        "questionBank": "بنك الأسئلة",
+        "questionManagement": "إدارة الأسئلة",
+        "addQuestion": "إضافة سؤال جديد",
+        "questionDetails": "عرض تفاصيل السؤال",
+        "createVariant": "إنشاء متغير",
+        "classification": "إدارة التصنيف",
+        "subscriptions": "الاشتراكات والفواتير",
+        "reports": "التقارير والتحليلات",
+        "moderation": "الرقابة على المحتوى",
+        "settings": "إعدادات النظام",
+        "security": "صلاحيات الأمان",
+        "default": "لوحة تحكم المسؤول"
+      },
+      "user": {
+        "dashboard": "لوحة التحكم",
+        "practiceSession": "جلسة التدريب",
+        "performanceAnalytics": "تحليلات الأداء",
+        "reviewIncorrect": "مراجعة الإجابات الخاطئة",
+        "reviewAll": "مراجعة الكل",
+        "reviewSessions": "جلسات المراجعة",
+        "sessionSummary": "ملخص الجلسة",
+        "questionSession": "جلسة الأسئلة",
+        "subscriptionsBilling": "الاشتراكات والفواتير",
+        "default": "لوحة التحكم"
+      }
+    }
+  },
   "navbar": {
     "howItWorks": "كيف يعمل",
     "products": "المنتجات",
@@ -2412,6 +2476,7 @@
       "bulkUpload": "رفع مجمع",
       "addNewQuestions": "+ إضافة أسئلة جديدة",
       "mySubmissions": "تقديماتي",
+      "newSubmissions": "التسليمات الجديدة",
       "reviewFeedback": "ملاحظات المراجعة",
       "workflowProgress": "تقدم سير العمل",
       "recentActivity": "النشاط الأخير",
@@ -2725,6 +2790,7 @@
         "task4": "الحفاظ على جودة الشروحات"
       },
       "pendingTasks": "المهام المعلقة",
+      "roleLabel": "الدور",
       "performance": {
         "title": "أداؤك",
         "subtitle": "بناءً على آخر {{days}} يوم.",
@@ -2869,7 +2935,7 @@
       "subtitle": "مراجعة الأسئلة الواردة، الموافقة أو الرفض، وتمريرها إلى المنشئين.",
       "allProcessedQuestions": "جميع الأسئلة المعالجة",
       "stats": {
-        "newQuestionGatherer": "سؤال جديد (المجمع)",
+        "newQuestionGatherer": "سؤال جديد",
         "explanationPending": "الشرح معلق",
         "finalApprovalToday": "الموافقة النهائية اليوم"
       },
