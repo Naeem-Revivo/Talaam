@@ -202,7 +202,7 @@ export const AppRoutes = () => {
           <Route index element={<ProcessorDashboard />} />
           <Route path="profile" element={<ProcessorProfile />} />
           <Route path="question-bank" element={<ProcessorQuestionBank />} />
-          <Route path="Processed-Question" element={<AllProcessedQuestion />} />
+          <Route path="question-bank/Processed-Question" element={<AllProcessedQuestion />} />
           <Route path="Processed-ViewQuestion" element={<ProcessorViewQuestion />} />
           <Route path="question-bank/gatherer-submission" element={<GathererSubmission />} />
           <Route path="question-bank/explainer-submission" element={<ExplainerSubmission />} />

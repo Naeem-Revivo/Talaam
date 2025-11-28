@@ -2466,6 +2466,7 @@
       "bulkUpload": "Bulk Upload",
       "addNewQuestions": "+ Add New Questions",
       "mySubmissions": "My Submissions",
+      "newSubmissions": "New Submissions",
       "reviewFeedback": "Review Feedback",
       "workflowProgress": "Workflow Progress",
       "recentActivity": "Recent Activity",
@@ -2925,7 +2926,7 @@
       "subtitle": "Review incoming questions, accept or reject, and pass them to creators.",
       "allProcessedQuestions": "All Processed Questions",
       "stats": {
-        "newQuestionGatherer": "New Question (Gatherer)",
+        "newQuestionGatherer": "New Question",
         "explanationPending": "Explanation Pending",
         "finalApprovalToday": "Final Approval Today"
       },

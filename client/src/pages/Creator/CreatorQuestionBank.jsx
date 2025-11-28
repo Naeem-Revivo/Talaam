@@ -147,11 +147,11 @@ const CreatorQuestionBank = () => {
   ];
 
   const workflowSteps = [
-    "Gatherer",
-    "Processor",
-    "Creator",
-    "Processor",
-    "Explainer",
+    t("gatherer.questionBank.workflowSteps.gatherer"),
+    t("gatherer.questionBank.workflowSteps.processor"),
+    t("gatherer.questionBank.workflowSteps.creator"),
+    t("gatherer.questionBank.workflowSteps.processor"),
+    t("gatherer.questionBank.workflowSteps.explainer"),
   ];
 
   const handleDismiss = () => {

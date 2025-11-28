@@ -10,11 +10,11 @@ const getSubjectOptions = (t) => [
 ];
 
 const getTopicOptions = (t) => [
+  "Role",
   "Gatherer",
-  "Algebra",
-  "Geometry",
-  "Biology",
-  "Physics",
+  "Processor",
+  "Creator",
+  "Explainer",
 ];
 
 const getSubtopicOptions = (t) => [
@@ -35,6 +35,7 @@ const ProcessorFilter = ({
   onTopicChange,
   onSubtopicChange,
   searchPlaceholder,
+  showRole=true
 }) => {
   const { t } = useLanguage();
 
@@ -58,12 +59,13 @@ const ProcessorFilter = ({
         />
 
         {/* Gatherer Dropdown (Topic) - Second (Middle) */}
+        {showRole &&
         <Dropdown
           label="Gatherer"
           value={topicValue}
           options={topicOptions}
           onChange={onTopicChange}
-        />
+        />}
 
         {/* Subject Dropdown - Third */}
         <Dropdown

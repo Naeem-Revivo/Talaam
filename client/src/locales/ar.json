@@ -2476,6 +2476,7 @@
       "bulkUpload": "رفع مجمع",
       "addNewQuestions": "+ إضافة أسئلة جديدة",
       "mySubmissions": "تقديماتي",
+      "newSubmissions": "التسليمات الجديدة",
       "reviewFeedback": "ملاحظات المراجعة",
       "workflowProgress": "تقدم سير العمل",
       "recentActivity": "النشاط الأخير",
@@ -2934,7 +2935,7 @@
       "subtitle": "مراجعة الأسئلة الواردة، الموافقة أو الرفض، وتمريرها إلى المنشئين.",
       "allProcessedQuestions": "جميع الأسئلة المعالجة",
       "stats": {
-        "newQuestionGatherer": "سؤال جديد (المجمع)",
+        "newQuestionGatherer": "سؤال جديد",
         "explanationPending": "الشرح معلق",
         "finalApprovalToday": "الموافقة النهائية اليوم"
       },
