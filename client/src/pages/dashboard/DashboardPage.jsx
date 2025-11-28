@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useLanguage } from "../../context/LanguageContext";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { vedio, timer } from "../../assets/svg/dashboard";
+import { useNavigate } from "react-router-dom";
 
 const DashboardPage = () => {
   const { t } = useLanguage();
   const [chartWidth, setChartWidth] = useState(1070);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const updateChartWidth = () => {
@@ -73,6 +75,14 @@ const DashboardPage = () => {
         return "#6CA6C1"; // moonstone-blue
     }
   };
+
+  const startNewSession = () => {
+      navigate("/dashboard/practice")
+  }
+
+  const reviewSessions = () => {
+      navigate("/dashboard/review")
+  }
 
   return (
     <div className="p-4 md:p-6 lg:p-8 bg-gray-50 min-h-screen 2xl:px-6 max-w-[1200px] mx-auto">
@@ -308,7 +318,7 @@ const DashboardPage = () => {
           {t("dashboard.quickActions.title")}
         </h2>
         <div className="flex flex-col sm:flex-row gap-4 md:gap-8 lg:gap-16">
-          <button className="flex items-center justify-center gap-3 bg-cinnebar-red text-white w-full sm:w-auto sm:flex-1 max-w-full lg:max-w-[548px] h-[60px] md:h-[79.2px] rounded-lg transition-colors shadow-lg hover:opacity-90">
+          <button onClick={startNewSession} className="flex items-center justify-center gap-3 bg-cinnebar-red text-white w-full sm:w-auto sm:flex-1 max-w-full lg:max-w-[548px] h-[60px] md:h-[79.2px] rounded-lg transition-colors shadow-lg hover:opacity-90">
             <img
               src={vedio}
               alt="video icon"
@@ -318,7 +328,7 @@ const DashboardPage = () => {
               {t("dashboard.quickActions.startNewSession")}
             </span>
           </button>
-          <button className="flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-oxford-blue border border-gray-300 w-full sm:w-auto sm:flex-1 max-w-full lg:max-w-[548px] h-[60px] md:h-[79.2px] rounded-lg transition-colors shadow-sm">
+          <button onClick={reviewSessions} className="flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-oxford-blue border border-gray-300 w-full sm:w-auto sm:flex-1 max-w-full lg:max-w-[548px] h-[60px] md:h-[79.2px] rounded-lg transition-colors shadow-sm">
             <img
               src={timer}
               alt="timer icon"
