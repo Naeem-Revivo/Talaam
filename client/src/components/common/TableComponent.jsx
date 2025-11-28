@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "../../context/LanguageContext";
 
 // ============= REUSABLE TABLE COMPONENTS =============
 
@@ -420,7 +421,7 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction }) => {
   );
 };
 
-const Pagination = ({ page, pageSize, total, onPageChange }) => {
+const Pagination = ({ page, pageSize, total, onPageChange, t, dir }) => {
   const totalPages = Math.ceil(total / pageSize);
   const safeTotalPages = Math.max(totalPages, 1);
   const firstItem = total ? (page - 1) * pageSize + 1 : 0;
@@ -437,29 +438,39 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
   const pages = Array.from({ length: safeTotalPages }, (_, index) => index + 1);
 
   return (
-    <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-oxford-blue md:flex-row md:items-center md:justify-between md:bg-oxford-blue md:px-6 md:text-white">
-      <p className="text-[12px] font-medium leading-[18px] font-roboto">
-        Showing {firstItem} to {lastItem} of {total} results
+    <div
+      className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-oxford-blue md:flex-row md:items-center md:justify-between md:bg-oxford-blue md:px-6 md:text-white"
+      dir={dir}
+    >
+      <p className="text-[12px] font-roboto font-medium leading-[18px] tracking-[3%]">
+        {t("admin.questionBank.table.pagination.showing")
+          .replace("{{first}}", firstItem)
+          .replace("{{last}}", lastItem)
+          .replace("{{total}}", total)}
       </p>
-      <div className="flex items-center gap-2">
+      <div
+        className={`flex items-center gap-2 ${
+          dir === "rtl" ? "flex-row-reverse" : ""
+        }`}
+      >
         <button
           type="button"
           onClick={handlePrev}
           disabled={page === 1}
-          className={`flex h-[27px] w-[78px] items-center justify-center rounded border text-[14px] font-medium leading-[16px] transition-colors ${
+          className={`flex h-[30px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${
             page === 1
               ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
               : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
           }`}
         >
-          Previous
+          {t("admin.questionBank.table.pagination.previous")}
         </button>
         {pages.map((pageNumber) => (
           <button
             key={pageNumber}
             type="button"
             onClick={() => onPageChange?.(pageNumber)}
-            className={`flex h-[27px] w-8 items-center justify-center rounded border text-[14px] font-medium leading-[16px] transition-colors ${
+            className={`flex h-[30px] w-8 items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${
               pageNumber === page
                 ? "border-[#ED4122] bg-[#ED4122] text-white"
                 : "border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
@@ -472,13 +483,13 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
           type="button"
           onClick={handleNext}
           disabled={page === safeTotalPages}
-          className={`flex h-[27px] w-[78px] items-center justify-center rounded border text-[14px] font-medium leading-[16px] transition-colors ${
+          className={`flex h-[30px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${
             page === safeTotalPages
               ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] md:border-transparent md:bg-white/20 md:text-white/70"
               : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
           }`}
         >
-          Next
+          {t("admin.questionBank.table.pagination.next")}
         </button>
       </div>
     </div>
@@ -498,11 +509,14 @@ export const Table = ({
   emptyMessage,
   showPagination = true,
 }) => {
+  const { t, language } = useLanguage();
+  const dir = language === "ar" ? "rtl" : "ltr";
   return (
     <section
       className={`w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard  ${
         showPagination ? "md:min-h-[348px]" : "md:min-h-auto"
       }`}
+      dir={dir}
     >
       <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full border-collapse">
@@ -556,6 +570,8 @@ export const Table = ({
           pageSize={pageSize}
           total={total}
           onPageChange={onPageChange}
+          t={t}
+          dir={dir}
         />
       )}
     </section>

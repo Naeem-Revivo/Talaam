@@ -4,9 +4,9 @@ import { PrimaryButton } from "../../components/common/Button";
 import Dropdown from "../../components/shared/Dropdown";
 
 const ExplainerProfile = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [language, setLanguage] = useState("English (US)");
+  const [islanguage, setIsLanguage] = useState("English (US)");
   const [profileData, setProfileData] = useState({
     name: "John Doe",
     email: "johndoe@gmail.com",
@@ -19,6 +19,10 @@ const ExplainerProfile = () => {
     newPassword: "",
     confirmPassword: ""
   });
+
+  const dir = language === 'ar' ? 'rtl' : 'ltr'
+
+  const isRTL = dir === "rtl";
 
   const languageOptions = [
     { value: t("explainer.profile.languageOptions.english"), label: t("explainer.profile.languageOptions.english") },
@@ -258,9 +262,9 @@ const ExplainerProfile = () => {
               </div>
               <div className="w-full lg:w-[180px]">
                 <Dropdown
-                  value={language}
+                  value={islanguage}
                   options={languageOptions}
-                  onChange={setLanguage}
+                  onChange={setIsLanguage}
                   height="h-[50px]"
                   textClassName="font-roboto text-[16px] text-oxford-blue"
                 />
@@ -286,7 +290,13 @@ const ExplainerProfile = () => {
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      notificationsEnabled ? "translate-x-6" : "translate-x-1"
+                      notificationsEnabled
+                        ? isRTL
+                          ? "-translate-x-6"
+                          : "translate-x-6"
+                        : isRTL
+                        ? "-translate-x-1"
+                        : "translate-x-1"
                     }`}
                   />
                 </button>

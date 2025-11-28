@@ -4,7 +4,7 @@ import React from "react";
 const WorkflowProgress = ({ steps, currentStep }) => {
   return (
     <div className="bg-white px-4 sm:px-8 md:px-12 lg:px-[50px] py-8 sm:py-10 md:py-12 lg:py-[60px] rounded-[12px] border border-[#E5E7EB]">
-      <div className="flex flex-col sm:flex-row items-start justify-between w-full gap-6 sm:gap-0">
+      <div className="flex flex-col sm:flex-row items-start justify-between w-full gap-6 sm:gap-0" dir="ltr">
         {steps.map((step, index) => {
           const stepNumber = index + 1;
           const isCompleted = stepNumber <= currentStep;
