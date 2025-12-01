@@ -1,13 +1,18 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../context/LanguageContext'
 import { eye, openeye, google, linkedin } from '../../assets/svg/signup'
-import { useAuth } from '../../context/AuthContext'
+import { useDispatch, useSelector } from 'react-redux'
+import { login } from '../../store/slices/authSlice'
+import { showErrorToast } from '../../utils/toastConfig'
+import authAPI from '../../api/auth'
 
 const Login = () => {
   const { language, t } = useLanguage()
   const dir = language === 'ar' ? 'rtl' : 'ltr'
-  const { login } = useAuth()
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const { loading } = useSelector((state) => state.auth)
   
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
@@ -24,11 +29,59 @@ const Login = () => {
     })
   }
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setError('')
-    const { ok, message } = login(formData.email, formData.password)
-    if (!ok) {
-      setError(message || 'Login failed')
+    try {
+      const resultAction = await dispatch(
+        login({ email: formData.email, password: formData.password })
+      )
+
+      if (login.fulfilled.match(resultAction)) {
+        const user = resultAction.payload?.data?.user
+        const role = user?.role
+
+        // Map backend roles to routes
+        if (role === 'admin') {
+          navigate('/admin', { replace: true })
+        } else if (role === 'student' || role === 'user') {
+          navigate('/dashboard', { replace: true })
+        } else if (role === 'gatherer') {
+          navigate('/gatherer', { replace: true })
+        } else if (role === 'creator') {
+          navigate('/creator', { replace: true })
+        } else if (role === 'processor') {
+          navigate('/processor', { replace: true })
+        } else if (role === 'explainer') {
+          navigate('/explainer', { replace: true })
+        } else {
+          navigate('/', { replace: true })
+        }
+      } else {
+        const msg =
+          resultAction.payload?.message ||
+          t('login.errors.generic') ||
+          'Login failed'
+        setError(msg)
+        showErrorToast(msg)
+      }
+    } catch (e) {
+      const msg = t('login.errors.generic') || 'Login failed'
+      setError(msg)
+      showErrorToast(msg)
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    try {
+      const res = await authAPI.getGoogleAuthUrl()
+      const url = res?.data?.url
+      if (url) {
+        window.location.href = url
+      } else {
+        showErrorToast(t('login.errors.google') || 'Unable to start Google login.')
+      }
+    } catch {
+      showErrorToast(t('login.errors.google') || 'Unable to start Google login.')
     }
   }
 
@@ -115,60 +168,11 @@ const Login = () => {
             {/* Sign In Button */}
             <button
               onClick={handleLogin}
-              className="bg-cinnebar-red text-white font-archivo font-semibold text-[16px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90"
+              disabled={loading}
+              className={`bg-cinnebar-red text-white font-archivo font-semibold text-[16px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              {t('login.buttonText')}
+              {loading ? t('login.buttonLoading') || 'Signing in...' : t('login.buttonText')}
             </button>
-
-            {/* Quick fill helpers for demo */}
-            <div className="flex gap-3 justify-between">
-              <button
-                type="button"
-                onClick={() => setFormData({ email: 'admin@talaam.com', password: 'Admin@123' })}
-                className="text-xs text-gray-600 underline"
-              >
-                Use Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData({ email: 'user@talaam.com', password: 'User@123' })}
-                className="text-xs text-gray-600 underline"
-              >
-                Use User
-              </button>
-            </div>
-            <div className="flex gap-3 justify-between">
-              <button
-                type="button"
-                onClick={() => setFormData({ email: 'gatherer@talaam.com', password: '123' })}
-                className="text-xs text-gray-600 underline"
-              >
-                use gatherer
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData({ email: 'processor@talaam.com', password: '123' })}
-                className="text-xs text-gray-600 underline"
-              >
-                Use processor
-              </button>
-            </div>
-            <div className="flex gap-3 justify-between">
-              <button
-                type="button"
-                onClick={() => setFormData({ email: 'explainer@talaam.com', password: '123' })}
-                className="text-xs text-gray-600 underline"
-              >
-                Use explainer
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData({ email: 'creator@talaam.com', password: '123' })}
-                className="text-xs text-gray-600 underline"
-              >
-                Use creator
-              </button>
-            </div>
 
             {/* Divider */}
             <div className="flex px-4 lg:px-9 pt-6 justify-center items-center">
@@ -180,7 +184,11 @@ const Login = () => {
             {/* Social Login Buttons */}
             <div className="flex flex-col gap-4">
               {/* Google Button */}
-              <button className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full lg:w-[423px] h-[57px]">
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full lg:w-[423px] h-[57px]"
+              >
                 <img src={google} alt="Google" className="" />
                 <span className="font-roboto font-medium text-[16px] leading-[100%] tracking-[0] text-gray-900">{t('login.continueWithGoogle')}</span>
               </button>

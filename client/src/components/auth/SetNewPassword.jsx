@@ -1,11 +1,17 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useLanguage } from '../../context/LanguageContext'
 import { eye, openeye, lock } from '../../assets/svg/signup'
+import { useDispatch, useSelector } from 'react-redux'
+import { resetPassword } from '../../store/slices/authSlice'
+import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
 
 const SetNewPassword = () => {
   const { language, t } = useLanguage()
   const navigate = useNavigate()
+  const location = useLocation()
+  const dispatch = useDispatch()
+  const { loading } = useSelector((state) => state.auth)
   const dir = language === 'ar' ? 'rtl' : 'ltr'
   
   const [showPassword, setShowPassword] = useState(false)
@@ -15,6 +21,9 @@ const SetNewPassword = () => {
     confirmPassword: ''
   })
 
+  const searchParams = new URLSearchParams(location.search)
+  const token = searchParams.get('token') || ''
+
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -22,10 +31,44 @@ const SetNewPassword = () => {
     })
   }
 
-  const handleSetNewPassword = () => {
-    // Here you would typically validate the form and make an API call
-    // Navigate to password reset success page after successful reset
-    navigate('/password-reset')
+  const handleSetNewPassword = async () => {
+    if (!token) {
+      showErrorToast(t('setNewPassword.errors.missingToken') || 'Reset link is invalid or expired.')
+      return
+    }
+
+    if (!formData.newPassword || !formData.confirmPassword) {
+      showErrorToast(t('setNewPassword.errors.requiredFields') || 'Please fill all fields.')
+      return
+    }
+
+    if (formData.newPassword !== formData.confirmPassword) {
+      showErrorToast(t('setNewPassword.errors.passwordMismatch') || 'Passwords do not match.')
+      return
+    }
+
+    try {
+      const resultAction = await dispatch(
+        resetPassword({ token, password: formData.newPassword })
+      )
+
+      if (resetPassword.fulfilled.match(resultAction)) {
+        const msg =
+          resultAction.payload?.message ||
+          t('setNewPassword.success') ||
+          'Password reset successfully.'
+        showSuccessToast(msg)
+        navigate('/password-reset', { replace: true })
+      } else {
+        const msg =
+          resultAction.payload?.message ||
+          t('setNewPassword.errors.generic') ||
+          'Failed to reset password.'
+        showErrorToast(msg)
+      }
+    } catch {
+      showErrorToast(t('setNewPassword.errors.generic') || 'Failed to reset password.')
+    }
   }
 
   return (
@@ -99,9 +142,10 @@ const SetNewPassword = () => {
             {/* Set New Password Button */}
             <button 
               onClick={handleSetNewPassword}
-              className="bg-cinnebar-red text-white font-roboto font-semibold text-base mt-6 mb-7 lg:mb-0 leading-none tracking-normal rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90"
+              disabled={loading}
+              className={`bg-cinnebar-red text-white font-roboto font-semibold text-base mt-6 mb-7 lg:mb-0 leading-none tracking-normal rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              {t('setNewPassword.buttonText')}
+              {loading ? t('setNewPassword.buttonLoading') || 'Saving...' : t('setNewPassword.buttonText')}
             </button>
           </div>
         </div>
