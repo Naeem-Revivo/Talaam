@@ -169,21 +169,21 @@ const getAllQuestionsForSuperadmin = async (req, res, next) => {
           rejected: counts.rejected,
         },
         questions: result.questions.map((q) => ({
-          id: q._id,
+          id: q._id || q.id,
           question: {
             text: q.questionText,
             type: q.questionType,
           },
           subject: q.subject ? {
-            id: q.subject._id,
+            id: q.subject._id || q.subject.id,
             name: q.subject.name,
           } : null,
           topic: q.topic ? {
-            id: q.topic._id,
+            id: q.topic._id || q.topic.id,
             name: q.topic.name,
           } : null,
           stage: q.exam ? {
-            id: q.exam._id,
+            id: q.exam.id || q.exam._id,
             name: q.exam.name,
           } : null,
           status: q.status,
@@ -264,8 +264,8 @@ const getQuestionDetailForSuperadmin = async (req, res, next) => {
       data: {
         question: {
           // Question Info
-          id: question._id,
-          questionId: `Q-${question.subject?.name?.substring(0, 3).toUpperCase() || 'GEN'}-${String(question._id).slice(-4).toUpperCase()}`,
+          id: question._id || question.id,
+          questionId: `Q-${question.subject?.name?.substring(0, 3).toUpperCase() || 'GEN'}-${String(question._id || question.id).slice(-4).toUpperCase()}`,
           status: question.status,
           questionText: question.questionText,
           questionType: question.questionType,
@@ -283,15 +283,15 @@ const getQuestionDetailForSuperadmin = async (req, res, next) => {
           // Classification
           classification: {
             exam: question.exam ? {
-              id: question.exam._id,
+              id: question.exam.id,
               name: question.exam.name,
             } : null,
             subject: question.subject ? {
-              id: question.subject._id,
+              id: question.subject._id || question.subject.id,
               name: question.subject.name,
             } : null,
             topic: question.topic ? {
-              id: question.topic._id,
+              id: question.topic._id || question.topic.id,
               name: question.topic.name,
             } : null,
             cognitiveLevel: null, // Not stored in current model
@@ -300,24 +300,24 @@ const getQuestionDetailForSuperadmin = async (req, res, next) => {
           // Workflow Information
           workflow: {
             createdBy: question.createdBy ? {
-              id: question.createdBy._id,
+              id: question.createdBy.id || question.createdBy._id,
               name: question.createdBy.name || question.createdBy.fullName || 'Unknown',
               email: question.createdBy.email,
             } : null,
             submittedOn: formatDate(submittedDate),
             lastModifiedBy: question.lastModifiedBy ? {
-              id: question.lastModifiedBy._id,
+              id: question.lastModifiedBy.id || question.lastModifiedBy._id,
               name: question.lastModifiedBy.name || question.lastModifiedBy.fullName || 'Unknown',
               email: question.lastModifiedBy.email,
             } : null,
             lastUpdate: formatDate(question.updatedAt),
             approvedBy: question.approvedBy ? {
-              id: question.approvedBy._id,
+              id: question.approvedBy.id || question.approvedBy._id,
               name: question.approvedBy.name || question.approvedBy.fullName || 'Unknown',
               email: question.approvedBy.email,
             } : null,
             rejectedBy: question.rejectedBy ? {
-              id: question.rejectedBy._id,
+              id: question.rejectedBy.id || question.rejectedBy._id,
               name: question.rejectedBy.name || question.rejectedBy.fullName || 'Unknown',
               email: question.rejectedBy.email,
             } : null,
@@ -326,10 +326,10 @@ const getQuestionDetailForSuperadmin = async (req, res, next) => {
           
           // Comments
           comments: question.comments && question.comments.length > 0 ? question.comments.map((comment) => ({
-            id: comment._id,
+            id: comment._id || comment.id,
             comment: comment.comment,
             commentedBy: comment.commentedBy ? {
-              id: comment.commentedBy._id,
+              id: comment.commentedBy.id || comment.commentedBy._id,
               name: comment.commentedBy.name || comment.commentedBy.fullName || 'Unknown',
             } : null,
             createdAt: comment.createdAt,
@@ -460,7 +460,7 @@ const createQuestion = async (req, res, next) => {
       message: 'Question created successfully and sent for processor approval',
       data: {
         question: {
-          id: question._id,
+          id: question._id || question.id,
           exam: question.exam,
           subject: question.subject,
           topic: question.topic,
@@ -476,7 +476,7 @@ const createQuestion = async (req, res, next) => {
       },
     };
 
-    console.log('[QUESTION] POST /admin/questions → 201 (created)', { questionId: question._id });
+    console.log('[QUESTION] POST /admin/questions → 201 (created)', { questionId: question._id || question.id });
     res.status(201).json(response);
   } catch (error) {
     console.error('[QUESTION] POST /admin/questions → error', error);
@@ -546,7 +546,7 @@ const getQuestions = async (req, res, next) => {
       success: true,
       data: {
         questions: questions.map((q) => ({
-          id: q._id,
+          id: q._id || q.id,
           exam: q.exam,
           subject: q.subject,
           topic: q.topic,
@@ -595,7 +595,7 @@ const getQuestionById = async (req, res, next) => {
       success: true,
       data: {
         question: {
-          id: question._id,
+          id: question._id || question.id,
           exam: question.exam,
           subject: question.subject,
           topic: question.topic,
@@ -620,7 +620,7 @@ const getQuestionById = async (req, res, next) => {
     };
 
     console.log('[QUESTION] GET /admin/questions/:questionId → 200 (ok)', {
-      questionId: question._id,
+      questionId: question._id || question.id,
     });
     res.status(200).json(response);
   } catch (error) {
@@ -718,7 +718,7 @@ const updateQuestion = async (req, res, next) => {
       message: 'Question updated successfully and sent for processor approval',
       data: {
         question: {
-          id: question._id,
+          id: question._id || question.id,
           exam: question.exam,
           subject: question.subject,
           topic: question.topic,
@@ -735,7 +735,7 @@ const updateQuestion = async (req, res, next) => {
     };
 
     console.log('[QUESTION] PUT /admin/questions/:questionId → 200 (updated)', {
-      questionId: question._id,
+      questionId: question._id || question.id,
     });
     res.status(200).json(response);
   } catch (error) {
@@ -859,7 +859,7 @@ const createQuestionVariant = async (req, res, next) => {
       message: 'Question variant created successfully',
       data: {
         question: {
-          id: variantQuestion._id,
+          id: variantQuestion._id || variantQuestion.id,
           exam: variantQuestion.exam,
           subject: variantQuestion.subject,
           topic: variantQuestion.topic,
@@ -879,7 +879,7 @@ const createQuestionVariant = async (req, res, next) => {
     };
 
     console.log('[QUESTION] POST /admin/questions/creator/:questionId/variant → 200 (created)', {
-      variantQuestionId: variantQuestion._id,
+      variantQuestionId: variantQuestion._id || variantQuestion.id,
       originalQuestionId: questionId,
     });
     res.status(201).json(response);
@@ -957,7 +957,7 @@ const updateExplanation = async (req, res, next) => {
       message: 'Explanation updated successfully and sent for processor approval',
       data: {
         question: {
-          id: question._id,
+          id: question._id || question.id,
           explanation: question.explanation,
           status: question.status,
           updatedAt: question.updatedAt,
@@ -966,7 +966,7 @@ const updateExplanation = async (req, res, next) => {
     };
 
     console.log('[QUESTION] PUT /admin/questions/:questionId/explanation → 200 (updated)', {
-      questionId: question._id,
+      questionId: question._id || question.id,
     });
     res.status(200).json(response);
   } catch (error) {
@@ -1042,7 +1042,7 @@ const approveQuestion = async (req, res, next) => {
       message: status === 'approve' ? 'Question approved successfully' : 'Question rejected',
       data: {
         question: {
-          id: question._id,
+          id: question._id || question.id,
           status: question.status,
           ...(status === 'approve' 
             ? { approvedBy: question.approvedBy }
@@ -1057,7 +1057,7 @@ const approveQuestion = async (req, res, next) => {
     };
 
     console.log(`[QUESTION] POST /admin/questions/processor/:questionId/approve → 200 (${status})`, {
-      questionId: question._id,
+      questionId: question._id || question.id,
     });
     res.status(200).json(response);
   } catch (error) {
@@ -1117,7 +1117,7 @@ const rejectQuestion = async (req, res, next) => {
       message: 'Question rejected',
       data: {
         question: {
-          id: question._id,
+          id: question._id || question.id,
           status: question.status,
           rejectedBy: question.rejectedBy,
           rejectionReason: question.rejectionReason,
@@ -1127,7 +1127,7 @@ const rejectQuestion = async (req, res, next) => {
     };
 
     console.log('[QUESTION] POST /admin/questions/processor/:questionId/reject → 200 (rejected)', {
-      questionId: question._id,
+      questionId: question._id || question.id,
     });
     res.status(200).json(response);
   } catch (error) {
@@ -1172,7 +1172,7 @@ const getTopicsBySubject = async (req, res, next) => {
       success: true,
       data: {
         topics: topics.map((topic) => ({
-          id: topic._id,
+          id: topic._id || topic.id,
           name: topic.name,
           description: topic.description,
         })),
@@ -1254,25 +1254,25 @@ const addCommentToQuestion = async (req, res, next) => {
       message: 'Comment added successfully',
       data: {
         comment: {
-          id: newComment._id,
+          id: newComment._id || newComment.id,
           comment: newComment.comment,
           commentedBy: newComment.commentedBy ? {
-            id: newComment.commentedBy._id,
+            id: newComment.commentedBy.id || newComment.commentedBy._id,
             name: newComment.commentedBy.name || newComment.commentedBy.fullName || 'Unknown',
           } : null,
           createdAt: newComment.createdAt,
           formattedDate: formatDate(newComment.createdAt),
         },
         question: {
-          id: question._id,
+          id: question._id || question.id,
           totalComments: question.comments.length,
         },
       },
     };
 
     console.log('[QUESTION] POST /admin/questions/all/:questionId/comment → 201 (created)', {
-      questionId: question._id,
-      commentId: newComment._id,
+      questionId: question._id || question.id,
+      commentId: newComment._id || newComment.id,
     });
     res.status(201).json(response);
   } catch (error) {

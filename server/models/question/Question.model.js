@@ -1,161 +1,169 @@
-const mongoose = require('mongoose');
+const { prisma } = require('../../config/db/prisma');
 
-const questionSchema = new mongoose.Schema(
-  {
-    // Workflow status
-    status: {
-      type: String,
-      enum: [
-        'pending_gatherer',    // Initial state (not used, but kept for consistency)
-        'pending_processor',   // Waiting for processor approval
-        'pending_creator',     // Waiting for creator to review/update
-        'pending_explainer',   // Waiting for explainer to add/update explanation
-        'completed',           // Final approved state
-        'rejected',            // Rejected by processor
-      ],
-      default: 'pending_processor',
-    },
+/**
+ * Question Model using Prisma
+ */
+const Question = {
+  // Create a new question
+  async create(data) {
+    // Handle history and comments if provided
+    const { history, comments, ...questionData } = data;
     
-    // Classification
-    exam: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Exam',
-      required: [true, 'Exam is required'],
-    },
-    subject: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Subject',
-      required: [true, 'Subject is required'],
-    },
-    topic: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Topic',
-      required: [true, 'Topic is required'],
-    },
-    
-    // Question details
-    questionText: {
-      type: String,
-      required: [true, 'Question text is required'],
-      trim: true,
-    },
-    questionType: {
-      type: String,
-      enum: ['MCQ', 'True/False', 'Short Answer', 'Essay'],
-      required: [true, 'Question type is required'],
-    },
-    
-    // MCQ specific fields
-    options: {
-      type: {
-        A: { type: String, trim: true },
-        B: { type: String, trim: true },
-        C: { type: String, trim: true },
-        D: { type: String, trim: true },
-      },
-      required: function() {
-        return this.questionType === 'MCQ';
-      },
-    },
-    correctAnswer: {
-      type: String,
-      enum: ['A', 'B', 'C', 'D'],
-      required: function() {
-        return this.questionType === 'MCQ';
-      },
-    },
-    
-    // Explanation (optional for gatherer, required for explainer)
-    explanation: {
-      type: String,
-      trim: true,
-      default: '',
-    },
-    
-    // Variant tracking
-    originalQuestion: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Question',
-      default: null,
-    },
-    isVariant: {
-      type: Boolean,
-      default: false,
-    },
-    
-    // Workflow tracking
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    lastModifiedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    approvedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    rejectedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    rejectionReason: {
-      type: String,
-      trim: true,
-    },
-    
-    // History tracking
-    history: [
-      {
-        action: {
-          type: String,
-          enum: ['created', 'updated', 'approved', 'rejected', 'submitted', 'variant_created'],
-        },
-        performedBy: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'User',
-        },
-        role: String,
-        timestamp: {
-          type: Date,
-          default: Date.now,
-        },
-        notes: String,
-      },
-    ],
-    
-    // Comments (optional)
-    comments: [
-      {
-        comment: {
-          type: String,
-          required: true,
-          trim: true,
-        },
-        commentedBy: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'User',
-          required: true,
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
+    const createData = {
+      ...questionData,
+      ...(history && history.length > 0 && {
+        history: {
+          create: history
+        }
+      }),
+      ...(comments && comments.length > 0 && {
+        comments: {
+          create: comments
+        }
+      })
+    };
+
+    return await prisma.question.create({
+      data: createData,
+      include: {
+        exam: true,
+        subject: true,
+        topic: true,
+        createdBy: true
+      }
+    });
   },
-  {
-    timestamps: true,
-  }
-);
 
-// Index for efficient queries
-questionSchema.index({ exam: 1, subject: 1, topic: 1 });
-questionSchema.index({ status: 1 });
-questionSchema.index({ createdBy: 1 });
-questionSchema.index({ originalQuestion: 1 });
+  // Find question by ID
+  async findById(id) {
+    return await prisma.question.findUnique({ 
+      where: { id },
+      include: {
+        exam: true,
+        subject: true,
+        topic: true,
+        createdBy: true,
+        lastModifiedBy: true,
+        approvedBy: true,
+        rejectedBy: true,
+        originalQuestion: true,
+        variants: true,
+        history: {
+          include: { performedBy: true },
+          orderBy: { timestamp: 'desc' }
+        },
+        comments: {
+          include: { commentedBy: true },
+          orderBy: { createdAt: 'desc' }
+        }
+      }
+    });
+  },
 
-module.exports = mongoose.model('Question', questionSchema);
+  // Find all questions with filters
+  async findMany(options = {}) {
+    const { include = {}, ...restOptions } = options;
+    const defaultInclude = {
+      exam: true,
+      subject: true,
+      topic: true,
+      createdBy: true,
+      ...include
+    };
 
+    return await prisma.question.findMany({
+      include: defaultInclude,
+      ...restOptions
+    });
+  },
+
+  // Find questions by status
+  async findByStatus(status, options = {}) {
+    return await prisma.question.findMany({
+      where: { status },
+      include: {
+        exam: true,
+        subject: true,
+        topic: true,
+        createdBy: true
+      },
+      ...options
+    });
+  },
+
+  // Find questions by exam, subject, topic
+  async findByExamSubjectTopic(examId, subjectId, topicId, options = {}) {
+    return await prisma.question.findMany({
+      where: {
+        examId,
+        subjectId,
+        topicId
+      },
+      include: {
+        exam: true,
+        subject: true,
+        topic: true,
+        createdBy: true
+      },
+      ...options
+    });
+  },
+
+  // Update question
+  async update(id, data) {
+    const { history, comments, ...updateData } = data;
+    
+    const update = {
+      ...updateData,
+      ...(history && history.length > 0 && {
+        history: {
+          create: history
+        }
+      }),
+      ...(comments && comments.length > 0 && {
+        comments: {
+          create: comments
+        }
+      })
+    };
+
+    return await prisma.question.update({
+      where: { id },
+      data: update,
+      include: {
+        exam: true,
+        subject: true,
+        topic: true
+      }
+    });
+  },
+
+  // Delete question
+  async delete(id) {
+    return await prisma.question.delete({ where: { id } });
+  },
+
+  // Add history entry
+  async addHistory(questionId, historyData) {
+    return await prisma.questionHistory.create({
+      data: {
+        questionId,
+        ...historyData
+      },
+      include: { performedBy: true }
+    });
+  },
+
+  // Add comment
+  async addComment(questionId, commentData) {
+    return await prisma.questionComment.create({
+      data: {
+        questionId,
+        ...commentData
+      },
+      include: { commentedBy: true }
+    });
+  },
+};
+
+module.exports = Question;

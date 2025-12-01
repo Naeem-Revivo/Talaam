@@ -36,7 +36,7 @@ const handleGoogleCallback = async (code) => {
   }
 
   // Find or create user
-  let user = await User.findOne({ email });
+  let user = await User.findByEmail(email);
   if (!user) {
     // Create new user
     user = await User.create({
@@ -49,9 +49,11 @@ const handleGoogleCallback = async (code) => {
     });
   } else if (user && user.authProvider !== 'google') {
     // If existing local account, link provider details but keep local
-    user.googleId = user.googleId || googleId;
-    user.avatar = user.avatar || avatar;
-    await user.save({ validateBeforeSave: false });
+    await User.update(user.id, {
+      googleId: user.googleId || googleId,
+      avatar: user.avatar || avatar,
+    });
+    user = await User.findById(user.id);
   }
 
   // Check if user is suspended
@@ -60,7 +62,7 @@ const handleGoogleCallback = async (code) => {
   }
 
   // Generate token
-  const token = generateToken(user._id);
+  const token = generateToken(user.id);
 
   return {
     user,

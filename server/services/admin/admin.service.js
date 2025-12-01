@@ -22,16 +22,19 @@ const generatePassword = () => {
  * Find user by email
  */
 const findUserByEmail = async (email) => {
-  return await User.findOne({ email: email.toLowerCase().trim() });
+  return await User.findByEmail(email.toLowerCase().trim());
 };
 
 /**
  * Find user by email excluding a specific user ID
  */
 const findUserByEmailExcludingId = async (email, excludeUserId) => {
-  return await User.findOne({
-    email: email.toLowerCase().trim(),
-    _id: { $ne: excludeUserId },
+  const { prisma } = require('../../config/db/prisma');
+  return await prisma.user.findFirst({
+    where: {
+      email: email.toLowerCase().trim(),
+      id: { not: excludeUserId },
+    },
   });
 };
 
@@ -49,26 +52,28 @@ const getAllAdmins = async (filters = {}, pagination = {}) => {
   const { status, adminRole, search } = filters;
   const { page = 1, limit = 5 } = pagination;
 
-  // Build query
-  const query = { role: 'admin' };
+  const { prisma } = require('../../config/db/prisma');
+
+  // Build where clause
+  const where = { role: 'admin' };
 
   // Filter by status
   if (status && ['active', 'suspended'].includes(status)) {
-    query.status = status;
+    where.status = status;
   }
 
   // Filter by adminRole (workflow role)
   if (adminRole && ['gatherer', 'creator', 'explainer', 'processor'].includes(adminRole)) {
-    query.adminRole = adminRole;
+    where.adminRole = adminRole;
   }
 
   // Search by name or email
   if (search && search.trim()) {
-    const searchRegex = new RegExp(search.trim(), 'i');
-    query.$or = [
-      { name: searchRegex },
-      { fullName: searchRegex },
-      { email: searchRegex },
+    const searchTerm = search.trim();
+    where.OR = [
+      { name: { contains: searchTerm, mode: 'insensitive' } },
+      { fullName: { contains: searchTerm, mode: 'insensitive' } },
+      { email: { contains: searchTerm, mode: 'insensitive' } },
     ];
   }
 
@@ -76,14 +81,27 @@ const getAllAdmins = async (filters = {}, pagination = {}) => {
   const skip = (page - 1) * limit;
 
   // Get total count for pagination
-  const totalItems = await User.countDocuments(query);
+  const totalItems = await prisma.user.count({ where });
 
   // Get paginated results
-  const admins = await User.find(query)
-    .select('-password -otp -otpExpiry -resetPasswordToken -resetPasswordExpiry')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
+  const admins = await prisma.user.findMany({
+    where,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      fullName: true,
+      role: true,
+      adminRole: true,
+      status: true,
+      isEmailVerified: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    orderBy: { createdAt: 'desc' },
+    skip,
+    take: limit,
+  });
 
   // Calculate pagination metadata
   const totalPages = Math.ceil(totalItems / limit);
@@ -119,29 +137,30 @@ const findUserById = async (userId) => {
  * Update user status
  */
 const updateUserStatus = async (user, status) => {
-  user.status = status;
-  return await user.save();
+  return await User.update(user.id, { status });
 };
 
 /**
  * Update admin core fields
  */
 const updateAdminDetails = async (user, updates) => {
+  const updateData = {};
+  
   if (updates.name !== undefined) {
-    user.name = updates.name;
-    user.fullName = updates.name;
+    updateData.name = updates.name;
+    updateData.fullName = updates.name;
   }
   if (updates.email !== undefined) {
-    user.email = updates.email;
+    updateData.email = updates.email;
   }
   if (updates.status !== undefined) {
-    user.status = updates.status;
+    updateData.status = updates.status;
   }
   if (updates.adminRole !== undefined) {
-    user.adminRole = updates.adminRole;
+    updateData.adminRole = updates.adminRole;
   }
 
-  return await user.save();
+  return await User.update(user.id, updateData);
 };
 
 /**

@@ -24,7 +24,7 @@ const subscribeToPlan = async (req, res, next) => {
       message: 'Subscription created successfully',
       data: {
         subscription: {
-          id: subscription._id,
+          id: subscription.id,
           userId: subscription.userId,
           userName: subscription.userName,
           planId: subscription.planId,
@@ -87,7 +87,7 @@ const confirmPayment = async (req, res, next) => {
       message: 'Payment confirmed successfully',
       data: {
         subscription: {
-          id: subscription._id,
+          id: subscription.id,
           userId: subscription.userId,
           userName: subscription.userName,
           planId: subscription.planId,
@@ -133,7 +133,7 @@ const getMySubscription = async (req, res, next) => {
       success: true,
       data: {
         subscription: {
-          id: subscription._id,
+          id: subscription.id,
           userId: subscription.userId,
           userName: subscription.userName,
           planId: subscription.planId,

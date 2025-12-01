@@ -41,7 +41,7 @@ const createPlan = async (req, res, next) => {
       message: 'Plan created successfully',
       data: {
         plan: {
-          id: plan._id,
+          id: plan.id,
           name: plan.name,
           price: plan.price,
           duration: plan.duration,
@@ -53,7 +53,7 @@ const createPlan = async (req, res, next) => {
       },
     };
 
-    console.log('[PLAN] POST /admin/plans → 201 (created)', { planId: plan._id });
+    console.log('[PLAN] POST /admin/plans → 201 (created)', { planId: plan.id });
     res.status(201).json(response);
   } catch (error) {
     console.error('[PLAN] POST /admin/plans → error', error);
@@ -101,11 +101,14 @@ const getAllPlans = async (req, res, next) => {
     if (req.user.role === 'superadmin') {
       plansWithSubscribers = await Promise.all(
         plans.map(async (plan) => {
-          const subscriberCount = await Subscription.countDocuments({
-            planId: plan._id,
+          const { prisma } = require('../../config/db/prisma');
+          const subscriberCount = await prisma.subscription.count({
+            where: {
+              planId: plan.id,
+            },
           });
           return {
-            ...plan.toObject(),
+            ...plan,
             subscriberCount,
           };
         })
@@ -116,7 +119,7 @@ const getAllPlans = async (req, res, next) => {
       success: true,
       data: {
         plans: plansWithSubscribers.map((plan) => ({
-          id: plan._id,
+          id: plan.id,
           name: plan.name,
           price: plan.price,
           duration: plan.duration,
@@ -172,7 +175,7 @@ const getPlanById = async (req, res, next) => {
       success: true,
       data: {
         plan: {
-          id: plan._id,
+          id: plan.id,
           name: plan.name,
           price: plan.price,
           duration: plan.duration,
@@ -184,7 +187,7 @@ const getPlanById = async (req, res, next) => {
       },
     };
 
-    console.log('[PLAN] GET /admin/plans/:planId → 200 (ok)', { planId: plan._id });
+    console.log('[PLAN] GET /admin/plans/:planId → 200 (ok)', { planId: plan.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[PLAN] GET /admin/plans/:planId → error', error);
@@ -255,7 +258,7 @@ const updatePlan = async (req, res, next) => {
       message: 'Plan updated successfully',
       data: {
         plan: {
-          id: updatedPlan._id,
+          id: updatedPlan.id,
           name: updatedPlan.name,
           price: updatedPlan.price,
           duration: updatedPlan.duration,
@@ -267,7 +270,7 @@ const updatePlan = async (req, res, next) => {
       },
     };
 
-    console.log('[PLAN] PUT /admin/plans/:planId → 200 (updated)', { planId: updatedPlan._id });
+    console.log('[PLAN] PUT /admin/plans/:planId → 200 (updated)', { planId: updatedPlan.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[PLAN] PUT /admin/plans/:planId → error', error);
@@ -333,7 +336,7 @@ const updatePlanStatus = async (req, res, next) => {
       message: 'Plan status updated successfully',
       data: {
         plan: {
-          id: updatedPlan._id,
+          id: updatedPlan.id,
           name: updatedPlan.name,
           status: updatedPlan.status,
           updatedAt: updatedPlan.updatedAt,
@@ -342,7 +345,7 @@ const updatePlanStatus = async (req, res, next) => {
     };
 
     console.log('[PLAN] PUT /admin/plans/:planId/status → 200 (status updated)', {
-      planId: updatedPlan._id,
+      planId: updatedPlan.id,
     });
     res.status(200).json(response);
   } catch (error) {
@@ -405,13 +408,13 @@ const deletePlan = async (req, res, next) => {
       message: 'Plan deleted successfully',
       data: {
         plan: {
-          id: plan._id,
+          id: plan.id,
           name: plan.name,
         },
       },
     };
 
-    console.log('[PLAN] DELETE /admin/plans/:planId → 200 (deleted)', { planId: plan._id });
+    console.log('[PLAN] DELETE /admin/plans/:planId → 200 (deleted)', { planId: plan.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[PLAN] DELETE /admin/plans/:planId → error', error);

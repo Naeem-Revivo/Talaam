@@ -11,7 +11,10 @@ const createPlan = async (planData) => {
  * Get all plans
  */
 const getAllPlans = async (filter = {}) => {
-  return await Plan.find(filter).sort({ createdAt: -1 });
+  return await Plan.findMany({
+    where: filter,
+    orderBy: { createdAt: 'desc' }
+  });
 };
 
 /**
@@ -25,29 +28,30 @@ const findPlanById = async (planId) => {
  * Update plan
  */
 const updatePlan = async (plan, updateData) => {
+  const updateDataFiltered = {};
   if (updateData.name !== undefined) {
-    plan.name = updateData.name;
+    updateDataFiltered.name = updateData.name;
   }
   if (updateData.price !== undefined) {
-    plan.price = updateData.price;
+    updateDataFiltered.price = updateData.price;
   }
   if (updateData.duration !== undefined) {
-    plan.duration = updateData.duration;
+    updateDataFiltered.duration = updateData.duration;
   }
   if (updateData.description !== undefined) {
-    plan.description = updateData.description;
+    updateDataFiltered.description = updateData.description;
   }
   if (updateData.status !== undefined) {
-    plan.status = updateData.status;
+    updateDataFiltered.status = updateData.status;
   }
-  return await plan.save();
+  return await Plan.update(plan.id, updateDataFiltered);
 };
 
 /**
  * Delete plan
  */
 const deletePlan = async (planId) => {
-  return await Plan.findByIdAndDelete(planId);
+  return await Plan.delete(planId);
 };
 
 module.exports = {

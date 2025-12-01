@@ -1,21 +1,10 @@
-const mongoose = require('mongoose');
-
 /**
- * Setup MongoDB connection event handlers
+ * Setup PostgreSQL connection event handlers (Prisma handles this internally)
  */
 const setupConnectionEvents = () => {
-  // Handle connection events
-  mongoose.connection.on('connected', () => {
-    console.log('Mongoose connected to MongoDB');
-  });
-
-  mongoose.connection.on('error', (err) => {
-    console.error('Mongoose connection error:', err);
-  });
-
-  mongoose.connection.on('disconnected', () => {
-    console.log('Mongoose disconnected from MongoDB');
-  });
+  // Prisma handles connection events internally
+  // This function is kept for compatibility but does nothing
+  console.log('Prisma connection events are handled internally');
 };
 
 module.exports = setupConnectionEvents;

@@ -127,7 +127,7 @@ const createAdmin = async (req, res, next) => {
       message: 'Admin user created successfully',
       data: {
         user: {
-          id: user._id,
+          id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
@@ -140,7 +140,7 @@ const createAdmin = async (req, res, next) => {
       },
     };
 
-    console.log('[ADMIN] POST /admin/create → 201 (created)', { userId: user._id });
+    console.log('[ADMIN] POST /admin/create → 201 (created)', { userId: user.id });
     res.status(201).json(response);
   } catch (error) {
     console.error('[ADMIN] POST /admin/create → error', error);
@@ -219,7 +219,7 @@ const updateUserStatus = async (req, res, next) => {
       message: `User status updated to ${status} successfully`,
       data: {
         user: {
-          id: user._id,
+          id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
@@ -229,7 +229,7 @@ const updateUserStatus = async (req, res, next) => {
       },
     };
 
-    console.log('[ADMIN] PUT /admin/status/:userId → 200 (updated)', { userId: user._id, status });
+    console.log('[ADMIN] PUT /admin/status/:userId → 200 (updated)', { userId: user.id, status });
     res.status(200).json(response);
   } catch (error) {
     console.error('[ADMIN] PUT /admin/status/:userId → error', error);
@@ -330,7 +330,7 @@ const getAllAdmins = async (req, res, next) => {
       message: 'Admin users retrieved successfully',
       data: {
         admins: result.admins.map((admin) => ({
-          id: admin._id,
+          id: admin.id,
           username: admin.fullName || admin.name || 'N/A',
           email: admin.email,
           workflowRole: admin.adminRole || null,
@@ -465,7 +465,7 @@ const updateAdmin = async (req, res, next) => {
       message: 'Admin user updated successfully',
       data: {
         user: {
-          id: updatedUser._id,
+          id: updatedUser.id,
           name: updatedUser.name,
           email: updatedUser.email,
           role: updatedUser.role,
@@ -476,7 +476,7 @@ const updateAdmin = async (req, res, next) => {
       },
     };
 
-    console.log('[ADMIN] PUT /admin/:userId → 200 (updated)', { userId: updatedUser._id });
+    console.log('[ADMIN] PUT /admin/:userId → 200 (updated)', { userId: updatedUser.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[ADMIN] PUT /admin/:userId → error', error);
@@ -574,7 +574,7 @@ const deleteAdmin = async (req, res, next) => {
     }
 
     // Prevent superadmin from deleting themselves
-    if (user._id.toString() === req.user.id.toString()) {
+    if (user.id.toString() === req.user.id.toString()) {
       return res.status(400).json({
         success: false,
         message: 'You cannot delete your own account',
@@ -589,7 +589,7 @@ const deleteAdmin = async (req, res, next) => {
       message: 'Admin user deleted successfully',
       data: {
         deletedUser: {
-          id: user._id,
+          id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
@@ -598,7 +598,7 @@ const deleteAdmin = async (req, res, next) => {
       },
     };
 
-    console.log('[ADMIN] DELETE /admin/:userId → 200 (deleted)', { userId: user._id });
+    console.log('[ADMIN] DELETE /admin/:userId → 200 (deleted)', { userId: user.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[ADMIN] DELETE /admin/:userId → error', error);
@@ -738,10 +738,10 @@ const getSubjectsPaginated = async (req, res, next) => {
       message: 'Subjects retrieved successfully',
       data: {
         subjects: result.subjects.map((subject) => ({
-          id: subject._id,
+          id: subject._id || subject.id,
           name: subject.name,
           description: subject.description || '',
-          date: subject.createdAt.toISOString().split('T')[0],
+          date: subject.createdAt ? subject.createdAt.toISOString().split('T')[0] : null,
         })),
         pagination: {
           ...result.pagination,
@@ -851,14 +851,14 @@ const getTopicsPaginated = async (req, res, next) => {
       message: 'Topics retrieved successfully',
       data: {
         topics: result.topics.map((topic) => ({
-          id: topic._id,
+          id: topic._id || topic.id,
           name: topic.name,
           description: topic.description || '',
           subject: topic.parentSubject ? {
-            id: topic.parentSubject._id,
+            id: topic.parentSubject._id || topic.parentSubject.id,
             name: topic.parentSubject.name,
           } : null,
-          date: topic.createdAt.toISOString().split('T')[0],
+          date: topic.createdAt ? topic.createdAt.toISOString().split('T')[0] : null,
         })),
         pagination: {
           ...result.pagination,
@@ -929,20 +929,20 @@ const getTopicsBySubject = async (req, res, next) => {
       message: 'Topics retrieved successfully',
       data: {
         subject: {
-          id: subject._id,
+          id: subject._id || subject.id,
           name: subject.name,
         },
         topics: topics.map((topic) => ({
-          id: topic._id,
+          id: topic._id || topic.id,
           name: topic.name,
           description: topic.description || '',
-          date: topic.createdAt.toISOString().split('T')[0],
+          date: topic.createdAt ? topic.createdAt.toISOString().split('T')[0] : null,
         })),
       },
     };
 
     console.log('[CLASSIFICATION] GET /admin/classification/subjects/:subjectId/topics → 200 (ok)', {
-      subjectId: subject._id,
+      subjectId: subject._id || subject.id,
       topicsCount: topics.length,
     });
     res.status(200).json(response);
@@ -1007,15 +1007,15 @@ const createSubject = async (req, res, next) => {
       message: 'Subject created successfully',
       data: {
         subject: {
-          id: subject._id,
+          id: subject._id || subject.id,
           name: subject.name,
           description: subject.description || '',
-          date: subject.createdAt.toISOString().split('T')[0],
+          date: subject.createdAt ? subject.createdAt.toISOString().split('T')[0] : null,
         },
       },
     };
 
-    console.log('[CLASSIFICATION] POST /admin/classification/subjects → 201 (created)', { subjectId: subject._id });
+    console.log('[CLASSIFICATION] POST /admin/classification/subjects → 201 (created)', { subjectId: subject._id || subject.id });
     res.status(201).json(response);
   } catch (error) {
     console.error('[CLASSIFICATION] POST /admin/classification/subjects → error', error);
@@ -1093,15 +1093,15 @@ const updateSubject = async (req, res, next) => {
       message: 'Subject updated successfully',
       data: {
         subject: {
-          id: updatedSubject._id,
+          id: updatedSubject._id || updatedSubject.id,
           name: updatedSubject.name,
           description: updatedSubject.description || '',
-          date: updatedSubject.createdAt.toISOString().split('T')[0],
+          date: updatedSubject.createdAt ? updatedSubject.createdAt.toISOString().split('T')[0] : null,
         },
       },
     };
 
-    console.log('[CLASSIFICATION] PUT /admin/classification/subjects/:subjectId → 200 (updated)', { subjectId: subject._id });
+    console.log('[CLASSIFICATION] PUT /admin/classification/subjects/:subjectId → 200 (updated)', { subjectId: updatedSubject._id || updatedSubject.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[CLASSIFICATION] PUT /admin/classification/subjects/:subjectId → error', error);
@@ -1163,13 +1163,13 @@ const deleteSubject = async (req, res, next) => {
       message: 'Subject deleted successfully',
       data: {
         subject: {
-          id: subject._id,
+          id: subject._id || subject.id,
           name: subject.name,
         },
       },
     };
 
-    console.log('[CLASSIFICATION] DELETE /admin/classification/subjects/:subjectId → 200 (deleted)', { subjectId: subject._id });
+    console.log('[CLASSIFICATION] DELETE /admin/classification/subjects/:subjectId → 200 (deleted)', { subjectId: subject._id || subject.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[CLASSIFICATION] DELETE /admin/classification/subjects/:subjectId → error', error);
@@ -1245,15 +1245,15 @@ const createTopic = async (req, res, next) => {
       message: 'Topic created successfully',
       data: {
         topic: {
-          id: topic._id,
+          id: topic._id || topic.id,
           name: topic.name,
           description: topic.description || '',
-          date: topic.createdAt.toISOString().split('T')[0],
+          date: topic.createdAt ? topic.createdAt.toISOString().split('T')[0] : null,
         },
       },
     };
 
-    console.log('[CLASSIFICATION] POST /admin/classification/subjects/:subjectId/topics → 201 (created)', { topicId: topic._id });
+    console.log('[CLASSIFICATION] POST /admin/classification/subjects/:subjectId/topics → 201 (created)', { topicId: topic._id || topic.id });
     res.status(201).json(response);
   } catch (error) {
     console.error('[CLASSIFICATION] POST /admin/classification/subjects/:subjectId/topics → error', error);
@@ -1338,15 +1338,15 @@ const updateTopic = async (req, res, next) => {
       message: 'Topic updated successfully',
       data: {
         topic: {
-          id: updatedTopic._id,
+          id: updatedTopic._id || updatedTopic.id,
           name: updatedTopic.name,
           description: updatedTopic.description || '',
-          date: updatedTopic.createdAt.toISOString().split('T')[0],
+          date: updatedTopic.createdAt ? updatedTopic.createdAt.toISOString().split('T')[0] : null,
         },
       },
     };
 
-    console.log('[CLASSIFICATION] PUT /admin/classification/topics/:topicId → 200 (updated)', { topicId: updatedTopic._id });
+    console.log('[CLASSIFICATION] PUT /admin/classification/topics/:topicId → 200 (updated)', { topicId: updatedTopic._id || updatedTopic.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[CLASSIFICATION] PUT /admin/classification/topics/:topicId → error', error);
@@ -1408,13 +1408,13 @@ const deleteTopic = async (req, res, next) => {
       message: 'Topic deleted successfully',
       data: {
         topic: {
-          id: topic._id,
+          id: topic._id || topic.id,
           name: topic.name,
         },
       },
     };
 
-    console.log('[CLASSIFICATION] DELETE /admin/classification/topics/:topicId → 200 (deleted)', { topicId: topic._id });
+    console.log('[CLASSIFICATION] DELETE /admin/classification/topics/:topicId → 200 (deleted)', { topicId: topic._id || topic.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[CLASSIFICATION] DELETE /admin/classification/topics/:topicId → error', error);
@@ -1506,15 +1506,15 @@ const getAllUserSubscriptions = async (req, res, next) => {
       message: 'User subscriptions retrieved successfully',
       data: {
         subscriptions: result.subscriptions.map((sub) => ({
-          id: sub._id,
+          id: sub._id || sub.id,
           user: {
-            id: sub.userId._id,
-            name: sub.userId.fullName || sub.userId.name || 'N/A',
-            email: sub.userId.email,
+            id: sub.userId?.id || sub.userId?._id,
+            name: sub.userId?.fullName || sub.userId?.name || 'N/A',
+            email: sub.userId?.email,
           },
           plan: {
-            id: sub.planId._id,
-            name: sub.planName || sub.planId.name,
+            id: sub.planId?.id || sub.planId?._id,
+            name: sub.planName || sub.planId?.name,
           },
           startDate: adminService.formatDateDDMMYYYY(sub.startDate),
           expiryDate: adminService.formatDateDDMMYYYY(sub.expiryDate),
@@ -1606,7 +1606,7 @@ const getSubscriptionDetails = async (req, res, next) => {
       message: 'Subscription details retrieved successfully',
       data: {
         subscription: {
-          id: subscription._id,
+          id: subscription.id,
           userInfo: {
             name: subscription.userId.fullName || subscription.userId.name || 'N/A',
             email: subscription.userId.email,
@@ -1638,7 +1638,7 @@ const getSubscriptionDetails = async (req, res, next) => {
     };
 
     console.log('[SUBSCRIPTION] GET /admin/subscriptions/:subscriptionId → 200 (ok)', {
-      subscriptionId: subscription._id,
+      subscriptionId: subscription.id,
     });
     res.status(200).json(response);
   } catch (error) {
@@ -1749,15 +1749,15 @@ const getPaymentHistory = async (req, res, next) => {
         payments: result.subscriptions.map((sub, index) => ({
           invoiceId: generateInvoiceId(index, result.pagination.totalItems),
           user: {
-            id: sub.userId._id,
-            name: sub.userId.fullName || sub.userId.name || 'N/A',
-            email: sub.userId.email,
+            id: sub.userId?.id || sub.userId?._id,
+            name: sub.userId?.fullName || sub.userId?.name || 'N/A',
+            email: sub.userId?.email,
           },
           plan: {
-            id: sub.planId._id,
-            name: sub.planName || sub.planId.name,
+            id: sub.planId?.id || sub.planId?._id,
+            name: sub.planName || sub.planId?.name,
           },
-          amount: sub.planId.price.toFixed(2),
+          amount: sub.planId?.price?.toFixed(2) || '0.00',
           date: adminService.formatDateDDMMYYYY(sub.createdAt),
           paymentMethod: sub.transactionId ? 'Credit Card' : 'Paypal',
           status: sub.paymentStatus,
