@@ -6,20 +6,35 @@ const { prisma } = require('../../config/db/prisma');
 const StudentAnswer = {
   // Create a new student answer
   async create(data) {
-    // Handle answers array if provided (for test mode)
-    const { answers, ...answerData } = data;
+    const { answers, ...studentAnswerData } = data;
     
-    const createData = {
-      ...answerData,
-      ...(answers && answers.length > 0 && {
-        answers: {
-          create: answers
-        }
-      })
+    // Map Mongoose-style field names to Prisma field names
+    const prismaData = {
+      studentId: data.student || data.studentId,
+      mode: data.mode,
+      examId: data.exam || data.examId,
+      subjectId: data.subject || data.subjectId || null,
+      topicId: data.topic || data.topicId || null,
+      questionId: data.question || data.questionId || null,
+      selectedAnswer: data.selectedAnswer || '',
+      isCorrect: data.isCorrect || false,
+      totalQuestions: data.totalQuestions || 0,
+      correctAnswers: data.correctAnswers || 0,
+      incorrectAnswers: data.incorrectAnswers || 0,
+      score: data.score || 0,
+      percentage: data.percentage || 0,
+      status: data.status || 'completed',
     };
 
-    return await prisma.studentAnswer.create({
-      data: createData,
+    // Remove undefined values
+    Object.keys(prismaData).forEach(key => {
+      if (prismaData[key] === undefined) {
+        delete prismaData[key];
+      }
+    });
+
+    const result = await prisma.studentAnswer.create({
+      data: prismaData,
       include: {
         student: true,
         exam: true,
@@ -31,6 +46,39 @@ const StudentAnswer = {
         }
       }
     });
+
+    // If answers array is provided, create related StudentAnswerQuestion records
+    if (answers && Array.isArray(answers) && answers.length > 0) {
+      await Promise.all(
+        answers.map(answer =>
+          prisma.studentAnswerQuestion.create({
+            data: {
+              studentAnswerId: result.id,
+              questionId: answer.question || answer.questionId,
+              selectedAnswer: answer.selectedAnswer,
+              isCorrect: answer.isCorrect || false,
+            }
+          })
+        )
+      );
+      
+      // Reload with answers
+      return await prisma.studentAnswer.findUnique({
+        where: { id: result.id },
+        include: {
+          student: true,
+          exam: true,
+          subject: true,
+          topic: true,
+          question: true,
+          answers: {
+            include: { question: true }
+          }
+        }
+      });
+    }
+
+    return result;
   },
 
   // Find student answer by ID
@@ -50,9 +98,46 @@ const StudentAnswer = {
     });
   },
 
+  // Find one student answer (Mongoose compatibility)
+  async findOne(query = {}) {
+    const where = this._convertQuery(query);
+    return await prisma.studentAnswer.findFirst({
+      where,
+      include: {
+        student: true,
+        exam: true,
+        subject: true,
+        topic: true,
+        question: true,
+        answers: {
+          include: { question: true }
+        }
+      }
+    });
+  },
+
+  // Find all student answers with filters (Mongoose compatibility)
+  async find(query = {}) {
+    const where = this._convertQuery(query);
+    return await prisma.studentAnswer.findMany({
+      where,
+      include: {
+        student: true,
+        exam: true,
+        subject: true,
+        topic: true,
+        question: true,
+        answers: {
+          include: { question: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  },
+
   // Find all student answers with filters
   async findMany(options = {}) {
-    const { include = {}, ...restOptions } = options;
+    const { include = {}, where = {}, ...restOptions } = options;
     const defaultInclude = {
       student: true,
       exam: true,
@@ -66,6 +151,7 @@ const StudentAnswer = {
     };
 
     return await prisma.studentAnswer.findMany({
+      where,
       include: defaultInclude,
       ...restOptions
     });
@@ -131,16 +217,71 @@ const StudentAnswer = {
     });
   },
 
+  // Get distinct student IDs (Mongoose compatibility)
+  async distinct(field) {
+    const fieldName = field === 'student' ? 'studentId' : field;
+    
+    // Use groupBy to get distinct values
+    if (fieldName === 'studentId') {
+      const results = await prisma.studentAnswer.groupBy({
+        by: ['studentId'],
+        _count: { studentId: true }
+      });
+      return results.map(r => r.studentId);
+    }
+    
+    // For other fields, use findMany and filter
+    const results = await prisma.studentAnswer.findMany({
+      select: { [fieldName]: true }
+    });
+    const uniqueValues = [...new Set(results.map(r => r[fieldName]).filter(v => v !== null))];
+    return uniqueValues;
+  },
+
+  // Count documents (Mongoose compatibility)
+  async countDocuments(query = {}) {
+    const where = this._convertQuery(query);
+    return await prisma.studentAnswer.count({ where });
+  },
+
+  // Aggregate (Mongoose compatibility - basic support)
+  async aggregate(pipeline = []) {
+    // Basic aggregation support - may need enhancement based on usage
+    // For now, return empty array as Prisma doesn't have direct aggregation
+    // This should be replaced with Prisma's groupBy or raw queries
+    console.warn('StudentAnswer.aggregate() called - may need Prisma groupBy or raw query');
+    return [];
+  },
+
   // Update student answer
   async update(id, data) {
     const { answers, ...updateData } = data;
     
+    // Map field names if needed
+    const prismaUpdateData = {};
+    if (updateData.student !== undefined) prismaUpdateData.studentId = updateData.student;
+    if (updateData.exam !== undefined) prismaUpdateData.examId = updateData.exam;
+    if (updateData.subject !== undefined) prismaUpdateData.subjectId = updateData.subject;
+    if (updateData.topic !== undefined) prismaUpdateData.topicId = updateData.topic;
+    if (updateData.question !== undefined) prismaUpdateData.questionId = updateData.question;
+    
+    // Copy other fields
+    Object.keys(updateData).forEach(key => {
+      if (!['student', 'exam', 'subject', 'topic', 'question'].includes(key)) {
+        prismaUpdateData[key] = updateData[key];
+      }
+    });
+
     const update = {
-      ...updateData,
-      ...(answers && answers.length > 0 && {
+      ...prismaUpdateData,
+      ...(answers && Array.isArray(answers) && answers.length > 0 && {
         answers: {
           deleteMany: {},
-          create: answers
+          create: answers.map(answer => ({
+            questionId: answer.question || answer.questionId,
+            selectedAnswer: answer.selectedAnswer,
+            isCorrect: answer.isCorrect || false,
+          }))
         }
       })
     };
@@ -151,6 +292,9 @@ const StudentAnswer = {
       include: {
         student: true,
         exam: true,
+        subject: true,
+        topic: true,
+        question: true,
         answers: {
           include: { question: true }
         }
@@ -161,6 +305,44 @@ const StudentAnswer = {
   // Delete student answer
   async delete(id) {
     return await prisma.studentAnswer.delete({ where: { id } });
+  },
+
+  // Helper method to convert Mongoose-style queries to Prisma where clauses
+  _convertQuery(query) {
+    const where = {};
+    
+    if (query._id) {
+      where.id = query._id;
+    }
+    if (query.student) {
+      where.studentId = query.student;
+    }
+    if (query.exam) {
+      where.examId = query.exam;
+    }
+    if (query.subject) {
+      where.subjectId = query.subject;
+    }
+    if (query.topic) {
+      where.topicId = query.topic;
+    }
+    if (query.question) {
+      where.questionId = query.question;
+    }
+    if (query.mode) {
+      where.mode = query.mode;
+    }
+    if (query.status) {
+      where.status = query.status;
+    }
+    if (query.studentId) {
+      where.studentId = query.studentId;
+    }
+    if (query.examId) {
+      where.examId = query.examId;
+    }
+
+    return where;
   },
 };
 

@@ -16,6 +16,11 @@ router.post('/study', questionController.submitStudyAnswer);
 // Study Mode: Get study history
 router.get('/study/history', questionController.getStudyHistory);
 
+// Sessions list and detail
+router.get('/sessions', questionController.getSessionHistory);
+router.get('/sessions/:sessionId/incorrect', questionController.getSessionIncorrect);
+router.get('/sessions/:sessionId', questionController.getSessionDetail);
+
 // Test Mode: Start a test (get questions)
 router.get('/test/start', questionController.startTest);
 
@@ -24,6 +29,12 @@ router.post('/test/submit', questionController.submitTestAnswers);
 
 // Test Mode: Get test history
 router.get('/test/history', questionController.getTestHistory);
+
+// Test Mode: Get overall summary
+router.get('/test/summary', questionController.getTestSummary);
+
+// Plan: Get subjects, topics, and questions for an exam/plan
+router.get('/plan/structure', questionController.getPlanStructure);
 
 // Test Mode: Get detailed test result by ID
 router.get('/test/:testId', questionController.getTestResultById);

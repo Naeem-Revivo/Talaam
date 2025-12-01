@@ -1,11 +1,17 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../context/LanguageContext'
 import { eye, openeye, google, linkedin } from '../../assets/svg/signup'
+import { useDispatch, useSelector } from 'react-redux'
+import { signup } from '../../store/slices/authSlice'
+import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
+import authAPI from '../../api/auth'
 
 const CreateAccount = () => {
   const { language, t } = useLanguage()
   const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const { loading, error, success } = useSelector((state) => state.auth)
   const dir = language === 'ar' ? 'rtl' : 'ltr'
   
   const [showPassword, setShowPassword] = useState(false)
@@ -36,11 +42,75 @@ const CreateAccount = () => {
     })
   }
 
-  const handleCreateAccount = () => {
-    // Here you would typically validate the form and make an API call
-    // For now, we'll navigate to verify email page
-    // You can add validation logic before navigating
-    navigate('/verify-email')
+  const handleCreateAccount = async () => {
+    // Basic validation
+    if (!formData.email || !formData.password || !formData.confirmPassword) {
+      showErrorToast(t('createAccount.errors.requiredFields') || 'Please fill all fields.')
+      return
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      showErrorToast(t('createAccount.errors.passwordMismatch') || 'Passwords do not match.')
+      return
+    }
+
+    const requirements = checkPasswordRequirements(formData.password)
+    const allOk = Object.values(requirements).every(Boolean)
+    if (!allOk) {
+      showErrorToast(t('createAccount.errors.passwordWeak') || 'Password does not meet requirements.')
+      return
+    }
+
+    try {
+      const resultAction = await dispatch(
+        signup({
+          email: formData.email,
+          password: formData.password,
+        })
+      )
+
+      if (signup.fulfilled.match(resultAction)) {
+        const message =
+          resultAction.payload?.message ||
+          t('createAccount.success') ||
+          'Account created successfully.'
+
+        showSuccessToast(message)
+        // After signup, send user to verify email page
+        navigate('/verify-email')
+      } else {
+        const msg =
+          resultAction.payload?.message ||
+          error ||
+          t('createAccount.errors.generic') ||
+          'Signup failed.'
+        showErrorToast(msg)
+      }
+    } catch (e) {
+      showErrorToast(t('createAccount.errors.generic') || 'Signup failed.')
+    }
+  }
+
+  // Show inline backend errors if needed
+  useEffect(() => {
+    if (error) {
+      // Optionally show toast on error coming from store
+      showErrorToast(error)
+    }
+  }, [error])
+
+  const handleGoogleSignup = async () => {
+    try {
+      const res = await authAPI.getGoogleAuthUrl()
+      const url = res?.data?.url
+      if (url) {
+        window.location.href = url
+      } else {
+        showErrorToast(t('createAccount.errors.google') || 'Unable to start Google sign in.')
+      }
+    } catch {
+      showErrorToast(t('createAccount.errors.google') || 'Unable to start Google sign in.')
+    }
   }
 
   return (
@@ -153,9 +223,10 @@ const CreateAccount = () => {
             {/* Create Account Button */}
             <button
               onClick={handleCreateAccount}
-              className="bg-cinnebar-red text-white font-archivo font-semibold text-[20px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90"
+              disabled={loading}
+              className={`bg-cinnebar-red text-white font-archivo font-semibold text-[20px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              {t('createAccount.buttonText')}
+              {loading ? t('createAccount.buttonLoading') || 'Creating account...' : t('createAccount.buttonText')}
             </button>
 
             {/* Divider */}
@@ -170,7 +241,11 @@ const CreateAccount = () => {
             {/* Social Login Buttons */}
             <div className="flex flex-col gap-4">
               {/* Google Button */}
-              <button className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full lg:w-[423px] h-[57px]">
+              <button
+                type="button"
+                onClick={handleGoogleSignup}
+                className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full lg:w-[423px] h-[57px]"
+              >
                 <img src={google} alt="Google" className="" />
                 <span className="font-roboto font-medium text-[16px] leading-[100%] tracking-[0] text-gray-900">
                   {t('createAccount.continueWithGoogle')}

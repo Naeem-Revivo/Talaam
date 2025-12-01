@@ -94,6 +94,8 @@ import GathererProfile from '../pages/Gatherer/GathererProfile';
 import CreatorProfile from '../pages/Creator/CreatorProfile';
 import ProcessorProfile from '../pages/Processor/ProcessorProfile';
 import ExplainerProfile from '../pages/Explainer/ExplainerProfile';
+import AddNewExam from '../pages/admin/AddNewExam';
+import CreatorViewVariant from '../pages/Creator/CreatorViewVariant';
 
 export const AppRoutes = () => {
   return (
@@ -156,10 +158,11 @@ export const AppRoutes = () => {
           <Route path="classification/add-topic" element={<AddTopicPage />} />
           <Route path="classification/add-subtopic" element={<AddSubTopicPage />} />
           <Route path="classification/add-concept" element={<AddConceptPage />} />
+          <Route path="classification/add-exam" element={<AddNewExam />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
           <Route path="question-management" element={<QuestionManagementPage />} />
-          <Route path="add-question" element={<AddNewQuestionPage />} />
-          <Route path="question-details" element={<QuestionDetailsPage />} />
+          <Route path="question-bank/add-question" element={<AddNewQuestionPage />} />
+          <Route path="question-bank/question-details" element={<QuestionDetailsPage />} />
           <Route path="create-variant" element={<CreateVariantPage />} />
           <Route path="variant-question-review" element={<VariantQuestionReviewPage />} />
           <Route path="subscriptions" element={<SubscriptionPlanPage />} />
@@ -200,7 +203,7 @@ export const AppRoutes = () => {
           <Route index element={<ProcessorDashboard />} />
           <Route path="profile" element={<ProcessorProfile />} />
           <Route path="question-bank" element={<ProcessorQuestionBank />} />
-          <Route path="Processed-Question" element={<AllProcessedQuestion />} />
+          <Route path="question-bank/Processed-Question" element={<AllProcessedQuestion />} />
           <Route path="Processed-ViewQuestion" element={<ProcessorViewQuestion />} />
           <Route path="question-bank/gatherer-submission" element={<GathererSubmission />} />
           <Route path="question-bank/explainer-submission" element={<ExplainerSubmission />} />
@@ -216,6 +219,7 @@ export const AppRoutes = () => {
           <Route path="question-bank/assigned-question" element={<AssignedQuestionPage />} />
           <Route path="question-bank/completed-question" element={<CompletedQuestionPage />} />
           <Route path="question-bank/create-variants" element={<CreatorVariantsPage />} />
+          <Route path="question-bank/view-variant" element={<CreatorViewVariant />} />
         </Route>
       </Route>
 

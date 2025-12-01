@@ -95,20 +95,8 @@ const CreatorQuestionBank = () => {
     navigate("/creator/question-bank/completed-question");
   };
 
-  const handleCreateVariant = () => {
-    navigate("/creator/question-bank/create-variants");
-  };
-
-  const handleView = (item) => {
-    navigate("/gatherer/question-bank/Gatherer-QuestionDetail");
-  };
-
   const handleEdit = (item) => {
-    console.log("Edit item:", item);
-  };
-
-  const handleCustomAction = (item) => {
-    console.log("Custom action for item:", item);
+    navigate("/creator/question-bank/create-variants")
   };
 
   const stats = [
@@ -147,11 +135,11 @@ const CreatorQuestionBank = () => {
   ];
 
   const workflowSteps = [
-    "Gatherer",
-    "Processor",
-    "Creator",
-    "Processor",
-    "Explainer",
+    t("gatherer.questionBank.workflowSteps.gatherer"),
+    t("gatherer.questionBank.workflowSteps.processor"),
+    t("gatherer.questionBank.workflowSteps.creator"),
+    t("gatherer.questionBank.workflowSteps.processor"),
+    t("gatherer.questionBank.workflowSteps.explainer"),
   ];
 
   const handleDismiss = () => {
@@ -181,12 +169,6 @@ const CreatorQuestionBank = () => {
               className="py-[10px] px-[14px]"
             />
 
-            <OutlineButton
-              text={t("creator.questionBank.createVariants")}
-              onClick={handleCreateVariant}
-              className="py-[10px] px-[14px]"
-            />
-
             <PrimaryButton
               text={t("creator.questionBank.assignedQuestions")}
               className="py-[10px] px-5"
@@ -208,7 +190,7 @@ const CreatorQuestionBank = () => {
             pageSize={10}
             total={3}
             onPageChange={() => {}}
-            // onCustomAction={handleFix}
+            onCustomAction={handleEdit}
             emptyMessage={t("creator.questionBank.emptyMessage")}
             showPagination={false} 
           />

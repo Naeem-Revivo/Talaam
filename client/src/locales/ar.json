@@ -1,4 +1,68 @@
 {
+  "header": {
+    "titles": {
+      "gatherer": {
+        "dashboard": "لوحة تحكم المجمع",
+        "questionBank": "بنك الأسئلة",
+        "profile": "الملف الشخصي",
+        "default": "لوحة تحكم المجمع"
+      },
+      "creator": {
+        "dashboard": "لوحة تحكم المنشئ",
+        "questionBank": "بنك الأسئلة",
+        "profile": "الملف الشخصي",
+        "default": "لوحة تحكم المنشئ"
+      },
+      "processor": {
+        "dashboard": "لوحة تحكم المعالج",
+        "questionBank": "بنك الأسئلة",
+        "gathererSubmission": "تقديم المجمع",
+        "creatorSubmission": "تقديم المنشئ",
+        "explainerSubmission": "تقديم المشرح",
+        "profile": "الملف الشخصي",
+        "default": "لوحة تحكم المعالج"
+      },
+      "explainer": {
+        "dashboard": "لوحة تحكم المشرح",
+        "questionBank": "بنك الأسئلة",
+        "profile": "الملف الشخصي",
+        "default": "لوحة تحكم المشرح"
+      },
+      "admin": {
+        "dashboard": "لوحة تحكم المسؤول",
+        "addAnnouncements": "إعلانات جديدة",
+        "announcements": "الإعلانات العامة",
+        "languageManagement": "إدارة اللغات",
+        "emailTemplate": "قوالب البريد الإلكتروني",
+        "rolesPermissions": "أدوار المسؤولين والصلاحيات",
+        "userManagement": "إدارة المستخدمين",
+        "questionBank": "بنك الأسئلة",
+        "questionManagement": "إدارة الأسئلة",
+        "addQuestion": "إضافة سؤال جديد",
+        "questionDetails": "عرض تفاصيل السؤال",
+        "createVariant": "إنشاء متغير",
+        "classification": "إدارة التصنيف",
+        "subscriptions": "الاشتراكات والفواتير",
+        "reports": "التقارير والتحليلات",
+        "moderation": "الرقابة على المحتوى",
+        "settings": "إعدادات النظام",
+        "security": "صلاحيات الأمان",
+        "default": "لوحة تحكم المسؤول"
+      },
+      "user": {
+        "dashboard": "لوحة التحكم",
+        "practiceSession": "جلسة التدريب",
+        "performanceAnalytics": "تحليلات الأداء",
+        "reviewIncorrect": "مراجعة الإجابات الخاطئة",
+        "reviewAll": "مراجعة الكل",
+        "reviewSessions": "جلسات المراجعة",
+        "sessionSummary": "ملخص الجلسة",
+        "questionSession": "جلسة الأسئلة",
+        "subscriptionsBilling": "الاشتراكات والفواتير",
+        "default": "لوحة التحكم"
+      }
+    }
+  },
   "navbar": {
     "howItWorks": "كيف يعمل",
     "products": "المنتجات",
@@ -355,6 +419,15 @@
       "1number": "1 رقم"
     },
     "buttonText": "إنشاء حساب",
+    "buttonLoading": "جارٍ إنشاء الحساب...",
+    "success": "تم إنشاء الحساب بنجاح.",
+    "errors": {
+      "requiredFields": "يرجى ملء جميع الحقول المطلوبة.",
+      "passwordMismatch": "كلمتا المرور غير متطابقتين.",
+      "passwordWeak": "كلمة المرور لا تستوفي المتطلبات.",
+      "generic": "فشل إنشاء الحساب. يرجى المحاولة مرة أخرى.",
+      "google": "تعذّر بدء تسجيل الدخول عبر Google. يرجى المحاولة مرة أخرى."
+    },
     "orContinueWith": "أو تابع باستخدام",
     "continueWithGoogle": "تابع باستخدام Google",
     "continueWithLinkedIn": "تابع باستخدام LinkedIn",
@@ -376,7 +449,15 @@
     "resendCode": "إعادة إرسال الرمز",
     "resendCodeIn": "إعادة الإرسال خلال",
     "verifyAccount": "التحقق من الحساب",
-    "skipForNow": "تخطي الآن"
+    "skipForNow": "تخطي الآن",
+    "success": "تم التحقق من البريد الإلكتروني بنجاح.",
+    "resendSuccess": "تمت إعادة إرسال رمز التحقق إلى بريدك الإلكتروني.",
+    "errors": {
+      "missingEmail": "البريد الإلكتروني مفقود لعملية التحقق.",
+      "requiredCode": "يرجى إدخال الرمز المكون من 6 أرقام.",
+      "resend": "فشل في إعادة إرسال رمز التحقق. يرجى المحاولة مرة أخرى.",
+      "generic": "فشل في التحقق من الرمز. يرجى المحاولة مرة أخرى."
+    }
   },
   "profile": {
     "title": "أكمل ملفك الشخصي",
@@ -387,7 +468,12 @@
     "country": "الدولة",
     "timeZone": "المنطقة الزمنية",
     "language": "اللغة",
-    "finishSetup": "إنهاء الإعداد"
+    "finishSetup": "إنهاء الإعداد",
+    "buttonLoading": "جارٍ الحفظ...",
+    "success": "تم إكمال الملف الشخصي بنجاح.",
+    "errors": {
+      "generic": "فشل في إكمال الملف الشخصي. يرجى المحاولة مرة أخرى."
+    }
   },
   "login": {
     "welcome": "مرحباً!",
@@ -399,11 +485,16 @@
     "rememberMe": "تذكرني",
     "forgotPassword": "نسيت كلمة المرور؟",
     "buttonText": "تسجيل الدخول",
+    "buttonLoading": "جارٍ تسجيل الدخول...",
     "orContinueWith": "أو تابع باستخدام",
     "continueWithGoogle": "تابع باستخدام Google",
     "continueWithLinkedIn": "تابع باستخدام LinkedIn",
     "noAccount": "ليس لديك حساب؟",
-    "signUp": "سجل"
+    "signUp": "سجل",
+    "errors": {
+      "generic": "فشل تسجيل الدخول. يرجى التحقق من البيانات والمحاولة مرة أخرى.",
+      "google": "تعذّر بدء تسجيل الدخول عبر Google. يرجى المحاولة مرة أخرى."
+    }
   },
   "forgotPassword": {
     "title": "نسيت كلمة المرور؟",
@@ -411,7 +502,13 @@
     "email": "عنوان البريد الإلكتروني",
     "emailPlaceholder": "أدخل بريدك الإلكتروني المسجل",
     "buttonText": "إرسال رمز التحقق",
-    "backToLogin": "العودة لتسجيل الدخول"
+    "backToLogin": "العودة لتسجيل الدخول",
+    "buttonLoading": "جارٍ الإرسال...",
+    "success": "إذا كان هناك حساب لهذا البريد، فقد تم إرسال رابط إعادة التعيين.",
+    "errors": {
+      "required": "يرجى إدخال بريدك الإلكتروني.",
+      "generic": "فشل طلب إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى."
+    }
   },
   "forgotModal": {
     "title": "تحقق من بريدك الإلكتروني",
@@ -426,7 +523,15 @@
     "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
     "confirmPassword": "تأكيد كلمة المرور الجديدة",
     "confirmPasswordPlaceholder": "أكد كلمة المرور الجديدة",
-    "buttonText": "تعيين كلمة المرور الجديدة"
+    "buttonText": "تعيين كلمة المرور الجديدة",
+    "buttonLoading": "جارٍ الحفظ...",
+    "success": "تمت إعادة تعيين كلمة المرور بنجاح.",
+    "errors": {
+      "missingToken": "رابط إعادة التعيين غير صالح أو منتهي الصلاحية.",
+      "requiredFields": "يرجى ملء جميع الحقول.",
+      "passwordMismatch": "كلمتا المرور غير متطابقتين.",
+      "generic": "فشل في إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى."
+    }
   },
   "passwordReset": {
     "title": "تم إعادة تعيين كلمة المرور!",
@@ -538,6 +643,127 @@
         "onlyQuestionsAvailable": "0 أسئلة فقط متاحة مع المرشحات الحالية."
       },
       "beginSession": "بدء الجلسة"
+    },
+    "subscriptionBilling": {
+      "hero": {
+        "title": "الاشتراك والفوترة",
+        "subtitle": "إدارة خطتك وطرق الدفع وعرض سجل الفواتير"
+      },
+      "currentPlan": {
+        "title": "خطتك الحالية",
+        "planName": "الخطة الاحترافية",
+        "statusActive": "نشط",
+        "cancelSubscription": "إلغاء الاشتراك",
+        "upgradePlan": "ترقية الخطة",
+        "plan": "الخطة:",
+        "renewsOn": "تجديد في:",
+        "access": "الوصول:",
+        "autoRenew": "التجديد التلقائي:",
+        "monthly": "شهري",
+        "questionBankAccess": "الوصول إلى بنك الأسئلة",
+        "on": "تشغيل"
+      },
+      "pricingPlans": {
+        "title": "اختر الخطة المناسبة لك",
+        "mostPopular": "الأكثر شيوعًا",
+        "starter": {
+          "name": "الخطة المبدئية",
+          "currency": "ريال",
+          "period": "شهر",
+          "buttonText": "اشترك الآن",
+          "features": [
+            "الوصول إلى بنك الأسئلة",
+            "50 سؤال في الشهر",
+            "تحليلات أساسية",
+            "دعم عبر البريد الإلكتروني"
+          ]
+        },
+        "professional": {
+          "name": "الخطة الاحترافية",
+          "currency": "ريال",
+          "period": "شهر",
+          "buttonText": "الخطة الحالية",
+          "features": [
+            "وصول غير محدود",
+            "المتغيرات والتفسيرات",
+            "ميزات التصدير",
+            "دعم متميز"
+          ]
+        },
+        "enterprise": {
+          "name": "الخطة المؤسسية",
+          "price": "مخصص",
+          "currency": "",
+          "period": "",
+          "buttonText": "اتصل بالمبيعات",
+          "features": [
+            "ترخيص متعدد المستخدمين",
+            "ميزات الرفع الجماعي",
+            "لوحة تحكم المشرف",
+            "دعم مخصص 24/7"
+          ]
+        }
+      },
+      "billingHistory": {
+        "title": "سجل الفواتير",
+        "emptyMessage": "لا توجد فواتير",
+        "columns": {
+          "invoice": "الفاتورة",
+          "amount": "المبلغ",
+          "date": "التاريخ",
+          "status": "الحالة",
+          "actions": "الإجراءات"
+        },
+        "status": {
+          "paid": "مدفوع",
+          "failed": "فشل"
+        }
+      }
+    },
+    "accountSettings": {
+      "hero": {
+        "title": "إعدادات الحساب",
+        "subtitle": "إدارة ملفك الشخصي وكلمة المرور وإعدادات التطبيق."
+      },
+      "profileInformation": {
+        "title": "معلومات الملف الشخصي",
+        "name": "الاسم",
+        "currentPlan": "الخطة الحالية",
+        "email": "البريد الإلكتروني",
+        "phone": "الهاتف",
+        "professionalPlan": "الخطة الاحترافية",
+        "saveChanges": "حفظ التغييرات"
+      },
+      "changePassword": {
+        "title": "تغيير كلمة المرور",
+        "currentPassword": "كلمة المرور الحالية",
+        "currentPasswordPlaceholder": "أدخل كلمة المرور الحالية",
+        "enterEmail": "أدخل عنوان البريد الإلكتروني",
+        "emailPlaceholder": "أدخل عنوان بريدك الإلكتروني",
+        "sendCode": "إرسال الرمز",
+        "enterCode": "أدخل الرمز",
+        "codePlaceholder": "رمز 6 أرقام",
+        "newPassword": "كلمة المرور الجديدة",
+        "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
+        "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
+        "confirmPasswordPlaceholder": "تأكيد كلمة المرور الجديدة",
+        "updatePassword": "تحديث كلمة المرور"
+      },
+      "applicationSettings": {
+        "title": "إعدادات التطبيق",
+        "language": {
+          "label": "اللغة"
+        },
+        "notifications": {
+          "label": "الإشعارات",
+          "description": "تمكين أو تعطيل إشعارات البريد الإلكتروني للتحديثات المهمة."
+        },
+        "saveSettings": "حفظ الإعدادات"
+      },
+      "languageOptions": {
+        "english": "الإنجليزية (أمريكا)",
+        "arabic": "العربية"
+      }
     },
     "analytics": {
       "hero": {
@@ -1041,7 +1267,9 @@
         "subject": "الموضوع",
         "topic": "الموضوع",
         "cognitiveLevel": "المستوى المعرفي",
-        "source": "المصدر (اختياري)"
+        "source": "المصدر (اختياري)",
+        "exam": "الامتحان",
+        "reference": "المرجع"
       },
       "placeholders": {
         "questionText": "أدخل نص السؤال هنا...",
@@ -1049,7 +1277,9 @@
         "selectSubject": "اختر الموضوع",
         "selectTopic": "اختر الموضوع",
         "selectLevel": "اختر المستوى",
-        "selectSource": "اختر المصدر"
+        "selectSource": "اختر المصدر",
+        "selectExam": "اختر الامتحان",
+        "addReference": "إضافة مرجع"
       },
       "questionTypes": {
         "multipleChoice": "اختيار متعدد (MCQ)",
@@ -1075,6 +1305,26 @@
         "textbook": "كتاب مدرسي",
         "pastExam": "امتحان سابق",
         "custom": "مخصص"
+      }
+    },
+    "addExam": {
+      "hero": {
+        "title": "إضافة امتحان جديد",
+        "subtitle": "تنظيم الأسئلة حسب المادة، الموضوع، الموضوع الفرعي، والمفهوم"
+      },
+      "fields": {
+        "examName": "الامتحان",
+        "subject": "المادة",
+        "description": "الوصف"
+      },
+      "placeholders": {
+        "examName": "مثال: الامتحان النهائي 2024",
+        "subject": "مثال: الرياضيات",
+        "description": "وصف موجز للامتحان"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "saveExam": "حفظ الامتحان"
       }
     },
     "questionDetails": {
@@ -1509,36 +1759,18 @@
         "subtitle": "راقب أداء الطلاب واستخدام الأسئلة ونشاط الاختبارات."
       },
       "actions": {
-        "comparePeriod": "مقارنة الفترة",
         "exportReport": "تصدير التقرير"
       },
-      "filters": {
-        "exam": "الامتحان",
-        "subject": "الموضوع",
-        "cognitiveLevel": "المستوى المعرفي",
-        "dateRange": "نطاق التاريخ",
-        "lastWeek": "الأسبوع الماضي",
-        "lastMonth": "الشهر الماضي",
-        "lastYear": "العام الماضي",
-        "viewDetails": "عرض التفاصيل",
-        "applyFilter": "تطبيق المرشح"
-      },
-      "tabs": {
-        "userGrowthAnalytics": "تحليلات نمو المستخدمين",
-        "subscriptionTrends": "اتجاهات الاشتراك",
-        "performanceAnalytics": "تحليلات الأداء",
-        "exportReports": "تصدير التقارير"
-      },
       "kpi": {
-        "totalQuestions": "إجمالي الأسئلة",
-        "averageAccuracy": "متوسط الدقة",
+        "newSignups": "المشتركون الجدد",
+        "activeUsers": "المستخدمون النشطون",
         "mostAttemptedSubject": "الموضوع الأكثر محاولة",
         "averageTimePerQuestion": "متوسط الوقت/السؤال"
       },
       "charts": {
-        "performanceTrend": "اتجاه الأداء (الدقة بمرور الوقت)",
-        "practiceDistribution": "توزيع الممارسة حسب الموضوع",
-        "kpiSummary": "بطاقات ملخص مؤشرات الأداء"
+        "kpiSummary": "بطاقات ملخص مؤشرات الأداء",
+        "performanceTrend": "النمو الإجمالي للمستخدمين",
+        "practiceDistribution": "توزيع الممارسة حسب الموضوع"
       },
       "table": {
         "topPerformanceUser": "أفضل مستخدم أداء",
@@ -1551,16 +1783,6 @@
           "averageTime": "متوسط الوقت / السؤال",
           "lastActive": "آخر نشاط"
         }
-      },
-      "sections": {
-        "recentReports": "التقارير المولدة مؤخراً",
-        "systemInsights": "رؤى النظام",
-        "generated": "تم الإنشاء {{date}}"
-      },
-      "insights": {
-        "mostDifficultCognitiveLevel": "أصعب مستوى معرفي:",
-        "peakActivity": "نشاط الذروة:",
-        "lowAccuracy": "دقة منخفضة في الكيمياء ("
       }
     },
     "exportReports": {
@@ -1747,19 +1969,22 @@
         "addNewSubject": "+ إضافة موضوع جديد",
         "addNewTopic": "+ إضافة موضوع جديد",
         "addNewSubtopic": "+ إضافة موضوع فرعي جديد",
-        "addNewConcept": "+ إضافة مفهوم جديد"
+        "addNewConcept": "+ إضافة مفهوم جديد",
+        "addNewExam": "+ إضافة اختبار جديد"
       },
       "tabs": {
         "subject": "الموضوع",
         "topics": "المواضيع",
         "subtopics": "المواضيع الفرعية",
-        "concepts": "المفاهيم"
+        "concepts": "المفاهيم",
+        "exams": "الاختبارات"
       },
       "stats": {
         "subjects": "المواضيع",
         "topics": "المواضيع",
         "subtopics": "المواضيع الفرعية",
-        "concepts": "المفاهيم"
+        "concepts": "المفاهيم",
+        "exam": "الاختبارات"
       },
       "table": {
         "columns": {
@@ -1767,6 +1992,7 @@
           "topicName": "اسم الموضوع",
           "subtopicName": "اسم الموضوع الفرعي",
           "conceptName": "اسم المفهوم",
+          "examName": "اسم الاختبار",
           "description": "الوصف",
           "createdBy": "تم الإنشاء بواسطة",
           "date": "التاريخ",
@@ -1777,7 +2003,8 @@
           "subjects": "لا توجد مواضيع تطابق المرشحات الحالية.",
           "topics": "لا توجد مواضيع تطابق المرشحات الحالية.",
           "subtopics": "لا توجد مواضيع فرعية تطابق المرشحات الحالية.",
-          "concepts": "لا توجد مفاهيم تطابق المرشحات الحالية."
+          "concepts": "لا توجد مفاهيم تطابق المرشحات الحالية.",
+          "exams": "لا توجد اختبارات تطابق المرشحات الحالية."
         },
         "pagination": {
           "showing": "عرض {{first}} إلى {{last}} من {{total}} نتيجة",
@@ -1802,13 +2029,15 @@
         "subject": "إدارة التصنيف",
         "topics": "إدارة المواضيع",
         "subtopics": "إدارة المواضيع الفرعية",
-        "concepts": "إدارة المفاهيم"
+        "concepts": "إدارة المفاهيم",
+        "exams": "إدارة الاختبارات"
       },
       "subheadings": {
         "subject": "تنظيم الأسئلة حسب الموضوع والموضوع والموضوع الفرعي والمفهوم",
         "topics": "إدارة وتنظيم المواضيع ضمن المواضيع",
         "subtopics": "إدارة وتنظيم المواضيع الفرعية ضمن المواضيع",
-        "concepts": "إدارة وتنظيم المفاهيم ضمن المواضيع الفرعية"
+        "concepts": "إدارة وتنظيم المفاهيم ضمن المواضيع الفرعية",
+        "exams": "إدارة وتنظيم الاختبارات"
       },
       "hierarchy": {
         "title": "التسلسل الهرمي",
@@ -2381,6 +2610,7 @@
       "bulkUpload": "رفع مجمع",
       "addNewQuestions": "+ إضافة أسئلة جديدة",
       "mySubmissions": "تقديماتي",
+      "newSubmissions": "التسليمات الجديدة",
       "reviewFeedback": "ملاحظات المراجعة",
       "workflowProgress": "تقدم سير العمل",
       "recentActivity": "النشاط الأخير",
@@ -2434,7 +2664,9 @@
         "subject": "الموضوع",
         "topic": "الموضوع",
         "subtopic": "الموضوع الفرعي",
-        "source": "المصدر"
+        "source": "المصدر",
+        "exam": "اختبار",
+        "reference": "المرجع"
       },
       "placeholders": {
         "questionText": "أدخل سؤالك هنا...",
@@ -2509,6 +2741,10 @@
       "questionBank": "بنك الأسئلة",
       "profile": "الملف الشخصي"
     },
+    "ViewVariant": {
+      "heading": "سؤال البديل",
+      "subheading": "عرض واتخاذ الإجراء على البديل المُقدَّم."
+    },
     "dashboard": {
       "title": "المنشئ",
       "subtitle": "مرحباً بعودتك، جون دو أنشئ متغيرات وحسّن الأسئلة وقدم نسخاً محسّنة.",
@@ -2556,7 +2792,7 @@
         "updatedOn": "تم التحديث في",
         "actions": "الإجراءات"
       },
-        "emptyMessage": "لم يتم العثور على أسئلة مع أسباب"
+      "emptyMessage": "لم يتم العثور على أسئلة مع أسباب"
     },
     "assignedQuestionPage": {
       "title": "الأسئلة المخصصة",
@@ -2692,6 +2928,7 @@
         "task4": "الحفاظ على جودة الشروحات"
       },
       "pendingTasks": "المهام المعلقة",
+      "roleLabel": "الدور",
       "performance": {
         "title": "أداؤك",
         "subtitle": "بناءً على آخر {{days}} يوم.",
@@ -2762,190 +2999,195 @@
         "completedOn": "اكتمل في",
         "action": "الإجراء"
       },
-        "emptyMessage": "لم يتم العثور على شروحات مكتملة"
-      },
-      "profile": {
-        "title": "إعدادات الحساب",
-        "subtitle": "إدارة ملفك الشخصي وكلمة المرور وإعدادات التطبيق.",
-        "profileInformation": "معلومات الملف الشخصي",
-        "name": "الاسم",
-        "currentPlan": "الخطة الحالية",
-        "email": "البريد الإلكتروني",
-        "phone": "الهاتف",
-        "saveChanges": "حفظ التغييرات",
-        "changePassword": "تغيير كلمة المرور",
-        "currentPassword": "كلمة المرور الحالية",
-        "enterEmail": "أدخل عنوان البريد الإلكتروني",
-        "sendCode": "إرسال الرمز",
-        "enterCode": "أدخل الرمز",
-        "newPassword": "كلمة المرور الجديدة",
-        "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
-        "updatePassword": "تحديث كلمة المرور",
-        "applicationSettings": "إعدادات التطبيق",
-        "language": "اللغة",
-        "notifications": "الإشعارات",
-        "notificationsDescription": "تمكين أو تعطيل إشعارات البريد الإلكتروني للتحديثات المهمة.",
-        "saveSettings": "حفظ الإعدادات",
-        "placeholders": {
-          "currentPassword": "أدخل كلمة المرور الحالية",
-          "email": "أدخل عنوان بريدك الإلكتروني",
-          "code": "رمز مكون من 6 أرقام",
-          "newPassword": "أدخل كلمة المرور الجديدة",
-          "confirmPassword": "أكد كلمة المرور الجديدة"
-        },
-        "languageOptions": {
-          "english": "الإنجليزية (الولايات المتحدة)",
-          "arabic": "العربية"
-        }
-      }
+      "emptyMessage": "لم يتم العثور على شروحات مكتملة"
     },
-   "processor": {
-      "sidebar": {
-        "dashboard": "لوحة التحكم",
-        "questionBank": "بنك الأسئلة",
-        "gathererSubmission": "تقديم المجمع",
-        "creatorSubmission": "تقديم المنشئ",
-        "explainerSubmission": "تقديم المشرح",
-        "profile": "الملف الشخصي"
+    "profile": {
+      "title": "إعدادات الحساب",
+      "subtitle": "إدارة ملفك الشخصي وكلمة المرور وإعدادات التطبيق.",
+      "profileInformation": "معلومات الملف الشخصي",
+      "name": "الاسم",
+      "currentPlan": "الخطة الحالية",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "saveChanges": "حفظ التغييرات",
+      "changePassword": "تغيير كلمة المرور",
+      "currentPassword": "كلمة المرور الحالية",
+      "enterEmail": "أدخل عنوان البريد الإلكتروني",
+      "sendCode": "إرسال الرمز",
+      "enterCode": "أدخل الرمز",
+      "newPassword": "كلمة المرور الجديدة",
+      "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
+      "updatePassword": "تحديث كلمة المرور",
+      "applicationSettings": "إعدادات التطبيق",
+      "language": "اللغة",
+      "notifications": "الإشعارات",
+      "notificationsDescription": "تمكين أو تعطيل إشعارات البريد الإلكتروني للتحديثات المهمة.",
+      "saveSettings": "حفظ الإعدادات",
+      "placeholders": {
+        "currentPassword": "أدخل كلمة المرور الحالية",
+        "email": "أدخل عنوان بريدك الإلكتروني",
+        "code": "رمز مكون من 6 أرقام",
+        "newPassword": "أدخل كلمة المرور الجديدة",
+        "confirmPassword": "أكد كلمة المرور الجديدة"
       },
-      "dashboard": {
-        "title": "لوحة التحكم",
-        "subtitle": "مرحباً بعودتك، جون دو أرسل السؤال وتتبع تقدم مراجعتك.",
-        "role": "المعالج",
-        "roleLabel": "الدور",
-        "tasks": {
-          "task1": "مراجعة الأسئلة المقدمة حديثاً وتقديمات المنشئ",
-          "task2": "الموافقة على الأسئلة أو رفضها مع ملاحظات واضحة",
-          "task3": "إرجاع الأسئلة إلى المنشئ للتصحيحات",
-          "task4": "إرسال الأسئلة المعتمدة إلى المشرح للإنهاء"
-        },
-        "pendingTasks": "المهام المعلقة",
-        "performance": {
-          "title": "أداؤك",
-          "subtitle": "بناءً على آخر {{days}} يوم.",
-          "approvalRate": "معدل الموافقة",
-          "feedbackAccuracy": "دقة الملاحظات",
-          "returnedCases": "الحالات المرجعة"
-        },
-        "lastLogin": {
-          "title": "آخر تسجيل دخول"
-        }
-      },
-      "questionBank": {
-        "title": "لوحة تحكم المعالج",
-        "subtitle": "مراجعة الأسئلة الواردة، الموافقة أو الرفض، وتمريرها إلى المنشئين.",
-        "allProcessedQuestions": "جميع الأسئلة المعالجة",
-        "stats": {
-          "newQuestionGatherer": "سؤال جديد (المجمع)",
-          "explanationPending": "الشرح معلق",
-          "finalApprovalToday": "الموافقة النهائية اليوم"
-        },
-        "table": {
-          "question": "السؤال",
-          "gatherer": "المجمع",
-          "dateSubmitted": "تاريخ الإرسال",
-          "subject": "الموضوع",
-          "actions": "الإجراءات"
-        },
-        "workflowProgress": "تقدم سير العمل",
-        "recentActivity": "النشاط الأخير",
-        "searchPlaceholder": "البحث في مسودات الشروحات...",
-        "emptyMessage": "لم يتم العثور على أسئلة"
-      },
-      "creatorSubmission": {
-        "title": "تقديمات المنشئ",
-        "back": "رجوع",
-        "table": {
-          "question": "السؤال",
-          "creator": "المنشئ",
-          "variants": "المتغيرات",
-          "status": "الحالة",
-          "submittedOn": "تم الإرسال في",
-          "actions": "الإجراءات"
-        },
-        "emptyMessage": "لم يتم العثور على أسئلة"
-      },
-      "gathererSubmission": {
-        "title": "تقديمات المجمع",
-        "back": "رجوع",
-        "table": {
-          "question": "السؤال",
-          "gatherer": "المجمع",
-          "uploadOn": "تم الرفع في",
-          "status": "الحالة",
-          "actions": "الإجراءات"
-        },
-        "emptyMessage": "لم يتم العثور على أسئلة"
-      },
-      "explainerSubmission": {
-        "title": "تقديم المشرح",
-        "back": "رجوع",
-        "table": {
-          "question": "السؤال",
-          "explainer": "المشرح",
-          "explanationSummary": "ملخص الشرح",
-          "submittedOn": "تم الإرسال في",
-          "actions": "الإجراءات"
-        },
-        "emptyMessage": "لم يتم العثور على أسئلة"
-      },
-      "allProcessedQuestions": {
-        "title": "جميع الأسئلة المعالجة",
-        "back": "رجوع",
-        "table": {
-          "questionTitle": "السؤال",
-          "status": "الحالة",
-          "reviewedOn": "تمت المراجعة في",
-          "decision": "القرار",
-          "actions": "الإجراءات"
-        },
-        "emptyMessage": "لم يتم العثور على أسئلة"
-      },
-      "viewQuestion": {
-        "title": "عرض السؤال",
-        "close": "إغلاق",
-        "reject": "رفض",
-        "acceptAndSend": "قبول وإرسال إلى المنشئ",
-        "questionInfo": "معلومات السؤال",
-        "options": "الخيارات:",
-        "correctAnswer": "الإجابة الصحيحة",
-        "classification": "التصنيف",
-        "difficulty": "الصعوبة",
-        "subject": "الموضوع",
-        "topic": "الموضوع",
-        "subtopic": "الموضوع الفرعي",
-        "variant": "المتغير",
-        "status": "الحالة",
-        "creatorGathererNotes": "ملاحظات المنشئ / المجمع",
-        "attachments": "المرفقات",
-        "questionHistory": "تاريخ السؤال"
-      },
-      "profile": {
-        "title": "إعدادات الحساب",
-        "subtitle": "إدارة ملفك الشخصي وكلمة المرور وإعدادات التطبيق.",
-        "profileInformation": "معلومات الملف الشخصي",
-        "name": "الاسم",
-        "currentPlan": "الخطة الحالية",
-        "email": "البريد الإلكتروني",
-        "phone": "الهاتف",
-        "saveChanges": "حفظ التغييرات",
-        "changePassword": "تغيير كلمة المرور",
-        "currentPassword": "كلمة المرور الحالية",
-        "enterEmail": "أدخل عنوان البريد الإلكتروني",
-        "enterEmailPlaceholder": "أدخل عنوان بريدك الإلكتروني",
-        "sendCode": "إرسال الرمز",
-        "enterCode": "أدخل الرمز",
-        "enterCodePlaceholder": "رمز مكون من 6 أرقام",
-        "newPassword": "كلمة المرور الجديدة",
-        "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
-        "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
-        "confirmNewPasswordPlaceholder": "أكد كلمة المرور الجديدة",
-        "updatePassword": "تحديث كلمة المرور",
-        "applicationSettings": "إعدادات التطبيق",
-        "language": "اللغة",
-        "notifications": "الإشعارات",
-        "notificationsDescription": "تفعيل أو تعطيل إشعارات البريد الإلكتروني للتحديثات المهمة.",
-        "saveSettings": "حفظ الإعدادات"
+      "languageOptions": {
+        "english": "الإنجليزية (الولايات المتحدة)",
+        "arabic": "العربية"
       }
     }
+  },
+  "processor": {
+    "sidebar": {
+      "dashboard": "لوحة التحكم",
+      "questionBank": "بنك الأسئلة",
+      "gathererSubmission": "تقديم المجمع",
+      "creatorSubmission": "تقديم المنشئ",
+      "explainerSubmission": "تقديم المشرح",
+      "profile": "الملف الشخصي"
+    },
+    "dashboard": {
+      "title": "لوحة التحكم",
+      "subtitle": "مرحباً بعودتك، جون دو أرسل السؤال وتتبع تقدم مراجعتك.",
+      "role": "المعالج",
+      "roleLabel": "الدور",
+      "tasks": {
+        "task1": "مراجعة الأسئلة المقدمة حديثاً وتقديمات المنشئ",
+        "task2": "الموافقة على الأسئلة أو رفضها مع ملاحظات واضحة",
+        "task3": "إرجاع الأسئلة إلى المنشئ للتصحيحات",
+        "task4": "إرسال الأسئلة المعتمدة إلى المشرح للإنهاء"
+      },
+      "pendingTasks": "المهام المعلقة",
+      "performance": {
+        "title": "أداؤك",
+        "subtitle": "بناءً على آخر {{days}} يوم.",
+        "approvalRate": "معدل الموافقة",
+        "feedbackAccuracy": "دقة الملاحظات",
+        "returnedCases": "الحالات المرجعة"
+      },
+      "lastLogin": {
+        "title": "آخر تسجيل دخول"
+      }
+    },
+    "questionBank": {
+      "title": "لوحة تحكم المعالج",
+      "subtitle": "مراجعة الأسئلة الواردة، الموافقة أو الرفض، وتمريرها إلى المنشئين.",
+      "allProcessedQuestions": "جميع الأسئلة المعالجة",
+      "stats": {
+        "newQuestionGatherer": "سؤال جديد",
+        "explanationPending": "الشرح معلق",
+        "finalApprovalToday": "الموافقة النهائية اليوم"
+      },
+      "table": {
+        "question": "السؤال",
+        "gatherer": "المجمع",
+        "dateSubmitted": "تاريخ الإرسال",
+        "subject": "الموضوع",
+        "actions": "الإجراءات"
+      },
+      "workflowProgress": "تقدم سير العمل",
+      "recentActivity": "النشاط الأخير",
+      "searchPlaceholder": "البحث في مسودات الشروحات...",
+      "emptyMessage": "لم يتم العثور على أسئلة"
+    },
+    "creatorSubmission": {
+      "title": "تقديمات المنشئ",
+      "back": "رجوع",
+      "table": {
+        "question": "السؤال",
+        "creator": "المنشئ",
+        "variants": "المتغيرات",
+        "status": "الحالة",
+        "submittedOn": "تم الإرسال في",
+        "actions": "الإجراءات"
+      },
+      "emptyMessage": "لم يتم العثور على أسئلة"
+    },
+    "gathererSubmission": {
+      "title": "تقديمات المجمع",
+      "back": "رجوع",
+      "table": {
+        "question": "السؤال",
+        "gatherer": "المجمع",
+        "uploadOn": "تم الرفع في",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "emptyMessage": "لم يتم العثور على أسئلة"
+    },
+    "explainerSubmission": {
+      "title": "تقديم المشرح",
+      "back": "رجوع",
+      "table": {
+        "question": "السؤال",
+        "explainer": "المشرح",
+        "explanationSummary": "ملخص الشرح",
+        "submittedOn": "تم الإرسال في",
+        "actions": "الإجراءات"
+      },
+      "emptyMessage": "لم يتم العثور على أسئلة"
+    },
+    "allProcessedQuestions": {
+      "title": "جميع الأسئلة المعالجة",
+      "back": "رجوع",
+      "table": {
+        "questionTitle": "السؤال",
+        "status": "الحالة",
+        "reviewedOn": "تمت المراجعة في",
+        "decision": "القرار",
+        "actions": "الإجراءات"
+      },
+      "emptyMessage": "لم يتم العثور على أسئلة"
+    },
+    "viewQuestion": {
+      "title": "عرض السؤال",
+      "close": "إغلاق",
+      "reject": "رفض",
+      "acceptAndSend": "قبول وإرسال إلى المنشئ",
+      "questionInfo": "معلومات السؤال",
+      "options": "الخيارات:",
+      "correctAnswer": "الإجابة الصحيحة",
+      "classification": "التصنيف",
+      "difficulty": "الصعوبة",
+      "subject": "الموضوع",
+      "topic": "الموضوع",
+      "subtopic": "الموضوع الفرعي",
+      "variant": "المتغير",
+      "status": "الحالة",
+      "creatorGathererNotes": "ملاحظات المنشئ / المجمع",
+      "attachments": "المرفقات",
+      "questionHistory": "تاريخ السؤال"
+    },
+    "profile": {
+      "title": "إعدادات الحساب",
+      "subtitle": "إدارة ملفك الشخصي وكلمة المرور وإعدادات التطبيق.",
+      "profileInformation": "معلومات الملف الشخصي",
+      "name": "الاسم",
+      "currentPlan": "الخطة الحالية",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "saveChanges": "حفظ التغييرات",
+      "changePassword": "تغيير كلمة المرور",
+      "currentPassword": "كلمة المرور الحالية",
+      "enterEmail": "أدخل عنوان البريد الإلكتروني",
+      "enterEmailPlaceholder": "أدخل عنوان بريدك الإلكتروني",
+      "sendCode": "إرسال الرمز",
+      "enterCode": "أدخل الرمز",
+      "enterCodePlaceholder": "رمز مكون من 6 أرقام",
+      "newPassword": "كلمة المرور الجديدة",
+      "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
+      "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
+      "confirmNewPasswordPlaceholder": "أكد كلمة المرور الجديدة",
+      "updatePassword": "تحديث كلمة المرور",
+      "applicationSettings": "إعدادات التطبيق",
+      "language": "اللغة",
+      "notifications": "الإشعارات",
+      "notificationsDescription": "تفعيل أو تعطيل إشعارات البريد الإلكتروني للتحديثات المهمة.",
+      "saveSettings": "حفظ الإعدادات"
+    }
+  },
+  "filter": {
+    "subject": "المادة",
+    "role": "الدور",
+    "status": "الحالة"
+  }
 }

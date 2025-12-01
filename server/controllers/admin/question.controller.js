@@ -573,6 +573,52 @@ const getQuestions = async (req, res, next) => {
 };
 
 /**
+ * Get gatherer dashboard statistics
+ * GET /admin/questions/gatherer/stats
+ */
+const getGathererStats = async (req, res, next) => {
+  try {
+    const gathererId = req.user.id;
+
+    const stats = await questionService.getGathererQuestionStats(gathererId);
+
+    const response = {
+      success: true,
+      data: stats,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get gatherer questions table data
+ * GET /admin/questions/gatherer/list?page=1&limit=20
+ */
+const getGathererQuestions = async (req, res, next) => {
+  try {
+    const gathererId = req.user.id;
+    const { page = 1, limit = 20 } = req.query;
+
+    const result = await questionService.getGathererQuestions(gathererId, {
+      page,
+      limit,
+    });
+
+    const response = {
+      success: true,
+      data: result,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Get single question by ID
  * GET /admin/questions/:questionId
  */
@@ -1304,6 +1350,8 @@ module.exports = {
   getQuestionDetailForSuperadmin,
   createQuestion,
   getQuestions,
+  getGathererStats,
+  getGathererQuestions,
   getQuestionById,
   updateQuestion,
   createQuestionVariant,

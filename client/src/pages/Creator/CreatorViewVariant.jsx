@@ -2,111 +2,45 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 
-const Dropdown = ({ label, value, options, onChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  // Automatically show default if value is empty
-  const displayValue = value && value.trim() !== "" ? value : options[0];
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  return (
-    <div className="w-full" ref={dropdownRef}>
-      {/* Label only on small screens */}
-      <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3 block lg:hidden">{label}</p>
-
-      {/* Dropdown Box */}
-      <div
-        onClick={() => setIsOpen((prev) => !prev)}
-        className="relative flex h-[50px] cursor-pointer items-center justify-between rounded-lg bg-white px-4 text-[16px] leading-[100%] font-normal text-oxford-blue border border-[#03274633]"
-      >
-        <span>{displayValue}</span>
-        <svg
-          width="15"
-          height="9"
-          viewBox="0 0 15 9"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-        >
-          <path
-            d="M0.6875 0.726562L7.00848 6.71211L13.3295 0.726562"
-            stroke="#032746"
-            strokeWidth="2"
-          />
-        </svg>
-
-        {/* Dropdown Menu */}
-        {isOpen && (
-          <ul className="absolute left-0 top-full z-10 mt-1 w-full rounded-lg border border-gray-100 bg-white shadow-lg">
-            {options.map((option) => (
-              <li
-                key={option}
-                onClick={() => {
-                  onChange(option);
-                  setIsOpen(false);
-                }}
-                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                  displayValue === option ? "font-semibold text-oxford-blue" : "text-gray-700"
-                }`}
-              >
-                {option}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const GathererAddNewQuestionPage = () => {
+const CreatorViewVariant = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [questionText, setQuestionText] = useState("");
-  const [questionType, setQuestionType] = useState("Multiple Choice (MCQ)");
-  const [options, setOptions] = useState({ A: "", B: "", C: "", D: "" });
-  const [correctAnswer, setCorrectAnswer] = useState("Option A");
-  const [subject, setSubject] = useState("");
-  const [exam, setExam] = useState("");
-  const [topic, setTopic] = useState("");
-  const [source, setSource] = useState("");
-  const [_explanation, _setExplanation] = useState(
-    "Red and yellow are primary colors. When mixed, they create the secondary color orange."
-  );
-
-  const handleOptionChange = (option, value) => {
-    setOptions((prev) => ({ ...prev, [option]: value }));
-  };
-
-  const _handleSaveDraft = () => {
-    // TODO: Implement save draft functionality
-    console.log("Save draft");
-  };
-
-  const handleSubmit = () => {
-    // TODO: Implement submit functionality
-    console.log("Submit");
-  };
+  const [comment, setComment] = useState("");
+  const [explanation, setExplanation] = useState("");
 
   const handleCancel = () => {
-    navigate("/gatherer/question-bank");
+    navigate("/creator/question-bank/completed-question");
   };
 
-  const _handleSaveQuestion = () => {
-    // TODO: Implement save question functionality
-    console.log("Save question");
-    // Navigate to question details page after saving
-    navigate("/admin/question-details");
+  const handleRefresh = () => {
+    // TODO: Implement refresh functionality
+    console.log("Refresh");
+  };
+
+  const handleExport = () => {
+    // TODO: Implement export functionality
+    console.log("Export");
+  };
+
+  const handleSendToExplainer = () => {
+    // TODO: Implement send to explainer functionality
+    console.log("Send to explainer");
+  };
+
+  const handleReject = () => {
+    // TODO: Implement reject functionality
+    console.log("Reject");
+  };
+
+  const handleApprove = () => {
+    // TODO: Implement approve functionality
+    console.log("Approve");
+  };
+
+  const handleAddComment = () => {
+    // TODO: Implement add comment functionality
+    console.log("Add comment", comment);
+    setComment("");
   };
 
   // Rich Text Editor Component using contentEditable (React 19 compatible)
@@ -166,9 +100,9 @@ const GathererAddNewQuestionPage = () => {
     };
 
     return (
-      <div className="rounded-[8px] w-full h-auto lg:h-[208px] min-h-[150px] border border-[#CDD4DA] bg-white overflow-hidden">
+      <div className="rounded-[8px] border border-[#CDD4DA] bg-white overflow-hidden">
         {/* Toolbar */}
-        <div className="flex items-center flex-wrap gap-2 border-b  border-[#CDD4DA] bg-[#F6F7F8] py-3 px-2 rounded-t-[8px]">
+        <div className="flex items-center gap-2 border-b border-[#CDD4DA] bg-[#F6F7F8] py-3 px-2 rounded-t-[8px]">
           {/* Text Formatting */}
           <button
             type="button"
@@ -662,8 +596,7 @@ const GathererAddNewQuestionPage = () => {
               const rows = prompt("Enter number of rows:");
               const cols = prompt("Enter number of columns:");
               if (rows && cols) {
-                let tableHTML =
-                  "<table border='1' style='border-collapse: collapse;'>";
+                let tableHTML = "<table border='1' style='border-collapse: collapse;'>";
                 for (let i = 0; i < parseInt(rows); i++) {
                   tableHTML += "<tr>";
                   for (let j = 0; j < parseInt(cols); j++) {
@@ -706,40 +639,6 @@ const GathererAddNewQuestionPage = () => {
               />
               <path
                 d="M16 9V18"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCommand("formatBlock", "<pre>")}
-            className="p-0 hover:opacity-80 transition"
-            title="Code"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect width="28" height="28" rx="4" fill="#E5E7EB" />
-              <path
-                d="M13.6667 18.0294L12.6569 19.0392C12.2551 19.441 11.7103 19.6667 11.1421 19.6667C10.574 19.6667 10.0291 19.441 9.62742 19.0392C9.22569 18.6375 9 18.0927 9 17.5245C9 16.9564 9.22569 16.4115 9.62742 16.0098L10.6372 15"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M14.667 10.6372L15.6768 9.62742C16.0785 9.22569 16.6234 9 17.1915 9C17.7597 9 18.3045 9.22569 18.7062 9.62742C19.108 10.0291 19.3337 10.574 19.3337 11.1421C19.3337 11.7103 19.108 12.2551 18.7062 12.6569L17.6964 13.6667"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M11.667 16.832L15.667 12.832"
                 stroke="#6B7280"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -789,13 +688,7 @@ const GathererAddNewQuestionPage = () => {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <rect
-                width="28"
-                height="28"
-                rx="4"
-                transform="matrix(-1 0 0 1 28 0)"
-                fill="#E5E7EB"
-              />
+              <rect width="28" height="28" rx="4" transform="matrix(-1 0 0 1 28 0)" fill="#E5E7EB" />
               <path
                 d="M15.9997 15.3346L19.333 12.0013L15.9997 8.66797"
                 stroke="#6B7280"
@@ -818,8 +711,9 @@ const GathererAddNewQuestionPage = () => {
           onInput={handleInput}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          className={`w-full p-4 font-roboto text-[16px] leading-[100%] text-oxford-blue focus:outline-none ${!value && !isFocused ? "text-[#9CA3AF]" : ""
-            }`}
+          className={`w-full p-4 font-roboto text-[16px] leading-[100%] text-oxford-blue focus:outline-none ${
+            !value && !isFocused ? "text-[#9CA3AF]" : ""
+          }`}
           style={{
             minHeight: minHeight,
           }}
@@ -837,283 +731,383 @@ const GathererAddNewQuestionPage = () => {
     );
   };
 
+  const activityLog = [
+    {
+      id: 1,
+      action: "Variant Created",
+      description: "Variant Created by Adeel (Creator)",
+      date: "Oct 13, 2023, 10:32 AM",
+      icon: (
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="15" cy="15" r="15" fill="#ED4122" />
+          <path d="M15 9V21M9 15H21" stroke="white" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      ),
+    },
+    {
+      id: 2,
+      action: "Sent for Review",
+      description: "Sent for Review by Sarah (Processor)",
+      date: "Oct 13, 2023, 11:45 AM",
+      icon: (
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="15" cy="15" r="15" fill="#3B82F6" />
+          <path d="M11 15L14 18L19 11" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+    },
+    {
+      id: 3,
+      action: "Status Changed",
+      description: "Status Changed: In Review - Approved by Reviewer (Adeel)",
+      date: "Oct 13, 2023, 2:15 PM",
+      icon: (
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="30" height="30" rx="4" fill="#F59E0B" />
+          <path d="M9 15L12 18L21 9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+    },
+  ];
+
+  const comments = [
+    {
+      id: 1,
+      author: "Emily Davis",
+      text: "Thos variant looks good, but the explanation could be more detailed.",
+      avatar: "ED",
+      date: "14-01-2024",
+    },
+  ];
+
   return (
-    <>
-      <style>{`
-        .rich-text-editor .ql-container {
-          font-family: 'Roboto', sans-serif;
-          font-size: 16px;
-          line-height: 100%;
-          color: #032746;
-          min-height: 200px;
-        }
-        .rich-text-editor .ql-editor {
-          min-height: 200px;
-          padding: 16px;
-          font-family: 'Roboto', sans-serif;
-          font-size: 16px;
-          line-height: 100%;
-          color: #032746;
-        }
-        .rich-text-editor .ql-editor.ql-blank::before {
-          color: #9CA3AF;
-          font-style: normal;
-        }
-        .rich-text-editor .ql-toolbar {
-          background-color: #F6F7F8;
-          border-bottom: 1px solid #CDD4DA;
-          padding: 8px;
-          border-top-left-radius: 8px;
-          border-top-right-radius: 8px;
-        }
-        .rich-text-editor .ql-toolbar .ql-formats {
-          margin-right: 8px;
-        }
-        .rich-text-editor .ql-toolbar button {
-          width: 32px;
-          height: 32px;
-          padding: 4px;
-          border-radius: 4px;
-        }
-        .rich-text-editor .ql-toolbar button:hover {
-          background-color: #E5E7EB;
-        }
-        .rich-text-editor .ql-toolbar .ql-stroke {
-          stroke: #374151;
-        }
-        .rich-text-editor .ql-toolbar .ql-fill {
-          fill: #374151;
-        }
-        .rich-text-editor .ql-container {
-          border-bottom-left-radius: 8px;
-          border-bottom-right-radius: 8px;
-        }
-        .rich-text-editor .ql-snow {
-          border: none;
-        }
-        .rich-text-editor .ql-snow .ql-toolbar {
-          border: none;
-        }
-        .rich-text-editor .ql-snow .ql-container {
-          border: none;
-        }
-        .rich-text-editor-explanation .ql-container {
-          min-height: 150px;
-        }
-        .rich-text-editor-explanation .ql-editor {
-          min-height: 150px;
-        }
-      `}</style>
-      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-[1200px]">
-          {/* Header */}
-          <header className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center mb-10">
-            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
-              {t('gatherer.addNewQuestion.title')}
+    <div className="min-h-screen bg-[#F9FAFB]">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-6 py-4 md:py-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row items-start justify-between mb-6 md:mb-8 gap-4">
+          <div>
+            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[38px] text-oxford-blue mb-2">
+              {t('creator.ViewVariant.heading')}
             </h1>
-            <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#E5E7EB] bg-white px-3 md:px-5 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
-              >
-                {t('gatherer.addNewQuestion.cancel')}
-              </button>
-              <button
-                type="button"
-                onClick={handleSubmit}
-                className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 md:px-6 text-[14px] md:text-[16px] font-archivo font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]"
-              >
-                {t('gatherer.addNewQuestion.submit')}
-              </button>
+            <p className="font-roboto text-[14px] md:text-[18px] font-normal leading-[20px] md:leading-[24px] text-dark-gray">
+              {t('creator.ViewVariant.subheading')}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
+            >
+              {t('admin.variantQuestionReview.buttons.cancel')}
+            </button>
+            <button
+              type="button"
+              onClick={handleRefresh}
+              className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-4 text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
+            >
+              {t('admin.variantQuestionReview.buttons.refresh')}
+            </button>
+            <button
+              type="button"
+              onClick={handleExport}
+              className="flex h-[36px] items-center justify-center gap-2 rounded-[8px] bg-[#ED4122] px-4 text-[16px] font-roboto font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5.10357 3.51181C4.86316 3.2714 4.86316 2.88163 5.10357 2.64122L7.5651 0.179682C7.62172 0.123067 7.68994 0.0779487 7.76542 0.0467692C7.91558 -0.0155898 8.08542 -0.0155898 8.23558 0.0467692C8.31106 0.0779487 8.37908 0.123067 8.4357 0.179682L10.8972 2.64122C11.1376 2.88163 11.1376 3.2714 10.8972 3.51181C10.7774 3.63161 10.6199 3.6923 10.4623 3.6923C10.3048 3.6923 10.1472 3.63243 10.0274 3.51181L8.61619 2.10051V11.2821C8.61619 11.6217 8.34049 11.8974 8.0008 11.8974C7.66111 11.8974 7.38542 11.6217 7.38542 11.2821V2.10131L5.97416 3.51262C5.73293 3.75221 5.34398 3.75223 5.10357 3.51181ZM12.9231 5.74359C12.5834 5.74359 12.3077 6.01928 12.3077 6.35897C12.3077 6.69866 12.5834 6.97436 12.9231 6.97436C14.217 6.97436 14.7692 7.52656 14.7692 8.82051V12.9231C14.7692 14.217 14.217 14.7692 12.9231 14.7692H3.07692C1.78297 14.7692 1.23077 14.217 1.23077 12.9231V8.82051C1.23077 7.52656 1.78297 6.97436 3.07692 6.97436C3.41662 6.97436 3.69231 6.69866 3.69231 6.35897C3.69231 6.01928 3.41662 5.74359 3.07692 5.74359C1.09292 5.74359 0 6.83651 0 8.82051V12.9231C0 14.9071 1.09292 16 3.07692 16H12.9231C14.9071 16 16 14.9071 16 12.9231V8.82051C16 6.83651 14.9071 5.74359 12.9231 5.74359Z" fill="white"/>
+              </svg>
+              {t('admin.variantQuestionReview.buttons.export')}
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-6">
+          {/* Source Question Reference Card */}
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[296px]">
+            <h2 className="p-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.variantQuestionReview.sections.sourceQuestionReference')}
+            </h2>
+            <div className="p-4 space-y-3">
+              <p className="font-roboto text-[20px] font-bold leading-[20px] text-oxford-blue">
+                <span className="font-bold">{t('admin.variantQuestionReview.fields.questionId')}</span> 12345
+              </p>
+              <p className="font-roboto pt-2 text-[16px] font-normal leading-[20px] text-dark-gray">
+                What is the capital of France?
+              </p>
+              <div className="grid pt-1 grid-cols-2 gap-x-8 gap-y-3">
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">A. Berlin</p>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">B. Paris</p>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">C. Rome</p>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">D. Madrid</p>
+              </div>
             </div>
-          </header>
+          </div>
 
-          {/* Main Content - Two Columns */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-            {/* Left Column - Question Details (2/3 width on xl screens) */}
-            <div className="xl:col-span-2 bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
-              <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark mb-[30px]">
-                {t('gatherer.addNewQuestion.questionText')}
-              </h2>
-
-              <div className="space-y-6">
-                {/* Question Text */}
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-5">
-                    {t('gatherer.addNewQuestion.questionText')}
-                  </label>
-                  <RichTextEditor
-                    value={questionText}
-                    onChange={setQuestionText}
-                    placeholder={t('gatherer.addNewQuestion.placeholders.questionText')}
-                    minHeight="200px"
-                  />
+          {/* Variant Question Card */}
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[686px]">
+            <h2 className="p-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.variantQuestionReview.sections.variantQuestion')}
+            </h2>
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block font-roboto text-[20px] font-bold leading-[20px] text-oxford-blue mb-2">
+                  {t('admin.variantQuestionReview.fields.question')}
+                </label>
+                <p className="font-roboto py-2 text-[16px] font-normal leading-[20px] text-dark-gray">
+                  What is the capital of France?
+                </p>
+              </div>
+              <div>
+                <label className="block pb-3 font-archivo text-[20px] font-bold leading-[20px] text-oxford-blue mb-2">
+                  {t('admin.variantQuestionReview.fields.options')}
+                </label>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">A. Berlin</p>
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">B. Paris</p>
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">C. Rome</p>
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">D. Madrid</p>
                 </div>
-
-                {/* Question Type */}
+              </div>
+              <div>
+                <label className="block pb-3 font-archivo text-[20px] font-bold leading-[20px] text-oxford-blue mb-2">
+                  {t('admin.variantQuestionReview.fields.correctAnswer')}
+                </label>
+                <p className="font-roboto pb-5 text-[16px] font-normal leading-[20px] text-[#ED4122]">
+                  B. Paris
+                </p>
+              </div>
+              <div className="flex flex-col gap-4">
                 <div>
-                  <label className="block  text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.questionType')}
+                  <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                    {t('admin.variantQuestionReview.fields.type')}
                   </label>
-                  <Dropdown
-                    value={questionType}
-                    onChange={setQuestionType}
-                    options={[
-                      t('admin.addNewQuestion.questionTypes.multipleChoice'),
-                      t('admin.addNewQuestion.questionTypes.trueFalse'),
-                      t('admin.addNewQuestion.questionTypes.shortAnswer'),
-                      t('admin.addNewQuestion.questionTypes.essay')
-                    ]}
-                  />
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                    {t('admin.variantQuestionReview.types.multipleChoice')}
+                  </p>
                 </div>
-
-                {/* Options Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('gatherer.addNewQuestion.options.optionA')}
-                      </label>
-                      <input
-                        type="text"
-                        value={options.A}
-                        onChange={(e) => handleOptionChange("A", e.target.value)}
-                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('gatherer.addNewQuestion.options.optionC')}
-                      </label>
-                      <input
-                        type="text"
-                        value={options.C}
-                        onChange={(e) => handleOptionChange("C", e.target.value)}
-                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('gatherer.addNewQuestion.options.optionB')}
-                      </label>
-                      <input
-                        type="text"
-                        value={options.B}
-                        onChange={(e) => handleOptionChange("B", e.target.value)}
-                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('gatherer.addNewQuestion.options.optionD')}
-                      </label>
-                      <input
-                        type="text"
-                        value={options.D}
-                        onChange={(e) => handleOptionChange("D", e.target.value)}
-                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Correct Answer */}
                 <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.correctAnswer')}
+                  <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                    {t('admin.variantQuestionReview.fields.creator')}
                   </label>
-                  <Dropdown
-                    value={correctAnswer}
-                    onChange={setCorrectAnswer}
-                    options={[
-                      t('admin.addNewQuestion.correctAnswerOptions.optionA'),
-                      t('admin.addNewQuestion.correctAnswerOptions.optionB'),
-                      t('admin.addNewQuestion.correctAnswerOptions.optionC'),
-                      t('admin.addNewQuestion.correctAnswerOptions.optionD')
-                    ]}
-                  />
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                    Sarah Johnson
+                  </p>
+                </div>
+                <div>
+                  <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                    {t('admin.variantQuestionReview.fields.status')}
+                  </label>
+                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-[#ED4122]">
+                    {t('admin.variantQuestionReview.status.inReview')}
+                  </p>
                 </div>
               </div>
             </div>
+            {/* Action Buttons */}
+            <div className="flex flex-wrap justify-end gap-2 md:gap-3 mt-4 md:mt-6 pt-4 md:pt-6 border-t border-[#E5E7EB]">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-3 md:px-4 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
+              >
+                {t('admin.variantQuestionReview.buttons.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handleSendToExplainer}
+                className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-3 md:px-4 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
+              >
+                {t('admin.variantQuestionReview.buttons.sendToExplainer')}
+              </button>
+              <button
+                type="button"
+                onClick={handleReject}
+                className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-3 md:px-4 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
+              >
+                {t('admin.variantQuestionReview.buttons.reject')}
+              </button>
+              <button
+                type="button"
+                onClick={handleApprove}
+                className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 md:px-7 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]"
+              >
+                {t('admin.variantQuestionReview.buttons.approve')}
+              </button>
+            </div>
+          </div>
 
-            {/* Right Column - Classification (1/3 width on xl screens) */}
-            <div className="bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10 h-[725px]">
-              <h2 className="text-[20px] leading-[100%] font-bold font-archivo text-blue-dark mb-6">
-                {t('gatherer.addNewQuestion.classification.title')}
-              </h2>
+          {/* Explanation Card */}
+          <div
+            className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] shadow-card"
+          >
+            <h2 className="py-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.variantQuestionReview.sections.explanation')}
+            </h2>
+            <div className="mt-4">
+              <RichTextEditor
+                value={explanation}
+                onChange={setExplanation}
+                placeholder={t('admin.variantQuestionReview.placeholders.explanation')}
+                minHeight="182px"
+              />
+            </div>
+          </div>
 
-              <div className="space-y-6">
-                {/* Subject */}
+          {/* Classification Card */}
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[263px] shadow-card">
+            <h2 className="py-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.variantQuestionReview.sections.classification')}
+            </h2>
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <div>
+                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                  {t('admin.variantQuestionReview.fields.subject')}
+                </label>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                  Geography
+                </p>
+              </div>
+              <div>
+                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                  {t('admin.variantQuestionReview.fields.topic')}
+                </label>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                  European Capitals
+                </p>
+              </div>
+              <div>
+                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                  {t('admin.variantQuestionReview.fields.cognitiveLevel')}
+                </label>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                  Recall
+                </p>
+              </div>
+              <div>
+                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                  {t('admin.variantQuestionReview.fields.sourceQuestion')}
+                </label>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                  Q123456
+                </p>
+              </div>
+              <div>
+                <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                  {t('admin.variantQuestionReview.fields.workflowStage')}
+                </label>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                  Review
+                </p>
+              </div>
+              <div>
+                  <label className="block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray mb-2">
+                  {t('admin.variantQuestionReview.fields.lastUpdate')}
+                </label>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                  15-01-2024
+                </p>
+              </div>
+            </div>
+          </div>
 
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.classification.exam')}
-                  </label>
-                  <Dropdown
-                    value={exam}
-                    onChange={setExam}
-                    options={[
-                      'Tahseely',
-                      'Qudrat',
-                    ]}
-                  />
+          {/* Internal Comments Card */}
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[879px] h-auto lg:h-[308px]">
+            <h2 className="py-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.variantQuestionReview.sections.internalComments')}
+            </h2>
+            <div className="mt-1 space-y-4">
+              {comments.map((comment) => (
+                <div key={comment.id} className="flex gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#ED4122] flex items-center justify-center text-white font-roboto text-[14px] font-semibold">
+                    {comment.avatar}
+                  </div>
+                  <div className="flex-1">
+                    <div className="rounded-[8px] bg-[#F6F7F8] border border-[#E5E7EB] p-4">
+                      <div className="flex items-center gap-3 ">
+                        <p className="font-roboto text-[12px] font-medium leading-[20px] text-oxford-blue">
+                          {comment.author}
+                        </p>
+                        <p className="font-roboto text-[10px] font-normal leading-[20px] text-dark-gray">
+                          {comment.date}
+                        </p>
+                      </div>
+                      <p className="font-roboto text-[12px] font-normal leading-[20px] text-oxford-blue">
+                        {comment.text}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.classification.subject')}
-                  </label>
-                  <Dropdown
-                    value={subject}
-                    onChange={setSubject}
-                    options={[
-                      'Math',
-                      'Science',
-                      'History',
-                      'Geography'
-                    ]}
-                  />
+              ))}
+              <div className="flex gap-3 items-start">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#ED4122] flex items-center justify-center text-white font-roboto text-[14px] font-semibold">
+                  JD
                 </div>
-
-                {/* Topic */}
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.classification.topic')}
-                  </label>
-                  <Dropdown
-                    value={topic}
-                    onChange={setTopic}
-                    options={[
-                      'Algebra',
-                      'Geometry',
-                      'Calculus'
-                    ]}
+                <div className="flex flex-col gap-4 items-end">
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder={t('admin.variantQuestionReview.placeholders.addComment')}
+                    className="w-full p-3 border border-[#03274633] rounded-[8px] bg-white font-roboto text-[12px] md:text-[16px] font-normal leading-[20px] text-oxford-blue placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#ED4122] resize-none lg:w-[776px] lg:h-[62px]"
                   />
-                </div>
-
-                {/* Reference */}
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.classification.reference')}
-                  </label>
-                  <input
-                    type="text"
-                    value={source}
-                    onChange={(e) => setSource(e.target.value)}
-                    className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                    placeholder={t('gatherer.addNewQuestion.placeholders.reference')}
-                  />
+                  <button
+                    type="button"
+                    onClick={handleAddComment}
+                    className="bottom-3 right-3 flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-6 text-[16px] font-roboto font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]"
+                  >
+                    {t('admin.variantQuestionReview.buttons.addComment')}
+                  </button>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Activity Log Card */}
+          <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[874px] shadow-card">
+            <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+              {t('admin.variantQuestionReview.sections.activityLog')}
+            </h2>
+            <div className="mt-4 space-y-4">
+              {activityLog.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex gap-4 items-start p-4 rounded-[8px] border border-[#E5E7EB] bg-white"
+                >
+                  <div className="flex-shrink-0">{activity.icon}</div>
+                  <div className="flex-1">
+                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue mb-1">
+                      {activity.description}
+                    </p>
+                    <p className="font-roboto text-[12px] font-normal leading-[16px] text-dark-gray">
+                      {activity.date}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Action Buttons */}
+        <div className="flex flex-wrap justify-end gap-3 md:gap-4 mt-4 md:mt-6 pb-4 md:pb-6">
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#03274633] bg-white px-3 md:px-4 text-[14px] md:text-[16px] font-archivo font-semibold leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
+          >
+            {t('admin.variantQuestionReview.buttons.cancel')}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/admin/create-variant")}
+            className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-3 md:px-4 text-[14px] md:text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
+          >
+            {t('admin.variantQuestionReview.buttons.createVariant')}
+          </button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
-export default GathererAddNewQuestionPage;
+export default CreatorViewVariant;
+

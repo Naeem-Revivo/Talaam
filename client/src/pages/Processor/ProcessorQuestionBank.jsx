@@ -17,8 +17,8 @@ const ProcessorQuestionBank = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
 
-   const subjectOptions = ["Subject", "Mathematics", "Physics", "Chemistry", "Biology"];
-  const topicOptions = ["Status", "Approved", "Failed", "Reject"];
+   const subjectOptions = [t("filter.subject"), "Mathematics", "Physics", "Chemistry", "Biology"];
+  const topicOptions = [t("filter.status"), "Approved", "Failed", "Reject"];
   
   // Note: topicLabel is used for Status dropdown, subjectLabel for Subject dropdown
 
@@ -84,11 +84,11 @@ const ProcessorQuestionBank = () => {
   };
 
   const workflowSteps = [
-    "Gatherer",
-    "Processor",
-    "Creator",
-    "Processor",
-    "Explainer",
+    t("gatherer.questionBank.workflowSteps.gatherer"),
+    t("gatherer.questionBank.workflowSteps.processor"),
+    t("gatherer.questionBank.workflowSteps.creator"),
+    t("gatherer.questionBank.workflowSteps.processor"),
+    t("gatherer.questionBank.workflowSteps.explainer"),
   ];
 
   const activityData = [
@@ -119,7 +119,7 @@ const ProcessorQuestionBank = () => {
   ];
 
   const handleProcessedQuestion = () => {
-    navigate("/processor/Processed-Question");
+    navigate("/processor/question-bank/Processed-Question");
   };
 
   return (
@@ -158,7 +158,10 @@ const ProcessorQuestionBank = () => {
           subjectLabel="Subject"
           searchPlaceholder={t("processor.questionBank.searchPlaceholder")}
         />
-
+        <div>
+          <div className="text-[24px] leading-[32px] font-bold text-blue-dark font-archivo mb-5">
+            {t("gatherer.questionBank.newSubmissions")}
+          </div>
         <Table
           items={gathererData}
           columns={gathererColumns}
@@ -171,6 +174,7 @@ const ProcessorQuestionBank = () => {
           onCustomAction={handleReview}
           emptyMessage={t("processor.questionBank.emptyMessage")}
         />
+        </div>
 
         <div>
           <h2 className="text-[24px] leading-[32px] font-bold font-archivo text-blue-dark mb-5">

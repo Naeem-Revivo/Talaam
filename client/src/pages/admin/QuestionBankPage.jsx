@@ -5,13 +5,11 @@ import QuestionBankTabs from "../../components/admin/questionBank/QuestionBankTa
 import QuestionBankFilters from "../../components/admin/questionBank/QuestionBankFilters";
 import QuestionBankSummaryCards from "../../components/admin/questionBank/QuestionBankSummaryCards";
 import QuestionBankTable from "../../components/admin/questionBank/QuestionBankTable";
-import { users } from "../../assets/svg/dashboard/admin";
 
 const pageSize = 5;
 
 const getTabs = (t) => [
   { label: t('admin.questionBank.tabs.all'), value: "all" },
-  { label: t('admin.questionBank.tabs.rawPending'), value: "rawPending" },
   { label: t('admin.questionBank.tabs.variantPending'), value: "variantPending" },
   { label: t('admin.questionBank.tabs.rejected'), value: "rejected" },
 ];
@@ -27,7 +25,7 @@ const mockQuestions = [
     createdBy: "Admin",
     status: "Active",
     stage: "rawPending",
-    exam: "Exam",
+    exam: "Qudrat",
   },
   {
     id: "q-2",
@@ -39,7 +37,7 @@ const mockQuestions = [
     createdBy: "Admin",
     status: "Active",
     stage: "rawPending",
-    exam: "Exam",
+    exam: "Tahseely",
   },
   {
     id: "q-3",
@@ -51,7 +49,7 @@ const mockQuestions = [
     createdBy: "Admin",
     status: "Pending",
     stage: "rawPending",
-    exam: "Exam",
+    exam: "Tahseely",
   },
   {
     id: "q-4",
@@ -63,7 +61,7 @@ const mockQuestions = [
     createdBy: "Admin",
     status: "Inactive",
     stage: "variantPending",
-    exam: "Exam",
+    exam: "Qudrat",
   },
   {
     id: "q-5",
@@ -75,7 +73,7 @@ const mockQuestions = [
     createdBy: "Admin",
     status: "Active",
     stage: "all",
-    exam: "Exam",
+    exam: "Qudrat",
   },
   {
     id: "q-6",
@@ -139,7 +137,6 @@ const QuestionBankPage = () => {
     exam: "",
     subject: "",
     topic: "",
-    level: "",
     status: "",
   });
   const [page, setPage] = useState(1);
@@ -159,7 +156,6 @@ const QuestionBankPage = () => {
       const matchesExam = filters.exam ? question.exam === filters.exam : true;
       const matchesSubject = filters.subject ? question.subject === filters.subject : true;
       const matchesTopic = filters.topic ? question.topic === filters.topic : true;
-      const matchesLevel = filters.level ? question.level === filters.level : true;
       const matchesStatus = filters.status ? question.status === filters.status : true;
 
       return (
@@ -167,7 +163,6 @@ const QuestionBankPage = () => {
         matchesExam &&
         matchesSubject &&
         matchesTopic &&
-        matchesLevel &&
         matchesStatus
       );
     });
@@ -185,10 +180,6 @@ const QuestionBankPage = () => {
   );
   const topicOptions = useMemo(
     () => Array.from(new Set(mockQuestions.map((item) => item.topic))).filter(Boolean),
-    []
-  );
-  const levelOptions = useMemo(
-    () => Array.from(new Set(mockQuestions.map((item) => item.level))).filter(Boolean),
     []
   );
   const statusOptions = useMemo(
@@ -267,7 +258,6 @@ const QuestionBankPage = () => {
       exam: "",
       subject: "",
       topic: "",
-      level: "",
       status: "",
     });
     setSearch("");
@@ -297,14 +287,7 @@ const QuestionBankPage = () => {
           <div className="flex flex-wrap gap-4">
             <button
               type="button"
-              onClick={() => navigate("/admin/question-management")}
-              className="flex h-[36px] w-[195px] items-center justify-center rounded-[8px] bg-[#ED4122] text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
-            >
-              {t('admin.questionBank.actions.questionManagement')}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/admin/add-question")}
+              onClick={() => navigate("/admin/question-bank/add-question")}
               className="flex h-[36px] items-center justify-center rounded-[10px] bg-[#ED4122] px-4 text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
               {t('admin.questionBank.actions.addNewQuestion')}
@@ -315,19 +298,6 @@ const QuestionBankPage = () => {
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <QuestionBankTabs tabs={tabDefinitions} activeTab={activeTab} onChange={handleTabChange} />
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={handleImport}
-              className="flex h-[36px] items-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M5.10357 9.25541C4.86316 9.015 4.86316 8.62523 5.10357 8.38482C5.34398 8.14441 5.73375 8.14441 5.97416 8.38482L7.38542 9.79612V0.615385C7.38542 0.275692 7.66111 0 8.0008 0C8.34049 0 8.61619 0.275692 8.61619 0.615385V9.79612L10.0274 8.38482C10.2679 8.14441 10.6576 8.14441 10.898 8.38482C11.1384 8.62523 11.1384 9.015 10.898 9.25541L8.4365 11.7169C8.37988 11.7736 8.31187 11.8187 8.23638 11.8499C8.16089 11.881 8.08121 11.8974 8.0008 11.8974C7.92039 11.8974 7.84091 11.881 7.76542 11.8499C7.68994 11.8187 7.62172 11.7736 7.5651 11.7169L5.10357 9.25541ZM12.9231 5.74359C12.5834 5.74359 12.3077 6.01928 12.3077 6.35897C12.3077 6.69867 12.5834 6.97436 12.9231 6.97436C14.217 6.97436 14.7692 7.52656 14.7692 8.82051V12.9231C14.7692 14.217 14.217 14.7692 12.9231 14.7692H3.07692C1.78297 14.7692 1.23077 14.217 1.23077 12.9231V8.82051C1.23077 7.52656 1.78297 6.97436 3.07692 6.97436C3.41662 6.97436 3.69231 6.69867 3.69231 6.35897C3.69231 6.01928 3.41662 5.74359 3.07692 5.74359C1.09292 5.74359 0 6.83651 0 8.82051V12.9231C0 14.9071 1.09292 16 3.07692 16H12.9231C14.9071 16 16 14.9071 16 12.9231V8.82051C16 6.83651 14.9071 5.74359 12.9231 5.74359Z"
-                  fill="#032746"
-                />
-              </svg>
-              {t('admin.questionBank.actions.import')}
-            </button>
             <button
               type="button"
               onClick={handleExport}
@@ -353,7 +323,6 @@ const QuestionBankPage = () => {
           examOptions={examOptions}
           subjectOptions={subjectOptions}
           topicOptions={topicOptions}
-          levelOptions={levelOptions}
           statusOptions={statusOptions}
         >
           <QuestionBankSummaryCards stats={stats} />
@@ -365,7 +334,7 @@ const QuestionBankPage = () => {
           pageSize={pageSize}
           total={filteredQuestions.length}
           onPageChange={setPage}
-          onView={(question) => navigate(`/admin/question-details?id=${question.id}`)}
+          onView={(question) => navigate(`/admin/question-bank/question-details?id=${question.id}`)}
         />
       </div>
     </div>

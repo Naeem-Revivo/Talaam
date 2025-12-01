@@ -46,6 +46,8 @@ const GathererDashboard = () => {
               role={roleData.role}
               tasks={roleData.tasks}
               pendingCount={roleData.pendingCount}
+              roleLabel={t("explainer.dashboard.roleLabel")}
+              pendingTasksLabel={t("explainer.dashboard.pendingTasks")}
             />
           </div>
 

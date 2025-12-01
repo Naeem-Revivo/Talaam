@@ -18,12 +18,13 @@ const QuestionBankFilters = ({
   statusOptions,
   children,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dir = language === 'ar' ? 'rtl' : 'ltr';
   
   return (
     <section className="mx-auto flex w-full flex-col gap-5 rounded-[16px] border border-[#E5E7EB] bg-white p-6 shadow-filter-lg md:gap-6 min-h-[326px]">
       <div className="relative flex justify-start">
-        <span className="pointer-events-none absolute left-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-oxford-blue">
+        <span className={`pointer-events-none absolute top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-oxford-blue ${dir === "rtl" ? "right-4" : "left-4"}`}>
           <svg
             width="21"
             height="21"
@@ -49,13 +50,13 @@ const QuestionBankFilters = ({
         <button
           type="button"
           onClick={onReset}
-          className="absolute right-3 top-1/2 hidden h-[30px] w-[120px] -translate-y-1/2 items-center justify-center rounded-full bg-[#FDF0D5] text-[14px] font-roboto font-medium leading-[16px] text-[#ED4122] transition md:flex"
+          className={`absolute top-1/2 hidden h-[30px] w-[120px] -translate-y-1/2 items-center justify-center rounded-full bg-[#FDF0D5] text-[14px] font-roboto font-medium leading-[16px] text-[#ED4122] transition md:flex ${dir === "rtl" ? "left-3" : "right-3"}`}
         >
           {t('admin.questionBank.filters.resetFilter')}
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:items-center">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 w-full gap-4 md:items-center">
         <div className="w-full">
           <Dropdown
             value={filters.exam || ""}
@@ -63,7 +64,7 @@ const QuestionBankFilters = ({
             onChange={(value) => onFilterChange?.("exam", value)}
             placeholder={t('admin.questionBank.filters.exam')}
             showDefaultOnEmpty={false}
-            className="w-full"
+            className="w-full lg:w-full"
             height="h-[50px]"
           />
         </div>
@@ -74,7 +75,7 @@ const QuestionBankFilters = ({
             onChange={(value) => onFilterChange?.("subject", value)}
             placeholder={t('admin.questionBank.filters.subject')}
             showDefaultOnEmpty={false}
-            className="w-full"
+            className="w-full lg:w-full"
             height="h-[50px]"
           />
         </div>
@@ -85,11 +86,11 @@ const QuestionBankFilters = ({
             onChange={(value) => onFilterChange?.("topic", value)}
             placeholder={t('admin.questionBank.filters.topic')}
             showDefaultOnEmpty={false}
-            className="w-full"
+            className="w-full lg:w-full"
             height="h-[50px]"
           />
         </div>
-        <div className="w-full">
+        {/* <div className="w-full">
           <Dropdown
             value={filters.level || ""}
             options={levelOptions}
@@ -99,7 +100,7 @@ const QuestionBankFilters = ({
             className="w-full"
             height="h-[50px]"
           />
-        </div>
+        </div> */}
         <div className="w-full">
           <Dropdown
             value={filters.status || ""}
@@ -107,7 +108,7 @@ const QuestionBankFilters = ({
             onChange={(value) => onFilterChange?.("status", value)}
             placeholder={t('admin.questionBank.filters.status')}
             showDefaultOnEmpty={false}
-            className="w-full"
+            className="w-full lg:w-full"
             height="h-[50px]"
           />
         </div>

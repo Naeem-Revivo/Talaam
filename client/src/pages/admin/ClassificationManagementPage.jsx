@@ -2,16 +2,13 @@ import { useState, useMemo, useEffect } from "react";
 import ClassificationFilter from "../../components/admin/ClassificationManaement/ClassificationFilter";
 import ClassificationTable from "../../components/admin/ClassificationManaement/ClassificationTable";
 import Tabs from "../../components/admin/ClassificationManaement/ClassificationTab";
-import HierarchyBreadcrumb from "../../components/admin/ClassificationManaement/Hiararchy";
 import StatsCards from "../../components/admin/ClassificationManaement/StatsCard";
 import { useAdminSubjects } from "../../context/AdminClassificationContext";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
-import TopicPageHierarchy from "../../components/admin/ClassificationManaement/TopicPageHirarchy";
-import SubtopicHirarchy from "../../components/admin/ClassificationManaement/SubTopicHirarchy";
 import { ConfirmationModal } from "../../components/common/ConfirmationModal";
 
-const getTabConfig = (subjects, topics, subtopics, concepts, t) => ({
+const getTabConfig = (subjects, topics, subtopics, exams, t) => ({
   Subject: {
     data: subjects,
     columns: [
@@ -22,10 +19,6 @@ const getTabConfig = (subjects, topics, subtopics, concepts, t) => ({
       {
         label: t("admin.classificationManagement.table.columns.description"),
         key: "description",
-      },
-      {
-        label: t("admin.classificationManagement.table.columns.createdBy"),
-        key: "createdby",
       },
       {
         label: t("admin.classificationManagement.table.columns.date"),
@@ -54,10 +47,6 @@ const getTabConfig = (subjects, topics, subtopics, concepts, t) => ({
         key: "description",
       },
       {
-        label: t("admin.classificationManagement.table.columns.createdBy"),
-        key: "createdby",
-      },
-      {
         label: t("admin.classificationManagement.table.columns.date"),
         key: "date",
       },
@@ -84,10 +73,6 @@ const getTabConfig = (subjects, topics, subtopics, concepts, t) => ({
         key: "description",
       },
       {
-        label: t("admin.classificationManagement.table.columns.createdBy"),
-        key: "createdby",
-      },
-      {
         label: t("admin.classificationManagement.table.columns.date"),
         key: "date",
       },
@@ -104,20 +89,16 @@ const getTabConfig = (subjects, topics, subtopics, concepts, t) => ({
     heading: t("admin.classificationManagement.headings.subtopics"),
     subheading: t("admin.classificationManagement.subheadings.subtopics"),
   },
-  Concepts: {
-    data: concepts,
+  Exams: {
+    data: exams,
     columns: [
       {
-        label: t("admin.classificationManagement.table.columns.conceptName"),
+        label: t("admin.classificationManagement.table.columns.examName"),
         key: "name",
       },
       {
-        label: t("admin.classificationManagement.table.columns.description"),
+        label:  t("admin.classificationManagement.table.columns.description"),
         key: "description",
-      },
-      {
-        label: t("admin.classificationManagement.table.columns.linkedSubtopic"),
-        key: "linkedsubtopic",
       },
       {
         label: t("admin.classificationManagement.table.columns.date"),
@@ -128,19 +109,53 @@ const getTabConfig = (subjects, topics, subtopics, concepts, t) => ({
         key: "actions",
       },
     ],
-    addButtonText: t("admin.classificationManagement.actions.addNewConcept"),
-    addRoute: "/admin/classification/add-concept",
-    emptyMessage: t("admin.classificationManagement.table.emptyState.concepts"),
-    heading: t("admin.classificationManagement.headings.concepts"),
-    subheading: t("admin.classificationManagement.subheadings.concepts"),
+    addButtonText: t('admin.classificationManagement.actions.addNewExam'),
+    addRoute: "/admin/classification/add-exam",
+    emptyMessage: "No exams found",
+    heading: "Exam",
+    subheading: "Subject • Topic",
   },
 });
+
+// Mock exam data based on your image
+const mockExams = [
+  {
+    id: 1,
+    name: "Tahseely",
+    description: "The study of numbers, shapes, and...",
+    date: "01-10-2023",
+  },
+  {
+    id: 2,
+    name: "Qudrat",
+    description: "The study of matter and energy and th...",
+    date: "02-10-2023",
+  },
+  {
+    id: 3,
+    name: "Qudrat",
+    description: "The study of substances and their prop...",
+    date: "03-10-2023",
+  },
+  {
+    id: 4,
+    name: "Qudrat",
+    description: "The study of living organisms and their...",
+    date: "04-10-2023",
+  },
+  {
+    id: 5,
+    name: "Tahseely",
+    description: "The study of past events, particularly th...",
+    date: "05-10-2023",
+  },
+];
 
 // Main Component
 const ClassificationManagement = () => {
   const { subjects, topics, subtopics, concepts } = useAdminSubjects();
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState("Subject");
+  const [activeTab, setActiveTab] = useState("Exams");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [subject, setSubject] = useState("");
@@ -148,8 +163,11 @@ const ClassificationManagement = () => {
   const [subtopic, setSubtopic] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  
+  // Use mock exams data
+  const [exams] = useState(mockExams);
 
-  const tabConfig = getTabConfig(subjects, topics, subtopics, concepts, t);
+  const tabConfig = getTabConfig(subjects, topics, subtopics, exams, t);
   const currentConfig = tabConfig[activeTab];
 
   const navigate = useNavigate();
@@ -217,20 +235,16 @@ const ClassificationManagement = () => {
 
   const statsData = [
     {
+      label: t("admin.classificationManagement.stats.exam"),
+      value: exams.length,
+    },
+    {
       label: t("admin.classificationManagement.stats.subjects"),
       value: subjects.length,
     },
     {
       label: t("admin.classificationManagement.stats.topics"),
       value: topics.length,
-    },
-    {
-      label: t("admin.classificationManagement.stats.subtopics"),
-      value: subtopics.length,
-    },
-    {
-      label: t("admin.classificationManagement.stats.concepts"),
-      value: concepts.length,
     },
   ];
 
@@ -302,11 +316,6 @@ const ClassificationManagement = () => {
           onView={handleEdit}
           emptyMessage={currentConfig.emptyMessage}
         />
-
-        {activeTab === "Subject" && <HierarchyBreadcrumb />}
-        {activeTab === "Topics" && <TopicPageHierarchy />}
-        {activeTab === "Subtopics" && <SubtopicHirarchy />}
-        {activeTab === "Concepts" && <SubtopicHirarchy />}
       </div>
 
       <ConfirmationModal

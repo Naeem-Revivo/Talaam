@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
 
 const statusTone = {
@@ -20,25 +20,29 @@ const statusTone = {
   },
 };
 
-const getHeaderConfig = (t) => [
-  { label: t('admin.questionBank.table.headers.question'), widthClass: "min-w-[67px]" },
-  { label: t('admin.questionBank.table.headers.subject'), widthClass: "min-w-[75px]" },
-  { label: t('admin.questionBank.table.headers.topic'), widthClass: "min-w-[49px]" },
-  { label: t('admin.questionBank.table.headers.level'), widthClass: "min-w-[50px]" },
-  { label: t('admin.questionBank.table.headers.createdBy'), widthClass: "min-w-[101px]" },
-  { label: t('admin.questionBank.table.headers.status'), widthClass: "min-w-[62px]" },
-  { label: t('admin.questionBank.table.headers.actions'), widthClass: "min-w-[72px]" },
-];
+// Fixed: Memoize the header config to prevent recreation on every render
+const useHeaderConfig = (t) => {
+  return useMemo(() => [
+    { label: t('admin.questionBank.table.headers.question'), widthClass: "min-w-[67px]", key: "question" },
+    { label: t('admin.questionBank.table.headers.subject'), widthClass: "min-w-[75px]", key: "subject" },
+    { label: t('admin.questionBank.table.headers.topic'), widthClass: "min-w-[49px]", key: "topic" },
+    { label: t('admin.questionBank.table.headers.createdBy'), widthClass: "min-w-[101px]", key: "createdBy" },
+    { label: t('admin.questionBank.table.headers.status'), widthClass: "min-w-[62px]", key: "status" },
+    { label: t('admin.questionBank.table.headers.actions'), widthClass: "min-w-[72px]", key: "actions" },
+  ], [t]);
+};
 
-const TableHeader = ({ t }) => {
-  const headerConfig = getHeaderConfig(t);
+const TableHeader = ({ t, dir }) => {
+  const headerConfig = useHeaderConfig(t);
+  const textAlign = dir === 'rtl' ? 'text-right' : 'text-left';
+  
   return (
     <thead className="hidden md:table-header-group">
-      <tr className="bg-oxford-blue text-left">
+      <tr className="bg-oxford-blue">
         {headerConfig.map((column) => (
           <th
-            key={column.label}
-            className={`px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white ${column.widthClass}`}
+            key={column.key}
+            className={`px-6 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white ${column.widthClass} ${textAlign}`}
           >
             {column.label}
           </th>
@@ -48,44 +52,49 @@ const TableHeader = ({ t }) => {
   );
 };
 
-const TableRow = ({ question, onView, t }) => {
+const TableRow = ({ question, onView, t, dir }) => {
   const tone = statusTone[question.status] ?? statusTone.Active;
-  const headerConfig = getHeaderConfig(t);
+  const headerConfig = useHeaderConfig(t);
+  const textAlign = dir === 'rtl' ? 'text-right' : 'text-left';
 
   return (
     <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row">
-      <td className={`px-6 py-4 text-left align-top ${headerConfig[0].widthClass}`}>
-        <div className="w-[218px]">
-          <p className="text-[12px] font-roboto leading-[16px] text-oxford-blue break-words">
-          {question.prompt}
-        </p>
-        {question.type && (
-          <p className="pt-1 text-[10px] font-roboto leading-[16px] text-dark-gray">
-            {t('admin.questionBank.table.type')}: {question.type}
+      <td className={`px-6 py-4 align-top ${headerConfig[0].widthClass} ${textAlign}`}>
+        <div className={`w-[218px] ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+          <p 
+            className="text-[12px] font-roboto leading-[16px] text-oxford-blue break-words"
+            dir="ltr"
+            style={{ wordBreak: 'break-word', lineHeight: '1.4' }}
+          >
+            {question.prompt}
           </p>
-        )}
+          {question.type && (
+            <p 
+              className="pt-1 text-[10px] font-roboto leading-[16px] text-dark-gray"
+              dir={dir}
+            >
+              {t('admin.questionBank.table.type')}: {question.type}
+            </p>
+          )}
         </div>
       </td>
-      <td className={`px-6 py-4 text-[14px] font-roboto leading-[16px] text-oxford-blue ${headerConfig[1].widthClass} whitespace-nowrap`}>
+      <td className={`px-6 py-4 text-[14px] font-roboto leading-[16px] text-oxford-blue ${headerConfig[1].widthClass} whitespace-nowrap ${textAlign}`}>
         {question.subject}
       </td>
-      <td className={`px-6 py-4 text-[14px] font-roboto leading-[16px] text-oxford-blue ${headerConfig[2].widthClass} whitespace-nowrap`}>
+      <td className={`px-6 py-4 text-[14px] font-roboto leading-[16px] text-oxford-blue ${headerConfig[2].widthClass} whitespace-nowrap ${textAlign}`}>
         {question.topic}
       </td>
-      <td className={`px-6 py-4 text-[14px] font-roboto leading-[16px] text-oxford-blue ${headerConfig[3].widthClass} whitespace-nowrap`}>
-        {question.level}
-      </td>
-      <td className={`px-6 py-4 text-[14px] font-roboto leading-[16px] text-oxford-blue ${headerConfig[4].widthClass} whitespace-nowrap`}>
+      <td className={`px-6 py-4 text-[14px] font-roboto leading-[16px] text-oxford-blue ${headerConfig[3].widthClass} whitespace-nowrap ${textAlign}`}>
         {question.createdBy}
       </td>
-      <td className={`px-6 py-4 ${headerConfig[5].widthClass}`}>
+      <td className={`px-6 py-4 ${headerConfig[4].widthClass} ${textAlign}`}>
         <span
           className={`inline-flex h-[22px] items-center justify-center rounded-[6px] px-2.5 text-[12px] font-roboto font-normal uppercase tracking-[0%] ${tone.wrapper} ${tone.text}`}
         >
           {question.status}
         </span>
       </td>
-      <td className={`px-6 py-4 ${headerConfig[6].widthClass}`}>
+      <td className={`px-6 py-4 ${headerConfig[5].widthClass} ${textAlign}`}>
         <button
           type="button"
           onClick={() => onView?.(question)}
@@ -117,13 +126,20 @@ const TableRow = ({ question, onView, t }) => {
   );
 };
 
-const MobileQuestionCard = ({ question, onView, t }) => {
+const MobileQuestionCard = ({ question, onView, t, dir }) => {
   const tone = statusTone[question.status] ?? statusTone.Active;
+  const textAlign = dir === 'rtl' ? 'text-right' : 'text-left';
 
   return (
-    <article className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] bg-white px-5 py-4 text-oxford-blue shadow-empty md:hidden">
-      <div className="space-y-2">
-        <p className="text-[16px] font-archivo font-semibold leading-[20px]">
+    <article 
+      className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] bg-white px-5 py-4 text-oxford-blue shadow-empty md:hidden"
+      dir={dir}
+    >
+      <div className={`space-y-2 ${textAlign}`}>
+        <p 
+          className="text-[16px] font-archivo font-semibold leading-[20px] break-words"
+          style={{ wordBreak: 'break-word', lineHeight: '1.4' }}
+        >
           {question.prompt}
         </p>
         {question.type && (
@@ -132,7 +148,7 @@ const MobileQuestionCard = ({ question, onView, t }) => {
           </p>
         )}
       </div>
-      <div className="grid grid-cols-2 gap-3 text-[14px] font-roboto leading-[18px] text-[#1F2937]">
+      <div className={`grid grid-cols-2 gap-3 text-[14px] font-roboto leading-[18px] text-[#1F2937] ${textAlign}`}>
         <div>
           <p className="text-dark-gray">{t('admin.questionBank.table.headers.subject')}</p>
           <p>{question.subject}</p>
@@ -142,15 +158,11 @@ const MobileQuestionCard = ({ question, onView, t }) => {
           <p>{question.topic}</p>
         </div>
         <div>
-          <p className="text-dark-gray">{t('admin.questionBank.table.headers.level')}</p>
-          <p>{question.level}</p>
-        </div>
-        <div>
           <p className="text-dark-gray">{t('admin.questionBank.table.headers.createdBy')}</p>
           <p>{question.createdBy}</p>
         </div>
       </div>
-      <div className="flex items-center justify-between pt-1">
+      <div className={`flex items-center justify-between pt-1 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
         <span
           className={`inline-flex h-[28px] min-w-[62px] items-center justify-center rounded-md px-3 text-xs font-semibold ${tone.wrapper} ${tone.text}`}
         >
@@ -187,7 +199,7 @@ const MobileQuestionCard = ({ question, onView, t }) => {
   );
 };
 
-const Pagination = ({ page, pageSize, total, onPageChange, t }) => {
+const Pagination = ({ page, pageSize, total, onPageChange, t, dir }) => {
   const totalPages = Math.ceil(total / pageSize);
   const safeTotalPages = Math.max(totalPages, 1);
   const firstItem = total ? (page - 1) * pageSize + 1 : 0;
@@ -204,14 +216,17 @@ const Pagination = ({ page, pageSize, total, onPageChange, t }) => {
   const pages = Array.from({ length: safeTotalPages }, (_, index) => index + 1);
 
   return (
-    <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-oxford-blue md:flex-row md:items-center md:justify-between md:bg-oxford-blue md:px-6 md:text-white">
+    <div 
+      className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-oxford-blue md:flex-row md:items-center md:justify-between md:bg-oxford-blue md:px-6 md:text-white"
+      dir={dir}
+    >
       <p className="text-[12px] font-roboto font-medium leading-[18px] tracking-[3%]">
         {t('admin.questionBank.table.pagination.showing')
           .replace('{{first}}', firstItem)
           .replace('{{last}}', lastItem)
           .replace('{{total}}', total)}
       </p>
-      <div className="flex items-center gap-2">
+      <div className={`flex items-center gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
         <button
           type="button"
           onClick={handlePrev}
@@ -263,22 +278,26 @@ const QuestionBankTable = ({
   onPageChange,
   onView,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dir = language === 'ar' ? 'rtl' : 'ltr';
   
   return (
-    <section className="w-full overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard md:min-h-[348px]">
+    <section 
+      className="w-full overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard h-auto"
+      dir={dir}
+    >
       <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full border-collapse">
-          <TableHeader t={t} />
+          <TableHeader t={t} dir={dir} />
           <tbody>
             {questions.length ? (
               questions.map((question) => (
-                <TableRow key={question.id} question={question} onView={onView} t={t} />
+                <TableRow key={question.id} question={question} onView={onView} t={t} dir={dir} />
               ))
             ) : (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={6}
                   className="px-6 py-10 text-center text-sm text-dark-gray"
                 >
                   {t('admin.questionBank.table.emptyState')}
@@ -296,6 +315,7 @@ const QuestionBankTable = ({
               question={question}
               onView={onView}
               t={t}
+              dir={dir}
             />
           ))
         ) : (
@@ -310,6 +330,7 @@ const QuestionBankTable = ({
         total={total}
         onPageChange={onPageChange}
         t={t}
+        dir={dir}
       />
     </section>
   );
@@ -323,5 +344,3 @@ QuestionBankTable.defaultProps = {
 };
 
 export default QuestionBankTable;
-
-

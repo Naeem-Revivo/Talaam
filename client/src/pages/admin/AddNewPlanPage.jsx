@@ -72,9 +72,9 @@ const AddNewPlanPage = () => {
             <h3 className="font-archivo text-[20px] font-bold leading-[100%] text-oxford-blue mb-4">
               {t('admin.addNewPlan.sections.addNewPlan')}
             </h3>
-            <div className="flex gap-20 py-5">
+            <div className="flex flex-col md:flex-row gap-5 md:gap-20 py-5 w-full">
               {/* Plan Name */}
-              <div>
+              <div className="w-full">
                 <label
                   htmlFor="planName"
                   className="block font-roboto text-[16px] font-medium leading-[20px] text-[#374151] mb-1"
@@ -88,10 +88,10 @@ const AddNewPlanPage = () => {
                   value={formData.planName}
                   onChange={handleChange}
                   placeholder={t('admin.addNewPlan.placeholders.planName')}
-                  className="mt-1 w-[475px] h-[60px] px-4 font-roboto text-[14px] font-normal leading-[20px] text-dark-gray bg-white border border-[rgba(3,39,70,0.2)] rounded-[12px] focus:outline-none shadow-input"
+                  className="mt-1 w-full h-[60px] px-4 font-roboto text-[14px] font-normal leading-[20px] text-dark-gray bg-white border border-[rgba(3,39,70,0.2)] rounded-[12px] focus:outline-none shadow-input"
                 />
               </div>
-              <div>
+              <div className="w-full">
                 <label
                   htmlFor="price"
                   className="block font-roboto text-[16px] font-medium leading-[20px] text-[#374151] mb-1"
@@ -105,7 +105,7 @@ const AddNewPlanPage = () => {
                   value={formData.price}
                   onChange={handleChange}
                   placeholder={t('admin.addNewPlan.placeholders.price')}
-                  className="mt-1 w-[475px] h-[60px] px-4 font-roboto text-[16px] font-normal leading-[20px] text-dark-gray bg-white border border-[rgba(3,39,70,0.2)] rounded-[12px] focus:outline-none"
+                  className="mt-1 w-full h-[60px] px-4 font-roboto text-[16px] font-normal leading-[20px] text-dark-gray bg-white border border-[rgba(3,39,70,0.2)] rounded-[12px] focus:outline-none"
                   style={{
                     boxShadow:
                       "0px 4px 6px -4px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1)",
@@ -165,13 +165,13 @@ const AddNewPlanPage = () => {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="w-[120px] h-[36px] rounded-[8px] border border-[#E5E7EB] bg-white font-roboto text-[16px] font-medium leading-[20px] text-[#374151] transition hover:bg-[#F9FAFB]"
+                className="w-full sm:w-[120px] h-[36px] rounded-[8px] border border-[#E5E7EB] bg-white font-roboto text-[16px] font-medium leading-[20px] text-[#374151] transition hover:bg-[#F9FAFB]"
               >
                 {t('admin.addNewPlan.buttons.cancel')}
               </button>
               <button
                 type="submit"
-                className="w-[120px] h-[36px] rounded-[8px] bg-[#ED4122] font-roboto text-[16px] font-medium leading-[20px] text-white transition hover:bg-[#d43a1f]"
+                className="w-full sm:w-[120px] h-[36px] rounded-[8px] bg-[#ED4122] font-roboto text-[16px] font-medium leading-[20px] text-white transition hover:bg-[#d43a1f]"
               >
                 {t('admin.addNewPlan.buttons.save')}
               </button>

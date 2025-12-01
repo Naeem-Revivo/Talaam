@@ -150,36 +150,18 @@ const SubscriptionTrendsPage = () => {
 
   return (
     <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]">
-      <div className="mx-auto flex max-w-[1400px] flex-col gap-6">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
             <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
               {t('admin.subscriptionTrends.hero.title')}
             </h1>
           </div>
-          <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto py-8">
+          <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
             <button
               type="button"
-              className="flex h-[36px] items-center justify-center gap-2 rounded-[8px] border border-[#03274633] bg-white px-3 md:px-4 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
-            >
-              <svg
-                width="16"
-                height="14"
-                viewBox="0 0 16 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M11.1999 14C10.9951 14 10.7903 13.9193 10.6343 13.7587C10.3215 13.4367 10.3215 12.9162 10.6343 12.5942L13.2686 9.88242H3.20012C2.75773 9.88242 2.40014 9.51349 2.40014 9.05891C2.40014 8.60433 2.75773 8.23539 3.20012 8.23539H15.1998C15.523 8.23539 15.8159 8.43628 15.9391 8.74345C16.0631 9.05145 15.9942 9.40563 15.7654 9.64116L11.7655 13.7587C11.6095 13.9193 11.4047 14 11.1999 14ZM13.5999 4.94133C13.5999 4.48675 13.2423 4.11781 12.7999 4.11781H2.73138L5.36569 1.406C5.67848 1.084 5.67848 0.563491 5.36569 0.241496C5.0529 -0.0804987 4.54726 -0.0804987 4.23447 0.241496L0.23457 4.35908C0.00577566 4.5946 -0.0630554 4.94878 0.0609415 5.25678C0.184138 5.56477 0.476989 5.76484 0.800181 5.76484H12.7999C13.2423 5.76484 13.5999 5.39591 13.5999 4.94133Z"
-                  fill="#25314C"
-                />
-              </svg>
-              {t('admin.subscriptionTrends.actions.comparePeriod')}
-            </button>
-            <button
-              type="button"
-              className="flex h-[36px] items-center justify-center gap-2 rounded-[8px] bg-[#ED4122] px-3 md:px-5 text-[14px] md:text-[16px] font-roboto font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
+              className="flex mt-1 h-[36px] items-center justify-center gap-2 rounded-[8px] bg-[#ED4122] px-3 md:px-5 text-[14px] md:text-[16px] font-roboto font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
             >
               <svg
                 width="14"
@@ -238,7 +220,7 @@ const SubscriptionTrendsPage = () => {
         </div>
 
         {/* Subscription KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
           {subscriptionKPICards.map((card) => (
             <AdminMetricCard
               key={card.id}
@@ -247,13 +229,13 @@ const SubscriptionTrendsPage = () => {
               subtext={card.subtext}
               subtextClassName={card.subtextClassName}
               icon={card.icon}
-              className="w-[262px] h-[107px]"
+              className="w-full h-[107px]"
             />
           ))}
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
           {/* Revenue Trend Chart */}
           <div className="rounded-[12px] w-full border border-[#03274633] bg-white p-4 md:p-6 shadow-card">
             <h2 className="pt-3 font-archivo text-[18px] md:text-[20px] font-bold leading-[24px] md:leading-[28px] text-oxford-blue">
@@ -346,7 +328,7 @@ const SubscriptionTrendsPage = () => {
           </div>
 
           {/* Plan Distribution Chart */}
-          <div className="rounded-[12px] border w-full border-[#03274633] bg-white p-4 md:p-6 shadow-card">
+          <div className="rounded-[12px] border w-full md:w-[455px] border-[#03274633] bg-white p-4 md:p-6 shadow-card">
             <h2 className="pt-3 font-archivo text-[18px] md:text-[20px] font-bold leading-[24px] md:leading-[28px] text-oxford-blue">
               {t('admin.subscriptionTrends.charts.planDistribution')}
             </h2>

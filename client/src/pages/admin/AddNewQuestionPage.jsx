@@ -22,7 +22,9 @@ const Dropdown = ({ label, value, options, onChange }) => {
   return (
     <div className="w-full" ref={dropdownRef}>
       {/* Label only on small screens */}
-      <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3 block lg:hidden">{label}</p>
+      <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3 block lg:hidden">
+        {label}
+      </p>
 
       {/* Dropdown Box */}
       <div
@@ -36,7 +38,9 @@ const Dropdown = ({ label, value, options, onChange }) => {
           viewBox="0 0 15 9"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          className={`transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
         >
           <path
             d="M0.6875 0.726562L7.00848 6.71211L13.3295 0.726562"
@@ -56,7 +60,9 @@ const Dropdown = ({ label, value, options, onChange }) => {
                   setIsOpen(false);
                 }}
                 className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                  displayValue === option ? "font-semibold text-oxford-blue" : "text-gray-700"
+                  displayValue === option
+                    ? "font-semibold text-oxford-blue"
+                    : "text-gray-700"
                 }`}
               >
                 {option}
@@ -76,10 +82,10 @@ const AddNewQuestionPage = () => {
   const [questionType, setQuestionType] = useState("Multiple Choice (MCQ)");
   const [options, setOptions] = useState({ A: "", B: "", C: "", D: "" });
   const [correctAnswer, setCorrectAnswer] = useState("Option A");
+  const [exam, setExam] = useState("");
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
-  const [cognitiveLevel, setCognitiveLevel] = useState("");
-  const [source, setSource] = useState("");
+  const [reference, setReference] = useState("");
   const [explanation, setExplanation] = useState(
     "Red and yellow are primary colors. When mixed, they create the secondary color orange."
   );
@@ -818,8 +824,9 @@ const AddNewQuestionPage = () => {
           onInput={handleInput}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          className={`w-full p-4 font-roboto text-[16px] leading-[100%] text-oxford-blue focus:outline-none ${!value && !isFocused ? "text-[#9CA3AF]" : ""
-            }`}
+          className={`w-full p-4 font-roboto text-[16px] leading-[100%] text-oxford-blue focus:outline-none ${
+            !value && !isFocused ? "text-[#9CA3AF]" : ""
+          }`}
           style={{
             minHeight: minHeight,
           }}
@@ -909,22 +916,15 @@ const AddNewQuestionPage = () => {
           {/* Header */}
           <header className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center mb-10">
             <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
-              {t('admin.addNewQuestion.hero.title')}
+              {t("admin.addNewQuestion.hero.title")}
             </h1>
             <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
-              <button
-                type="button"
-                onClick={handleSaveDraft}
-                className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#E5E7EB] bg-white px-3 md:px-5 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
-              >
-                {t('admin.addNewQuestion.buttons.saveDraft')}
-              </button>
               <button
                 type="button"
                 onClick={handleSubmit}
                 className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 md:px-6 text-[14px] md:text-[16px] font-archivo font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]"
               >
-                {t('admin.addNewQuestion.buttons.submit')}
+                {t("admin.addNewQuestion.buttons.submit")}
               </button>
             </div>
           </header>
@@ -934,19 +934,21 @@ const AddNewQuestionPage = () => {
             {/* Left Column - Question Details (2/3 width on xl screens) */}
             <div className="xl:col-span-2 bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
               <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark mb-[30px]">
-                {t('admin.addNewQuestion.sections.questionDetails')}
+                {t("admin.addNewQuestion.sections.questionDetails")}
               </h2>
 
               <div className="space-y-6">
                 {/* Question Text */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-5">
-                    {t('admin.addNewQuestion.fields.questionText')}
+                    {t("admin.addNewQuestion.fields.questionText")}
                   </label>
                   <RichTextEditor
                     value={questionText}
                     onChange={setQuestionText}
-                    placeholder={t('admin.addNewQuestion.placeholders.questionText')}
+                    placeholder={t(
+                      "admin.addNewQuestion.placeholders.questionText"
+                    )}
                     minHeight="200px"
                   />
                 </div>
@@ -954,16 +956,16 @@ const AddNewQuestionPage = () => {
                 {/* Question Type */}
                 <div>
                   <label className="block  text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('admin.addNewQuestion.fields.questionType')}
+                    {t("admin.addNewQuestion.fields.questionType")}
                   </label>
                   <Dropdown
                     value={questionType}
                     onChange={setQuestionType}
                     options={[
-                      t('admin.addNewQuestion.questionTypes.multipleChoice'),
-                      t('admin.addNewQuestion.questionTypes.trueFalse'),
-                      t('admin.addNewQuestion.questionTypes.shortAnswer'),
-                      t('admin.addNewQuestion.questionTypes.essay')
+                      t("admin.addNewQuestion.questionTypes.multipleChoice"),
+                      t("admin.addNewQuestion.questionTypes.trueFalse"),
+                      t("admin.addNewQuestion.questionTypes.shortAnswer"),
+                      t("admin.addNewQuestion.questionTypes.essay"),
                     ]}
                   />
                 </div>
@@ -973,23 +975,27 @@ const AddNewQuestionPage = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('admin.addNewQuestion.fields.optionA')}
+                        {t("admin.addNewQuestion.fields.optionA")}
                       </label>
                       <input
                         type="text"
                         value={options.A}
-                        onChange={(e) => handleOptionChange("A", e.target.value)}
+                        onChange={(e) =>
+                          handleOptionChange("A", e.target.value)
+                        }
                         className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                       />
                     </div>
                     <div>
                       <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('admin.addNewQuestion.fields.optionC')}
+                        {t("admin.addNewQuestion.fields.optionC")}
                       </label>
                       <input
                         type="text"
                         value={options.C}
-                        onChange={(e) => handleOptionChange("C", e.target.value)}
+                        onChange={(e) =>
+                          handleOptionChange("C", e.target.value)
+                        }
                         className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                       />
                     </div>
@@ -997,23 +1003,27 @@ const AddNewQuestionPage = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('admin.addNewQuestion.fields.optionB')}
+                        {t("admin.addNewQuestion.fields.optionB")}
                       </label>
                       <input
                         type="text"
                         value={options.B}
-                        onChange={(e) => handleOptionChange("B", e.target.value)}
+                        onChange={(e) =>
+                          handleOptionChange("B", e.target.value)
+                        }
                         className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                       />
                     </div>
                     <div>
                       <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('admin.addNewQuestion.fields.optionD')}
+                        {t("admin.addNewQuestion.fields.optionD")}
                       </label>
                       <input
                         type="text"
                         value={options.D}
-                        onChange={(e) => handleOptionChange("D", e.target.value)}
+                        onChange={(e) =>
+                          handleOptionChange("D", e.target.value)
+                        }
                         className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                       />
                     </div>
@@ -1023,16 +1033,16 @@ const AddNewQuestionPage = () => {
                 {/* Correct Answer */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('admin.addNewQuestion.fields.correctAnswer')}
+                    {t("admin.addNewQuestion.fields.correctAnswer")}
                   </label>
                   <Dropdown
                     value={correctAnswer}
                     onChange={setCorrectAnswer}
                     options={[
-                      t('admin.addNewQuestion.correctAnswerOptions.optionA'),
-                      t('admin.addNewQuestion.correctAnswerOptions.optionB'),
-                      t('admin.addNewQuestion.correctAnswerOptions.optionC'),
-                      t('admin.addNewQuestion.correctAnswerOptions.optionD')
+                      t("admin.addNewQuestion.correctAnswerOptions.optionA"),
+                      t("admin.addNewQuestion.correctAnswerOptions.optionB"),
+                      t("admin.addNewQuestion.correctAnswerOptions.optionC"),
+                      t("admin.addNewQuestion.correctAnswerOptions.optionD"),
                     ]}
                   />
                 </div>
@@ -1042,24 +1052,42 @@ const AddNewQuestionPage = () => {
             {/* Right Column - Classification (1/3 width on xl screens) */}
             <div className="bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
               <h2 className="text-[20px] leading-[100%] font-bold font-archivo text-blue-dark mb-6">
-                {t('admin.addNewQuestion.sections.classification')}
+                {t("admin.addNewQuestion.sections.classification")}
               </h2>
 
               <div className="space-y-6">
+                {/* Exam - NEW FIELD */}
+                <div>
+                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                    {t("admin.addNewQuestion.fields.exam")}
+                  </label>
+                  <Dropdown
+                    value={exam}
+                    onChange={setExam}
+                    options={[
+                      t("admin.addNewQuestion.placeholders.selectExam"),
+                      "Final Exam 2024",
+                      "Midterm Exam 2024",
+                      "Quiz 1",
+                      "Practice Test",
+                    ]}
+                  />
+                </div>
+
                 {/* Subject */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('admin.addNewQuestion.fields.subject')}
+                    {t("admin.addNewQuestion.fields.subject")}
                   </label>
                   <Dropdown
                     value={subject}
                     onChange={setSubject}
                     options={[
-                      t('admin.addNewQuestion.placeholders.selectSubject'),
-                      'Math',
-                      'Science',
-                      'History',
-                      'Geography'
+                      t("admin.addNewQuestion.placeholders.selectSubject"),
+                      "Math",
+                      "Science",
+                      "History",
+                      "Geography",
                     ]}
                   />
                 </div>
@@ -1067,54 +1095,33 @@ const AddNewQuestionPage = () => {
                 {/* Topic */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('admin.addNewQuestion.fields.topic')}
+                    {t("admin.addNewQuestion.fields.topic")}
                   </label>
                   <Dropdown
                     value={topic}
                     onChange={setTopic}
                     options={[
-                      t('admin.addNewQuestion.placeholders.selectTopic'),
-                      'Algebra',
-                      'Geometry',
-                      'Calculus'
+                      t("admin.addNewQuestion.placeholders.selectTopic"),
+                      "Algebra",
+                      "Geometry",
+                      "Calculus",
                     ]}
                   />
                 </div>
 
-                {/* Cognitive Level */}
+                {/* Reference - NEW FIELD */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('admin.addNewQuestion.fields.cognitiveLevel')}
+                    {t("admin.addNewQuestion.fields.reference")}
                   </label>
-                  <Dropdown
-                    value={cognitiveLevel}
-                    onChange={setCognitiveLevel}
-                    options={[
-                      t('admin.addNewQuestion.placeholders.selectLevel'),
-                      t('admin.addNewQuestion.cognitiveLevels.remember'),
-                      t('admin.addNewQuestion.cognitiveLevels.understand'),
-                      t('admin.addNewQuestion.cognitiveLevels.apply'),
-                      t('admin.addNewQuestion.cognitiveLevels.analyze'),
-                      t('admin.addNewQuestion.cognitiveLevels.evaluate'),
-                      t('admin.addNewQuestion.cognitiveLevels.create')
-                    ]}
-                  />
-                </div>
-
-                {/* Source */}
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('admin.addNewQuestion.fields.source')}
-                  </label>
-                  <Dropdown
-                    value={source}
-                    onChange={setSource}
-                    options={[
-                      t('admin.addNewQuestion.placeholders.selectSource'),
-                      t('admin.addNewQuestion.sources.textbook'),
-                      t('admin.addNewQuestion.sources.pastExam'),
-                      t('admin.addNewQuestion.sources.custom')
-                    ]}
+                  <input
+                    type="text"
+                    value={reference}
+                    onChange={(e) => setReference(e.target.value)}
+                    placeholder={t(
+                      "admin.addNewQuestion.placeholders.addReference"
+                    )}
+                    className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                   />
                 </div>
               </div>
@@ -1126,12 +1133,12 @@ const AddNewQuestionPage = () => {
             {/* Explanation Section */}
             <div className="lg:col-span-2 bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
               <h2 className="text-[20px] leading-[100%] font-archivo font-bold text-blue-dark mb-6">
-                {t('admin.addNewQuestion.sections.explanation')}
+                {t("admin.addNewQuestion.sections.explanation")}
               </h2>
               <RichTextEditor
                 value={explanation}
                 onChange={setExplanation}
-                placeholder={t('admin.addNewQuestion.placeholders.explanation')}
+                placeholder={t("admin.addNewQuestion.placeholders.explanation")}
                 minHeight="150px"
               />
             </div>
@@ -1143,14 +1150,14 @@ const AddNewQuestionPage = () => {
                 onClick={handleCancel}
                 className="flex h-[36px] w-full lg:w-auto items-center justify-center rounded-[8px] border border-[#E5E7EB] bg-white px-9 text-[16px] font-roboto font-medium leading-[24px] text-blue-dark transition hover:bg-[#F9FAFB]"
               >
-                {t('admin.addNewQuestion.buttons.cancel')}
+                {t("admin.addNewQuestion.buttons.cancel")}
               </button>
               <button
                 type="button"
                 onClick={handleSaveQuestion}
                 className="flex h-[36px] w-full lg:w-auto items-center justify-center rounded-[8px] bg-[#ED4122] px-8 text-[16px] font-roboto font-medium leading-[100%] text-white transition hover:bg-[#d43a1f]"
               >
-                {t('admin.addNewQuestion.buttons.saveQuestion')}
+                {t("admin.addNewQuestion.buttons.saveQuestion")}
               </button>
             </div>
           </div>
