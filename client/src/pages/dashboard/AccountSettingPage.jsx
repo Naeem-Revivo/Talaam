@@ -1,21 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLanguage } from "../../context/LanguageContext";
 import { PrimaryButton } from "../../components/common/Button";
 import Dropdown from "../../components/shared/Dropdown";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchCurrentUser } from "../../store/slices/authSlice";
 
 const AccountSettingPage = () => {
   const { language, t } = useLanguage();
   const dir = language === "ar" ? "rtl" : "ltr";
   const isRTL = dir === "rtl";
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState(
     language === "ar" ? "Arabic" : "English (US)"
   );
   const [profileData, setProfileData] = useState({
-    name: "John Doe",
-    email: "johndoe@gmail.com",
-    phone: "+1 (555) 123-4567",
+    name: "",
+    email: "",
+    phone: "",
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -24,6 +28,35 @@ const AccountSettingPage = () => {
     newPassword: "",
     confirmPassword: "",
   });
+
+  useEffect(() => {
+    const init = async () => {
+      if (!user) {
+        try {
+          const result = await dispatch(fetchCurrentUser());
+          const fetched = result.payload?.data?.user;
+          if (fetched) {
+            setProfileData((prev) => ({
+              ...prev,
+              name: fetched.fullName || fetched.name || "",
+              email: fetched.email || "",
+              phone: fetched.phone || "",
+            }));
+          }
+        } catch {
+          // ignore
+        }
+      } else {
+        setProfileData((prev) => ({
+          ...prev,
+          name: user.fullName || user.name || "",
+          email: user.email || "",
+          phone: user.phone || "",
+        }));
+      }
+    };
+    init();
+  }, [user, dispatch]);
 
   const languageOptions = [
     {

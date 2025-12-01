@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../context/LanguageContext'
+import { resendOTP, verifyOTP } from '../../store/slices/authSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
 
 const VerifyEmail = () => {
   const { language, t } = useLanguage()
   const navigate = useNavigate()
   const dir = language === 'ar' ? 'rtl' : 'ltr'
-  
+  const dispatch = useDispatch()
+  const { user, loading } = useSelector((state) => state.auth)
+
   const [code, setCode] = useState(['', '', '', '', '', ''])
   const [timer, setTimer] = useState(60)
   const [canResend, setCanResend] = useState(false)
@@ -70,22 +75,70 @@ const VerifyEmail = () => {
     inputRefs.current[focusIndex]?.focus()
   }
 
-  const handleResend = () => {
-    if (canResend) {
-      setCanResend(false)
-      // Reset timer to 60 - this will trigger the useEffect to start countdown
-      setTimer(60)
-      // Here you would trigger the resend API call
+  const handleResend = async () => {
+    if (!canResend) return
+
+    if (!user?.email) {
+      showErrorToast(t('verifyEmail.errors.missingEmail') || 'Missing email for verification.')
+      return;
+    }
+
+    setCanResend(false)
+    setTimer(60)
+
+    try {
+      const resultAction = await dispatch(resendOTP({ email: user.email }))
+      if (resendOTP.fulfilled.match(resultAction)) {
+        const msg =
+          resultAction.payload?.message ||
+          t('verifyEmail.resendSuccess') ||
+          'Verification code resent to your email.'
+        showSuccessToast(msg)
+      } else {
+        const msg =
+          resultAction.payload?.message ||
+          t('verifyEmail.errors.resend') ||
+          'Failed to resend verification code.'
+        showErrorToast(msg)
+      }
+    } catch {
+      showErrorToast(t('verifyEmail.errors.resend') || 'Failed to resend verification code.')
     }
   }
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     const fullCode = code.join('')
-    if (fullCode.length === 6) {
-      // Here you would trigger the verify API call
-      console.log('Verifying code:', fullCode)
-      // Navigate to profile page after verification
-      navigate('/profile')
+    if (fullCode.length !== 6) {
+      showErrorToast(t('verifyEmail.errors.requiredCode') || 'Please enter the 6-digit code.')
+      return
+    }
+
+    if (!user?.email) {
+      showErrorToast(t('verifyEmail.errors.missingEmail') || 'Missing email for verification.')
+      return
+    }
+
+    try {
+      const resultAction = await dispatch(
+        verifyOTP({ email: user.email, otp: fullCode })
+      )
+
+      if (verifyOTP.fulfilled.match(resultAction)) {
+        const msg =
+          resultAction.payload?.message ||
+          t('verifyEmail.success') ||
+          'Email verified successfully.'
+        showSuccessToast(msg)
+        navigate('/profile', { replace: true })
+      } else {
+        const msg =
+          resultAction.payload?.message ||
+          t('verifyEmail.errors.generic') ||
+          'Failed to verify code.'
+        showErrorToast(msg)
+      }
+    } catch {
+      showErrorToast(t('verifyEmail.errors.generic') || 'Failed to verify code.')
     }
   }
 
@@ -106,7 +159,9 @@ const VerifyEmail = () => {
           {/* Instructions */}
           <p className="font-roboto font-normal text-[16px] leading-[22px] tracking-normal text-dark-gray mb-7 lg:mb-8">
             {t('verifyEmail.instructions.text')}{' '}
-            <span className="font-roboto font-medium text-[16px] leading-[22px] tracking-normal">email@xyz.com</span>
+            <span className="font-roboto font-medium text-[16px] leading-[22px] tracking-normal">
+              {user?.email || 'email@xyz.com'}
+            </span>
             {'. '}{t('verifyEmail.instructions.expiry')}
           </p>
 

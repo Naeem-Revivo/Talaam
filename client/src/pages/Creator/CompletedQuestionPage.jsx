@@ -70,7 +70,7 @@ const CompletedQuestionPage = () => {
 
   // Handler for view action (if needed)
   const handleView = (item) => {
-    console.log('View item:', item);
+    navigate("/creator/question-bank/view-variant")
   };
 
   // Handler for edit action (if needed)

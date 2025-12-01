@@ -419,6 +419,15 @@
       "1number": "1 number"
     },
     "buttonText": "Create account",
+    "buttonLoading": "Creating account...",
+    "success": "Account created successfully.",
+    "errors": {
+      "requiredFields": "Please fill all required fields.",
+      "passwordMismatch": "Passwords do not match.",
+      "passwordWeak": "Password does not meet the requirements.",
+      "generic": "Signup failed. Please try again.",
+      "google": "Unable to start Google sign in. Please try again."
+    },
     "orContinueWith": "or continue with",
     "continueWithGoogle": "Continue with Google",
     "continueWithLinkedIn": "Continue with LinkedIn",
@@ -440,7 +449,15 @@
     "resendCode": "Resend code",
     "resendCodeIn": "Resend code in",
     "verifyAccount": "Verify Account",
-    "skipForNow": "Skip for now"
+    "skipForNow": "Skip for now",
+    "success": "Email verified successfully.",
+    "resendSuccess": "Verification code has been resent to your email.",
+    "errors": {
+      "missingEmail": "Missing email for verification.",
+      "requiredCode": "Please enter the 6-digit code.",
+      "resend": "Failed to resend verification code. Please try again.",
+      "generic": "Failed to verify code. Please try again."
+    }
   },
   "profile": {
     "title": "Complete your profile",
@@ -451,7 +468,12 @@
     "country": "Country",
     "timeZone": "Time Zone",
     "language": "Language",
-    "finishSetup": "Finish Setup"
+    "finishSetup": "Finish Setup",
+    "buttonLoading": "Saving...",
+    "success": "Profile completed successfully.",
+    "errors": {
+      "generic": "Failed to complete profile. Please try again."
+    }
   },
   "login": {
     "welcome": "Welcome!",
@@ -463,11 +485,16 @@
     "rememberMe": "Remember me",
     "forgotPassword": "Forgot Password?",
     "buttonText": "Sign In",
+    "buttonLoading": "Signing in...",
     "orContinueWith": "or continue with",
     "continueWithGoogle": "Continue with Google",
     "continueWithLinkedIn": "Continue with LinkedIn",
     "noAccount": "Don't have an Account?",
-    "signUp": "Sign Up"
+    "signUp": "Sign Up",
+    "errors": {
+      "generic": "Login failed. Please check your credentials and try again.",
+      "google": "Unable to start Google login. Please try again."
+    }
   },
   "forgotPassword": {
     "title": "Forgot Password?",
@@ -475,7 +502,13 @@
     "email": "Email Address",
     "emailPlaceholder": "Enter your registered email",
     "buttonText": "Send Verification Code",
-    "backToLogin": "Back to Login"
+    "backToLogin": "Back to Login",
+    "buttonLoading": "Sending...",
+    "success": "If an account exists for that email, a reset link has been sent.",
+    "errors": {
+      "required": "Please enter your email.",
+      "generic": "Failed to request password reset. Please try again."
+    }
   },
   "forgotModal": {
     "title": "Check your email",
@@ -490,7 +523,15 @@
     "newPasswordPlaceholder": "Enter new password",
     "confirmPassword": "Confirm New Password",
     "confirmPasswordPlaceholder": "Confirm new password",
-    "buttonText": "Set New Password"
+    "buttonText": "Set New Password",
+    "buttonLoading": "Saving...",
+    "success": "Password reset successfully.",
+    "errors": {
+      "missingToken": "Reset link is invalid or expired.",
+      "requiredFields": "Please fill all fields.",
+      "passwordMismatch": "Passwords do not match.",
+      "generic": "Failed to reset password. Please try again."
+    }
   },
   "passwordReset": {
     "title": "Password Reset!",
@@ -2690,6 +2731,10 @@
       "dashboard": "Dashboard",
       "questionBank": "Question Bank",
       "profile": "Profile"
+    },
+    "ViewVariant": {
+      "heading": "Variant Question",
+      "subheading": "Review and take action on a submitted variant."
     },
     "dashboard": {
       "title": "Creator",

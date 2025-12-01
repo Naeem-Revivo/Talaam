@@ -1,12 +1,19 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useLanguage } from '../../context/LanguageContext'
 import { downarrow } from '../../assets/svg/signup'
 import profileData from '../../data/profileData.json'
+import { useDispatch, useSelector } from 'react-redux'
+import { completeProfile, fetchCurrentUser } from '../../store/slices/authSlice'
+import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
+import { useNavigate } from 'react-router-dom'
 
 const Profile = () => {
   const { language, t } = useLanguage()
   const dir = language === 'ar' ? 'rtl' : 'ltr'
-  
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const { user, loading } = useSelector((state) => state.auth)
+
   const [formData, setFormData] = useState({
     fullName: '',
     dateOfBirth: '',
@@ -15,6 +22,41 @@ const Profile = () => {
     language: 'English'
   })
 
+  // Initialize from current user/profile if available
+  useEffect(() => {
+    const init = async () => {
+      // If we don't have user details yet, try fetching from /auth/me
+      if (!user) {
+        try {
+          const result = await dispatch(fetchCurrentUser())
+          const fetched = result.payload?.data?.user
+          if (fetched) {
+            setFormData((prev) => ({
+              ...prev,
+              fullName: fetched.fullName || fetched.name || '',
+              dateOfBirth: fetched.dateOfBirth ? fetched.dateOfBirth.substring(0, 10) : '',
+              country: fetched.country || prev.country,
+              timeZone: fetched.timezone || prev.timeZone,
+              language: fetched.language || prev.language,
+            }))
+          }
+        } catch {
+          // ignore; user might not be fully loaded yet
+        }
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          fullName: user.fullName || user.name || '',
+          dateOfBirth: user.dateOfBirth ? String(user.dateOfBirth).substring(0, 10) : '',
+          country: user.country || prev.country,
+          timeZone: user.timezone || prev.timeZone,
+          language: user.language || prev.language,
+        }))
+      }
+    }
+    init()
+  }, [user, dispatch])
+
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -22,12 +64,32 @@ const Profile = () => {
     })
   }
 
-  const handleFinishSetup = () => {
-    // Here you would typically validate the form and make an API call
-    // For now, we'll just log the data
-    console.log('Profile data:', formData)
-    // Navigate to home or dashboard after completion
-    // navigate('/')
+  const handleFinishSetup = async () => {
+    try {
+      const payload = {
+        fullName: formData.fullName,
+        dateOfBirth: formData.dateOfBirth,
+        country: formData.country,
+        timezone: formData.timeZone,
+        language: formData.language,
+      }
+
+      const resultAction = await dispatch(completeProfile(payload))
+
+      if (completeProfile.fulfilled.match(resultAction)) {
+        showSuccessToast(t('profile.success') || 'Profile completed successfully.')
+        // Navigate to dashboard after completion
+        navigate('/dashboard', { replace: true })
+      } else {
+        const msg =
+          resultAction.payload?.message ||
+          t('profile.errors.generic') ||
+          'Failed to complete profile.'
+        showErrorToast(msg)
+      }
+    } catch (e) {
+      showErrorToast(t('profile.errors.generic') || 'Failed to complete profile.')
+    }
   }
 
   const countries = profileData.countries
@@ -159,9 +221,10 @@ const Profile = () => {
             {/* Finish Setup Button */}
             <button
               onClick={handleFinishSetup}
-              className="bg-cinnebar-red text-white font-archivo font-semibold text-[20px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90"
+              disabled={loading}
+              className={`bg-cinnebar-red text-white font-archivo font-semibold text-[20px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              {t('profile.finishSetup')}
+              {loading ? t('profile.buttonLoading') || 'Saving...' : t('profile.finishSetup')}
             </button>
           </div>
         </div>

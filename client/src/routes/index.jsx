@@ -95,6 +95,7 @@ import CreatorProfile from '../pages/Creator/CreatorProfile';
 import ProcessorProfile from '../pages/Processor/ProcessorProfile';
 import ExplainerProfile from '../pages/Explainer/ExplainerProfile';
 import AddNewExam from '../pages/admin/AddNewExam';
+import CreatorViewVariant from '../pages/Creator/CreatorViewVariant';
 
 export const AppRoutes = () => {
   return (
@@ -218,6 +219,7 @@ export const AppRoutes = () => {
           <Route path="question-bank/assigned-question" element={<AssignedQuestionPage />} />
           <Route path="question-bank/completed-question" element={<CompletedQuestionPage />} />
           <Route path="question-bank/create-variants" element={<CreatorVariantsPage />} />
+          <Route path="question-bank/view-variant" element={<CreatorViewVariant />} />
         </Route>
       </Route>
 
