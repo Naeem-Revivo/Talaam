@@ -81,6 +81,10 @@ const AssignedQuestionPage = () => {
     navigate("/creator/question-bank");
   };
 
+  const handleCreateVariant = (item) => {
+    navigate("/creator/question-bank/create-variants");
+  };
+
   const subjectOptions = ["Subject", "Mathematics", "Physics", "Chemistry", "Biology"];
   const topicOptions = ["Difficulty", "Medium", "Easy", "Hard"];
   const subtopicOptions = ["Status", "Approved", "Failed", "Reject"];
@@ -128,7 +132,7 @@ const AssignedQuestionPage = () => {
         onCustomAction={(item) => {
           // Handle different custom actions based on actionType
           if (item.actionType === 'open') {
-            handleOpen(item);
+            handleCreateVariant(item);
           } else if (item.actionType === 'createVariant') {
             handleCreateVariant(item);
           }

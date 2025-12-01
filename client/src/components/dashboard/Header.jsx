@@ -4,13 +4,15 @@ import { useLanguage } from '../../context/LanguageContext';
 import { user, notif } from '../../assets/svg/dashboard/header';
 import { setting as settings, profile, logout } from '../../assets/svg/dashboard';
 import { hamburger } from '../../assets/svg';
-import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout as logoutAction } from '../../store/slices/authSlice';
+import { showLogoutToast } from '../../utils/toastConfig';
 
 const Header = ({ onToggleSidebar }) => {
   const { language, toggleLanguage, t } = useLanguage();
-  const { user: authUser, logout: doLogout, role } = useAuth();
-  console.log(authUser, "user");
+  const dispatch = useDispatch();
+  const { user: authUser } = useSelector((state) => state.auth);
   const location = useLocation();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -31,12 +33,15 @@ const Header = ({ onToggleSidebar }) => {
 
   const handleMenuItemClick = (action) => {
     if (action === 'Logout') {
-      doLogout();
+      dispatch(logoutAction());
       setIsUserMenuOpen(false);
+      showLogoutToast('You have been logged out successfully.');
+      setTimeout(() => {
+        navigate('/login', { replace: true });
+      }, 1500);
       return;
     }
     setIsUserMenuOpen(false);
-    // Add your navigation logic here
   };
 
   const handleSetting = () => {
@@ -228,7 +233,9 @@ const Header = ({ onToggleSidebar }) => {
                 {authUser?.name || 'User'}
               </p>
               <p className="text-[12px] leading-[100%] tracking-[0px] text-left pt-1 pl-1 font-roboto font-[400] text-dark-gray">
-                {role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User'}
+                {authUser?.role
+                  ? authUser.role.charAt(0).toUpperCase() + authUser.role.slice(1)
+                  : 'User'}
               </p>
             </div>
 

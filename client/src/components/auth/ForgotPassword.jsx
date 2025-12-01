@@ -1,11 +1,16 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../context/LanguageContext'
+import { useDispatch, useSelector } from 'react-redux'
+import { forgotPassword } from '../../store/slices/authSlice'
+import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
 
 const ForgotPassword = () => {
   const { language, t } = useLanguage()
   const navigate = useNavigate()
   const dir = language === 'ar' ? 'rtl' : 'ltr'
+  const dispatch = useDispatch()
+  const { loading } = useSelector((state) => state.auth)
   
   const [email, setEmail] = useState('')
 
@@ -13,11 +18,35 @@ const ForgotPassword = () => {
     setEmail(e.target.value)
   }
 
-  const handleForgotPassword = (e) => {
+  const handleForgotPassword = async (e) => {
     e.preventDefault()
-    // Here you would typically validate the email and make an API call
-    // Navigate to forgot modal page after submission
-    navigate('/forgot-modal')
+
+    if (!email) {
+      showErrorToast(t('forgotPassword.errors.required') || 'Please enter your email.')
+      return
+    }
+
+    try {
+      const resultAction = await dispatch(forgotPassword({ email }))
+
+      if (forgotPassword.fulfilled.match(resultAction)) {
+        const msg =
+          resultAction.payload?.message ||
+          t('forgotPassword.success') ||
+          'If an account exists, a reset link has been sent.'
+        showSuccessToast(msg)
+        // Keep your existing UX: show modal page after submission
+        navigate('/forgot-modal')
+      } else {
+        const msg =
+          resultAction.payload?.message ||
+          t('forgotPassword.errors.generic') ||
+          'Failed to request password reset.'
+        showErrorToast(msg)
+      }
+    } catch {
+      showErrorToast(t('forgotPassword.errors.generic') || 'Failed to request password reset.')
+    }
   }
 
   return (
@@ -53,9 +82,10 @@ const ForgotPassword = () => {
             {/* Send Verification Code Button */}
             <button
               onClick={handleForgotPassword}
-              className="bg-cinnebar-red text-white font-archivo font-semibold text-[16px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90"
+              disabled={loading}
+              className={`bg-cinnebar-red text-white font-archivo font-semibold text-[16px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              {t('forgotPassword.buttonText')}
+              {loading ? t('forgotPassword.buttonLoading') || 'Sending...' : t('forgotPassword.buttonText')}
             </button>
           </div>
 

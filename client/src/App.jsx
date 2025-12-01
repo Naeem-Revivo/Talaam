@@ -6,6 +6,8 @@ import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import { AppRoutes } from './routes/index.jsx';
 import { ToastContainer } from 'react-toastify';
+import { store } from './store/store.js';
+import { Provider } from 'react-redux';
 
 function AppContent() {
   const location = useLocation();
@@ -33,10 +35,10 @@ function App() {
     <Router>
       <ToastContainer />
       <LanguageProvider>
-        <AuthProvider>
+        <Provider store={store}>
           <ScrollToTop />
           <AppContent />
-        </AuthProvider>
+        </Provider>
       </LanguageProvider>
     </Router>
   );

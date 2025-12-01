@@ -95,20 +95,8 @@ const CreatorQuestionBank = () => {
     navigate("/creator/question-bank/completed-question");
   };
 
-  const handleCreateVariant = () => {
-    navigate("/creator/question-bank/create-variants");
-  };
-
-  const handleView = (item) => {
-    navigate("/gatherer/question-bank/Gatherer-QuestionDetail");
-  };
-
   const handleEdit = (item) => {
-    console.log("Edit item:", item);
-  };
-
-  const handleCustomAction = (item) => {
-    console.log("Custom action for item:", item);
+    navigate("/creator/question-bank/create-variants")
   };
 
   const stats = [
@@ -202,7 +190,7 @@ const CreatorQuestionBank = () => {
             pageSize={10}
             total={3}
             onPageChange={() => {}}
-            // onCustomAction={handleFix}
+            onCustomAction={handleEdit}
             emptyMessage={t("creator.questionBank.emptyMessage")}
             showPagination={false} 
           />
