@@ -40,6 +40,7 @@ const CreateAccount = () => {
     }
   }
 
+  // Recompute password requirements on every render to reflect current password value
   const passwordRequirements = checkPasswordRequirements(formData.password)
 
   // Check if all password requirements are met
@@ -64,13 +65,18 @@ const CreateAccount = () => {
         break
         
       case 'password':
+        // Check password requirements using the current value (not formData.password)
+        const currentPasswordRequirements = checkPasswordRequirements(value)
+        const currentPasswordValid = Object.values(currentPasswordRequirements).every(Boolean)
+        
         if (!value.trim()) {
           newErrors.password = 'Password is required'
           newErrors.passwordRequirements = 'Password must meet all requirements'
-        } else if (!isPasswordValid()) {
+        } else if (!currentPasswordValid) {
           newErrors.password = ''
           newErrors.passwordRequirements = 'Password must meet all requirements'
         } else {
+          // All requirements met - clear both errors
           newErrors.password = ''
           newErrors.passwordRequirements = ''
         }
