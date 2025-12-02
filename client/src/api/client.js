@@ -30,42 +30,61 @@ axiosClient.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Check if this is an auth endpoint - skip interceptor toasts for these as they're handled by components
+    const authEndpoints = ['/auth/login', '/auth/signup', '/auth/verify-otp', '/auth/resend-otp', 
+                           '/auth/forgot-password', '/auth/reset-password', '/auth/google'];
+    const requestUrl = error.config?.url || '';
+    const isAuthEndpoint = authEndpoints.some(endpoint => requestUrl.includes(endpoint));
+
     if (error.response) {
       // Handle common response errors
       if (error.response.status === 401) {
         // Handle unauthorized error, e.g., redirect to login
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-        
-        showLogoutToast('Your session has expired. Please login again.');
-        
-        const currentPath = window.location.pathname;
-        const authPaths = ['/login', '/signup', '/create-account', '/forgot-password', '/reset-password'];
-        const isOnAuthPage = authPaths.some(path => currentPath.includes(path));
+        // Skip toast for auth endpoints (login, signup, etc.) - handled by components
+        if (!isAuthEndpoint) {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+          
+          showLogoutToast('Your session has expired. Please login again.');
+          
+          const currentPath = window.location.pathname;
+          const authPaths = ['/login', '/signup', '/create-account', '/forgot-password', '/reset-password'];
+          const isOnAuthPage = authPaths.some(path => currentPath.includes(path));
 
-        if (!isOnAuthPage) {
-          setTimeout(() => {
-            window.location.href = '/login';
-          }, 1500);
+          if (!isOnAuthPage) {
+            setTimeout(() => {
+              window.location.href = '/login';
+            }, 1500);
+          }
         }
       } else if (error.response.status === 403) {
-        // Handle forbidden error
-        showErrorToast('You do not have permission to access this resource.');
+        // Handle forbidden error - skip for auth endpoints
+        if (!isAuthEndpoint) {
+          showErrorToast('You do not have permission to access this resource.');
+        }
       } else if (error.response.status === 404) {
-        // Handle not found error
-        const errorMessage = error.response.data?.message || error.response.data?.error || 'Resource not found';
-        showErrorToast(errorMessage);
+        // Handle not found error - skip for auth endpoints
+        if (!isAuthEndpoint) {
+          const errorMessage = error.response.data?.message || error.response.data?.error || 'Resource not found';
+          showErrorToast(errorMessage);
+        }
       } else if (error.response.status >= 500) {
-        // Handle server errors
-        showErrorToast('Server error. Please try again later or contact support if the problem persists.');
+        // Handle server errors - skip for auth endpoints
+        if (!isAuthEndpoint) {
+          showErrorToast('Server error. Please try again later or contact support if the problem persists.');
+        }
       } else {
-        // Handle other client errors
-        const errorMessage = error.response.data?.message || error.response.data?.error || 'An error occurred';
-        showErrorToast(errorMessage);
+        // Handle other client errors - skip for auth endpoints
+        if (!isAuthEndpoint) {
+          const errorMessage = error.response.data?.message || error.response.data?.error || 'An error occurred';
+          showErrorToast(errorMessage);
+        }
       }
     } else {
-      // Handle network errors
-      showErrorToast('Network error. Please check your internet connection and try again.');
+      // Handle network errors - skip for auth endpoints
+      if (!isAuthEndpoint) {
+        showErrorToast('Network error. Please check your internet connection and try again.');
+      }
     }
 
     return Promise.reject(error);

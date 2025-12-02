@@ -32,7 +32,7 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <ToastContainer />
+      <ToastContainer icon={false} />
       <LanguageProvider>
         <Provider store={store}>
           <ScrollToTop />

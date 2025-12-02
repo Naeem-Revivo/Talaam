@@ -102,7 +102,7 @@ const VerifyEmail = () => {
     if (!user?.email) {
       showErrorToast(
         t('verifyEmail.errors.missingEmail') || 'Missing email for verification.',
-        { title: 'Verification Error' }
+        { title: 'Verification Error', isAuth: true }
       )
       return;
     }
@@ -114,21 +114,23 @@ const VerifyEmail = () => {
       const resultAction = await dispatch(resendOTP({ email: user.email }))
       if (resendOTP.fulfilled.match(resultAction)) {
         const msg =
+          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
           t('verifyEmail.resendSuccess') ||
           'Verification code resent to your email.'
-        showSuccessToast(msg, { title: 'Code Resent' })
+        showSuccessToast(msg, { title: t('verifyEmail.resendTitle') || 'Code Resent', isAuth: true })
       } else {
         const msg =
+          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
           t('verifyEmail.errors.resend') ||
           'Failed to resend verification code.'
-        showErrorToast(msg, { title: 'Resend Failed' })
+        showErrorToast(msg, { title: t('verifyEmail.errors.resendTitle') || 'Resend Failed', isAuth: true })
       }
     } catch {
       showErrorToast(
         t('verifyEmail.errors.resend') || 'Failed to resend verification code.',
-        { title: 'Resend Failed' }
+        { title: t('verifyEmail.errors.resendTitle') || 'Resend Failed', isAuth: true }
       )
     }
   }
@@ -144,7 +146,7 @@ const VerifyEmail = () => {
     if (!user?.email) {
       showErrorToast(
         t('verifyEmail.errors.missingEmail') || 'Missing email for verification.',
-        { title: 'Verification Error' }
+        { title: 'Verification Error', isAuth: true }
       )
       return
     }
@@ -156,14 +158,18 @@ const VerifyEmail = () => {
 
       if (verifyOTP.fulfilled.match(resultAction)) {
         const msg =
+          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
           t('verifyEmail.success') ||
           'Email verified successfully.'
-        showSuccessToast(msg, { title: 'Email Verified' })
+        showSuccessToast(msg, { title: t('verifyEmail.successTitle') || 'Email Verified', isAuth: true })
         navigate('/profile', { replace: true })
       } else {
-        // Check if it's an invalid OTP error
-        const errorMessage = resultAction.payload?.message || resultAction.error?.message || ''
+        // Extract error message from API response
+        const errorMessage = 
+          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
+          resultAction.payload?.message ||
+          ''
         const isInvalidOTP = 
           errorMessage.toLowerCase().includes('invalid') ||
           errorMessage.toLowerCase().includes('incorrect') ||
@@ -172,20 +178,20 @@ const VerifyEmail = () => {
           (resultAction.payload?.code && resultAction.payload.code === 'INVALID_OTP')
         
         if (isInvalidOTP) {
-          // Show error under the OTP input fields
-          setCodeError('The verification code is invalid or has expired. Please try again.')
+          const errorMsg = errorMessage || t('verifyEmail.errors.invalidCode') || 'The verification code is invalid or has expired. Please try again.'
+          setCodeError(errorMsg)
         } else {
           const msg =
             errorMessage ||
             t('verifyEmail.errors.generic') ||
             'Failed to verify code.'
-          showErrorToast(msg, { title: 'Verification Failed' })
+          showErrorToast(msg, { title: t('verifyEmail.errors.title') || 'Verification Failed', isAuth: true })
         }
       }
     } catch {
       showErrorToast(
         t('verifyEmail.errors.generic') || 'Failed to verify code.',
-        { title: 'Verification Failed' }
+        { title: t('verifyEmail.errors.title') || 'Verification Failed', isAuth: true }
       )
     }
   }

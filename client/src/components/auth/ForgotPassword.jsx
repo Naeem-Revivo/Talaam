@@ -57,23 +57,24 @@ const ForgotPassword = () => {
 
       if (forgotPassword.fulfilled.match(resultAction)) {
         const msg =
+          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
           t('forgotPassword.success') ||
           'If an account exists, a reset link has been sent.'
-        showSuccessToast(msg, { title: 'Reset Email Sent' })
-        // Keep your existing UX: show modal page after submission
+        showSuccessToast(msg, { title: t('forgotPassword.successTitle') || 'Reset Email Sent', isAuth: true })
         navigate('/forgot-modal')
       } else {
         const msg =
-          resultAction.payload ||
+          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
+          resultAction.payload?.message ||
           t('forgotPassword.errors.generic') ||
           'Failed to request password reset.'
-        showErrorToast(msg, { title: 'Reset Failed' })
+        showErrorToast(msg, { title: t('forgotPassword.errors.title') || 'Reset Failed', isAuth: true })
       }
     } catch {
       showErrorToast(
         t('forgotPassword.errors.generic') || 'Failed to request password reset.',
-        { title: 'Reset Failed' }
+        { title: t('forgotPassword.errors.title') || 'Reset Failed', isAuth: true }
       )
     }
   }

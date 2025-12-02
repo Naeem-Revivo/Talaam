@@ -421,7 +421,9 @@
     "buttonText": "Create account",
     "buttonLoading": "Creating account...",
     "success": "Account created successfully.",
+    "successTitle": "Account Created",
     "errors": {
+      "title": "Signup Failed",
       "requiredFields": "Please fill all required fields.",
       "passwordMismatch": "Passwords do not match.",
       "passwordWeak": "Password does not meet the requirements.",
@@ -451,10 +453,16 @@
     "verifyAccount": "Verify Account",
     "skipForNow": "Skip for now",
     "success": "Email verified successfully.",
+    "successTitle": "Email Verified",
     "resendSuccess": "Verification code has been resent to your email.",
+    "resendTitle": "Code Resent",
+    "verifying": "Verifying...",
     "errors": {
+      "title": "Verification Failed",
+      "resendTitle": "Resend Failed",
       "missingEmail": "Missing email for verification.",
       "requiredCode": "Please enter the 6-digit code.",
+      "invalidCode": "The verification code is invalid or has expired. Please try again.",
       "resend": "Failed to resend verification code. Please try again.",
       "generic": "Failed to verify code. Please try again."
     }
@@ -471,7 +479,9 @@
     "finishSetup": "Finish Setup",
     "buttonLoading": "Saving...",
     "success": "Profile completed successfully.",
+    "successTitle": "Profile Saved",
     "errors": {
+      "title": "Save Failed",
       "generic": "Failed to complete profile. Please try again."
     }
   },
@@ -491,7 +501,10 @@
     "continueWithLinkedIn": "Continue with LinkedIn",
     "noAccount": "Don't have an Account?",
     "signUp": "Sign Up",
+    "success": "Login successful! Welcome back.",
+    "successTitle": "Login Successful",
     "errors": {
+      "title": "Login Failed",
       "generic": "Login failed. Please check your credentials and try again.",
       "google": "Unable to start Google login. Please try again."
     }
@@ -505,7 +518,9 @@
     "backToLogin": "Back to Login",
     "buttonLoading": "Sending...",
     "success": "If an account exists for that email, a reset link has been sent.",
+    "successTitle": "Reset Email Sent",
     "errors": {
+      "title": "Reset Failed",
       "required": "Please enter your email.",
       "generic": "Failed to request password reset. Please try again."
     }
@@ -526,7 +541,10 @@
     "buttonText": "Set New Password",
     "buttonLoading": "Saving...",
     "success": "Password reset successfully.",
+    "successTitle": "Password Reset",
     "errors": {
+      "title": "Reset Failed",
+      "tokenTitle": "Invalid Reset Link",
       "missingToken": "Reset link is invalid or expired.",
       "requiredFields": "Please fill all fields.",
       "passwordMismatch": "Passwords do not match.",
@@ -3278,5 +3296,13 @@
     "subject": "Subject",
     "role": "Role",
     "status": "Status"
+  },
+  "toast": {
+    "title": {
+      "logout": "Logout Successful"
+    },
+    "message": {
+      "logoutSuccess": "You have been logged out successfully."
+    }
   }
 }

@@ -107,7 +107,7 @@ const SetNewPassword = () => {
     if (!token) {
       showErrorToast(
         t('setNewPassword.errors.missingToken') || 'Reset link is invalid or expired.',
-        { title: 'Invalid Reset Link' }
+        { title: 'Invalid Reset Link', isAuth: true }
       )
       return
     }
@@ -124,14 +124,18 @@ const SetNewPassword = () => {
 
       if (resetPassword.fulfilled.match(resultAction)) {
         const msg =
+          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
           t('setNewPassword.success') ||
           'Password reset successfully.'
-        showSuccessToast(msg, { title: 'Password Reset' })
+        showSuccessToast(msg, { title: t('setNewPassword.successTitle') || 'Password Reset', isAuth: true })
         navigate('/password-reset', { replace: true })
       } else {
-        // Handle specific API errors
-        const errorMessage = resultAction.payload?.message || resultAction.error?.message || ''
+        // Extract error message from API response
+        const errorMessage = 
+          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
+          resultAction.payload?.message ||
+          ''
         
         // Check if it's a token-related error
         const isTokenError = 
@@ -143,22 +147,20 @@ const SetNewPassword = () => {
             resultAction.payload.code === 'TOKEN_EXPIRED'))
         
         if (isTokenError) {
-          showErrorToast(
-            errorMessage || 'Reset link is invalid or has expired.',
-            { title: 'Invalid Reset Link' }
-          )
+          const msg = errorMessage || t('setNewPassword.errors.missingToken') || 'Reset link is invalid or has expired.'
+          showErrorToast(msg, { title: t('setNewPassword.errors.tokenTitle') || 'Invalid Reset Link', isAuth: true })
         } else {
           const msg =
             errorMessage ||
             t('setNewPassword.errors.generic') ||
             'Failed to reset password.'
-          showErrorToast(msg, { title: 'Reset Failed' })
+          showErrorToast(msg, { title: t('setNewPassword.errors.title') || 'Reset Failed', isAuth: true })
         }
       }
     } catch {
       showErrorToast(
-        'An unexpected error occurred. Please try again.',
-        { title: 'Reset Failed' }
+        t('setNewPassword.errors.generic') || 'An unexpected error occurred. Please try again.',
+        { title: t('setNewPassword.errors.title') || 'Reset Failed', isAuth: true }
       )
     }
   }
