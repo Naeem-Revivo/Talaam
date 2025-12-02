@@ -25,9 +25,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    // Primary connection URL (pooled for Vercel Postgres)
-    url: connectionUrl,
-    // Direct connection URL for migrations (non-pooling)
-    directUrl: directUrl,
+    url: process.env.DATABASE_URL,
   },
 });
