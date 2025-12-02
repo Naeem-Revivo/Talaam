@@ -13,16 +13,42 @@ const ForgotPassword = () => {
   const { loading } = useSelector((state) => state.auth)
   
   const [email, setEmail] = useState('')
+  const [emailError, setEmailError] = useState('')
+
+  // Email validation function
+  const validateEmail = (email) => {
+    if (!email.trim()) {
+      return 'Email is required'
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return 'Please enter a valid email address'
+    }
+    return ''
+  }
 
   const handleInputChange = (e) => {
-    setEmail(e.target.value)
+    const value = e.target.value
+    setEmail(value)
+    
+    // Clear error when user starts typing
+    if (emailError) {
+      setEmailError('')
+    }
+  }
+
+  // Validate email on blur
+  const handleBlur = () => {
+    const error = validateEmail(email)
+    setEmailError(error)
   }
 
   const handleForgotPassword = async (e) => {
     e.preventDefault()
 
-    if (!email) {
-      showErrorToast(t('forgotPassword.errors.required') || 'Please enter your email.')
+    // Validate email
+    const validationError = validateEmail(email)
+    if (validationError) {
+      setEmailError(validationError)
       return
     }
 
@@ -34,18 +60,21 @@ const ForgotPassword = () => {
           resultAction.payload?.message ||
           t('forgotPassword.success') ||
           'If an account exists, a reset link has been sent.'
-        showSuccessToast(msg)
+        showSuccessToast(msg, { title: 'Reset Email Sent' })
         // Keep your existing UX: show modal page after submission
         navigate('/forgot-modal')
       } else {
         const msg =
-          resultAction.payload?.message ||
+          resultAction.payload ||
           t('forgotPassword.errors.generic') ||
           'Failed to request password reset.'
-        showErrorToast(msg)
+        showErrorToast(msg, { title: 'Reset Failed' })
       }
     } catch {
-      showErrorToast(t('forgotPassword.errors.generic') || 'Failed to request password reset.')
+      showErrorToast(
+        t('forgotPassword.errors.generic') || 'Failed to request password reset.',
+        { title: 'Reset Failed' }
+      )
     }
   }
 
@@ -74,9 +103,15 @@ const ForgotPassword = () => {
                 name="email"
                 value={email}
                 onChange={handleInputChange}
+                onBlur={handleBlur}
                 placeholder={t('forgotPassword.emailPlaceholder')}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[16px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input"
+                className={`px-4 py-3 border ${emailError ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[16px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input`}
               />
+              {emailError && (
+                <p className="mt-1 text-sm text-red-500 font-roboto">
+                  {emailError}
+                </p>
+              )}
             </div>
 
             {/* Send Verification Code Button */}

@@ -15,6 +15,7 @@ const VerifyEmail = () => {
   const [code, setCode] = useState(['', '', '', '', '', ''])
   const [timer, setTimer] = useState(60)
   const [canResend, setCanResend] = useState(false)
+  const [codeError, setCodeError] = useState('')
   const inputRefs = useRef([])
 
   // Timer countdown
@@ -44,6 +45,11 @@ const VerifyEmail = () => {
     newCode[index] = value
     setCode(newCode)
 
+    // Clear error when user starts typing
+    if (codeError) {
+      setCodeError('')
+    }
+
     // Auto-focus next input
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus()
@@ -69,17 +75,35 @@ const VerifyEmail = () => {
     })
     
     setCode(newCode)
+    
+    // Clear error when user pastes code
+    if (codeError) {
+      setCodeError('')
+    }
+    
     // Focus the next empty input or the last one
     const nextEmptyIndex = newCode.findIndex((val) => !val)
     const focusIndex = nextEmptyIndex === -1 ? 5 : nextEmptyIndex
     inputRefs.current[focusIndex]?.focus()
   }
 
+  // Validate the OTP code
+  const validateCode = () => {
+    const fullCode = code.join('')
+    if (fullCode.length !== 6) {
+      return 'Please enter the complete 6-digit verification code'
+    }
+    return ''
+  }
+
   const handleResend = async () => {
     if (!canResend) return
 
     if (!user?.email) {
-      showErrorToast(t('verifyEmail.errors.missingEmail') || 'Missing email for verification.')
+      showErrorToast(
+        t('verifyEmail.errors.missingEmail') || 'Missing email for verification.',
+        { title: 'Verification Error' }
+      )
       return;
     }
 
@@ -93,34 +117,41 @@ const VerifyEmail = () => {
           resultAction.payload?.message ||
           t('verifyEmail.resendSuccess') ||
           'Verification code resent to your email.'
-        showSuccessToast(msg)
+        showSuccessToast(msg, { title: 'Code Resent' })
       } else {
         const msg =
           resultAction.payload?.message ||
           t('verifyEmail.errors.resend') ||
           'Failed to resend verification code.'
-        showErrorToast(msg)
+        showErrorToast(msg, { title: 'Resend Failed' })
       }
     } catch {
-      showErrorToast(t('verifyEmail.errors.resend') || 'Failed to resend verification code.')
+      showErrorToast(
+        t('verifyEmail.errors.resend') || 'Failed to resend verification code.',
+        { title: 'Resend Failed' }
+      )
     }
   }
 
   const handleVerify = async () => {
-    const fullCode = code.join('')
-    if (fullCode.length !== 6) {
-      showErrorToast(t('verifyEmail.errors.requiredCode') || 'Please enter the 6-digit code.')
+    // First validate the code
+    const validationError = validateCode()
+    if (validationError) {
+      setCodeError(validationError)
       return
     }
 
     if (!user?.email) {
-      showErrorToast(t('verifyEmail.errors.missingEmail') || 'Missing email for verification.')
+      showErrorToast(
+        t('verifyEmail.errors.missingEmail') || 'Missing email for verification.',
+        { title: 'Verification Error' }
+      )
       return
     }
 
     try {
       const resultAction = await dispatch(
-        verifyOTP({ email: user.email, otp: fullCode })
+        verifyOTP({ email: user.email, otp: code.join('') })
       )
 
       if (verifyOTP.fulfilled.match(resultAction)) {
@@ -128,17 +159,34 @@ const VerifyEmail = () => {
           resultAction.payload?.message ||
           t('verifyEmail.success') ||
           'Email verified successfully.'
-        showSuccessToast(msg)
+        showSuccessToast(msg, { title: 'Email Verified' })
         navigate('/profile', { replace: true })
       } else {
-        const msg =
-          resultAction.payload?.message ||
-          t('verifyEmail.errors.generic') ||
-          'Failed to verify code.'
-        showErrorToast(msg)
+        // Check if it's an invalid OTP error
+        const errorMessage = resultAction.payload?.message || resultAction.error?.message || ''
+        const isInvalidOTP = 
+          errorMessage.toLowerCase().includes('invalid') ||
+          errorMessage.toLowerCase().includes('incorrect') ||
+          errorMessage.toLowerCase().includes('wrong') ||
+          errorMessage.toLowerCase().includes('expired') ||
+          (resultAction.payload?.code && resultAction.payload.code === 'INVALID_OTP')
+        
+        if (isInvalidOTP) {
+          // Show error under the OTP input fields
+          setCodeError('The verification code is invalid or has expired. Please try again.')
+        } else {
+          const msg =
+            errorMessage ||
+            t('verifyEmail.errors.generic') ||
+            'Failed to verify code.'
+          showErrorToast(msg, { title: 'Verification Failed' })
+        }
       }
     } catch {
-      showErrorToast(t('verifyEmail.errors.generic') || 'Failed to verify code.')
+      showErrorToast(
+        t('verifyEmail.errors.generic') || 'Failed to verify code.',
+        { title: 'Verification Failed' }
+      )
     }
   }
 
@@ -166,7 +214,7 @@ const VerifyEmail = () => {
           </p>
 
           {/* Code Input Section */}
-          <div className="flex flex-col gap-4 lg:gap-6 mb-6 lg:mb-6">
+          <div className="flex flex-col gap-4 lg:gap-6 mb-2">
             <label className="block font-roboto font-normal text-[16px] leading-none tracking-normal text-oxford-blue ">
               {t('verifyEmail.enterCode')}
             </label>
@@ -184,10 +232,19 @@ const VerifyEmail = () => {
                   onChange={(e) => handleInputChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   onPaste={handlePaste}
-                  className="w-12 lg:w-14 h-12 lg:h-14 border border-[#03274633] rounded-lg text-center text-xl lg:text-2xl font-semibold focus:outline-none focus:border-cinnebar-red focus:ring-2 focus:ring-cinnebar-red/20 shadow-input"
+                  className={`w-12 lg:w-14 h-12 lg:h-14 border ${
+                    codeError ? 'border-red-500' : 'border-[#03274633]'
+                  } rounded-lg text-center text-xl lg:text-2xl font-semibold focus:outline-none focus:border-cinnebar-red focus:ring-2 focus:ring-cinnebar-red/20 shadow-input`}
                 />
               ))}
             </div>
+            
+            {/* Code Error Message */}
+            {codeError && (
+              <p className="mt-1 text-sm text-red-500 font-roboto">
+                {codeError}
+              </p>
+            )}
           </div>
 
           {/* Resend Code Section */}
@@ -218,9 +275,12 @@ const VerifyEmail = () => {
           {/* Verify Account Button */}
           <button
             onClick={handleVerify}
-            className="bg-cinnebar-red text-white font-roboto font-semibold text-base leading-none tracking-normal rounded-lg transition-colors duration-200 py-5 w-full lg:w-[423px] h-[57px] mb-4 lg:mb-6"
+            disabled={loading}
+            className={`bg-cinnebar-red text-white font-roboto font-semibold text-base leading-none tracking-normal rounded-lg transition-colors duration-200 py-5 w-full lg:w-[423px] h-[57px] mb-4 lg:mb-6 hover:bg-cinnebar-red/90 ${
+              loading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
           >
-            {t('verifyEmail.verifyAccount')}
+            {loading ? t('verifyEmail.verifying') || 'Verifying...' : t('verifyEmail.verifyAccount')}
           </button>
 
           {/* Skip for now */}

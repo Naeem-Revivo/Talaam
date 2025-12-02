@@ -22,6 +22,8 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
   const getFieldKey = (columnName) => {
     return columnName.toLowerCase().replace(/ /g, "");
   };
+  const { language } = useLanguage();
+  const isRTL = language === "ar";
 
   return (
     <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row">
@@ -40,6 +42,8 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
           const isDraft = value.toLowerCase() === "draft";
           const isPaid = value.toLowerCase() === "paid";
           const isFailed = value.toLowerCase() === "failed";
+          const isVisible = value.toLowerCase() === "visible";
+          const isHidden = value.toLowerCase() === "hidden";
           return (
             <td key={column.key} className="px-6 py-8 text-center">
               <span
@@ -49,6 +53,10 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
                     : isPaid
                     ? "bg-[#FDF0D5] text-[#ED4122]"
                     : isFailed
+                    ? "bg-[#ED4122] text-white"
+                    : isVisible
+                    ? "bg-[#FDF0D5] text-[#ED4122]"
+                    : isHidden
                     ? "bg-[#ED4122] text-white"
                     : isaccept
                     ? "bg-[#FDF0D5] text-[#ED4122]"
@@ -113,6 +121,28 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
               </svg>
               Download
             </button>
+          )}
+          {item.actionType === "toggle" && (
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={() => onCustomAction?.(item)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  item.visibility ? "bg-orange-dark" : "bg-[#E5E7EB]"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    item.visibility
+                      ? isRTL
+                        ? "-translate-x-6"
+                        : "translate-x-6"
+                      : isRTL
+                      ? "-translate-x-1"
+                      : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
           )}
           {/* Custom action buttons based on action type */}
           {item.actionType === "view" && (
@@ -222,6 +252,8 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
 
 const MobileCard = ({ item, columns, onView, onEdit, onCustomAction }) => {
   const displayColumns = columns.slice(0, -1);
+  const { language } = useLanguage();
+  const isRTL = language === "ar";
 
   return (
     <article className="flex flex-col rounded-[8px] border border-[#E5E7EB] bg-white shadow-sm md:hidden overflow-hidden">
@@ -239,6 +271,8 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction }) => {
             const isfixrequest = value.toLowerCase() === "fix request";
             const isRevision = value.toLowerCase() === "revision";
             const isDraft = value.toLowerCase() === "draft";
+            const isVisible = value.toLowerCase() === "visible";
+            const isHidden = value.toLowerCase() === "hidden";
             return (
               <div key={column.key} className="flex items-center gap-2">
                 <span className="text-[14px] font-normal text-oxford-blue">
@@ -250,6 +284,10 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction }) => {
                       ? "bg-[#FDF0D5] text-[#ED4122]"
                       : isaccept
                       ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : isVisible
+                      ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : isHidden
+                      ? "bg-[#ED4122] text-white"
                       : isDraft
                       ? "bg-[#FDF0D5] text-[#ED4122]"
                       : isSentBack
@@ -316,6 +354,28 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction }) => {
             </svg>
             Download
           </button>
+        )}
+        {item.actionType === "toggle" && (
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={() => onCustomAction?.(item)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                item.visibility ? "bg-orange-dark" : "bg-[#E5E7EB]"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  item.visibility
+                    ? isRTL
+                      ? "-translate-x-6"
+                      : "translate-x-6"
+                    : isRTL
+                    ? "-translate-x-1"
+                    : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
         )}
         {item.actionType === "view" && (
           <button

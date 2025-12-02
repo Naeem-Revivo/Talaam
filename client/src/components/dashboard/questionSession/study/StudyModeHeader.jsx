@@ -36,9 +36,9 @@ const StudyModeHeader = ({
           <button className="px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:opacity-70 flex items-center gap-2">
             <img src={flag} alt="Mark" />
           </button>
-          <button className="px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:opacity-70">
+          {/* <button className="px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:opacity-70">
             {t('dashboard.questionSession.formulaSheet')}
-          </button>
+          </button> */}
           <div className="flex items-center gap-2">
             <span className="text-[14px] font-normal text-oxford-blue font-roboto">
               {t('dashboard.questionSession.timeRemaining')} <span className="font-bold">{currentQuestion.timeRemaining || '--:--'}</span>
@@ -68,11 +68,11 @@ const StudyModeHeader = ({
         </div>
 
         <div className="hidden lg:flex items-center gap-2 md:gap-4 w-full lg:w-auto justify-between lg:justify-end">
-          <button className="hidden lg:flex w-[116px] max-h-[35px] items-center text-nowrap justify-center px-2 md:px-4 py-3 border-[0.5px] text-oxford-blue rounded text-[10px] leading-[100%] font-normal font-archivo hover:opacity-70">
-            {/* <img src={listcheck} alt="Mark" className='w-5 h-5'/> */}
+          {/* <button className="hidden lg:flex w-[116px] max-h-[35px] items-center text-nowrap justify-center px-2 md:px-4 py-3 border-[0.5px] text-oxford-blue rounded text-[10px] leading-[100%] font-normal font-archivo hover:opacity-70">
+            <img src={listcheck} alt="Mark" className='w-5 h-5'/>
             <span className="hidden sm:inline">{t('dashboard.questionSession.formulaSheet')}</span>
             <span className="sm:hidden">{t('dashboard.questionSession.formulaSheet')}</span>
-          </button>
+          </button> */}
           <div className="hidden lg:flex items-center gap-2">
             <span className="text-[12px] md:text-[14px] leading-[24px] font-normal text-black font-archivo border py-2 px-4 border-[#E5E7EB] rounded-lg flex flex-col">
               <span className="hidden sm:inline text-[12px] leading-[20px] font-roboto font-normal text-[#4B5563]">{t('dashboard.questionSession.timeRemaining')} </span>
