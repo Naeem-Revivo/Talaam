@@ -7,7 +7,7 @@ import { hamburger } from '../../assets/svg';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout as logoutAction } from '../../store/slices/authSlice';
-import { showErrorToast } from '../../utils/toastConfig';
+import { showLogoutToast } from '../../utils/toastConfig';
 
 const Header = ({ onToggleSidebar }) => {
   const { language, toggleLanguage, t } = useLanguage();
@@ -35,7 +35,10 @@ const Header = ({ onToggleSidebar }) => {
     if (action === 'Logout') {
       dispatch(logoutAction());
       setIsUserMenuOpen(false);
-      showErrorToast('You have been logged out successfully.', {title: "Logout Successfully"});
+      showLogoutToast(t('toast.message.logoutSuccess') || 'You have been logged out successfully.', {
+        title: t('toast.title.logout') || 'Logout Successful',
+        isAuth: true
+      });
       setTimeout(() => {
         navigate('/login', { replace: true });
       }, 1500);
