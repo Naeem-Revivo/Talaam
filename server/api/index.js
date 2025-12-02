@@ -34,20 +34,54 @@ app.use(errorHandler);
 
 // Database connection state
 let dbConnected = false;
+let connectionAttempts = 0;
+const MAX_CONNECTION_ATTEMPTS = 3;
 
 // Vercel serverless function handler
 module.exports = async (req, res) => {
   // Ensure database connection
   if (!dbConnected) {
     try {
+      connectionAttempts++;
+      console.log(`[DB] Attempting database connection (attempt ${connectionAttempts})...`);
+      
+      // Log environment info for debugging
+      if (connectionAttempts === 1) {
+        console.log('[DB] Environment check:', {
+          hasPostgresPrismaUrl: !!process.env.POSTGRES_PRISMA_URL,
+          hasDatabaseUrl: !!process.env.DATABASE_URL,
+          isVercel: process.env.VERCEL === '1',
+          nodeEnv: process.env.NODE_ENV,
+        });
+      }
+      
       await connectDB();
       dbConnected = true;
+      console.log('[DB] Database connection established successfully');
     } catch (error) {
-      console.error('Database connection error:', error);
+      console.error('[DB] Database connection error:', {
+        message: error.message,
+        code: error.code,
+        meta: error.meta,
+        stack: error.stack?.substring(0, 200),
+      });
+      
+      // Reset connection state after max attempts to allow retry
+      if (connectionAttempts >= MAX_CONNECTION_ATTEMPTS) {
+        dbConnected = false;
+        connectionAttempts = 0;
+      }
+      
       return res.status(500).json({ 
         success: false,
         error: 'Database connection failed',
-        message: error.message 
+        message: process.env.NODE_ENV === 'production' 
+          ? 'Server error. Please try again later or contact support if the problem persists.'
+          : error.message,
+        details: process.env.NODE_ENV === 'development' ? {
+          code: error.code,
+          meta: error.meta,
+        } : undefined,
       });
     }
   }
