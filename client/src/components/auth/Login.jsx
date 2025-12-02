@@ -20,17 +20,88 @@ const Login = () => {
     email: '',
     password: ''
   })
-  const [error, setError] = useState('')
+  
+  const [errors, setErrors] = useState({
+    email: '',
+    password: ''
+  })
+
+  // Email validation function
+  const validateEmail = (email) => {
+    if (!email.trim()) {
+      return 'Email is required'
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return 'Please enter a valid email address'
+    }
+    return ''
+  }
+
+  // Password validation function
+  const validatePassword = (password) => {
+    if (!password.trim()) {
+      return 'Password is required'
+    }
+    return ''
+  }
 
   const handleInputChange = (e) => {
+    const { name, value } = e.target
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
+    })
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: ''
+      })
+    }
+  }
+
+  // Handle blur for validation
+  const handleBlur = (e) => {
+    const { name, value } = e.target
+    let error = ''
+    
+    switch (name) {
+      case 'email':
+        error = validateEmail(value)
+        break
+      case 'password':
+        error = validatePassword(value)
+        break
+      default:
+        break
+    }
+    
+    setErrors({
+      ...errors,
+      [name]: error
     })
   }
 
+  // Validate all fields before submission
+  const validateForm = () => {
+    const newErrors = {
+      email: validateEmail(formData.email),
+      password: validatePassword(formData.password)
+    }
+    
+    setErrors(newErrors)
+    
+    // Check if any errors exist
+    return !Object.values(newErrors).some(error => error !== '')
+  }
+
   const handleLogin = async () => {
-    setError('')
+    // First validate the form
+    if (!validateForm()) {
+      return
+    }
+
     try {
       const resultAction = await dispatch(
         login({ email: formData.email, password: formData.password })
@@ -57,17 +128,21 @@ const Login = () => {
           navigate('/', { replace: true })
         }
       } else {
-        const msg =
-          resultAction.payload?.message ||
-          t('login.errors.generic') ||
+        // Extract the exact error message from backend response
+        const errorMessage = 
+          resultAction.payload || 
+          resultAction.error?.message || 
+          t('login.errors.generic') || 
           'Login failed'
-        setError(msg)
-        showErrorToast(msg)
+        
+        // Show backend error in toast with title "Login Failed"
+        showErrorToast(errorMessage, { title: 'Login Failed' })
       }
     } catch {
-      const msg = t('login.errors.generic') || 'Login failed'
-      setError(msg)
-      showErrorToast(msg)
+      showErrorToast(
+        'An unexpected error occurred. Please try again.',
+        { title: 'Login Failed' }
+      )
     }
   }
 
@@ -78,10 +153,16 @@ const Login = () => {
       if (url) {
         window.location.href = url
       } else {
-        showErrorToast(t('login.errors.google') || 'Unable to start Google login.')
+        showErrorToast(
+          t('login.errors.google') || 'Unable to start Google login.',
+          { title: 'Authentication Error' }
+        )
       }
     } catch {
-      showErrorToast(t('login.errors.google') || 'Unable to start Google login.')
+      showErrorToast(
+        t('login.errors.google') || 'Unable to start Google login.',
+        { title: 'Authentication Error' }
+      )
     }
   }
 
@@ -110,60 +191,69 @@ const Login = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
+                onBlur={handleBlur}
                 placeholder={t('login.emailPlaceholder')}
-                className="px-4 py-3 border border-[#03274633] rounded-lg text-[14px] outline-none w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray font-roboto font-normal leading-[100%] tracking-[0] text-oxford-blue shadow-input"
+                className={`px-4 py-3 border ${errors.email ? 'border-red-500' : 'border-[#03274633]'} rounded-lg text-[14px] outline-none w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray font-roboto font-normal leading-[100%] tracking-[0] text-oxford-blue shadow-input`}
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-500 font-roboto">
+                  {errors.email}
+                </p>
+              )}
             </div>
+            
             <div className="flex flex-col gap-5">
-            {/* Password Field */}
-            <div className="flex flex-col gap-1">
-              <label className="block font-roboto font-normal text-[16px] leading-[100%] tracking-[0] text-oxford-blue mb-2">
-                {t('login.password')}
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder={t('login.passwordPlaceholder')}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray font-roboto font-normal text-[14px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              {/* Password Field */}
+              <div className="flex flex-col gap-1">
+                <label className="block font-roboto font-normal text-[16px] leading-[100%] tracking-[0] text-oxford-blue mb-2">
+                  {t('login.password')}
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    placeholder={t('login.passwordPlaceholder')}
+                    className={`px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray font-roboto font-normal text-[14px] leading-[100%] tracking-[0] text-oxford-blue shadow-input`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    <img src={showPassword ? openeye : eye} alt="toggle password visibility" className="" />
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-500 font-roboto">
+                    {errors.password}
+                  </p>
+                )}
+              </div>
+
+              {/* Remember Me & Forgot Password */}
+              <div className="flex justify-between sm:flex-row sm:justify-between items-start sm:items-center gap-3">
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-3 h-3 border border-gray-300 rounded text-cinnebar-red focus:ring-cinnebar-red mr-2"
+                  />
+                  <span className="font-roboto font-normal pt-0.5 text-[12px] leading-[100%] tracking-[0] text-oxford-blue">
+                    {t('login.rememberMe')}
+                  </span>
+                </label>
+                <Link 
+                  to="/forgot-password" 
+                  className="font-roboto font-medium text-[12px] leading-[100%] tracking-[0] text-cinnebar-red underline hover:no-underline"
                 >
-                  <img src={showPassword ? openeye : eye} alt="toggle password visibility" className="" />
-                </button>
+                  {t('login.forgotPassword')}
+                </Link>
               </div>
             </div>
-
-            {/* Remember Me & Forgot Password */}
-            <div className="flex justify-between sm:flex-row sm:justify-between items-start sm:items-center gap-3">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-3 h-3 border border-gray-300 rounded text-cinnebar-red focus:ring-cinnebar-red mr-2"
-                />
-                <span className="font-roboto font-normal pt-0.5 text-[12px] leading-[100%] tracking-[0] text-oxford-blue">
-                  {t('login.rememberMe')}
-                </span>
-              </label>
-              <Link 
-                to="/forgot-password" 
-                className="font-roboto font-medium text-[12px] leading-[100%] tracking-[0] text-cinnebar-red underline hover:no-underline"
-              >
-                {t('login.forgotPassword')}
-              </Link>
-            </div>
-            </div>
-
-            {error && (
-              <div className="text-red-600 text-sm font-roboto">{error}</div>
-            )}
 
             {/* Sign In Button */}
             <button

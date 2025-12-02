@@ -1305,16 +1305,44 @@
       "fields": {
         "examName": "Exam",
         "subject": "Subject",
-        "description": "Description"
+        "description": "Description",
+        "status": "Status"
       },
       "placeholders": {
         "examName": "e.g. Final Exam 2024",
         "subject": "e.g. Mathematics",
         "description": "A brief description of the Exam"
       },
+      "status": {
+        "active": "Active",
+        "suspend": "Suspend"
+      },
       "buttons": {
         "cancel": "Cancel",
         "saveExam": "Save Exam"
+      }
+    },
+    "editExam": {
+      "hero": {
+        "title": "Edit Exam",
+        "subtitle": "Update exam information and settings"
+      },
+      "fields": {
+        "examName": "Exam Name",
+        "description": "Description",
+        "status": "Status"
+      },
+      "placeholders": {
+        "examName": "Enter exam name",
+        "description": "Enter description"
+      },
+      "status": {
+        "active": "Active",
+        "suspend": "Suspend"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "updateExam": "Update Exam"
       }
     },
     "questionDetails": {
@@ -1980,10 +2008,12 @@
         "columns": {
           "subjectName": "Subject Name",
           "topicName": "Topic Name",
+          "parentSubject": "Parent Subject",
           "subtopicName": "Subtopic Name",
           "conceptName": "Concept Name",
           "examName": "Exam",
           "description": "Description",
+          "status": "Status",
           "createdBy": "Created By",
           "date": "Date",
           "linkedSubtopic": "Linked Subtopic",
@@ -2059,6 +2089,24 @@
         "create": "Create"
       }
     },
+    "editSubject": {
+      "hero": {
+        "title": "Edit Subject",
+        "subtitle": "Update subject information and settings"
+      },
+      "fields": {
+        "subjectName": "Subject Name",
+        "description": "Description"
+      },
+      "placeholders": {
+        "subjectName": "Enter subject name",
+        "description": "Enter description"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "updateSubject": "Update Subject"
+      }
+    },
     "addTopic": {
       "hero": {
         "title": "Add New Topic",
@@ -2074,12 +2122,35 @@
       },
       "placeholders": {
         "subjectName": "Enter subject name",
+        "selectSubject": "Select a subject",
+        "loadingSubjects": "Loading subjects...",
         "topicName": "Enter topic name",
         "description": "A brief description of the subject"
       },
       "buttons": {
         "cancel": "Cancel",
         "create": "Create"
+      }
+    },
+    "editTopic": {
+      "hero": {
+        "title": "Edit Topic",
+        "subtitle": "Update topic information and settings"
+      },
+      "fields": {
+        "parentSubject": "Parent Subject",
+        "topicName": "Topic Name",
+        "description": "Description"
+      },
+      "placeholders": {
+        "selectSubject": "Select a subject",
+        "loadingSubjects": "Loading subjects...",
+        "topicName": "Enter topic name",
+        "description": "Enter description"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "updateTopic": "Update Topic"
       }
     },
     "addSubtopic": {
@@ -2565,7 +2636,34 @@
       "placeholders": {
         "moderatorComments": "Add optional comments.."
       }
+    },
+    "approvedQuestion": {
+    "title": "Approved Questions",
+    "heading": "Final Questions Management",
+    "table": {
+      "question": "Question",
+      "subject": "Subject",
+      "exam": "Exam",
+      "topic": "Topic",
+      "status": "Status",
+      "actions": "Visibility"
+    },
+    "filter": {
+        "search": "Search by Questions, subject, topic",
+        "subject": "Subject",
+        "exam": "Exam",
+        "topic": "Topic"
+      },
+    "status": {
+      "visible": "Visible",
+      "hidden": "Hidden"
+    },
+    "back": "Back to Question Bank",
+    "emptyMessage": "No approved questions found",
+    "pagination": {
+      "showing": "Showing {{first}} to {{last}} of {{total}} results"
     }
+  }
   },
   "gatherer": {
     "sidebar": {

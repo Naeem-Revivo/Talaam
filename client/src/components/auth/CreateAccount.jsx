@@ -21,6 +21,13 @@ const CreateAccount = () => {
     password: '',
     confirmPassword: ''
   })
+  
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    passwordRequirements: ''
+  })
 
   // Password requirement validation functions
   const checkPasswordRequirements = (password) => {
@@ -35,29 +42,131 @@ const CreateAccount = () => {
 
   const passwordRequirements = checkPasswordRequirements(formData.password)
 
+  // Check if all password requirements are met
+  const isPasswordValid = () => {
+    const requirements = checkPasswordRequirements(formData.password)
+    return Object.values(requirements).every(Boolean)
+  }
+
+  // Validate individual fields on change
+  const validateField = (name, value) => {
+    const newErrors = { ...errors }
+    
+    switch (name) {
+      case 'email':
+        if (!value.trim()) {
+          newErrors.email = 'Email is required'
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          newErrors.email = 'Please enter a valid email address'
+        } else {
+          newErrors.email = ''
+        }
+        break
+        
+      case 'password':
+        if (!value.trim()) {
+          newErrors.password = 'Password is required'
+          newErrors.passwordRequirements = 'Password must meet all requirements'
+        } else if (!isPasswordValid()) {
+          newErrors.password = ''
+          newErrors.passwordRequirements = 'Password must meet all requirements'
+        } else {
+          newErrors.password = ''
+          newErrors.passwordRequirements = ''
+        }
+        
+        // If confirmPassword is filled, validate it again
+        if (formData.confirmPassword) {
+          if (value !== formData.confirmPassword) {
+            newErrors.confirmPassword = 'Passwords do not match'
+          } else {
+            newErrors.confirmPassword = ''
+          }
+        }
+        break
+        
+      case 'confirmPassword':
+        if (!value.trim()) {
+          newErrors.confirmPassword = 'Please confirm your password'
+        } else if (value !== formData.password) {
+          newErrors.confirmPassword = 'Passwords do not match'
+        } else {
+          newErrors.confirmPassword = ''
+        }
+        break
+        
+      default:
+        break
+    }
+    
+    setErrors(newErrors)
+  }
+
   const handleInputChange = (e) => {
+    const { name, value } = e.target
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     })
+    
+    // Validate the field
+    validateField(name, value)
+  }
+
+  // Handle blur for validation
+  const handleBlur = (e) => {
+    const { name, value } = e.target
+    validateField(name, value)
+  }
+
+  // Validate all fields before submission
+  const validateForm = () => {
+    const newErrors = { ...errors }
+    let isValid = true
+
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required'
+      isValid = false
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address'
+      isValid = false
+    } else {
+      newErrors.email = ''
+    }
+
+    // Password validation
+    if (!formData.password.trim()) {
+      newErrors.password = 'Password is required'
+      newErrors.passwordRequirements = 'Password must meet all requirements'
+      isValid = false
+    } else if (!isPasswordValid()) {
+      newErrors.password = ''
+      newErrors.passwordRequirements = 'Password must meet all requirements'
+      isValid = false
+    } else {
+      newErrors.password = ''
+      newErrors.passwordRequirements = ''
+    }
+
+    // Confirm password validation
+    if (!formData.confirmPassword.trim()) {
+      newErrors.confirmPassword = 'Please confirm your password'
+      isValid = false
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match'
+      isValid = false
+    } else {
+      newErrors.confirmPassword = ''
+    }
+
+    setErrors(newErrors)
+    return isValid
   }
 
   const handleCreateAccount = async () => {
-    // Basic validation
-    if (!formData.email || !formData.password || !formData.confirmPassword) {
-      showErrorToast(t('createAccount.errors.requiredFields') || 'Please fill all fields.')
-      return
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      showErrorToast(t('createAccount.errors.passwordMismatch') || 'Passwords do not match.')
-      return
-    }
-
-    const requirements = checkPasswordRequirements(formData.password)
-    const allOk = Object.values(requirements).every(Boolean)
-    if (!allOk) {
-      showErrorToast(t('createAccount.errors.passwordWeak') || 'Password does not meet requirements.')
+    // First validate the form
+    if (!validateForm()) {
       return
     }
 
@@ -75,7 +184,7 @@ const CreateAccount = () => {
           t('createAccount.success') ||
           'Account created successfully.'
 
-        showSuccessToast(message)
+        showSuccessToast(message, { title: 'Account Created' })
         // After signup, send user to verify email page
         navigate('/verify-email')
       } else {
@@ -84,20 +193,22 @@ const CreateAccount = () => {
           error ||
           t('createAccount.errors.generic') ||
           'Signup failed.'
-        showErrorToast(msg)
+        showErrorToast(msg, { title: 'Signup Failed' })
       }
     } catch (e) {
-      showErrorToast(t('createAccount.errors.generic') || 'Signup failed.')
+      showErrorToast(
+        t('createAccount.errors.generic') || 'Signup failed.',
+        { title: 'Signup Failed' }
+      )
     }
   }
 
   // Show inline backend errors if needed
-  useEffect(() => {
-    if (error) {
-      // Optionally show toast on error coming from store
-      showErrorToast(error)
-    }
-  }, [error])
+  // useEffect(() => {
+  //   if (error) {
+  //     showErrorToast(error, { title: 'Signup Failed' })
+  //   }
+  // }, [error])
 
   const handleGoogleSignup = async () => {
     try {
@@ -106,10 +217,16 @@ const CreateAccount = () => {
       if (url) {
         window.location.href = url
       } else {
-        showErrorToast(t('createAccount.errors.google') || 'Unable to start Google sign in.')
+        showErrorToast(
+          t('createAccount.errors.google') || 'Unable to start Google sign in.',
+          { title: 'Authentication Error' }
+        )
       }
     } catch {
-      showErrorToast(t('createAccount.errors.google') || 'Unable to start Google sign in.')
+      showErrorToast(
+        t('createAccount.errors.google') || 'Unable to start Google sign in.',
+        { title: 'Authentication Error' }
+      )
     }
   }
 
@@ -133,9 +250,15 @@ const CreateAccount = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
+                onBlur={handleBlur}
                 placeholder={t('createAccount.emailPlaceholder')}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray"
+                className={`px-4 py-3 border ${errors.email ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray`}
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-500 font-roboto">
+                  {errors.email}
+                </p>
+              )}
             </div>
 
             {/* Password Field */}
@@ -149,8 +272,9 @@ const CreateAccount = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   placeholder={t('createAccount.passwordPlaceholder')}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray"
+                  className={`px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray`}
                 />
                 <button
                   type="button"
@@ -160,6 +284,11 @@ const CreateAccount = () => {
                   <img src={showPassword ? openeye : eye} alt="toggle password visibility" className="" />
                 </button>
               </div>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-500 font-roboto">
+                  {errors.password}
+                </p>
+              )}
             </div>
 
             {/* Password Requirements */}
@@ -195,6 +324,13 @@ const CreateAccount = () => {
                 </span>
               </div>
             </div>
+            
+            {/* Password Requirements Error */}
+            {errors.passwordRequirements && (
+              <p className="mt-1 text-sm text-red-500 font-roboto">
+                {errors.passwordRequirements}
+              </p>
+            )}
 
             {/* Confirm Password Field */}
             <div className="flex flex-col gap-1">
@@ -207,8 +343,9 @@ const CreateAccount = () => {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   placeholder={t('createAccount.confirmPasswordPlaceholder')}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray"
+                  className={`px-4 py-3 border ${errors.confirmPassword ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray`}
                 />
                 <button
                   type="button"
@@ -218,6 +355,11 @@ const CreateAccount = () => {
                   <img src={showConfirmPassword ? openeye : eye} alt="toggle password visibility" className="" />
                 </button>
               </div>
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-500 font-roboto">
+                  {errors.confirmPassword}
+                </p>
+              )}
             </div>
 
             {/* Create Account Button */}

@@ -11,7 +11,9 @@ const createSubject = async (subjectData) => {
  * Get all subjects
  */
 const getAllSubjects = async () => {
-  return await Subject.find({}).sort({ createdAt: -1 });
+  return await Subject.findMany({
+    orderBy: { createdAt: 'desc' }
+  });
 };
 
 /**
@@ -20,13 +22,14 @@ const getAllSubjects = async () => {
 const getSubjectsPaginated = async (filters = {}, pagination = {}) => {
   const { search } = filters;
   const { page = 1, limit = 5 } = pagination;
+  const { prisma } = require('../../../config/db/prisma');
 
-  // Build query
-  const query = {};
+  // Build where clause for Prisma
+  const where = {};
   if (search) {
-    query.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { description: { $regex: search, $options: 'i' } },
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
     ];
   }
 
@@ -34,13 +37,15 @@ const getSubjectsPaginated = async (filters = {}, pagination = {}) => {
   const skip = (page - 1) * limit;
 
   // Get total count
-  const totalItems = await Subject.countDocuments(query);
+  const totalItems = await prisma.subject.count({ where });
 
   // Get paginated results
-  const subjects = await Subject.find(query)
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
+  const subjects = await Subject.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+    skip,
+    take: limit,
+  });
 
   // Calculate pagination info
   const totalPages = Math.ceil(totalItems / limit);
@@ -67,7 +72,8 @@ const getSubjectsPaginated = async (filters = {}, pagination = {}) => {
  * Get total count of subjects
  */
 const getSubjectsCount = async () => {
-  return await Subject.countDocuments();
+  const { prisma } = require('../../../config/db/prisma');
+  return await prisma.subject.count();
 };
 
 /**
@@ -81,20 +87,21 @@ const findSubjectById = async (subjectId) => {
  * Update subject
  */
 const updateSubject = async (subject, updateData) => {
+  const updateDataFiltered = {};
   if (updateData.name !== undefined) {
-    subject.name = updateData.name;
+    updateDataFiltered.name = updateData.name;
   }
   if (updateData.description !== undefined) {
-    subject.description = updateData.description;
+    updateDataFiltered.description = updateData.description;
   }
-  return await subject.save();
+  return await Subject.update(subject.id, updateDataFiltered);
 };
 
 /**
  * Delete subject
  */
 const deleteSubject = async (subjectId) => {
-  return await Subject.findByIdAndDelete(subjectId);
+  return await Subject.delete(subjectId);
 };
 
 module.exports = {

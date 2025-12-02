@@ -259,6 +259,32 @@ const SecurityIcon = ({ active }) => {
   );
 };
 
+const ApprovedQuestionsIcon = ({ active }) => {
+  const fill = active ? "#032746" : "white";
+
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M9.99935 18.3346C14.6017 18.3346 18.3327 14.6037 18.3327 10.0013C18.3327 5.39893 14.6017 1.66797 9.99935 1.66797C5.39698 1.66797 1.66602 5.39893 1.66602 10.0013C1.66602 14.6037 5.39698 18.3346 9.99935 18.3346Z"
+        stroke={fill}
+        strokeWidth="1.66667"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9.88 11.876V11.204C9.88 10.892 9.928 10.632 10.024 10.424C10.12 10.216 10.244 10.036 10.396 9.884C10.556 9.732 10.72 9.592 10.888 9.464C11.064 9.328 11.228 9.192 11.38 9.056C11.54 8.912 11.668 8.748 11.764 8.564C11.86 8.372 11.908 8.144 11.908 7.88C11.908 7.776 11.892 7.652 11.86 7.508C11.836 7.356 11.772 7.212 11.668 7.076C11.572 6.932 11.424 6.812 11.224 6.716C11.024 6.62 10.76 6.572 10.432 6.572C10.064 6.572 9.772 6.632 9.556 6.752C9.34 6.864 9.176 7.008 9.064 7.184C8.96 7.36 8.888 7.532 8.848 7.7C8.816 7.868 8.8 8.008 8.8 8.12C8.8 8.176 8.8 8.232 8.8 8.288C8.8 8.336 8.804 8.392 8.812 8.456H7.744C7.736 8.424 7.728 8.376 7.72 8.312C7.712 8.24 7.708 8.152 7.708 8.048C7.708 7.864 7.736 7.664 7.792 7.448C7.848 7.232 7.94 7.016 8.068 6.8C8.196 6.584 8.368 6.388 8.584 6.212C8.8 6.036 9.064 5.896 9.376 5.792C9.696 5.68 10.072 5.624 10.504 5.624C10.896 5.624 11.236 5.672 11.524 5.768C11.812 5.856 12.052 5.98 12.244 6.14C12.444 6.292 12.6 6.464 12.712 6.656C12.832 6.84 12.916 7.028 12.964 7.22C13.02 7.412 13.048 7.592 13.048 7.76C13.048 8.144 12.996 8.468 12.892 8.732C12.788 8.996 12.652 9.22 12.484 9.404C12.324 9.58 12.152 9.736 11.968 9.872C11.792 10.008 11.62 10.144 11.452 10.28C11.284 10.408 11.148 10.556 11.044 10.724C10.94 10.884 10.888 11.084 10.888 11.324V11.876H9.88ZM9.796 14V12.74H10.972V14H9.796Z"
+        fill={fill}
+      />
+    </svg>
+  );
+};
+
 const AdminSidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -310,20 +336,19 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       icon: UserManagementIcon,
     },
     {
-      path: "/admin/question-bank",
-      labelKey: "admin.sidebar.questionBank",
-      icon: QuestionBankIcon,
-    },
-    {
       path: "/admin/classification",
       labelKey: "admin.sidebar.classification",
       icon: ClassificationIcon,
     },
     {
-      path: "/admin/subscriptions",
-      labelKey: "admin.sidebar.subscriptions",
-      icon: SubscriptionsIcon,
-      submenuKey: "subscriptions",
+      path: "/admin/question-bank",
+      labelKey: "admin.sidebar.questionBank",
+      icon: QuestionBankIcon,
+    },
+    {
+      path: "/admin/approved-questions",
+      labelKey: "admin.approvedQuestion.title",
+      icon: ApprovedQuestionsIcon,
     },
     {
       path: "/admin/reports",
@@ -335,6 +360,12 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       path: "/admin/moderation",
       labelKey: "admin.sidebar.moderation",
       icon: ModerationIcon,
+    },
+    {
+      path: "/admin/subscriptions",
+      labelKey: "admin.sidebar.subscriptions",
+      icon: SubscriptionsIcon,
+      submenuKey: "subscriptions",
     },
     {
       path: "/admin/settings",
