@@ -6,13 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  // Primary connection URL - Prisma will use POSTGRES_PRISMA_URL if available (Vercel),
-  // otherwise falls back to DATABASE_URL. The connection code handles this priority.
-  url       = env("DATABASE_URL")
-  // Direct connection URL for migrations (optional - only needed for Vercel Postgres)
-  // If not set, Prisma will use the url for migrations
-  directUrl = env("POSTGRES_URL_NON_POOLING")
+  provider = "postgresql"
+  // Connection URLs are configured in prisma.config.ts (Prisma 7 requirement)
 }
 
 model User {
