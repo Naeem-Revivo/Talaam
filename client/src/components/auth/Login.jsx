@@ -4,7 +4,7 @@ import { useLanguage } from '../../context/LanguageContext'
 import { eye, openeye, google, linkedin } from '../../assets/svg/signup'
 import { useDispatch, useSelector } from 'react-redux'
 import { login } from '../../store/slices/authSlice'
-import { showErrorToast } from '../../utils/toastConfig'
+import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
 import authAPI from '../../api/auth'
 
 const Login = () => {
@@ -110,6 +110,18 @@ const Login = () => {
       if (login.fulfilled.match(resultAction)) {
         const user = resultAction.payload?.data?.user
         const role = user?.role
+        
+        // Show success toast
+        const successMessage = 
+          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
+          resultAction.payload?.message ||
+          t('login.success') ||
+          'Login successful!'
+        
+        showSuccessToast(successMessage, { 
+          title: t('login.successTitle') || 'Login Successful',
+          isAuth: true
+        })
 
         // Map backend roles to routes
         if (role === 'superadmin') {
@@ -127,22 +139,21 @@ const Login = () => {
         } else {
           navigate('/', { replace: true })
         }
-      } else {
-        // Extract the exact error message from backend response
+      } else if (login.rejected.match(resultAction)) {
+        // Extract error message from API response (check message field first)
         const errorMessage = 
-          resultAction.payload || 
-          resultAction.error?.message || 
+          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
+          resultAction.payload?.message ||
+          resultAction.error?.message ||
           t('login.errors.generic') || 
           'Login failed'
         
-        // Show backend error in toast with title "Login Failed"
-        showErrorToast(errorMessage, { title: 'Login Failed' })
+        showErrorToast(errorMessage, { title: t('login.errors.title') || 'Login Failed', isAuth: true })
       }
     } catch (e) {
-      showErrorToast(
-        'An unexpected error occurred. Please try again.',
-        { title: 'Login Failed' }
-      )
+      // Only show error toast for unexpected errors (not Redux rejections)
+      // Redux Toolkit handles API errors through rejected actions, so this should rarely trigger
+      console.error('Unexpected login error:', e)
     }
   }
 
@@ -155,7 +166,7 @@ const Login = () => {
       } else {
         showErrorToast(
           t('login.errors.google') || 'Unable to start Google login.',
-          { title: 'Authentication Error' }
+          { title: 'Authentication Error', isAuth: true }
         )
       }
     } catch {
