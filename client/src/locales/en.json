@@ -2565,7 +2565,34 @@
       "placeholders": {
         "moderatorComments": "Add optional comments.."
       }
+    },
+    "approvedQuestion": {
+    "title": "Approved Questions",
+    "heading": "Final Questions Management",
+    "table": {
+      "question": "Question",
+      "subject": "Subject",
+      "exam": "Exam",
+      "topic": "Topic",
+      "status": "Status",
+      "actions": "Visibility"
+    },
+    "filter": {
+        "search": "Search by Questions, subject, topic",
+        "subject": "Subject",
+        "exam": "Exam",
+        "topic": "Topic"
+      },
+    "status": {
+      "visible": "Visible",
+      "hidden": "Hidden"
+    },
+    "back": "Back to Question Bank",
+    "emptyMessage": "No approved questions found",
+    "pagination": {
+      "showing": "Showing {{first}} to {{last}} of {{total}} results"
     }
+  }
   },
   "gatherer": {
     "sidebar": {

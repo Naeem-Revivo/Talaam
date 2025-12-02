@@ -7,7 +7,7 @@ import { hamburger } from '../../assets/svg';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout as logoutAction } from '../../store/slices/authSlice';
-import { showLogoutToast } from '../../utils/toastConfig';
+import { showErrorToast } from '../../utils/toastConfig';
 
 const Header = ({ onToggleSidebar }) => {
   const { language, toggleLanguage, t } = useLanguage();
@@ -35,7 +35,7 @@ const Header = ({ onToggleSidebar }) => {
     if (action === 'Logout') {
       dispatch(logoutAction());
       setIsUserMenuOpen(false);
-      showLogoutToast('You have been logged out successfully.');
+      showErrorToast('You have been logged out successfully.', {title: "Logout Successfully"});
       setTimeout(() => {
         navigate('/login', { replace: true });
       }, 1500);
@@ -133,6 +133,7 @@ const Header = ({ onToggleSidebar }) => {
     if (pathname.startsWith('/admin/moderation')) return t('header.titles.admin.moderation');
     if (pathname.startsWith('/admin/settings')) return t('header.titles.admin.settings');
     if (pathname.startsWith('/admin/security')) return t('header.titles.admin.security');
+    if (pathname.startsWith('/admin/approved-questions')) return t("admin.approvedQuestion.heading");
     return t('header.titles.admin.default');
   }
     // User dashboard routes
