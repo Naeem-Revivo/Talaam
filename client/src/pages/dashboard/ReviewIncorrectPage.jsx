@@ -93,9 +93,9 @@ const ReviewIncorrectPage = () => {
             <button className="px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:opacity-70 flex items-center gap-2">
               <img src={flag} alt="Mark" className="" />
             </button>
-            <button className="px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:opacity-70 flex items-center gap-2">
+            {/* <button className="px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:opacity-70 flex items-center gap-2">
               {t('dashboard.reviewIncorrect.formulaSheet')}
-            </button>
+            </button> */}
             <div className="flex items-center gap-2">
               <span className="text-[14px] font-normal text-oxford-blue font-roboto">
                 {t('dashboard.reviewIncorrect.timeRemaining')} <span className="font-bold">12:45</span>
@@ -136,10 +136,10 @@ const ReviewIncorrectPage = () => {
 
           {/* Right: Formula Sheet and Time */}
           <div className="hidden lg:flex items-center gap-2 md:gap-4 w-full lg:w-auto justify-between lg:justify-end">
-            <button className="hidden lg:block px-2 md:px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[12px] md:text-[14px] font-normal font-roboto hover:opacity-70">
+            {/* <button className="hidden lg:block px-2 md:px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[12px] md:text-[14px] font-normal font-roboto hover:opacity-70">
               <span className="hidden sm:inline">{t('dashboard.reviewIncorrect.formulaSheet')}</span>
               <span className="sm:hidden">{t('dashboard.reviewIncorrect.formulaSheet')}</span>
-            </button>
+            </button> */}
             <div className="hidden lg:flex items-center gap-2">
               <span className="text-[12px] md:text-[14px] font-normal text-oxford-blue font-roboto">
                 <span className="hidden sm:inline">{t('dashboard.reviewIncorrect.timeRemaining')} </span>12:45

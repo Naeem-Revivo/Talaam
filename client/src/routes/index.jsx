@@ -96,6 +96,7 @@ import ProcessorProfile from '../pages/Processor/ProcessorProfile';
 import ExplainerProfile from '../pages/Explainer/ExplainerProfile';
 import AddNewExam from '../pages/admin/AddNewExam';
 import CreatorViewVariant from '../pages/Creator/CreatorViewVariant';
+import ApprovedQuestions from '../pages/admin/ApprovedQuestions';
 
 export const AppRoutes = () => {
   return (
@@ -182,6 +183,7 @@ export const AppRoutes = () => {
           <Route path="security/audit-logs" element={<AuditLogsPage />} />
           <Route path="security/view-logs" element={<ViewLogDetails />} />
           <Route path="security/roles-permissions" element={<RolesPermissionsPage />} />
+          <Route path="approved-questions" element={<ApprovedQuestions />} />
         </Route>
       </Route>
 

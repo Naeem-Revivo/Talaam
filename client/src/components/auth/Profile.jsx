@@ -22,6 +22,11 @@ const Profile = () => {
     language: 'English'
   })
 
+  const [errors, setErrors] = useState({
+    fullName: '',
+    dateOfBirth: ''
+  })
+
   // Initialize from current user/profile if available
   useEffect(() => {
     const init = async () => {
@@ -57,17 +62,101 @@ const Profile = () => {
     init()
   }, [user, dispatch])
 
+  // Validate full name
+  const validateFullName = (name) => {
+    if (!name.trim()) {
+      return 'Full name is required'
+    }
+    if (name.trim().length < 2) {
+      return 'Full name must be at least 2 characters'
+    }
+    return ''
+  }
+
+  // Validate date of birth
+  const validateDateOfBirth = (date) => {
+    if (!date) {
+      return 'Date of birth is required'
+    }
+    
+    const selectedDate = new Date(date)
+    const today = new Date()
+    
+    // Check if date is in the future
+    if (selectedDate > today) {
+      return 'Date of birth cannot be in the future'
+    }
+    
+    // Check if user is at least 13 years old (common minimum age)
+    const minAgeDate = new Date()
+    minAgeDate.setFullYear(today.getFullYear() - 13)
+    if (selectedDate > minAgeDate) {
+      return 'You must be at least 13 years old'
+    }
+    
+    return ''
+  }
+
   const handleInputChange = (e) => {
+    const { name, value } = e.target
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
+    })
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: ''
+      })
+    }
+  }
+
+  // Handle blur for validation
+  const handleBlur = (e) => {
+    const { name, value } = e.target
+    let error = ''
+    
+    switch (name) {
+      case 'fullName':
+        error = validateFullName(value)
+        break
+      case 'dateOfBirth':
+        error = validateDateOfBirth(value)
+        break
+      default:
+        break
+    }
+    
+    setErrors({
+      ...errors,
+      [name]: error
     })
   }
 
+  // Validate all fields before submission
+  const validateForm = () => {
+    const newErrors = {
+      fullName: validateFullName(formData.fullName),
+      dateOfBirth: validateDateOfBirth(formData.dateOfBirth)
+    }
+    
+    setErrors(newErrors)
+    
+    // Check if any errors exist
+    return !Object.values(newErrors).some(error => error !== '')
+  }
+
   const handleFinishSetup = async () => {
+    // First validate the form
+    if (!validateForm()) {
+      return
+    }
+
     try {
       const payload = {
-        fullName: formData.fullName,
+        fullName: formData.fullName.trim(),
         dateOfBirth: formData.dateOfBirth,
         country: formData.country,
         timezone: formData.timeZone,
@@ -77,18 +166,42 @@ const Profile = () => {
       const resultAction = await dispatch(completeProfile(payload))
 
       if (completeProfile.fulfilled.match(resultAction)) {
-        showSuccessToast(t('profile.success') || 'Profile completed successfully.')
+        showSuccessToast(
+          t('profile.success') || 'Profile completed successfully.',
+          { title: 'Profile Saved' }
+        )
         // Navigate to dashboard after completion
         navigate('/dashboard', { replace: true })
       } else {
-        const msg =
-          resultAction.payload?.message ||
-          t('profile.errors.generic') ||
-          'Failed to complete profile.'
-        showErrorToast(msg)
+        // Handle specific API errors
+        const errorMessage = resultAction.payload?.message || resultAction.error?.message || ''
+        
+        // Check if it's a validation error from backend
+        const isValidationError = 
+          errorMessage.toLowerCase().includes('validation') ||
+          errorMessage.toLowerCase().includes('invalid') ||
+          (resultAction.payload?.errors && Array.isArray(resultAction.payload.errors))
+        
+        if (isValidationError) {
+          // For backend validation errors, show in toast since they might be complex
+          const msg =
+            errorMessage ||
+            t('profile.errors.generic') ||
+            'Failed to complete profile.'
+          showErrorToast(msg, { title: 'Profile Error' })
+        } else {
+          const msg =
+            errorMessage ||
+            t('profile.errors.generic') ||
+            'Failed to complete profile.'
+          showErrorToast(msg, { title: 'Save Failed' })
+        }
       }
     } catch (e) {
-      showErrorToast(t('profile.errors.generic') || 'Failed to complete profile.')
+      showErrorToast(
+        'An unexpected error occurred. Please try again.',
+        { title: 'Save Failed' }
+      )
     }
   }
 
@@ -121,9 +234,15 @@ const Profile = () => {
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleInputChange}
+                onBlur={handleBlur}
                 placeholder={t('profile.fullNamePlaceholder')}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input"
+                className={`px-4 py-3 border ${errors.fullName ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input`}
               />
+              {errors.fullName && (
+                <p className="mt-1 text-sm text-red-500 font-roboto">
+                  {errors.fullName}
+                </p>
+              )}
             </div>
 
             {/* Date of Birth Field */}
@@ -136,8 +255,14 @@ const Profile = () => {
                 name="dateOfBirth"
                 value={formData.dateOfBirth}
                 onChange={handleInputChange}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input"
+                onBlur={handleBlur}
+                className={`px-4 py-3 border ${errors.dateOfBirth ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input`}
               />
+              {errors.dateOfBirth && (
+                <p className="mt-1 text-sm text-red-500 font-roboto">
+                  {errors.dateOfBirth}
+                </p>
+              )}
             </div>
 
             {/* Country Dropdown */}

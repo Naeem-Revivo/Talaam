@@ -2575,6 +2575,33 @@
       "placeholders": {
         "moderatorComments": "أضف تعليقات اختيارية.."
       }
+    },
+    "approvedQuestion": {
+      "title": "الأسئلة المعتمدة",
+      "heading": "إدارة الأسئلة النهائية",
+      "table": {
+        "question": "السؤال",
+        "subject": "المادة",
+        "exam": "الامتحان",
+        "topic": "الموضوع",
+        "status": "الحالة",
+        "actions": "الرؤية"
+      },
+      "filter": {
+        "search": "ابحث عن الأسئلة، المادة، الموضوع",
+        "subject": "المادة",
+        "exam": "الامتحان",
+        "topic": "الموضوع"
+      },
+      "status": {
+        "visible": "مرئي",
+        "hidden": "مخفي"
+      },
+      "back": "العودة إلى بنك الأسئلة",
+      "emptyMessage": "لم يتم العثور على أسئلة معتمدة",
+      "pagination": {
+        "showing": "عرض {{first}} إلى {{last}} من {{total}} نتيجة"
+      }
     }
   },
   "gatherer": {
