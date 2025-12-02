@@ -54,8 +54,9 @@ if (process.env.VERCEL !== '1') {
       await connectDBOnce();
       
       const PORT = process.env.PORT || 5000;
-      app.listen(PORT, "0.0.0.0", () => {
-        console.log(`Server running on http://192.168.1.80:${PORT}`);
+      const HOST = process.env.HOST || 'localhost';
+      app.listen(PORT, HOST, () => {
+        console.log(`Server running on http://${HOST}:${PORT}`);
       });
     } catch (error) {
       console.error('Failed to start server:', error);
