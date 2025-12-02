@@ -11,9 +11,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "postinstall": "prisma generate",
-    "vercel:build": "prisma generate",
-    "vercel:deploy": "prisma migrate deploy && prisma generate"
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",

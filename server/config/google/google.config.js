@@ -2,7 +2,7 @@ const { google } = require('googleapis');
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
-const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/api/auth/google/callback';
+const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://192.168.1.80:5000/api/auth/google/callback';
 
 // Create OAuth2 client for exchanging auth codes and fetching profile
 const oauth2Client = new google.auth.OAuth2(
