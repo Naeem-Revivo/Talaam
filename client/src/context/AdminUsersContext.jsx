@@ -1,156 +1,128 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, { createContext, useContext, useMemo, useState, useEffect } from "react";
+import usersAPI from "../api/users";
 
-const initialUsersData = [
-  {
-    id: "u-1",
-    name: "John Doe",
-    email: "johndoe@gmail.com",
-    workflowRole: "Question Gatherer",
-    systemRole: "Admin",
-    status: "Active",
-    notes:
-      "John plays a critical role in sourcing high-quality questions for the creation pipeline.",
-    lastLogin: "Oct 12, 2025 • 10:22 AM",
-    dateCreated: "Jan 15, 2023",
-    activityLog: [
-      {
-        description: "User logged in from IP 192.168.1.1",
-        timestamp: "Oct 12, 2025 • 10:22 AM",
-      },
-      {
-        description:
-          "Workflow role changed from Question Creator to Question Gatherer",
-        timestamp: "Oct 11, 2025 • 09:45 AM",
-      },
-    ],
-  },
-  {
-    id: "u-2",
-    name: "Jane Smith",
-    email: "janesmith@gmail.com",
-    workflowRole: "Question Creator",
-    systemRole: "Editor",
-    status: "Suspended",
-    notes:
-      "Currently under review for repeated violations of content guidelines.",
-    lastLogin: "Oct 08, 2025 • 04:18 PM",
-    dateCreated: "Feb 02, 2023",
-    activityLog: [
-      {
-        description: "Account suspended by Admin",
-        timestamp: "Oct 10, 2025 • 08:20 AM",
-      },
-      {
-        description: "Created new question #Q-12345",
-        timestamp: "Oct 09, 2025 • 01:04 PM",
-      },
-    ],
-  },
-  {
-    id: "u-3",
-    name: "Mike Johnson",
-    email: "mikejohnson@gmail.com",
-    workflowRole: "Processor",
-    systemRole: "Viewer",
-    status: "Active",
-    notes:
-      "Mike reviews and validates processed questions before they are added to the bank.",
-    lastLogin: "Oct 13, 2025 • 06:35 PM",
-    dateCreated: "Mar 19, 2023",
-    activityLog: [
-      {
-        description: "Reviewed 45 new questions",
-        timestamp: "Oct 13, 2025 • 05:40 PM",
-      },
-      {
-        description: "Password changed successfully",
-        timestamp: "Oct 11, 2025 • 11:15 AM",
-      },
-    ],
-  },
-  {
-    id: "u-4",
-    name: "Emily Davis",
-    email: "emilydavis@gmail.com",
-    workflowRole: "Question Explainer",
-    systemRole: "Admin",
-    status: "Active",
-    notes:
-      "Emily has consistently delivered high-quality content explanations for the question bank.",
-    lastLogin: "Oct 14, 2025 • 09:45 AM",
-    dateCreated: "May 24, 2023",
-    activityLog: [
-      {
-        description: "Published 5 new explanations",
-        timestamp: "Oct 14, 2025 • 09:45 AM",
-      },
-    ],
-  },
-  {
-    id: "u-5",
-    name: "Jane Smith",
-    email: "janesmith+gatherer@gmail.com",
-    workflowRole: "Question Gatherer",
-    systemRole: "Editor",
-    status: "Suspended",
-    notes: "Duplicate account flagged for verification.",
-    lastLogin: "Sep 30, 2025 • 02:02 PM",
-    dateCreated: "Jul 05, 2023",
-    activityLog: [
-      {
-        description: "Account flagged for duplicate entries",
-        timestamp: "Oct 01, 2025 • 08:15 AM",
-      },
-    ],
-  },
-];
+// Map API workflow roles to frontend format
+const mapWorkflowRole = (apiRole) => {
+  const roleMap = {
+    gatherer: "Question Gatherer",
+    creator: "Question Creator",
+    processor: "Processor",
+    explainer: "Question Explainer",
+  };
+  return roleMap[apiRole] || apiRole;
+};
+
+// Map frontend workflow roles to API format
+const mapWorkflowRoleToAPI = (frontendRole) => {
+  const roleMap = {
+    "Question Gatherer": "gatherer",
+    "Question Creator": "creator",
+    Processor: "processor",
+    "Question Explainer": "explainer",
+  };
+  return roleMap[frontendRole] || frontendRole.toLowerCase().replace(/\s+/g, '');
+};
+
+// Map API user format to frontend format
+const mapApiUserToFrontend = (apiUser) => {
+  // API returns workflowRole as adminRole, so check both
+  const workflowRole = apiUser.workflowRole || apiUser.adminRole;
+  return {
+    id: apiUser.id,
+    name: apiUser.username || apiUser.name || null,
+    email: apiUser.email || null,
+    workflowRole: workflowRole ? mapWorkflowRole(workflowRole) : null,
+    status: apiUser.status ? apiUser.status.charAt(0).toUpperCase() + apiUser.status.slice(1) : null,
+    // Only include fields that come from the API
+    notes: apiUser.notes || null,
+    lastLogin: apiUser.lastLogin || null,
+    dateCreated: apiUser.dateCreated || apiUser.createdAt || null,
+    activityLog: apiUser.activityLog || null,
+  };
+};
 
 const AdminUsersContext = createContext(undefined);
 
 export const AdminUsersProvider = ({ children }) => {
-  const [users, setUsers] = useState(initialUsersData);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const addUser = (payload) => {
-    const { password, ...rest } = payload;
-    const id = `u-${Date.now()}`;
-    const createdAt = new Date();
-    const newUser = {
-      ...rest,
-      id,
-      dateCreated: createdAt.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-      }),
-      lastLogin: "Never",
-      activityLog: [
-        {
-          description: "Account created",
-          timestamp: createdAt.toLocaleString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        },
-      ],
-    };
-    setUsers((prev) => [newUser, ...prev]);
-    return newUser;
+  // Fetch all users
+  const fetchUsers = async (params = {}) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await usersAPI.getAllUsers(params);
+      
+      if (response.success && response.data?.admins) {
+        const mappedUsers = response.data.admins.map(mapApiUserToFrontend);
+        setUsers(mappedUsers);
+        return { users: mappedUsers, pagination: response.data.pagination };
+      }
+      return { users: [], pagination: null };
+    } catch (err) {
+      const errorMessage = err.message || "Failed to fetch users";
+      setError(errorMessage);
+      console.error("Error fetching users:", err);
+      return { users: [], pagination: null };
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateUser = (id, updates) => {
-    setUsers((prev) =>
-      prev.map((user) =>
-        user.id === id
-          ? {
-              ...user,
-              ...updates,
-            }
-          : user
-      )
-    );
+  // Note: Users are now fetched in components using URL params, not automatically here
+
+  const addUser = async (payload) => {
+    try {
+      setError(null);
+      const response = await usersAPI.createUser(payload);
+      
+      if (response.success && response.data?.user) {
+        const newUser = mapApiUserToFrontend(response.data.user);
+        
+        // Only use data from API response, no hardcoded defaults
+        setUsers((prev) => [newUser, ...prev]);
+        return newUser;
+      }
+      throw new Error(response.message || "Failed to create user");
+    } catch (err) {
+      const errorMessage = err.message || err.response?.data?.message || "Failed to create user";
+      setError(errorMessage);
+      throw err;
+    }
+  };
+
+  const updateUser = async (id, updates) => {
+    try {
+      setError(null);
+      
+      // Prepare API update data
+      const apiUpdates = {};
+      if (updates.name !== undefined) apiUpdates.name = updates.name;
+      if (updates.email !== undefined) apiUpdates.email = updates.email;
+      if (updates.status !== undefined) apiUpdates.status = updates.status;
+      if (updates.workflowRole !== undefined) {
+        apiUpdates.workflowRole = mapWorkflowRoleToAPI(updates.workflowRole);
+      }
+      
+      const response = await usersAPI.updateUser(id, apiUpdates);
+      
+      if (response.success && response.data?.user) {
+        const updatedUser = mapApiUserToFrontend(response.data.user);
+        
+        // Only use data from API response, no hardcoded defaults
+        setUsers((prev) =>
+          prev.map((user) => (user.id === id ? updatedUser : user))
+        );
+        return updatedUser;
+      }
+      throw new Error(response.message || "Failed to update user");
+    } catch (err) {
+      const errorMessage = err.message || err.response?.data?.message || "Failed to update user";
+      setError(errorMessage);
+      throw err;
+    }
   };
 
   const getUserById = (id) => users.find((user) => user.id === id);
@@ -158,11 +130,14 @@ export const AdminUsersProvider = ({ children }) => {
   const value = useMemo(
     () => ({
       users,
+      loading,
+      error,
+      fetchUsers,
       addUser,
       updateUser,
       getUserById,
     }),
-    [users]
+    [users, loading, error]
   );
 
   return (

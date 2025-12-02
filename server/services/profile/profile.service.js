@@ -22,8 +22,14 @@ const updateProfile = async (userId, profileData) => {
     throw new Error('User not found');
   }
 
-  // Update profile fields
-  if (fullName !== undefined) user.fullName = fullName;
+  // Prepare update data
+  const updateData = {};
+
+  if (fullName !== undefined) {
+    updateData.fullName = fullName;
+    updateData.name = fullName; // Also update name field for backward compatibility
+  }
+  
   if (dateOfBirth !== undefined) {
     // Handle dateOfBirth - can be string (DD/MM/YYYY) or Date object
     if (typeof dateOfBirth === 'string') {
@@ -33,27 +39,23 @@ const updateProfile = async (userId, profileData) => {
         const day = parseInt(dateParts[0], 10);
         const month = parseInt(dateParts[1], 10) - 1; // Month is 0-indexed
         const year = parseInt(dateParts[2], 10);
-        user.dateOfBirth = new Date(year, month, day);
+        updateData.dateOfBirth = new Date(year, month, day);
       } else {
-        user.dateOfBirth = new Date(dateOfBirth);
+        updateData.dateOfBirth = new Date(dateOfBirth);
       }
     } else if (dateOfBirth) {
-      user.dateOfBirth = new Date(dateOfBirth);
+      updateData.dateOfBirth = new Date(dateOfBirth);
     } else {
-      user.dateOfBirth = null;
+      updateData.dateOfBirth = null;
     }
   }
-  if (country !== undefined) user.country = country;
-  if (timezone !== undefined) user.timezone = timezone;
-  if (language !== undefined) user.language = language;
+  
+  if (country !== undefined) updateData.country = country;
+  if (timezone !== undefined) updateData.timezone = timezone;
+  if (language !== undefined) updateData.language = language;
 
-  // Also update name field if fullName is provided (for backward compatibility)
-  if (fullName) {
-    user.name = fullName;
-  }
-
-  await user.save();
-  return user;
+  const updatedUser = await User.update(userId, updateData);
+  return updatedUser;
 };
 
 /**
@@ -67,8 +69,14 @@ const completeProfile = async (userId, profileData) => {
     throw new Error('User not found');
   }
 
-  // Update profile fields
-  if (fullName) user.fullName = fullName;
+  // Prepare update data
+  const updateData = {};
+
+  if (fullName) {
+    updateData.fullName = fullName;
+    updateData.name = fullName; // Also update name field
+  }
+  
   if (dateOfBirth) {
     // Handle dateOfBirth - can be string (DD/MM/YYYY) or Date object
     if (typeof dateOfBirth === 'string') {
@@ -78,25 +86,21 @@ const completeProfile = async (userId, profileData) => {
         const day = parseInt(dateParts[0], 10);
         const month = parseInt(dateParts[1], 10) - 1; // Month is 0-indexed
         const year = parseInt(dateParts[2], 10);
-        user.dateOfBirth = new Date(year, month, day);
+        updateData.dateOfBirth = new Date(year, month, day);
       } else {
-        user.dateOfBirth = new Date(dateOfBirth);
+        updateData.dateOfBirth = new Date(dateOfBirth);
       }
     } else {
-      user.dateOfBirth = new Date(dateOfBirth);
+      updateData.dateOfBirth = new Date(dateOfBirth);
     }
   }
-  if (country) user.country = country;
-  if (timezone) user.timezone = timezone;
-  if (language) user.language = language;
+  
+  if (country) updateData.country = country;
+  if (timezone) updateData.timezone = timezone;
+  if (language) updateData.language = language;
 
-  // Also update name field if fullName is provided
-  if (fullName) {
-    user.name = fullName;
-  }
-
-  await user.save();
-  return user;
+  const updatedUser = await User.update(userId, updateData);
+  return updatedUser;
 };
 
 module.exports = {

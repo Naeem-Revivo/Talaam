@@ -1,0 +1,283 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                    String    @id @default(uuid())
+  name                  String?
+  authProvider          String    @default("local") // local, google
+  googleId              String?   @unique @map("google_id")
+  email                 String    @unique
+  password              String?
+  isEmailVerified       Boolean   @default(false) @map("is_email_verified")
+  avatar                String?
+  otp                   String?
+  otpExpiry             DateTime? @map("otp_expiry") @db.Timestamptz
+  resetPasswordToken    String?   @map("reset_password_token")
+  resetPasswordExpiry   DateTime? @map("reset_password_expiry") @db.Timestamptz
+  fullName              String?   @map("full_name")
+  dateOfBirth           DateTime? @map("date_of_birth") @db.Date
+  country               String?
+  timezone              String?
+  language              String    @default("English") // English, العربية
+  role                  String    @default("student") // superadmin, student, admin
+  adminRole             String?   @map("admin_role") // gatherer, creator, explainer, processor
+  status                String    @default("active") // active, suspended
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  subscriptions         Subscription[]
+  questionsCreated      Question[]       @relation("QuestionCreatedBy")
+  questionsModified     Question[]       @relation("QuestionLastModifiedBy")
+  questionsApproved     Question[]       @relation("QuestionApprovedBy")
+  questionsRejected     Question[]       @relation("QuestionRejectedBy")
+  studentAnswers        StudentAnswer[]
+  questionHistory       QuestionHistory[]
+  questionComments      QuestionComment[]
+
+  @@index([googleId])
+  @@index([email])
+  @@map("users")
+}
+
+model Plan {
+  id          String         @id @default(uuid())
+  name        String
+  price       Float
+  duration    String         // Monthly, Quarterly, Semi-Annual, Annual
+  description String         @default("")
+  status      String         // active, inactive
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id                    String    @id @default(uuid())
+  userId                String    @map("user_id")
+  planId                String    @map("plan_id")
+  userName              String    @map("user_name")
+  planName              String    @map("plan_name")
+  startDate             DateTime  @map("start_date") @db.Timestamptz
+  expiryDate            DateTime  @map("expiry_date") @db.Timestamptz
+  paymentStatus         String    @default("Pending") @map("payment_status") // Pending, Paid, Cancelled
+  isActive              Boolean   @default(false) @map("is_active")
+  transactionId         String?   @map("transaction_id")
+  paymentMethod         String    @default("manual") @map("payment_method") // moyassar, manual
+  moyassarPaymentId     String?   @map("moyassar_payment_id")
+  moyassarPaymentStatus String?   @map("moyassar_payment_status") // initiated, paid, failed, cancelled
+  paymentUrl            String?   @map("payment_url")
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan Plan @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  @@index([userId, isActive, expiryDate])
+  @@map("subscriptions")
+}
+
+model Exam {
+  id          String         @id @default(uuid())
+  name        String
+  status      String         @default("active") // active, inactive
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  questions       Question[]
+  classifications Classification[]
+  studentAnswers  StudentAnswer[]
+
+  @@map("exams")
+}
+
+model Subject {
+  id          String         @id @default(uuid())
+  name        String
+  description String         @default("")
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  topics          Topic[]
+  questions       Question[]
+  classifications Classification[]
+  studentAnswers  StudentAnswer[]
+
+  @@map("subjects")
+}
+
+model Topic {
+  id            String         @id @default(uuid())
+  parentSubject String         @map("parent_subject")
+  name          String
+  description   String         @default("")
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  subject        Subject       @relation(fields: [parentSubject], references: [id], onDelete: Cascade)
+  questions      Question[]
+  classifications Classification[]
+  studentAnswers StudentAnswer[]
+
+  @@map("topics")
+}
+
+model Classification {
+  id        String   @id @default(uuid())
+  examId    String   @map("exam_id")
+  subjectId String   @map("subject_id")
+  topicId   String   @map("topic_id")
+  status    String   @default("active") // active, inactive
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  exam    Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topic   Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([examId, subjectId, topicId])
+  @@index([examId, subjectId, topicId])
+  @@index([status])
+  @@map("classifications")
+}
+
+model Question {
+  id                String   @id @default(uuid())
+  status            String   @default("pending_processor") // pending_gatherer, pending_processor, pending_creator, pending_explainer, completed, rejected
+  examId            String   @map("exam_id")
+  subjectId         String   @map("subject_id")
+  topicId           String   @map("topic_id")
+  questionText      String   @map("question_text")
+  questionType      String   @map("question_type") // MCQ, True/False, Short Answer, Essay
+  options           Json?    // { A: string, B: string, C: string, D: string }
+  correctAnswer     String?  @map("correct_answer") // A, B, C, D
+  explanation       String   @default("")
+  originalQuestionId String? @map("original_question_id")
+  isVariant         Boolean  @default(false) @map("is_variant")
+  createdById       String   @map("created_by_id")
+  lastModifiedById  String?  @map("last_modified_by_id")
+  approvedById      String?  @map("approved_by_id")
+  rejectedById      String?  @map("rejected_by_id")
+  rejectionReason   String?  @map("rejection_reason")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  exam              Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  subject           Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topic             Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  originalQuestion  Question? @relation("QuestionVariant", fields: [originalQuestionId], references: [id])
+  variants          Question[] @relation("QuestionVariant")
+  createdBy         User     @relation("QuestionCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy    User?    @relation("QuestionLastModifiedBy", fields: [lastModifiedById], references: [id])
+  approvedBy        User?    @relation("QuestionApprovedBy", fields: [approvedById], references: [id])
+  rejectedBy        User?    @relation("QuestionRejectedBy", fields: [rejectedById], references: [id])
+  history           QuestionHistory[]
+  comments          QuestionComment[]
+  studentAnswers    StudentAnswerQuestion[]
+  studyModeAnswers  StudentAnswer[] @relation("QuestionStudyMode")
+
+  @@index([examId, subjectId, topicId])
+  @@index([status])
+  @@index([createdById])
+  @@index([originalQuestionId])
+  @@map("questions")
+}
+
+model QuestionHistory {
+  id          String   @id @default(uuid())
+  questionId  String   @map("question_id")
+  action      String   // created, updated, approved, rejected, submitted, variant_created
+  performedById String @map("performed_by_id")
+  role        String?
+  notes       String?
+  timestamp   DateTime @default(now()) @db.Timestamptz
+
+  // Relations
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  performedBy User     @relation(fields: [performedById], references: [id])
+
+  @@index([questionId])
+  @@map("question_history")
+}
+
+model QuestionComment {
+  id          String   @id @default(uuid())
+  questionId  String   @map("question_id")
+  comment     String
+  commentedById String @map("commented_by_id")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  commentedBy User     @relation(fields: [commentedById], references: [id])
+
+  @@index([questionId])
+  @@map("question_comments")
+}
+
+model StudentAnswer {
+  id              String   @id @default(uuid())
+  studentId       String   @map("student_id")
+  mode            String   // study, test
+  examId          String   @map("exam_id")
+  subjectId       String?  @map("subject_id")
+  topicId         String?  @map("topic_id")
+  questionId      String?  @map("question_id") // For study mode
+  selectedAnswer  String
+  isCorrect       Boolean  @default(false) @map("is_correct")
+  // For test mode
+  totalQuestions  Int      @default(0) @map("total_questions")
+  correctAnswers  Int      @default(0) @map("correct_answers")
+  incorrectAnswers Int     @default(0) @map("incorrect_answers")
+  score           Float    @default(0)
+  percentage      Float    @default(0)
+  status          String   @default("completed") // in_progress, completed
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  student         User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  exam            Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  subject         Subject? @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topic           Topic?   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  question        Question? @relation("QuestionStudyMode", fields: [questionId], references: [id], onDelete: Cascade)
+  answers         StudentAnswerQuestion[]
+
+  @@index([studentId, examId, createdAt(sort: Desc)])
+  @@index([studentId, mode, createdAt(sort: Desc)])
+  @@map("student_answers")
+}
+
+model StudentAnswerQuestion {
+  id              String        @id @default(uuid())
+  studentAnswerId String        @map("student_answer_id")
+  questionId      String        @map("question_id")
+  selectedAnswer  String        @map("selected_answer")
+  isCorrect       Boolean       @default(false) @map("is_correct")
+
+  // Relations
+  studentAnswer   StudentAnswer @relation(fields: [studentAnswerId], references: [id], onDelete: Cascade)
+  question        Question      @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([studentAnswerId])
+  @@index([questionId])
+  @@map("student_answer_questions")
+}

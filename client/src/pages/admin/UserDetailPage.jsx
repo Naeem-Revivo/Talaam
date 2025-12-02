@@ -1,23 +1,27 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAdminUsers } from "../../context/AdminUsersContext";
 import { useLanguage } from "../../context/LanguageContext";
+import usersAPI from "../../api/users";
 
 const statusBadgeStyles = {
   Active: "bg-[#FDF0D5] text-[#ED4122]",
   Suspended: "bg-[#C6D8D3] text-oxford-blue",
 };
 
-const InfoField = ({ label, value }) => (
-  <div className="flex flex-col gap-2">
-    <span className="text-[16px] font-roboto font-normal leading-[100%] text-dark-gray">
-      {label}
-    </span>
-    <span className="text-[16px] font-roboto font-normal leading-[100%] text-oxford-blue">
-      {value || "—"}
-    </span>
-  </div>
-);
+const InfoField = ({ label, value }) => {
+  if (!value) return null;
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-[16px] font-roboto font-normal leading-[100%] text-dark-gray">
+        {label}
+      </span>
+      <span className="text-[16px] font-roboto font-normal leading-[100%] text-oxford-blue">
+        {value}
+      </span>
+    </div>
+  );
+};
 
 const activityIcons = {
   login: (
@@ -160,7 +164,74 @@ const UserDetailPage = () => {
   const { id } = useParams();
   const { getUserById } = useAdminUsers();
   const { t } = useLanguage();
-  const user = getUserById(id);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  // Try to get user from context first, if not found, fetch from API
+  useEffect(() => {
+    const loadUser = async () => {
+      // First try to get from context
+      const contextUser = getUserById(id);
+      if (contextUser) {
+        setUser(contextUser);
+        setLoading(false);
+        return;
+      }
+      
+      // If not in context, fetch from API with max allowed limit
+      try {
+        setLoading(true);
+        // Fetch users with max allowed limit (100) and search through pages if needed
+        let foundUser = null;
+        let page = 1;
+        const maxPages = 10; // Limit search to first 10 pages (1000 users max)
+        
+        while (!foundUser && page <= maxPages) {
+          const response = await usersAPI.getAllUsers({ page, limit: 100 });
+          if (response.success && response.data?.admins) {
+            foundUser = response.data.admins.find((u) => u.id === id);
+            if (foundUser) {
+              // Map API user to frontend format
+              const workflowRole = foundUser.workflowRole || foundUser.adminRole;
+              const roleMap = {
+                gatherer: "Question Gatherer",
+                creator: "Question Creator",
+                processor: "Processor",
+                explainer: "Question Explainer",
+              };
+              
+              const mappedUser = {
+                id: foundUser.id,
+                name: foundUser.username || foundUser.name || null,
+                email: foundUser.email || null,
+                workflowRole: workflowRole ? roleMap[workflowRole] || workflowRole : null,
+                status: foundUser.status ? foundUser.status.charAt(0).toUpperCase() + foundUser.status.slice(1) : null,
+                notes: foundUser.notes || null,
+                lastLogin: foundUser.lastLogin || null,
+                dateCreated: foundUser.dateCreated || foundUser.createdAt || null,
+                activityLog: foundUser.activityLog || null,
+              };
+              setUser(mappedUser);
+              break;
+            }
+            // Check if there are more pages
+            if (!response.data.pagination || page >= response.data.pagination.totalPages) {
+              break;
+            }
+            page++;
+          } else {
+            break;
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadUser();
+  }, [id, getUserById]);
   
   const getStatusLabel = (status) => {
     if (status === "Active") return t('admin.userManagement.status.active');
@@ -178,14 +249,18 @@ const UserDetailPage = () => {
     return roleMap[role] || role;
   };
   
-  const getSystemRoleLabel = (role) => {
-    const roleMap = {
-      "Admin": t('admin.addUser.form.systemRoles.admin'),
-      "Editor": t('admin.addUser.form.systemRoles.editor'),
-      "Viewer": t('admin.addUser.form.systemRoles.viewer'),
-    };
-    return roleMap[role] || role;
-  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-full items-center justify-center bg-[#F5F7FB] px-4 py-12">
+        <div className="rounded-[16px] border border-[#E5E7EB] bg-white p-12 text-center shadow-dashboard">
+          <p className="text-[16px] font-roboto text-dark-gray">
+            {t('admin.viewUser.loading') || 'Loading user...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -209,19 +284,11 @@ const UserDetailPage = () => {
     );
   }
 
-  const badgeClass = statusBadgeStyles[user.status] ?? statusBadgeStyles.Active;
+  const badgeClass = user.status ? (statusBadgeStyles[user.status] ?? statusBadgeStyles.Active) : statusBadgeStyles.Active;
 
-  const activityLog =
-    user.activityLog && user.activityLog.length
-      ? user.activityLog
-      : [
-          {
-            description: t('admin.viewUser.activity.noRecentActivity'),
-            timestamp: "",
-            icon: "•",
-            color: "#6B7280",
-          },
-        ];
+  const activityLog = user.activityLog && Array.isArray(user.activityLog) && user.activityLog.length > 0
+    ? user.activityLog
+    : [];
 
   return (
     <div className="min-h-full bg-[#F5F7FB] px-4 py-8 lg:px-10">
@@ -257,14 +324,18 @@ const UserDetailPage = () => {
                 )}
                 <div className="flex flex-col gap-2">
                   <div className="flex flex-wrap items-center gap-3">
-                    <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
-                      {user.name}
-                    </h1>
-                    <span
-                      className={`inline-flex h-[26px] min-w-[59px] items-center justify-center rounded-md px-3 text-sm font-roboto font-normal ${badgeClass}`}
-                    >
-                      {getStatusLabel(user.status)}
-                    </span>
+                    {user.name && (
+                      <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
+                        {user.name}
+                      </h1>
+                    )}
+                    {user.status && (
+                      <span
+                        className={`inline-flex h-[26px] min-w-[59px] items-center justify-center rounded-md px-3 text-sm font-roboto font-normal ${badgeClass}`}
+                      >
+                        {getStatusLabel(user.status)}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -282,10 +353,12 @@ const UserDetailPage = () => {
               <h2 className="text-[20px] font-archivo font-bold leading-[100%] text-oxford-blue">
                 {t('admin.viewUser.sections.personalInformation')}
               </h2>
-              <div className="mt-8 grid gap-6 sm:grid-cols-2">
-                <InfoField label={t('admin.viewUser.fields.fullName')} value={user.name} />
-                <InfoField label={t('admin.viewUser.fields.email')} value={user.email} />
-              </div>
+              {(user.name || user.email) && (
+                <div className="mt-8 grid gap-6 sm:grid-cols-2">
+                  <InfoField label={t('admin.viewUser.fields.fullName')} value={user.name} />
+                  <InfoField label={t('admin.viewUser.fields.email')} value={user.email} />
+                </div>
+              )}
             </div>
           </div>
 
@@ -294,13 +367,14 @@ const UserDetailPage = () => {
                 <h2 className="text-[20px] font-archivo font-bold leading-[100%] text-oxford-blue">
                   {t('admin.viewUser.sections.accountDetails')}
                 </h2>
-                <div className="mt-8 grid gap-6 sm:grid-cols-2">
-                  <InfoField label={t('admin.viewUser.fields.systemRole')} value={getSystemRoleLabel(user.systemRole)} />
-                  <InfoField label={t('admin.viewUser.fields.workflowRole')} value={getRoleLabel(user.workflowRole)} />
-                  <InfoField label={t('admin.viewUser.fields.status')} value={getStatusLabel(user.status)} />
-                  <InfoField label={t('admin.viewUser.fields.lastLogin')} value={user.lastLogin} />
-                  <InfoField label={t('admin.viewUser.fields.dateCreated')} value={user.dateCreated} />
-                </div>
+                {(user.workflowRole || user.status || user.lastLogin || user.dateCreated) && (
+                  <div className="mt-8 grid gap-6 sm:grid-cols-2">
+                    <InfoField label={t('admin.viewUser.fields.workflowRole')} value={user.workflowRole ? getRoleLabel(user.workflowRole) : null} />
+                    <InfoField label={t('admin.viewUser.fields.status')} value={user.status ? getStatusLabel(user.status) : null} />
+                    <InfoField label={t('admin.viewUser.fields.lastLogin')} value={user.lastLogin} />
+                    <InfoField label={t('admin.viewUser.fields.dateCreated')} value={user.dateCreated} />
+                  </div>
+                )}
               </div>
               </div>
 
@@ -308,20 +382,22 @@ const UserDetailPage = () => {
             <h2 className="border-b px-8 border-[#E2E2E2] pb-5 text-[20px] font-archivo font-semibold leading-[28px] text-oxford-blue">
               {t('admin.viewUser.sections.activityLog')}
             </h2>
-            <div className="mt-6 px-8 flex flex-col gap-4">
-              {activityLog.map((item, index) => {
-                const visuals = resolveActivityVisuals(item.description);
-                return (
-                  <ActivityItem
-                    key={`${item.description}-${index}`}
-                    icon={visuals.icon}
-                    title={item.description}
-                    timestamp={item.timestamp}
-                    accent={visuals.color}
-                  />
-                );
-              })}
-            </div>
+            {activityLog.length > 0 ? (
+              <div className="mt-6 px-8 flex flex-col gap-4">
+                {activityLog.map((item, index) => {
+                  const visuals = resolveActivityVisuals(item.description);
+                  return (
+                    <ActivityItem
+                      key={`${item.description}-${index}`}
+                      icon={visuals.icon}
+                      title={item.description}
+                      timestamp={item.timestamp}
+                      accent={visuals.color}
+                    />
+                  );
+                })}
+              </div>
+            ) : null}
           </div>
         </section>
       </div>

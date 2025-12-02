@@ -49,7 +49,7 @@ const createSubject = async (req, res, next) => {
       message: 'Subject created successfully',
       data: {
         subject: {
-          id: subject._id,
+          id: subject.id,
           name: subject.name,
           createdAt: subject.createdAt,
           updatedAt: subject.updatedAt,
@@ -57,7 +57,7 @@ const createSubject = async (req, res, next) => {
       },
     };
 
-    console.log('[SUBJECT] POST /admin/subjects → 201 (created)', { subjectId: subject._id });
+    console.log('[SUBJECT] POST /admin/subjects → 201 (created)', { subjectId: subject.id });
     res.status(201).json(response);
   } catch (error) {
     console.error('[SUBJECT] POST /admin/subjects → error', error);
@@ -89,7 +89,7 @@ const getAllSubjects = async (req, res, next) => {
       success: true,
       data: {
         subjects: subjects.map((subject) => ({
-          id: subject._id,
+          id: subject.id,
           name: subject.name,
           createdAt: subject.createdAt,
           updatedAt: subject.updatedAt,
@@ -131,7 +131,7 @@ const getSubjectById = async (req, res, next) => {
       success: true,
       data: {
         subject: {
-          id: subject._id,
+          id: subject.id,
           name: subject.name,
           createdAt: subject.createdAt,
           updatedAt: subject.updatedAt,
@@ -139,7 +139,7 @@ const getSubjectById = async (req, res, next) => {
       },
     };
 
-    console.log('[SUBJECT] GET /admin/subjects/:subjectId → 200 (ok)', { subjectId: subject._id });
+    console.log('[SUBJECT] GET /admin/subjects/:subjectId → 200 (ok)', { subjectId: subject.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[SUBJECT] GET /admin/subjects/:subjectId → error', error);
@@ -217,7 +217,7 @@ const updateSubject = async (req, res, next) => {
       message: 'Subject updated successfully',
       data: {
         subject: {
-          id: updatedSubject._id,
+          id: updatedSubject.id,
           name: updatedSubject.name,
           createdAt: updatedSubject.createdAt,
           updatedAt: updatedSubject.updatedAt,
@@ -225,7 +225,7 @@ const updateSubject = async (req, res, next) => {
       },
     };
 
-    console.log('[SUBJECT] PUT /admin/subjects/:subjectId → 200 (updated)', { subjectId: subject._id });
+    console.log('[SUBJECT] PUT /admin/subjects/:subjectId → 200 (updated)', { subjectId: subject.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[SUBJECT] PUT /admin/subjects/:subjectId → error', error);
@@ -287,13 +287,13 @@ const deleteSubject = async (req, res, next) => {
       message: 'Subject deleted successfully',
       data: {
         subject: {
-          id: subject._id,
+          id: subject.id,
           name: subject.name,
         },
       },
     };
 
-    console.log('[SUBJECT] DELETE /admin/subjects/:subjectId → 200 (deleted)', { subjectId: subject._id });
+    console.log('[SUBJECT] DELETE /admin/subjects/:subjectId → 200 (deleted)', { subjectId: subject.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[SUBJECT] DELETE /admin/subjects/:subjectId → error', error);

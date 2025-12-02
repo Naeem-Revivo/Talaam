@@ -25,15 +25,16 @@ export const RoleRoute = ({ allow = [] }) => {
     return <Navigate to="/login" replace />;
   }
   if (allow.length > 0 && !allow.includes(role)) {
-    // If user is logged in but not allowed, redirect them to their home
-    const homeRoutes = {
-      admin: '/admin',
-      user: '/dashboard',
-      gatherer: '/gatherer',
-      creator: '/creator',
-      processor: '/processor',
-      explainer: '/explainer'
-    };
+      // If user is logged in but not allowed, redirect them to their home
+      const homeRoutes = {
+        admin: '/admin',
+        superadmin: '/admin',
+        user: '/dashboard',
+        gatherer: '/gatherer',
+        creator: '/creator',
+        processor: '/processor',
+        explainer: '/explainer'
+      };
     return <Navigate to={homeRoutes[role] || '/dashboard'} replace />;
   }
   return <Outlet />;

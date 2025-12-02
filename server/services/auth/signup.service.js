@@ -34,7 +34,7 @@ const signup = async (email, password, otp, otpExpiry, role = 'student') => {
   const user = await createUser(userData);
 
   // Generate token
-  const token = generateToken(user._id);
+  const token = generateToken(user.id);
 
   return {
     user,

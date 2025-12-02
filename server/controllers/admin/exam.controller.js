@@ -63,7 +63,7 @@ const createExam = async (req, res, next) => {
       message: 'Exam created successfully',
       data: {
         exam: {
-          id: exam._id,
+          id: exam.id,
           name: exam.name,
           status: exam.status,
           createdAt: exam.createdAt,
@@ -72,7 +72,7 @@ const createExam = async (req, res, next) => {
       },
     };
 
-    console.log('[EXAM] POST /admin/exams → 201 (created)', { examId: exam._id });
+    console.log('[EXAM] POST /admin/exams → 201 (created)', { examId: exam.id });
     res.status(201).json(response);
   } catch (error) {
     console.error('[EXAM] POST /admin/exams → error', error);
@@ -115,7 +115,7 @@ const getAllExams = async (req, res, next) => {
       success: true,
       data: {
         exams: exams.map((exam) => ({
-          id: exam._id,
+          id: exam.id,
           name: exam.name,
           status: exam.status,
           createdAt: exam.createdAt,
@@ -158,7 +158,7 @@ const getExamById = async (req, res, next) => {
       success: true,
       data: {
         exam: {
-          id: exam._id,
+          id: exam.id,
           name: exam.name,
           status: exam.status,
           createdAt: exam.createdAt,
@@ -167,7 +167,7 @@ const getExamById = async (req, res, next) => {
       },
     };
 
-    console.log('[EXAM] GET /admin/exams/:examId → 200 (ok)', { examId: exam._id });
+    console.log('[EXAM] GET /admin/exams/:examId → 200 (ok)', { examId: exam.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[EXAM] GET /admin/exams/:examId → error', error);
@@ -261,7 +261,7 @@ const updateExam = async (req, res, next) => {
       message: 'Exam updated successfully',
       data: {
         exam: {
-          id: updatedExam._id,
+          id: updatedExam.id,
           name: updatedExam.name,
           status: updatedExam.status,
           createdAt: updatedExam.createdAt,
@@ -270,7 +270,7 @@ const updateExam = async (req, res, next) => {
       },
     };
 
-    console.log('[EXAM] PUT /admin/exams/:examId → 200 (updated)', { examId: exam._id });
+    console.log('[EXAM] PUT /admin/exams/:examId → 200 (updated)', { examId: updatedExam.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[EXAM] PUT /admin/exams/:examId → error', error);
@@ -332,13 +332,13 @@ const deleteExam = async (req, res, next) => {
       message: 'Exam deleted successfully',
       data: {
         exam: {
-          id: exam._id,
+          id: exam.id,
           name: exam.name,
         },
       },
     };
 
-    console.log('[EXAM] DELETE /admin/exams/:examId → 200 (deleted)', { examId: exam._id });
+    console.log('[EXAM] DELETE /admin/exams/:examId → 200 (deleted)', { examId: exam.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[EXAM] DELETE /admin/exams/:examId → error', error);

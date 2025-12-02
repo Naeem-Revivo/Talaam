@@ -17,18 +17,20 @@ const forgotPassword = async (email) => {
   const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
   const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000);
 
-  user.resetPasswordToken = resetTokenHash;
-  user.resetPasswordExpiry = resetTokenExpiry;
-  await user.save({ validateBeforeSave: false });
+  await User.update(user.id, {
+    resetPasswordToken: resetTokenHash,
+    resetPasswordExpiry: resetTokenExpiry,
+  });
 
   try {
     await sendPasswordResetEmail(email, user.name || email, resetToken);
     return { success: true, user, resetToken };
   } catch (emailError) {
     // Rollback token on email failure
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpiry = undefined;
-    await user.save({ validateBeforeSave: false });
+    await User.update(user.id, {
+      resetPasswordToken: null,
+      resetPasswordExpiry: null,
+    });
     throw new Error('Failed to send reset email');
   }
 };
@@ -38,20 +40,24 @@ const forgotPassword = async (email) => {
  */
 const resetPassword = async (token, password) => {
   const resetTokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const { prisma } = require('../../config/db/prisma');
 
-  const user = await User.findOne({
-    resetPasswordToken: resetTokenHash,
-    resetPasswordExpiry: { $gt: new Date() },
-  }).select('+password');
+  const user = await prisma.user.findFirst({
+    where: {
+      resetPasswordToken: resetTokenHash,
+      resetPasswordExpiry: { gt: new Date() },
+    },
+  });
 
   if (!user) {
     throw new Error('Invalid or expired token');
   }
 
-  user.password = password;
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpiry = undefined;
-  await user.save();
+  await User.update(user.id, {
+    password: password,
+    resetPasswordToken: null,
+    resetPasswordExpiry: null,
+  });
 
   return { success: true };
 };

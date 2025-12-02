@@ -3,16 +3,16 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authAPI from '../../api/auth';
 
 // Load initial state from localStorage
-const getUserFromStorage = () => {
+const getAuthFromStorage = () => {
   try {
+    const token = localStorage.getItem('authToken');
     const user = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
     return {
       user: user ? JSON.parse(user) : null,
       token: token || null,
       isAuthenticated: !!token,
     };
-  } catch (error) {
+  } catch {
     return { user: null, token: null, isAuthenticated: false };
   }
 };
@@ -125,15 +125,23 @@ export const resetPassword = createAsyncThunk(
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    ...getUserFromStorage(),
+    ...getAuthFromStorage(),
     loading: false,
     error: null,
     success: false,
   },
   reducers: {
-    // Simple logout action
+    // Login action - sets token and updates auth state
+    login: (state, action) => {
+      const token = action.payload;
+      localStorage.setItem('authToken', token);
+      state.token = token;
+      state.isAuthenticated = true;
+    },
+    // Logout action
     logout: (state) => {
-      authAPI.logout();
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
@@ -157,9 +165,18 @@ const authSlice = createSlice({
         state.loading = false;
         state.success = true;
         const { data } = action.payload || {};
-        state.user = data?.user || null;
-        state.token = data?.token || null;
-        state.isAuthenticated = !!data?.token;
+        const token = data?.token || null;
+        const user = data?.user || null;
+        
+        if (token) {
+          localStorage.setItem('authToken', token);
+          state.token = token;
+          state.isAuthenticated = true;
+        }
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+          state.user = user;
+        }
         state.error = null;
       })
       .addCase(signup.rejected, (state, action) => {
@@ -178,9 +195,18 @@ const authSlice = createSlice({
         state.loading = false;
         state.success = true;
         const { data } = action.payload || {};
-        state.user = data?.user || null;
-        state.token = data?.token || null;
-        state.isAuthenticated = !!data?.token;
+        const token = data?.token || null;
+        const user = data?.user || null;
+        
+        if (token) {
+          localStorage.setItem('authToken', token);
+          state.token = token;
+          state.isAuthenticated = true;
+        }
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+          state.user = user;
+        }
         state.error = null;
       })
       .addCase(login.rejected, (state, action) => {
@@ -232,9 +258,18 @@ const authSlice = createSlice({
       .addCase(verifyOTP.fulfilled, (state, action) => {
         state.loading = false;
         const { data } = action.payload || {};
-        state.user = data?.user || state.user;
-        state.token = data?.token || state.token;
-        state.isAuthenticated = !!(data?.token || state.token);
+        const token = data?.token || null;
+        const user = data?.user || null;
+        
+        if (token) {
+          localStorage.setItem('authToken', token);
+          state.token = token;
+          state.isAuthenticated = true;
+        }
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+          state.user = user;
+        }
         state.success = true;
       })
       .addCase(verifyOTP.rejected, (state, action) => {
@@ -291,5 +326,5 @@ const authSlice = createSlice({
 });
 
 // Export actions and reducer
-export const { logout, clearError } = authSlice.actions;
+export const { login: loginAction, logout, clearError } = authSlice.actions;
 export default authSlice.reducer;

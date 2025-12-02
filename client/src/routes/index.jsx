@@ -134,7 +134,7 @@ export const AppRoutes = () => {
       </Route>
       
       {/* Admin Routes */}
-      <Route element={<RoleRoute allow={['admin']} />}>
+      <Route element={<RoleRoute allow={['admin', 'superadmin']} />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
           {/* Placeholder child routes for the admin sidebar items */}
