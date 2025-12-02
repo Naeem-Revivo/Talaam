@@ -27,8 +27,10 @@ const validateCreateAdmin = (req, res, next) => {
       message: 'Email is required',
     });
   } else {
-    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    if (!emailRegex.test(email.trim())) {
+    const trimmedEmail = email.trim();
+    // More permissive email regex that handles common email formats
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
       errors.push({
         field: 'email',
         message: 'Please provide a valid email',
@@ -167,14 +169,16 @@ const validateUpdateAdmin = (req, res, next) => {
         message: 'Email must be a non-empty string',
       });
     } else {
-      const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-      if (!emailRegex.test(email.trim())) {
+      const trimmedEmail = email.trim();
+      // More permissive email regex that handles common email formats
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
         errors.push({
           field: 'email',
           message: 'Please provide a valid email',
         });
       } else {
-        req.body.email = email.trim().toLowerCase();
+        req.body.email = trimmedEmail.toLowerCase();
       }
     }
   }

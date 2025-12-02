@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, useLocation } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
-import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import { AppRoutes } from './routes/index.jsx';

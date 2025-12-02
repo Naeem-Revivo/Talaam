@@ -1,11 +1,6 @@
 import React from "react";
 import AdminMetricCard from "../AdminMetricCard";
 
-const statusBadgeStyles = {
-  active: "bg-[#FDF0D5] text-[#ED4122]",
-  suspended: "bg-[#F3F4F6] text-dark-gray",
-};
-
 const UserSummaryCards = ({ summaries }) => {
   if (!summaries?.length) {
     return null;
@@ -21,8 +16,6 @@ const UserSummaryCards = ({ summaries }) => {
           subtext={item.subtext}
           icon={item.icon}
           iconWrapperClassName="flex h-10 w-10 items-center justify-center"
-          badgeText={item.badgeText}
-          badgeClassName={statusBadgeStyles[item.badgeTone] ?? "bg-[#F3F4F6] text-dark-gray"}
           className="w-full sm:w-[calc(50%-12px)] lg:w-[262px] lg:h-[130px]"
         />
       ))}

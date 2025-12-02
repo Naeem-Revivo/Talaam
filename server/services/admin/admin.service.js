@@ -377,25 +377,35 @@ const getDashboardStatistics = async () => {
  */
 const getUserManagementStatistics = async () => {
   try {
-    // Count users by adminRole
-    const totalGatherer = await User.countDocuments({
-      role: 'admin',
-      adminRole: 'gatherer',
+    const { prisma } = require('../../config/db/prisma');
+    
+    // Count users by adminRole using Prisma
+    const totalGatherer = await prisma.user.count({
+      where: {
+        role: 'admin',
+        adminRole: 'gatherer',
+      },
     });
 
-    const totalCreator = await User.countDocuments({
-      role: 'admin',
-      adminRole: 'creator',
+    const totalCreator = await prisma.user.count({
+      where: {
+        role: 'admin',
+        adminRole: 'creator',
+      },
     });
 
-    const totalProcessor = await User.countDocuments({
-      role: 'admin',
-      adminRole: 'processor',
+    const totalProcessor = await prisma.user.count({
+      where: {
+        role: 'admin',
+        adminRole: 'processor',
+      },
     });
 
-    const totalExplainer = await User.countDocuments({
-      role: 'admin',
-      adminRole: 'explainer',
+    const totalExplainer = await prisma.user.count({
+      where: {
+        role: 'admin',
+        adminRole: 'explainer',
+      },
     });
 
     return {

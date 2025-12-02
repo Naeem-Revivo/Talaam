@@ -18,7 +18,6 @@ const TableHeader = () => {
     t('admin.userManagement.table.headers.userName'),
     t('admin.userManagement.table.headers.email'),
     t('admin.userManagement.table.headers.workflowRole'),
-    t('admin.userManagement.table.headers.systemRole'),
     t('admin.userManagement.table.headers.status'),
     t('admin.userManagement.table.headers.actions'),
   ];
@@ -69,9 +68,6 @@ const TableRow = ({ user, onView, onEdit }) => {
       </td>
       <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-oxford-blue text-center">
         {getRoleLabel(user.workflowRole)}
-      </td>
-      <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-oxford-blue text-center">
-        {user.systemRole}
       </td>
       <td className="px-6 py-4 text-center">
         <span
@@ -158,14 +154,6 @@ const mobileIcons = {
       />
     </svg>
   ),
-  system: (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path
-        d="M4.54193 4.97561C5.91405 4.97561 7.02977 3.85932 7.02977 2.4878C7.02977 1.11629 5.91405 0 4.54193 0C3.16982 0 2.0541 1.11629 2.0541 2.4878C2.0541 3.85932 3.16982 4.97561 4.54193 4.97561ZM4.54193 0.878049C5.42995 0.878049 6.15171 1.5998 6.15171 2.4878C6.15171 3.3758 5.42995 4.09756 4.54193 4.09756C3.65392 4.09756 2.93216 3.3758 2.93216 2.4878C2.93216 1.5998 3.65392 0.878049 4.54193 0.878049ZM6.2231 6.76686C6.07558 6.74286 5.90701 6.73171 5.70739 6.73171H3.3659C1.05777 6.73171 0.87806 8.64528 0.87806 9.23123C0.87806 10.1462 1.27202 10.5366 2.19515 10.5366H5.12202C5.36436 10.5366 5.56105 10.7333 5.56105 10.9756C5.56105 11.218 5.36436 11.4146 5.12202 11.4146H2.19515C0.779718 11.4146 0 10.639 0 9.23123C0 7.67299 0.881573 5.85366 3.3659 5.85366H5.70739C5.95384 5.85366 6.16809 5.86885 6.36244 5.90046C6.60185 5.93851 6.76516 6.16388 6.72594 6.4033C6.68789 6.64271 6.45549 6.80491 6.2231 6.76686ZM11.6975 8.92569L11.7754 8.88231C11.879 8.82436 11.9545 8.72721 11.9849 8.61307C12.016 8.49833 11.9984 8.37658 11.9381 8.27472L11.4019 7.37445C11.2802 7.17016 11.0197 7.09992 10.8101 7.21582L10.7322 7.25912C10.6169 7.3241 10.4723 7.32468 10.3552 7.25912C10.2458 7.19766 10.1779 7.08527 10.1779 6.96644C10.1779 6.6761 9.94083 6.44017 9.64873 6.44017H8.7566C8.46449 6.44017 8.22746 6.6761 8.22746 6.96644C8.22746 7.08585 8.1595 7.19766 8.05003 7.25912C7.93354 7.32468 7.789 7.32468 7.6731 7.25912C7.42373 7.12039 7.10529 7.20525 6.95953 7.44877L6.51285 8.19862C6.44085 8.31862 6.41978 8.46556 6.4549 8.60078C6.49061 8.73658 6.58136 8.85481 6.70429 8.92447C6.70838 8.92623 6.71191 8.92856 6.716 8.9309C6.82079 8.99354 6.88514 9.10302 6.88514 9.21951C6.88573 9.33951 6.81783 9.45248 6.70486 9.5157C6.58251 9.58535 6.49177 9.70303 6.45547 9.83825C6.41918 9.97464 6.43912 10.1175 6.51171 10.2404L6.9601 10.9914C7.10762 11.2384 7.4202 11.3221 7.67367 11.1805C7.78899 11.1155 7.93296 11.1155 8.05003 11.181C8.1595 11.2425 8.22682 11.3543 8.22682 11.4737C8.22682 11.7641 8.46394 12 8.75545 12H9.6493C9.94082 12 10.1779 11.7641 10.1779 11.4737C10.1779 11.3543 10.2458 11.2425 10.3552 11.181C10.4717 11.1155 10.6163 11.1155 10.7322 11.181C10.9822 11.3198 11.2995 11.2349 11.4458 10.9914L11.8954 10.2375C11.9668 10.1157 11.9861 9.97349 11.9498 9.8371C11.9135 9.70013 11.8246 9.58594 11.701 9.5157C11.6975 9.51394 11.6934 9.51159 11.6899 9.50984C11.5851 9.4472 11.5208 9.33714 11.5208 9.22066C11.5213 9.10007 11.5892 8.98715 11.6975 8.92569Z"
-        fill="#032746"
-      />
-    </svg>
-  ),
   status: (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <path
@@ -214,10 +202,6 @@ const MobileUserCard = ({ user, onView, onEdit }) => {
         <div className="flex items-center gap-3">
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F0F4FA]">{mobileIcons.workflow}</span>
           <p className="text-[14px] font-roboto leading-[18px]">{getRoleLabel(user.workflowRole)}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F0F4FA]">{mobileIcons.system}</span>
-          <p className="text-[14px] font-roboto leading-[18px]">{user.systemRole}</p>
         </div>
       </div>
 

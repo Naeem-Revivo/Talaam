@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import UserSummaryCards from "../../components/admin/userManagement/UserSummaryCards";
 import UserFilterBar from "../../components/admin/userManagement/UserFilterBar";
 import UserTable from "../../components/admin/userManagement/UserTable";
-import { useAdminUsers } from "../../context/AdminUsersContext";
 import { useLanguage } from "../../context/LanguageContext";
+import usersAPI from "../../api/users";
 import {
   usermanage1,
   usermanage2,
@@ -22,56 +22,129 @@ const roleIcons = {
 const pageSize = 5;
 
 const UserManagementPage = () => {
-  const { users } = useAdminUsers();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useLanguage();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [roleFilter, setRoleFilter] = useState("");
-  const [page, setPage] = useState(1);
+  
+  // Get values from URL params
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const search = searchParams.get("search") || "";
+  const statusFilter = searchParams.get("status") || "";
+  const roleFilter = searchParams.get("role") || "";
 
-  const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
-      const matchesSearch =
-        user.name.toLowerCase().includes(search.toLowerCase()) ||
-        user.email.toLowerCase().includes(search.toLowerCase());
-      const matchesStatus = statusFilter ? user.status === statusFilter : true;
-      const matchesRole = roleFilter ? user.workflowRole === roleFilter : true;
-      return matchesSearch && matchesStatus && matchesRole;
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState(null);
+  const [statistics, setStatistics] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  // Update URL params helper
+  const updateSearchParams = useCallback((updates) => {
+    const newParams = new URLSearchParams(searchParams);
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === "" || value === null || value === undefined) {
+        newParams.delete(key);
+      } else {
+        newParams.set(key, value);
+      }
     });
-  }, [users, search, statusFilter, roleFilter]);
+    setSearchParams(newParams, { replace: true });
+  }, [searchParams, setSearchParams]);
 
-  const paginatedUsers = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filteredUsers.slice(start, start + pageSize);
-  }, [filteredUsers, page]);
+  // Load statistics (only once on mount)
+  useEffect(() => {
+    const loadStatistics = async () => {
+      try {
+        setStatsLoading(true);
+        const response = await usersAPI.getUserManagementStatistics();
+        if (response.success && response.data?.statistics) {
+          setStatistics(response.data.statistics);
+        }
+      } catch (error) {
+        console.error("Error fetching statistics:", error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+    loadStatistics();
+  }, []);
+
+  // Load users based on URL params
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        setLoading(true);
+        
+        // Map frontend role values to API format
+        const roleMapToAPI = {
+          "Question Gatherer": "gatherer",
+          "Question Creator": "creator",
+          "Processor": "processor",
+          "Question Explainer": "explainer",
+        };
+        
+        const params = {
+          page,
+          limit: pageSize,
+          ...(statusFilter && { status: statusFilter.toLowerCase() }),
+          ...(roleFilter && { adminRole: roleMapToAPI[roleFilter] || roleFilter.toLowerCase().replace(/\s+/g, '') }),
+          ...(search && { search }),
+        };
+        
+        const response = await usersAPI.getAllUsers(params);
+        
+        if (response.success && response.data?.admins) {
+          const mappedUsers = response.data.admins.map((apiUser) => {
+            const workflowRole = apiUser.workflowRole || apiUser.adminRole;
+            const roleMap = {
+              gatherer: "Question Gatherer",
+              creator: "Question Creator",
+              processor: "Processor",
+              explainer: "Question Explainer",
+            };
+            
+            return {
+              id: apiUser.id,
+              name: apiUser.username || apiUser.name || "N/A",
+              email: apiUser.email,
+              workflowRole: roleMap[workflowRole] || workflowRole,
+              status: apiUser.status ? apiUser.status.charAt(0).toUpperCase() + apiUser.status.slice(1) : "Active",
+            };
+          });
+          
+          setUsers(mappedUsers);
+          setPagination(response.data.pagination);
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        setUsers([]);
+        setPagination(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadUsers();
+  }, [page, statusFilter, roleFilter, search]);
 
   const summaries = useMemo(() => {
     const roles = [
-      { key: "Question Gatherer", translationKey: "questionGatherer" },
-      { key: "Question Creator", translationKey: "questionCreator" },
-      { key: "Processor", translationKey: "processor" },
-      { key: "Question Explainer", translationKey: "questionExplainer" },
+      { key: "Question Gatherer", translationKey: "questionGatherer", apiKey: "totalGatherer" },
+      { key: "Question Creator", translationKey: "questionCreator", apiKey: "totalCreator" },
+      { key: "Processor", translationKey: "processor", apiKey: "totalProcessor" },
+      { key: "Question Explainer", translationKey: "questionExplainer", apiKey: "totalExplainer" },
     ];
 
     return roles.map((role) => {
-      const usersByRole = users.filter(
-        (user) => user.workflowRole === role.key
-      );
-      const totalCount = usersByRole.length;
-      const activeCount = usersByRole.filter(
-        (user) => user.status === "Active"
-      ).length;
-      const badgeTone = activeCount ? "active" : "suspended";
+      const totalCount = statistics ? (statistics[role.apiKey] || 0) : 0;
+
       return {
         label: t(`admin.userManagement.roles.${role.translationKey}`),
         value: totalCount,
-        badgeText: badgeTone === "active" ? t('admin.userManagement.status.active') : t('admin.userManagement.status.suspended'),
-        badgeTone,
         icon: roleIcons[role.key],
       };
     });
-  }, [users, t]);
+  }, [statistics, t]);
 
   const handleAddUser = () => {
     navigate("/admin/users/add");
@@ -82,33 +155,92 @@ const UserManagementPage = () => {
   };
 
   const handleEdit = (user) => {
-    navigate(`/admin/users/${user.id}/edit`);
+    // Pass user data through navigation state to avoid API call
+    navigate(`/admin/users/${user.id}/edit`, { state: { user } });
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (typeof window === "undefined") return;
-    const csvRows = [
-      [
-        t('admin.userManagement.export.headers.name'),
-        t('admin.userManagement.export.headers.email'),
-        t('admin.userManagement.export.headers.workflowRole'),
-        t('admin.userManagement.export.headers.systemRole'),
-        t('admin.userManagement.export.headers.status')
-      ].join(","),
-      ...users.map((user) =>
-        [user.name, user.email, user.workflowRole, user.systemRole, user.status].join(",")
-      ),
-    ];
-    const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8" });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = t('admin.userManagement.export.fileName');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    try {
+      // Fetch all users for export (with pagination, max 100 per page)
+      const allUsers = [];
+      let page = 1;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const params = {
+          page,
+          limit: 100, // Max allowed limit
+          ...(statusFilter && { status: statusFilter.toLowerCase() }),
+          ...(roleFilter && { adminRole: roleFilter.toLowerCase().replace(/\s+/g, '') }),
+          ...(search && { search }),
+        };
+        
+        const response = await usersAPI.getAllUsers(params);
+        if (response.success && response.data?.admins) {
+          const pageUsers = response.data.admins.map((apiUser) => {
+            const workflowRole = apiUser.workflowRole || apiUser.adminRole;
+            const roleMap = {
+              gatherer: "Question Gatherer",
+              creator: "Question Creator",
+              processor: "Processor",
+              explainer: "Question Explainer",
+            };
+            return {
+              name: apiUser.username || apiUser.name || "N/A",
+              email: apiUser.email,
+              workflowRole: roleMap[workflowRole] || workflowRole,
+              status: apiUser.status ? apiUser.status.charAt(0).toUpperCase() + apiUser.status.slice(1) : "Active",
+            };
+          });
+          allUsers.push(...pageUsers);
+          
+          // Check if there are more pages
+          if (response.data.pagination && page < response.data.pagination.totalPages) {
+            page++;
+          } else {
+            hasMore = false;
+          }
+        } else {
+          hasMore = false;
+        }
+      }
+
+      // Create CSV from all collected users
+      const csvRows = [
+        [
+          t('admin.userManagement.export.headers.name'),
+          t('admin.userManagement.export.headers.email'),
+          t('admin.userManagement.export.headers.workflowRole'),
+          t('admin.userManagement.export.headers.status')
+        ].join(","),
+        ...allUsers.map((user) =>
+          [user.name, user.email, user.workflowRole, user.status].join(",")
+        ),
+      ];
+      const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = t('admin.userManagement.export.fileName');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error exporting users:", error);
+    }
   };
+
+  if (loading || statsLoading) {
+    return (
+      <div className="min-h-full bg-[#F5F7FB] px-4 xl:px-6 py-6 sm:px-6  2xl:px-[66px]">
+        <div className="mx-auto flex max-w-[1200px] items-center justify-center h-64">
+          <p className="text-oxford-blue">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full bg-[#F5F7FB] px-4 xl:px-6 py-6 sm:px-6  2xl:px-[66px]">
@@ -159,34 +291,31 @@ const UserManagementPage = () => {
           statusValue={statusFilter}
           roleValue={roleFilter}
           onSearchChange={(value) => {
-            setSearch(value);
-            setPage(1);
+            updateSearchParams({ search: value, page: "1" });
           }}
           onStatusChange={(value) => {
-            setStatusFilter(value);
-            setPage(1);
+            updateSearchParams({ status: value, page: "1" });
           }}
           onRoleChange={(value) => {
-            setRoleFilter(value);
-            setPage(1);
+            updateSearchParams({ role: value, page: "1" });
           }}
         />
 
         <UserTable
-          users={paginatedUsers}
+          users={users}
           page={page}
           pageSize={pageSize}
-          total={filteredUsers.length}
-          onPageChange={setPage}
+          total={pagination?.totalItems || 0}
+          onPageChange={(newPage) => {
+            updateSearchParams({ page: newPage.toString() });
+          }}
           onView={handleView}
           onEdit={handleEdit}
         />
       </div>
-
     </div>
   );
 };
 
 export default UserManagementPage;
-
 

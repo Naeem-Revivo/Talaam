@@ -43,4 +43,3 @@ const seedSuperadmin = async () => {
 };
 
 seedSuperadmin();
-
