@@ -180,35 +180,29 @@ const CreateAccount = () => {
 
       if (signup.fulfilled.match(resultAction)) {
         const message =
+          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
           t('createAccount.success') ||
           'Account created successfully.'
 
-        showSuccessToast(message, { title: 'Account Created' })
-        // After signup, send user to verify email page
+        showSuccessToast(message, { title: t('createAccount.successTitle') || 'Account Created', isAuth: true })
         navigate('/verify-email')
       } else {
         const msg =
+          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
-          error ||
           t('createAccount.errors.generic') ||
           'Signup failed.'
-        showErrorToast(msg, { title: 'Signup Failed' })
+        showErrorToast(msg, { title: t('createAccount.errors.title') || 'Signup Failed', isAuth: true })
       }
     } catch (e) {
       showErrorToast(
         t('createAccount.errors.generic') || 'Signup failed.',
-        { title: 'Signup Failed' }
+        { title: t('createAccount.errors.title') || 'Signup Failed', isAuth: true }
       )
     }
   }
 
-  // Show inline backend errors if needed
-  // useEffect(() => {
-  //   if (error) {
-  //     showErrorToast(error, { title: 'Signup Failed' })
-  //   }
-  // }, [error])
 
   const handleGoogleSignup = async () => {
     try {
@@ -219,7 +213,7 @@ const CreateAccount = () => {
       } else {
         showErrorToast(
           t('createAccount.errors.google') || 'Unable to start Google sign in.',
-          { title: 'Authentication Error' }
+          { title: 'Authentication Error', isAuth: true }
         )
       }
     } catch {

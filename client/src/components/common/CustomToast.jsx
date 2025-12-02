@@ -61,7 +61,7 @@ export const ErrorToast = ({
   </div>
 );
 
-// Logout Success Toast
+// Logout Toast (Red Theme)
 export const LogoutToast = ({
   message,
   title = "Logout Successful",
@@ -73,18 +73,18 @@ export const LogoutToast = ({
       {showIcon && (
         <div className="flex-shrink-0">
           <img
-            src={CustomIcon || loginSuccess}
+            src={CustomIcon || loginFailed}
             alt="logout"
             className="w-[30px] h-[30px]"
           />
         </div>
       )}
-      <h3 className="font-archivo font-bold text-[20px] leading-[100%] text-[#166534] mb-1">
+      <h3 className="font-archivo font-bold text-[20px] leading-[100%] text-[#B91C1C] mb-1">
         {title}
       </h3>
     </div>
     <div className="flex-1 pt-0.5">
-      <p className="font-roboto font-normal text-[14px] leading-[100%] text-[#166534]">
+      <p className="font-roboto font-normal text-[14px] leading-[100%] text-[#991B1B]">
         {message || "You have been logged out successfully."}
       </p>
     </div>

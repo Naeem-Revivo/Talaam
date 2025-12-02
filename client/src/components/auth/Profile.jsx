@@ -166,41 +166,30 @@ const Profile = () => {
       const resultAction = await dispatch(completeProfile(payload))
 
       if (completeProfile.fulfilled.match(resultAction)) {
-        showSuccessToast(
-          t('profile.success') || 'Profile completed successfully.',
-          { title: 'Profile Saved' }
-        )
-        // Navigate to dashboard after completion
+        const msg =
+          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
+          resultAction.payload?.message ||
+          t('profile.success') ||
+          'Profile completed successfully.'
+        showSuccessToast(msg, { title: t('profile.successTitle') || 'Profile Saved', isAuth: true })
         navigate('/dashboard', { replace: true })
       } else {
-        // Handle specific API errors
-        const errorMessage = resultAction.payload?.message || resultAction.error?.message || ''
+        // Extract error message from API response
+        const errorMessage = 
+          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
+          resultAction.payload?.message ||
+          ''
         
-        // Check if it's a validation error from backend
-        const isValidationError = 
-          errorMessage.toLowerCase().includes('validation') ||
-          errorMessage.toLowerCase().includes('invalid') ||
-          (resultAction.payload?.errors && Array.isArray(resultAction.payload.errors))
-        
-        if (isValidationError) {
-          // For backend validation errors, show in toast since they might be complex
-          const msg =
-            errorMessage ||
-            t('profile.errors.generic') ||
-            'Failed to complete profile.'
-          showErrorToast(msg, { title: 'Profile Error' })
-        } else {
-          const msg =
-            errorMessage ||
-            t('profile.errors.generic') ||
-            'Failed to complete profile.'
-          showErrorToast(msg, { title: 'Save Failed' })
-        }
+        const msg =
+          errorMessage ||
+          t('profile.errors.generic') ||
+          'Failed to complete profile.'
+        showErrorToast(msg, { title: t('profile.errors.title') || 'Save Failed', isAuth: true })
       }
     } catch (e) {
       showErrorToast(
-        'An unexpected error occurred. Please try again.',
-        { title: 'Save Failed' }
+        t('profile.errors.generic') || 'An unexpected error occurred. Please try again.',
+        { title: t('profile.errors.title') || 'Save Failed', isAuth: true }
       )
     }
   }
