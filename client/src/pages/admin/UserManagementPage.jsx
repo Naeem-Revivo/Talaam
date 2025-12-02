@@ -1,10 +1,11 @@
-import React, { useMemo, useState, useEffect, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import React, { useMemo, useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import UserSummaryCards from "../../components/admin/userManagement/UserSummaryCards";
 import UserFilterBar from "../../components/admin/userManagement/UserFilterBar";
 import UserTable from "../../components/admin/userManagement/UserTable";
 import { useLanguage } from "../../context/LanguageContext";
 import usersAPI from "../../api/users";
+import useDebounce from "../../hooks/useDebounce";
 import {
   usermanage1,
   usermanage2,
@@ -23,33 +24,26 @@ const pageSize = 5;
 
 const UserManagementPage = () => {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useLanguage();
   
-  // Get values from URL params
-  const page = parseInt(searchParams.get("page") || "1", 10);
-  const search = searchParams.get("search") || "";
-  const statusFilter = searchParams.get("status") || "";
-  const roleFilter = searchParams.get("role") || "";
+  // Local state for all filters and pagination (not stored in URL to prevent page refresh)
+  const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  
+  // Debounce the search input (500ms delay) - only for API calls, not URL
+  const debouncedSearch = useDebounce(searchInput, 500);
+  
+  // Use ref to track previous values and prevent unnecessary API calls
+  // Initialize with null to ensure first load runs
+  const prevParamsRef = useRef(null);
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState(null);
   const [statistics, setStatistics] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
-
-  // Update URL params helper
-  const updateSearchParams = useCallback((updates) => {
-    const newParams = new URLSearchParams(searchParams);
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value === "" || value === null || value === undefined) {
-        newParams.delete(key);
-      } else {
-        newParams.set(key, value);
-      }
-    });
-    setSearchParams(newParams, { replace: true });
-  }, [searchParams, setSearchParams]);
 
   // Load statistics (only once on mount)
   useEffect(() => {
@@ -69,11 +63,45 @@ const UserManagementPage = () => {
     loadStatistics();
   }, []);
 
-  // Load users based on URL params
+  // Load users based on URL params and debounced search
   useEffect(() => {
+    // Check if this is the first load
+    const isFirstLoad = prevParamsRef.current === null;
+    
+    // Check if params actually changed to prevent unnecessary calls
+    const paramsChanged = isFirstLoad ||
+      prevParamsRef.current.page !== page ||
+      prevParamsRef.current.statusFilter !== statusFilter ||
+      prevParamsRef.current.roleFilter !== roleFilter ||
+      prevParamsRef.current.debouncedSearch !== debouncedSearch;
+    
+    if (!paramsChanged) {
+      return; // Skip if nothing changed
+    }
+    
+    // Check if this is a filter-only change (search, status, or role) - no page number change
+    // Also check if it's a page-only change (pagination)
+    const isFilterOnly = !isFirstLoad && 
+                         prevParamsRef.current.page === page &&
+                         (prevParamsRef.current.debouncedSearch !== debouncedSearch ||
+                          prevParamsRef.current.statusFilter !== statusFilter ||
+                          prevParamsRef.current.roleFilter !== roleFilter);
+    
+    const isPageOnly = !isFirstLoad &&
+                       prevParamsRef.current.page !== page &&
+                       prevParamsRef.current.debouncedSearch === debouncedSearch &&
+                       prevParamsRef.current.statusFilter === statusFilter &&
+                       prevParamsRef.current.roleFilter === roleFilter;
+    
+    // Update ref with current values
+    prevParamsRef.current = { page, statusFilter, roleFilter, debouncedSearch };
+    
     const loadUsers = async () => {
       try {
-        setLoading(true);
+        // Only show loading for initial load, not for filter or page-only updates
+        if (!isFilterOnly && !isPageOnly) {
+          setLoading(true);
+        }
         
         // Map frontend role values to API format
         const roleMapToAPI = {
@@ -83,12 +111,16 @@ const UserManagementPage = () => {
           "Question Explainer": "explainer",
         };
         
+        // When any filter is active (search, status, or role), reset to page 1
+        // Otherwise use the current page state
+        const currentPage = (debouncedSearch || statusFilter || roleFilter) ? 1 : page;
+        
         const params = {
-          page,
+          page: currentPage,
           limit: pageSize,
           ...(statusFilter && { status: statusFilter.toLowerCase() }),
           ...(roleFilter && { adminRole: roleMapToAPI[roleFilter] || roleFilter.toLowerCase().replace(/\s+/g, '') }),
-          ...(search && { search }),
+          ...(debouncedSearch && { search: debouncedSearch }),
         };
         
         const response = await usersAPI.getAllUsers(params);
@@ -112,6 +144,7 @@ const UserManagementPage = () => {
             };
           });
           
+          // Update state smoothly without causing visual refresh
           setUsers(mappedUsers);
           setPagination(response.data.pagination);
         }
@@ -120,12 +153,15 @@ const UserManagementPage = () => {
         setUsers([]);
         setPagination(null);
       } finally {
-        setLoading(false);
+        // Only set loading to false if we set it to true
+        if (!isFilterOnly && !isPageOnly) {
+          setLoading(false);
+        }
       }
     };
     
     loadUsers();
-  }, [page, statusFilter, roleFilter, search]);
+  }, [page, statusFilter, roleFilter, debouncedSearch]); // debouncedSearch triggers API call but not URL update
 
   const summaries = useMemo(() => {
     const roles = [
@@ -173,7 +209,7 @@ const UserManagementPage = () => {
           limit: 100, // Max allowed limit
           ...(statusFilter && { status: statusFilter.toLowerCase() }),
           ...(roleFilter && { adminRole: roleFilter.toLowerCase().replace(/\s+/g, '') }),
-          ...(search && { search }),
+          ...(debouncedSearch && { search: debouncedSearch }),
         };
         
         const response = await usersAPI.getAllUsers(params);
@@ -287,17 +323,20 @@ const UserManagementPage = () => {
         <UserSummaryCards summaries={summaries} />
 
         <UserFilterBar
-          searchValue={search}
+          searchValue={searchInput}
           statusValue={statusFilter}
           roleValue={roleFilter}
           onSearchChange={(value) => {
-            updateSearchParams({ search: value, page: "1" });
+            setSearchInput(value);
+            // Page will reset to 1 in API call when filter is active
           }}
           onStatusChange={(value) => {
-            updateSearchParams({ status: value, page: "1" });
+            setStatusFilter(value);
+            // Page will reset to 1 in API call when filter is active
           }}
           onRoleChange={(value) => {
-            updateSearchParams({ role: value, page: "1" });
+            setRoleFilter(value);
+            // Page will reset to 1 in API call when filter is active
           }}
         />
 
@@ -307,7 +346,7 @@ const UserManagementPage = () => {
           pageSize={pageSize}
           total={pagination?.totalItems || 0}
           onPageChange={(newPage) => {
-            updateSearchParams({ page: newPage.toString() });
+            setPage(newPage);
           }}
           onView={handleView}
           onEdit={handleEdit}

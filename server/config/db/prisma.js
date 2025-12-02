@@ -2,9 +2,29 @@ const { PrismaClient } = require('@prisma/client');
 const { PrismaPg } = require('@prisma/adapter-pg');
 const { Pool } = require('pg');
 
-// Create PostgreSQL connection pool
+// Vercel Postgres provides POSTGRES_PRISMA_URL for pooled connections
+// Priority: POSTGRES_PRISMA_URL (Vercel) > DATABASE_URL (fallback)
+// Note: For Prisma schema, DATABASE_URL should be set to POSTGRES_PRISMA_URL on Vercel
+const connectionString = process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error(
+    'Database connection string is missing. ' +
+    'Please set POSTGRES_PRISMA_URL (for Vercel Postgres) or DATABASE_URL environment variable.'
+  );
+}
+
+// Create PostgreSQL connection pool with optimized settings for serverless
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString,
+  // Optimize for serverless environments (Vercel)
+  max: process.env.VERCEL ? 1 : 10, // Limit connections in serverless
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+  // Enable SSL for production (Vercel requires SSL)
+  ssl: process.env.NODE_ENV === 'production' || process.env.VERCEL === '1' 
+    ? { rejectUnauthorized: false } 
+    : false,
 });
 
 // Create Prisma adapter for PostgreSQL

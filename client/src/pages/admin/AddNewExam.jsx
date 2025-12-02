@@ -1,23 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { useLanguage } from "../../context/LanguageContext";
+import { createExam, clearError, clearSuccess } from "../../store/slices/examsSlice";
+import { showErrorToast, showSuccessToast } from "../../utils/toastConfig";
 
 export default function AddNewExam() {
     const { t } = useLanguage();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { loading, error, success } = useSelector((state) => state.exams);
+    
     const [examName, setExamName] = useState("");
-    const [subject, setSubject] = useState("");
     const [description, setDescription] = useState("");
 
-    const handleSubmit = (e) => {
+    // Handle success
+    useEffect(() => {
+        if (success) {
+            showSuccessToast("Exam created successfully");
+            dispatch(clearSuccess());
+            navigate("/admin/classification");
+        }
+    }, [success, navigate, dispatch]);
+
+    // Handle error
+    useEffect(() => {
+        if (error) {
+            showErrorToast(error);
+            dispatch(clearError());
+        }
+    }, [error, dispatch]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const examData = { examName, subject, description };
-        console.log("Created Exam:", examData);
-        // TODO: Add API call or database save logic here
+        const examData = {
+            name: examName,
+            status: 'active',
+        };
+        
+        dispatch(createExam(examData));
     };
 
     const handleCancel = () => {
-        setExamName("");
-        setSubject("");
-        setDescription("");
+        navigate("/admin/classification");
     };
 
     return (
@@ -54,21 +79,6 @@ export default function AddNewExam() {
                             />
                         </div>
 
-                        {/* Subject Input */}
-                        <div>
-                            <label className="block text-base font-normal text-blue-dark mb-3">
-                                {t('admin.addExam.fields.subject')}
-                            </label>
-                            <input
-                                type="text"
-                                placeholder={t('admin.addExam.placeholders.subject')}
-                                value={subject}
-                                onChange={(e) => setSubject(e.target.value)}
-                                className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
-                                required
-                            />
-                        </div>
-
                         {/* Description */}
                         <div>
                             <label className="block text-base font-normal text-blue-dark mb-3">
@@ -88,15 +98,17 @@ export default function AddNewExam() {
                             <button
                                 type="button"
                                 onClick={handleCancel}
-                                className="px-4 sm:w-[120px] py-2 border border-[#E5E7EB] w-full rounded-lg text-base text-blue-dark font-medium bg-white hover:bg-gray-100 transition"
+                                disabled={loading}
+                                className="px-4 sm:w-[120px] py-2 border border-[#E5E7EB] w-full rounded-lg text-base text-blue-dark font-medium bg-white hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {t('admin.addExam.buttons.cancel')}
                             </button>
                             <button
                                 type="submit"
-                                className="sm:w-[120px] py-2 bg-orange-dark w-full text-white text-base font-medium rounded-md hover:bg-orange-600 transition"
+                                disabled={loading}
+                                className="sm:w-[120px] py-2 bg-orange-dark w-full text-white text-base font-medium rounded-md hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {t('admin.addExam.buttons.saveExam')}
+                                {loading ? 'Saving...' : t('admin.addExam.buttons.saveExam')}
                             </button>
                         </div>
                     </form>
