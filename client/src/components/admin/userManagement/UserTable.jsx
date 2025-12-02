@@ -287,7 +287,10 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
       <div className="flex items-center gap-2">
         <button
           type="button"
-          onClick={handlePrev}
+          onClick={(e) => {
+            e.preventDefault();
+            handlePrev();
+          }}
           disabled={page === 1}
           className={`flex h-[27.16px] w-[78px] items-center justify-center font-medium rounded border text-[14px] font-archivo leading-[16px] transition-colors ${
             page === 1
@@ -301,7 +304,10 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
           <button
             key={pageNumber}
             type="button"
-            onClick={() => onPageChange?.(pageNumber)}
+            onClick={(e) => {
+              e.preventDefault();
+              onPageChange?.(pageNumber);
+            }}
             className={`flex h-8 w-8 items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors ${
               pageNumber === page
                 ? "border-[#ED4122] bg-[#ED4122] text-white"
@@ -313,7 +319,10 @@ const Pagination = ({ page, pageSize, total, onPageChange }) => {
         ))}
         <button
           type="button"
-          onClick={handleNext}
+          onClick={(e) => {
+            e.preventDefault();
+            handleNext();
+          }}
           disabled={page === safeTotalPages}
           className={`flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-normal leading-[16px] transition-colors ${
             page === safeTotalPages
