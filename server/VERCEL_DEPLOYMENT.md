@@ -27,13 +27,18 @@ Vercel will automatically provide these environment variables:
 In your Vercel project settings, add the following environment variables:
 
 ### Required Database Variables
-Vercel automatically sets these when you add Postgres, but you need to set `DATABASE_URL`:
+Vercel automatically sets these when you add Postgres:
+- `POSTGRES_PRISMA_URL` - Pooled connection (used by Prisma Client)
+- `POSTGRES_URL` - Direct connection
+- `POSTGRES_URL_NON_POOLING` - Non-pooling connection (used for migrations)
 
+**Note**: The connection URLs are configured in `prisma.config.ts` (Prisma 7 requirement). 
+The configuration automatically uses `POSTGRES_PRISMA_URL` if available, otherwise falls back to `DATABASE_URL`.
+
+You can optionally set `DATABASE_URL` as a fallback:
 ```
 DATABASE_URL=${POSTGRES_PRISMA_URL}
 ```
-
-This ensures Prisma schema can access the connection string.
 
 ### Other Required Variables
 
@@ -183,16 +188,18 @@ The configuration uses connection pooling optimized for serverless:
 ### Migration Issues
 
 If migrations fail:
-1. Ensure `POSTGRES_URL_NON_POOLING` is set in Vercel
-2. Check that `directUrl` in `schema.prisma` points to `POSTGRES_URL_NON_POOLING`
-3. Run migrations locally with Vercel environment variables
+1. Ensure `POSTGRES_URL_NON_POOLING` is set in Vercel (automatically provided)
+2. Check that `prisma.config.ts` has the correct `directUrl` configuration
+3. Verify environment variables are loaded: `vercel env pull .env.local`
+4. Run migrations locally with Vercel environment variables
 
 ### Connection Timeout
 
 If you see connection timeouts:
-1. Verify all environment variables are set correctly
-2. Check that `DATABASE_URL` is set to `POSTGRES_PRISMA_URL`
-3. Ensure SSL is enabled (handled automatically by Vercel)
+1. Verify all environment variables are set correctly in Vercel
+2. Check that `POSTGRES_PRISMA_URL` is available (automatically set by Vercel)
+3. Verify `prisma.config.ts` is using the correct connection strings
+4. Ensure SSL is enabled (handled automatically by Vercel)
 
 ### Prisma Client Not Generated
 
