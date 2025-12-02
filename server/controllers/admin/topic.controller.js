@@ -67,18 +67,17 @@ const createTopic = async (req, res, next) => {
     };
 
     const topic = await topicService.createTopic(topicData);
-    await topic.populate('parentSubject', 'name');
 
     const response = {
       success: true,
       message: 'Topic created successfully',
       data: {
         topic: {
-          id: topic._id,
-          parentSubject: {
-            id: topic.parentSubject._id,
-            name: topic.parentSubject.name,
-          },
+          id: topic.id || topic._id,
+          parentSubject: topic.subject ? {
+            id: topic.subject.id || topic.subject._id,
+            name: topic.subject.name,
+          } : null,
           name: topic.name,
           description: topic.description,
           createdAt: topic.createdAt,
@@ -87,7 +86,7 @@ const createTopic = async (req, res, next) => {
       },
     };
 
-    console.log('[TOPIC] POST /admin/topics → 201 (created)', { topicId: topic._id });
+    console.log('[TOPIC] POST /admin/topics → 201 (created)', { topicId: topic.id || topic._id });
     res.status(201).json(response);
   } catch (error) {
     console.error('[TOPIC] POST /admin/topics → error', error);
@@ -127,11 +126,11 @@ const getAllTopics = async (req, res, next) => {
       success: true,
       data: {
         topics: topics.map((topic) => ({
-          id: topic._id,
-          parentSubject: {
-            id: topic.parentSubject._id,
-            name: topic.parentSubject.name,
-          },
+          id: topic.id || topic._id,
+          parentSubject: topic.subject ? {
+            id: topic.subject.id || topic.subject._id,
+            name: topic.subject.name,
+          } : null,
           name: topic.name,
           description: topic.description,
           createdAt: topic.createdAt,
@@ -174,11 +173,11 @@ const getTopicById = async (req, res, next) => {
       success: true,
       data: {
         topic: {
-          id: topic._id,
-          parentSubject: {
-            id: topic.parentSubject._id,
-            name: topic.parentSubject.name,
-          },
+          id: topic.id || topic._id,
+          parentSubject: topic.subject ? {
+            id: topic.subject.id || topic.subject._id,
+            name: topic.subject.name,
+          } : null,
           name: topic.name,
           description: topic.description,
           createdAt: topic.createdAt,
@@ -187,7 +186,7 @@ const getTopicById = async (req, res, next) => {
       },
     };
 
-    console.log('[TOPIC] GET /admin/topics/:topicId → 200 (ok)', { topicId: topic._id });
+    console.log('[TOPIC] GET /admin/topics/:topicId → 200 (ok)', { topicId: topic.id || topic._id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[TOPIC] GET /admin/topics/:topicId → error', error);
@@ -287,18 +286,17 @@ const updateTopic = async (req, res, next) => {
     }
 
     const updatedTopic = await topicService.updateTopic(topic, updateData);
-    await updatedTopic.populate('parentSubject', 'name');
 
     const response = {
       success: true,
       message: 'Topic updated successfully',
       data: {
         topic: {
-          id: updatedTopic._id,
-          parentSubject: {
-            id: updatedTopic.parentSubject._id,
-            name: updatedTopic.parentSubject.name,
-          },
+          id: updatedTopic.id || updatedTopic._id,
+          parentSubject: updatedTopic.subject ? {
+            id: updatedTopic.subject.id || updatedTopic.subject._id,
+            name: updatedTopic.subject.name,
+          } : null,
           name: updatedTopic.name,
           description: updatedTopic.description,
           createdAt: updatedTopic.createdAt,
@@ -307,7 +305,7 @@ const updateTopic = async (req, res, next) => {
       },
     };
 
-    console.log('[TOPIC] PUT /admin/topics/:topicId → 200 (updated)', { topicId: updatedTopic._id });
+    console.log('[TOPIC] PUT /admin/topics/:topicId → 200 (updated)', { topicId: updatedTopic.id || updatedTopic._id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[TOPIC] PUT /admin/topics/:topicId → error', error);
@@ -369,13 +367,13 @@ const deleteTopic = async (req, res, next) => {
       message: 'Topic deleted successfully',
       data: {
         topic: {
-          id: topic._id,
+          id: topic.id,
           name: topic.name,
         },
       },
     };
 
-    console.log('[TOPIC] DELETE /admin/topics/:topicId → 200 (deleted)', { topicId: topic._id });
+    console.log('[TOPIC] DELETE /admin/topics/:topicId → 200 (deleted)', { topicId: topic.id });
     res.status(200).json(response);
   } catch (error) {
     console.error('[TOPIC] DELETE /admin/topics/:topicId → error', error);

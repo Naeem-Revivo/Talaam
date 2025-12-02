@@ -298,25 +298,27 @@ const processPayment = async (paymentId, subscriptionId) => {
     // Invoice is paid if status is 'paid' OR if it has paid payments
     if (status === 'paid' || status === 'Paid' || hasPaidPayment) {
       // Update subscription
-      subscription.paymentStatus = 'Paid';
-      subscription.isActive = true;
-      subscription.transactionId = paymentId;
-      subscription.moyassarPaymentId = paymentId;
-      subscription.moyassarPaymentStatus = 'paid';
-      await subscription.save();
+      const updatedSubscription = await Subscription.update(subscriptionId, {
+        paymentStatus: 'Paid',
+        isActive: true,
+        transactionId: paymentId,
+        moyassarPaymentId: paymentId,
+        moyassarPaymentStatus: 'paid',
+      });
 
       return {
         success: true,
-        subscription,
+        subscription: updatedSubscription,
         message: 'Payment processed successfully',
       };
     } else if (status === 'failed' || status === 'Failed') {
-      subscription.moyassarPaymentStatus = 'failed';
-      await subscription.save();
+      const updatedSubscription = await Subscription.update(subscriptionId, {
+        moyassarPaymentStatus: 'failed',
+      });
 
       return {
         success: false,
-        subscription,
+        subscription: updatedSubscription,
         message: 'Payment failed',
       };
     } else {
@@ -365,15 +367,18 @@ const handleWebhook = async (webhookData) => {
       console.log('⚠️  Subscription ID not in webhook metadata, searching by payment/invoice ID...');
       
       // Try to find subscription by moyassarPaymentId
-      const subscription = await Subscription.findOne({
-        $or: [
-          { moyassarPaymentId: paymentId },
-          { transactionId: paymentId }
-        ]
+      const { prisma } = require('../../config/db/prisma');
+      const subscription = await prisma.subscription.findFirst({
+        where: {
+          OR: [
+            { moyassarPaymentId: paymentId },
+            { transactionId: paymentId }
+          ]
+        }
       });
 
       if (subscription) {
-        subscriptionId = subscription._id.toString();
+        subscriptionId = subscription.id;
         console.log('✅ Found subscription by payment ID:', subscriptionId);
       } else {
         console.log('⚠️  Could not find subscription by payment ID');
@@ -400,7 +405,7 @@ const handleWebhook = async (webhookData) => {
 
     console.log('✅ Webhook processed successfully:', {
       success: result.success,
-      subscriptionId: result.subscription?._id,
+      subscriptionId: result.subscription?.id,
       paymentStatus: result.subscription?.paymentStatus,
       isActive: result.subscription?.isActive,
     });
@@ -421,8 +426,7 @@ const handleWebhook = async (webhookData) => {
 const createSubscriptionPayment = async (subscriptionId) => {
   try {
     // Get subscription with plan details
-    const subscription = await Subscription.findById(subscriptionId)
-      .populate('planId');
+    const subscription = await Subscription.findById(subscriptionId);
 
     if (!subscription) {
       throw new Error('Subscription not found');
@@ -432,7 +436,9 @@ const createSubscriptionPayment = async (subscriptionId) => {
       throw new Error('Subscription is already paid');
     }
 
-    const plan = subscription.planId;
+    // Get plan details
+    const Plan = require('../../models/plan');
+    const plan = await Plan.findById(subscription.planId);
     if (!plan) {
       throw new Error('Plan not found');
     }
@@ -443,24 +449,25 @@ const createSubscriptionPayment = async (subscriptionId) => {
       plan.price,
       `Subscription: ${subscription.planName}`,
       {
-        user_id: subscription.userId.toString(),
-        plan_id: plan._id.toString(),
+        user_id: subscription.userId,
+        plan_id: plan.id,
         plan_name: subscription.planName,
       }
     );
 
     // Update subscription with payment info
-    subscription.paymentMethod = 'moyassar';
-    subscription.moyassarPaymentId = paymentResult.paymentId;
-    subscription.moyassarPaymentStatus = 'initiated';
-    subscription.paymentUrl = paymentResult.paymentUrl;
-    await subscription.save();
+    const updatedSubscription = await Subscription.update(subscriptionId, {
+      paymentMethod: 'moyassar',
+      moyassarPaymentId: paymentResult.paymentId,
+      moyassarPaymentStatus: 'initiated',
+      paymentUrl: paymentResult.paymentUrl,
+    });
 
     return {
       success: true,
       paymentId: paymentResult.paymentId,
       paymentUrl: paymentResult.paymentUrl,
-      subscription,
+      subscription: updatedSubscription,
     };
   } catch (error) {
     console.error('Create subscription payment error:', error);

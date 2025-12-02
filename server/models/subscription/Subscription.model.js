@@ -1,77 +1,72 @@
-const mongoose = require('mongoose');
+const { prisma } = require('../../config/db/prisma');
 
-const subscriptionSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: [true, 'User ID is required'],
-      index: true,
-    },
-    planId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Plan',
-      required: [true, 'Plan ID is required'],
-    },
-    userName: {
-      type: String,
-      required: [true, 'User name is required'],
-      trim: true,
-    },
-    planName: {
-      type: String,
-      required: [true, 'Plan name is required'],
-      trim: true,
-    },
-    startDate: {
-      type: Date,
-      required: [true, 'Start date is required'],
-    },
-    expiryDate: {
-      type: Date,
-      required: [true, 'Expiry date is required'],
-    },
-    paymentStatus: {
-      type: String,
-      enum: ['Pending', 'Paid', 'Cancelled'],
-      default: 'Pending',
-      required: true,
-    },
-    isActive: {
-      type: Boolean,
-      default: false,
-    },
-    transactionId: {
-      type: String,
-      trim: true,
-    },
-    // Moyassar Payment Fields
-    paymentMethod: {
-      type: String,
-      enum: ['moyassar', 'manual'],
-      default: 'manual',
-    },
-    moyassarPaymentId: {
-      type: String,
-      trim: true,
-    },
-    moyassarPaymentStatus: {
-      type: String,
-      enum: ['initiated', 'paid', 'failed', 'cancelled'],
-      trim: true,
-    },
-    paymentUrl: {
-      type: String,
-      trim: true,
-    },
+/**
+ * Subscription Model using Prisma
+ */
+const Subscription = {
+  // Create a new subscription
+  async create(data) {
+    return await prisma.subscription.create({ data });
   },
-  {
-    timestamps: true,
-  }
-);
 
-// Index for efficient queries
-subscriptionSchema.index({ userId: 1, isActive: 1, expiryDate: 1 });
+  // Find subscription by ID
+  async findById(id) {
+    return await prisma.subscription.findUnique({ 
+      where: { id },
+      include: { user: true, plan: true }
+    });
+  },
 
-module.exports = mongoose.model('Subscription', subscriptionSchema);
+  // Find subscriptions by user ID
+  async findByUserId(userId, options = {}) {
+    return await prisma.subscription.findMany({
+      where: { userId },
+      include: { plan: true },
+      ...options
+    });
+  },
 
+  // Find active subscription for user
+  async findActiveByUserId(userId) {
+    return await prisma.subscription.findFirst({
+      where: {
+        userId,
+        isActive: true,
+        expiryDate: { gte: new Date() }
+      },
+      include: { plan: true },
+      orderBy: { expiryDate: 'desc' }
+    });
+  },
+
+  // Update subscription
+  async update(id, data) {
+    return await prisma.subscription.update({ where: { id }, data });
+  },
+
+  // Delete subscription
+  async delete(id) {
+    return await prisma.subscription.delete({ where: { id } });
+  },
+
+  // Find all subscriptions with filters
+  async findMany(options = {}) {
+    return await prisma.subscription.findMany({
+      include: { user: true, plan: true },
+      ...options
+    });
+  },
+
+  // Find expired subscriptions
+  async findExpired() {
+    return await prisma.subscription.findMany({
+      where: {
+        isActive: true,
+        expiryDate: { lt: new Date() }
+      },
+      include: { user: true, plan: true }
+    });
+  },
+};
+
+module.exports = Subscription;

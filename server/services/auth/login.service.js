@@ -12,7 +12,8 @@ const login = async (email, password) => {
   }
 
   // Check password
-  const isPasswordValid = await user.comparePassword(password);
+  const UserModel = require('../../models/user');
+  const isPasswordValid = await UserModel.comparePassword(user.password, password);
   if (!isPasswordValid) {
     throw new Error('Invalid email or password');
   }
@@ -23,7 +24,7 @@ const login = async (email, password) => {
   }
 
   // Generate token
-  const token = generateToken(user._id);
+  const token = generateToken(user.id);
 
   return {
     user,

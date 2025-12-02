@@ -28,13 +28,13 @@ const getClassification = async (req, res, next) => {
         success: true,
         data: {
           subject: {
-            id: subject._id,
+            id: subject._id || subject.id,
             name: subject.name,
             createdAt: subject.createdAt,
             updatedAt: subject.updatedAt,
           },
           topics: topics.map((topic) => ({
-            id: topic._id,
+            id: topic._id || topic.id,
             name: topic.name,
             description: topic.description,
             createdAt: topic.createdAt,
@@ -44,7 +44,7 @@ const getClassification = async (req, res, next) => {
       };
 
       console.log('[CLASSIFICATION] GET /admin/classification → 200 (ok)', {
-        subjectId: subject._id,
+        subjectId: subject._id || subject.id,
         topicsCount: topics.length,
       });
       return res.status(200).json(response);
@@ -56,18 +56,18 @@ const getClassification = async (req, res, next) => {
     // Group topics by subject for easier frontend use
     const topicsBySubject = {};
     topics.forEach((topic) => {
-      const subjectId = topic.parentSubject._id.toString();
+      const subjectId = (topic.parentSubject._id || topic.parentSubject.id).toString();
       if (!topicsBySubject[subjectId]) {
         topicsBySubject[subjectId] = {
           subject: {
-            id: topic.parentSubject._id,
+            id: topic.parentSubject._id || topic.parentSubject.id,
             name: topic.parentSubject.name,
           },
           topics: [],
         };
       }
       topicsBySubject[subjectId].topics.push({
-        id: topic._id,
+        id: topic._id || topic.id,
         name: topic.name,
         description: topic.description,
       });
@@ -78,20 +78,20 @@ const getClassification = async (req, res, next) => {
       message: 'Classification data retrieved successfully',
       data: {
         exams: exams.map((exam) => ({
-          id: exam._id,
+          id: exam.id,
           name: exam.name,
           status: exam.status,
         })),
         subjects: subjects.map((subject) => ({
-          id: subject._id,
+          id: subject._id || subject.id,
           name: subject.name,
         })),
         topicsBySubject: Object.values(topicsBySubject),
         // Also include flat list of all topics for backward compatibility
         topics: topics.map((topic) => ({
-          id: topic._id,
+          id: topic._id || topic.id,
           parentSubject: {
-            id: topic.parentSubject._id,
+            id: topic.parentSubject._id || topic.parentSubject.id,
             name: topic.parentSubject.name,
           },
           name: topic.name,
@@ -135,7 +135,7 @@ const getExams = async (req, res, next) => {
       message: 'Exams retrieved successfully',
       data: {
         exams: exams.map((exam) => ({
-          id: exam._id,
+          id: exam.id,
           name: exam.name,
           status: exam.status,
         })),
@@ -169,7 +169,7 @@ const getSubjects = async (req, res, next) => {
       message: 'Subjects retrieved successfully',
       data: {
         subjects: subjects.map((subject) => ({
-          id: subject._id,
+          id: subject._id || subject.id,
           name: subject.name,
         })),
       },
@@ -214,11 +214,11 @@ const getTopics = async (req, res, next) => {
         message: 'Topics retrieved successfully',
         data: {
           subject: {
-            id: subject._id,
+            id: subject._id || subject.id,
             name: subject.name,
           },
           topics: topics.map((topic) => ({
-            id: topic._id,
+            id: topic._id || topic.id,
             name: topic.name,
             description: topic.description,
           })),
@@ -226,7 +226,7 @@ const getTopics = async (req, res, next) => {
       };
 
       console.log('[CLASSIFICATION] GET /admin/classification/topics → 200 (ok)', {
-        subjectId: subject._id,
+        subjectId: subject._id || subject.id,
         topicsCount: topics.length,
       });
       return res.status(200).json(response);

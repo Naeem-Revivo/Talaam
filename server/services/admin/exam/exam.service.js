@@ -11,7 +11,10 @@ const createExam = async (examData) => {
  * Get all exams with optional filter
  */
 const getAllExams = async (filter = {}) => {
-  return await Exam.find(filter).sort({ createdAt: -1 });
+  return await Exam.findMany({
+    where: filter,
+    orderBy: { createdAt: 'desc' }
+  });
 };
 
 /**
@@ -25,20 +28,21 @@ const findExamById = async (examId) => {
  * Update exam
  */
 const updateExam = async (exam, updateData) => {
+  const updateDataFiltered = {};
   if (updateData.name !== undefined) {
-    exam.name = updateData.name;
+    updateDataFiltered.name = updateData.name;
   }
   if (updateData.status !== undefined) {
-    exam.status = updateData.status;
+    updateDataFiltered.status = updateData.status;
   }
-  return await exam.save();
+  return await Exam.update(exam.id, updateDataFiltered);
 };
 
 /**
  * Delete exam
  */
 const deleteExam = async (examId) => {
-  return await Exam.findByIdAndDelete(examId);
+  return await Exam.delete(examId);
 };
 
 module.exports = {

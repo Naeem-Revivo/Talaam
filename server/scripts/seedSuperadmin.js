@@ -1,6 +1,7 @@
 require('dotenv').config();
 const connectDB = require('../config/db');
 const User = require('../models/user');
+const { prisma } = require('../config/db/prisma');
 
 const seedSuperadmin = async () => {
   try {
@@ -18,7 +19,9 @@ const seedSuperadmin = async () => {
     };
 
     // Check if superadmin already exists
-    const existingSuperadmin = await User.findOne({ role: 'superadmin' });
+    const existingSuperadmin = await prisma.user.findFirst({ 
+      where: { role: 'superadmin' } 
+    });
     if (existingSuperadmin) {
       console.log('Superadmin already exists:', existingSuperadmin.email);
       process.exit(0);
@@ -27,7 +30,7 @@ const seedSuperadmin = async () => {
     // Create superadmin
     const superadmin = await User.create(superadminData);
     console.log('Superadmin created successfully:', {
-      id: superadmin._id,
+      id: superadmin.id,
       email: superadmin.email,
       role: superadmin.role,
     });
@@ -40,4 +43,3 @@ const seedSuperadmin = async () => {
 };
 
 seedSuperadmin();
-

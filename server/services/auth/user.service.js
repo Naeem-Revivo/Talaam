@@ -4,7 +4,7 @@ const User = require('../../models/user');
  * Check if user exists by email
  */
 const findUserByEmail = async (email) => {
-  return await User.findOne({ email });
+  return await User.findByEmail(email);
 };
 
 /**
@@ -25,7 +25,8 @@ const findUserById = async (userId) => {
  * Find user by email with password field
  */
 const findUserByEmailWithPassword = async (email) => {
-  return await User.findOne({ email }).select('+password');
+  // Prisma doesn't have select, password is always included
+  return await User.findByEmail(email);
 };
 
 /**

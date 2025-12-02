@@ -5,37 +5,51 @@ const Subject = require('../../../models/subject');
  * Create topic
  */
 const createTopic = async (topicData) => {
-  return await Topic.create(topicData);
+  const topic = await Topic.create(topicData);
+  // Fetch with relation included
+  return await Topic.findById(topic.id);
 };
 
 /**
  * Get all topics with optional filter by parent subject
  */
 const getAllTopics = async (filter = {}) => {
-  return await Topic.find(filter).populate('parentSubject', 'name').sort({ createdAt: -1 });
+  const where = {};
+  if (filter.parentSubject) {
+    where.parentSubject = filter.parentSubject;
+  }
+  return await Topic.findMany({
+    where,
+    include: { subject: true },
+    orderBy: { createdAt: 'desc' }
+  });
 };
 
 /**
  * Find topic by ID
  */
 const findTopicById = async (topicId) => {
-  return await Topic.findById(topicId).populate('parentSubject', 'name');
+  return await Topic.findById(topicId);
 };
 
 /**
  * Find topics by parent subject ID with optional search
  */
 const findTopicsByParentSubject = async (parentSubjectId, search = null) => {
-  const query = { parentSubject: parentSubjectId };
+  const where = { parentSubject: parentSubjectId };
   
   if (search) {
-    query.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { description: { $regex: search, $options: 'i' } },
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
     ];
   }
   
-  return await Topic.find(query).populate('parentSubject', 'name').sort({ createdAt: -1 });
+  return await Topic.findMany({
+    where,
+    include: { subject: true },
+    orderBy: { createdAt: 'desc' }
+  });
 };
 
 /**
@@ -45,12 +59,12 @@ const getTopicsPaginated = async (filters = {}, pagination = {}) => {
   const { search } = filters;
   const { page = 1, limit = 5 } = pagination;
 
-  // Build query
-  const query = {};
+  // Build where clause
+  const where = {};
   if (search) {
-    query.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { description: { $regex: search, $options: 'i' } },
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
     ];
   }
 
@@ -58,14 +72,17 @@ const getTopicsPaginated = async (filters = {}, pagination = {}) => {
   const skip = (page - 1) * limit;
 
   // Get total count
-  const totalItems = await Topic.countDocuments(query);
+  const { prisma } = require('../../../config/db/prisma');
+  const totalItems = await prisma.topic.count({ where });
 
   // Get paginated results
-  const topics = await Topic.find(query)
-    .populate('parentSubject', 'name')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
+  const topics = await Topic.findMany({
+    where,
+    include: { subject: true },
+    orderBy: { createdAt: 'desc' },
+    skip,
+    take: limit,
+  });
 
   // Calculate pagination info
   const totalPages = Math.ceil(totalItems / limit);
@@ -92,7 +109,8 @@ const getTopicsPaginated = async (filters = {}, pagination = {}) => {
  * Get total count of topics
  */
 const getTopicsCount = async () => {
-  return await Topic.countDocuments();
+  const { prisma } = require('../../../config/db/prisma');
+  return await prisma.topic.count();
 };
 
 /**
@@ -106,23 +124,27 @@ const findSubjectById = async (subjectId) => {
  * Update topic
  */
 const updateTopic = async (topic, updateData) => {
+  const updateDataFiltered = {};
   if (updateData.parentSubject !== undefined) {
-    topic.parentSubject = updateData.parentSubject;
+    updateDataFiltered.parentSubject = updateData.parentSubject;
   }
   if (updateData.name !== undefined) {
-    topic.name = updateData.name;
+    updateDataFiltered.name = updateData.name;
   }
   if (updateData.description !== undefined) {
-    topic.description = updateData.description;
+    updateDataFiltered.description = updateData.description;
   }
-  return await topic.save();
+  const topicId = topic.id || topic._id;
+  const updated = await Topic.update(topicId, updateDataFiltered);
+  // Fetch with relation included
+  return await Topic.findById(topicId);
 };
 
 /**
  * Delete topic
  */
 const deleteTopic = async (topicId) => {
-  return await Topic.findByIdAndDelete(topicId);
+  return await Topic.delete(topicId);
 };
 
 module.exports = {

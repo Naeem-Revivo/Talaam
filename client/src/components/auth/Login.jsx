@@ -41,7 +41,7 @@ const Login = () => {
         const role = user?.role
 
         // Map backend roles to routes
-        if (role === 'admin') {
+        if (role === 'superadmin') {
           navigate('/admin', { replace: true })
         } else if (role === 'student' || role === 'user') {
           navigate('/dashboard', { replace: true })
@@ -64,7 +64,7 @@ const Login = () => {
         setError(msg)
         showErrorToast(msg)
       }
-    } catch (e) {
+    } catch {
       const msg = t('login.errors.generic') || 'Login failed'
       setError(msg)
       showErrorToast(msg)

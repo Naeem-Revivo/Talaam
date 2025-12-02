@@ -1,26 +1,65 @@
 // src/api/auth.js
+import { isAxiosError } from 'axios';
 import axiosClient from './client';
 
-// Helper to persist auth payload in localStorage
-const persistAuth = (payload) => {
-  const token = payload?.data?.token;
-  const user = payload?.data?.user;
-
-  if (token) {
-    localStorage.setItem('token', token);
-  }
-  if (user) {
-    localStorage.setItem('user', JSON.stringify(user));
+export const LoginUser = async (body, setError) => {
+  try {
+    const response = await axiosClient.post('/auth/login', body);
+    return response;
+  } catch (error) {
+    if (isAxiosError(error) && error.response) {
+      setError(error.response.statusText);
+      return error.response;
+    }
+    setError('Unexpected error occurred');
+    return undefined;
   }
 };
 
+export const ForgotPassword = async (body, setError) => {
+  try {
+    const response = await axiosClient.post('/auth/forgot-password', body);
+    return response;
+  } catch (error) {
+    if (isAxiosError(error) && error.response) {
+      setError(error.response.statusText);
+      return error.response;
+    }
+    setError('Unexpected error occurred');
+    return undefined;
+  }
+};
+
+export const ResetPassword = async (body, setError) => {
+  try {
+    const response = await axiosClient.post('/auth/reset-password', body);
+    return response;
+  } catch (error) {
+    if (isAxiosError(error) && error.response) {
+      setError(error.response.statusText);
+      return error.response;
+    }
+    setError('Unexpected error occurred');
+    return undefined;
+  }
+};
+
+// Additional auth methods for backward compatibility
 const authAPI = {
   // Signup
   signup: async (userData) => {
     try {
       const response = await axiosClient.post('/auth/signup', userData);
-      const payload = response.data; // { success, message, data: { token, user } }
-      persistAuth(payload);
+      const payload = response.data;
+      const token = payload?.data?.token;
+      const user = payload?.data?.user;
+
+      if (token) {
+        localStorage.setItem('authToken', token);
+      }
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      }
       return payload;
     } catch (error) {
       const apiError = error.response?.data;
@@ -32,8 +71,16 @@ const authAPI = {
   login: async (credentials) => {
     try {
       const response = await axiosClient.post('/auth/login', credentials);
-      const payload = response.data; // { success, message, data: { token, user } }
-      persistAuth(payload);
+      const payload = response.data;
+      const token = payload?.data?.token;
+      const user = payload?.data?.user;
+
+      if (token) {
+        localStorage.setItem('authToken', token);
+      }
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      }
       return payload;
     } catch (error) {
       const apiError = error.response?.data;
@@ -45,7 +92,7 @@ const authAPI = {
   getCurrentUser: async () => {
     try {
       const response = await axiosClient.get('/auth/me');
-      return response.data; // { success, data: { user } }
+      return response.data;
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Failed to fetch user' };
@@ -56,8 +103,16 @@ const authAPI = {
   verifyOTP: async (payload) => {
     try {
       const response = await axiosClient.post('/auth/verify-otp', payload);
-      const data = response.data; // { success, message, data: { token, user } }
-      persistAuth(data);
+      const data = response.data;
+      const token = data?.data?.token;
+      const user = data?.data?.user;
+
+      if (token) {
+        localStorage.setItem('authToken', token);
+      }
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      }
       return data;
     } catch (error) {
       const apiError = error.response?.data;
@@ -69,7 +124,7 @@ const authAPI = {
   resendOTP: async (payload) => {
     try {
       const response = await axiosClient.post('/auth/resend-otp', payload);
-      return response.data; // { success, message }
+      return response.data;
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Failed to resend OTP' };
@@ -80,7 +135,7 @@ const authAPI = {
   forgotPassword: async (payload) => {
     try {
       const response = await axiosClient.post('/auth/forgot-password', payload);
-      return response.data; // { success, message }
+      return response.data;
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Forgot password request failed' };
@@ -91,7 +146,7 @@ const authAPI = {
   resetPassword: async (payload) => {
     try {
       const response = await axiosClient.post('/auth/reset-password', payload);
-      return response.data; // { success, message }
+      return response.data;
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Reset password failed' };
@@ -102,7 +157,7 @@ const authAPI = {
   getGoogleAuthUrl: async () => {
     try {
       const response = await axiosClient.get('/auth/google/url');
-      return response.data; // { success, data: { url } }
+      return response.data;
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Failed to get Google auth URL' };
@@ -113,7 +168,7 @@ const authAPI = {
   completeProfile: async (profileData) => {
     try {
       const response = await axiosClient.post('/profile/complete', profileData);
-      return response.data; // { success, message, data: { profile } }
+      return response.data;
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Complete profile failed' };
@@ -122,7 +177,7 @@ const authAPI = {
 
   // Simple logout (remove from localStorage)
   logout: () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('authToken');
     localStorage.removeItem('user');
   },
 };

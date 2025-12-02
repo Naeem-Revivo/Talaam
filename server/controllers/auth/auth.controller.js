@@ -25,7 +25,7 @@ const signup = async (req, res, next) => {
 
     // Build user object conditionally based on role
     const userResponse = {
-      id: user._id,
+      id: user.id,
       email: user.email,
       role: user.role,
       isEmailVerified: user.isEmailVerified,
@@ -46,7 +46,7 @@ const signup = async (req, res, next) => {
         user: userResponse,
       },
     };
-    console.log('[AUTH] POST /signup → 201 (created)', { userId: user._id, response });
+    console.log('[AUTH] POST /signup → 201 (created)', { userId: user.id, response });
     res.status(201).json(response);
   } catch (error) {
     console.error('[AUTH] POST /signup → error', error);
@@ -74,7 +74,7 @@ const login = async (req, res, next) => {
       data: {
         token,
         user: {
-          id: user._id,
+          id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
@@ -83,7 +83,7 @@ const login = async (req, res, next) => {
         },
       },
     };
-    console.log('[AUTH] POST /login → 200 (ok)', { userId: user._id, response });
+    console.log('[AUTH] POST /login → 200 (ok)', { userId: user.id, response });
     res.status(200).json(response);
   } catch (error) {
     console.error('[AUTH] POST /login → error', error);
@@ -117,7 +117,7 @@ const verifyOTP = async (req, res, next) => {
       data: {
         token,
         user: {
-          id: user._id,
+          id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
@@ -126,7 +126,7 @@ const verifyOTP = async (req, res, next) => {
         },
       },
     };
-    console.log('[AUTH] POST /verify-otp → 200 (verified)', { userId: user._id, response });
+    console.log('[AUTH] POST /verify-otp → 200 (verified)', { userId: user.id, response });
     res.status(200).json(response);
   } catch (error) {
     console.error('[AUTH] POST /verify-otp → error', error);
@@ -246,7 +246,7 @@ const getCurrentUser = async (req, res, next) => {
       success: true,
       data: {
         user: {
-          id: user._id,
+          id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
@@ -260,7 +260,7 @@ const getCurrentUser = async (req, res, next) => {
         },
       },
     };
-    console.log('[AUTH] GET /me → 200 (ok)', { userId: user._id, response });
+    console.log('[AUTH] GET /me → 200 (ok)', { userId: user.id, response });
     res.status(200).json(response);
   } catch (error) {
     console.error('[AUTH] GET /me → error', error);
@@ -299,7 +299,7 @@ const googleCallback = async (req, res, next) => {
       data: {
         token,
         user: {
-          id: user._id,
+          id: user.id,
           name: user.name,
           email: user.email,
           isEmailVerified: user.isEmailVerified,

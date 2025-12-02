@@ -7,7 +7,6 @@ const defaultValues = {
   email: "",
   password: "",
   status: "Active",
-  systemRole: "",
   workflowRole: "",
   notes: "",
 };
@@ -18,6 +17,7 @@ const UserForm = ({
   onSubmit,
   onCancel,
   submitLabel,
+  isSubmitting = false,
 }) => {
   const { t } = useLanguage();
   const [formValues, setFormValues] = useState({
@@ -25,12 +25,6 @@ const UserForm = ({
     ...initialValues,
   });
 
-  const systemRoles = [
-    { value: "Admin", label: t('admin.addUser.form.systemRoles.admin') },
-    { value: "Editor", label: t('admin.addUser.form.systemRoles.editor') },
-    { value: "Viewer", label: t('admin.addUser.form.systemRoles.viewer') },
-  ];
-  
   const workflowRoles = [
     { value: "Question Gatherer", label: t('admin.userManagement.roles.questionGatherer') },
     { value: "Question Creator", label: t('admin.userManagement.roles.questionCreator') },
@@ -128,32 +122,6 @@ const UserForm = ({
         </label>
         <label className="flex flex-col gap-2">
           <span className="text-[16px] font-roboto font-normal text-oxford-blue">
-            {t('admin.addUser.form.fields.systemRole')} <span className="text-[#ED4122]">*</span>
-          </span>
-          <div className="relative w-full max-w-[476px]">
-            <select
-              required
-              name="systemRole"
-              value={formValues.systemRole}
-              onChange={handleChange}
-              className="h-[59px] w-full appearance-none rounded-[12px] border border-[#032746]/20 bg-white px-4 pr-10 text-[14px] font-roboto text-oxford-blue shadow-input outline-none"
-            >
-              <option value="">{t('admin.addUser.form.placeholders.selectSystemRole')}</option>
-              {systemRoles.map((role) => (
-                <option key={role.value} value={role.value}>
-                  {role.label}
-                </option>
-              ))}
-            </select>
-            <img 
-              src={dropdownArrowAdmin} 
-              alt=""
-              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2"
-            />
-          </div>
-        </label>
-        <label className="flex flex-col gap-2">
-          <span className="text-[16px] font-roboto font-normal text-oxford-blue">
             {t('admin.addUser.form.fields.workflowRole')} <span className="text-[#ED4122]">*</span>
           </span>
           <div className="relative w-full max-w-[476px]">
@@ -190,9 +158,10 @@ const UserForm = ({
         </button>
         <button
           type="submit"
-          className="h-[44px] rounded-[10px] bg-[#ED4122] px-6 text-[16px] font-roboto font-medium leading-[24px] text-white transition hover:bg-[#d43a1f]"
+          disabled={isSubmitting}
+          className="h-[44px] rounded-[10px] bg-[#ED4122] px-6 text-[16px] font-roboto font-medium leading-[24px] text-white transition hover:bg-[#d43a1f] disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {actionLabel}
+          {isSubmitting ? "Saving..." : actionLabel}
         </button>
       </footer>
     </form>
