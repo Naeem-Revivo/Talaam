@@ -1,6 +1,7 @@
 const Subscription = require('../../models/subscription');
 const Plan = require('../../models/plan');
 const User = require('../../models/user');
+const { prisma } = require('../../config/db/prisma');
 
 /**
  * Helper function: Convert plan duration to days
@@ -48,7 +49,7 @@ const subscribeToPlan = async (userId, planId) => {
   // Create subscription
   const subscription = await Subscription.create({
     userId,
-    planId: plan._id,
+    planId: plan.id,
     userName,
     planName: plan.name,
     startDate,
@@ -66,9 +67,11 @@ const subscribeToPlan = async (userId, planId) => {
  */
 const confirmPayment = async (userId, subscriptionId, transactionId) => {
   // Find subscription
-  const subscription = await Subscription.findOne({
-    _id: subscriptionId,
-    userId: userId,
+  const subscription = await prisma.subscription.findFirst({
+    where: {
+      id: subscriptionId,
+      userId: userId,
+    },
   });
 
   if (!subscription) {
@@ -76,12 +79,13 @@ const confirmPayment = async (userId, subscriptionId, transactionId) => {
   }
 
   // Update subscription
-  subscription.paymentStatus = 'Paid';
-  subscription.isActive = true;
-  subscription.transactionId = transactionId;
-  await subscription.save();
+  const updatedSubscription = await Subscription.update(subscriptionId, {
+    paymentStatus: 'Paid',
+    isActive: true,
+    transactionId: transactionId,
+  });
 
-  return subscription;
+  return updatedSubscription;
 };
 
 /**
@@ -89,16 +93,16 @@ const confirmPayment = async (userId, subscriptionId, transactionId) => {
  */
 const getMySubscription = async (userId) => {
   // Get the latest subscription (most recent first)
-  const subscription = await Subscription.findOne({ userId })
-    .sort({ createdAt: -1 })
-    .populate('planId', 'name price duration description status')
-    .lean();
+  const subscriptions = await Subscription.findByUserId(userId, {
+    orderBy: { createdAt: 'desc' },
+    take: 1
+  });
 
-  if (!subscription) {
+  if (!subscriptions || subscriptions.length === 0) {
     throw new Error('No subscription found');
   }
 
-  return subscription;
+  return subscriptions[0];
 };
 
 /**
@@ -111,22 +115,20 @@ const updateExpiredSubscriptions = async () => {
     const currentDate = new Date();
 
     // Find all active subscriptions that have expired
-    const result = await Subscription.updateMany(
-      {
+    const result = await prisma.subscription.updateMany({
+      where: {
         isActive: true,
-        expiryDate: { $lt: currentDate },
+        expiryDate: { lt: currentDate },
       },
-      {
-        $set: {
-          isActive: false,
-        },
-      }
-    );
+      data: {
+        isActive: false,
+      },
+    });
 
     return {
       success: true,
-      updatedCount: result.modifiedCount,
-      message: `Updated ${result.modifiedCount} expired subscription(s)`,
+      updatedCount: result.count,
+      message: `Updated ${result.count} expired subscription(s)`,
     };
   } catch (error) {
     console.error('Error updating expired subscriptions:', error);
@@ -145,9 +147,11 @@ const updateExpiredSubscriptions = async () => {
 const getExpiredSubscriptionsCount = async () => {
   try {
     const currentDate = new Date();
-    const count = await Subscription.countDocuments({
-      isActive: true,
-      expiryDate: { $lt: currentDate },
+    const count = await prisma.subscription.count({
+      where: {
+        isActive: true,
+        expiryDate: { lt: currentDate },
+      },
     });
     return count;
   } catch (error) {

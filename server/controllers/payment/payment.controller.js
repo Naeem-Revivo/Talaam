@@ -19,9 +19,12 @@ const initiateMoyassarPayment = async (req, res, next) => {
     }
 
     // Verify subscription belongs to user
-    const subscription = await Subscription.findOne({
-      _id: subscriptionId,
-      userId: userId,
+    const { prisma } = require('../../config/db/prisma');
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        id: subscriptionId,
+        userId: userId,
+      },
     });
 
     if (!subscription) {
@@ -48,7 +51,7 @@ const initiateMoyassarPayment = async (req, res, next) => {
         paymentId: paymentResult.paymentId,
         paymentUrl: paymentResult.paymentUrl,
         subscription: {
-          id: paymentResult.subscription._id,
+          id: paymentResult.subscription.id,
           paymentStatus: paymentResult.subscription.paymentStatus,
           moyassarPaymentStatus: paymentResult.subscription.moyassarPaymentStatus,
         },
@@ -92,9 +95,12 @@ const verifyMoyassarPayment = async (req, res, next) => {
     }
 
     // Verify subscription belongs to user
-    const subscription = await Subscription.findOne({
-      _id: subscriptionId,
-      userId: userId,
+    const { prisma } = require('../../config/db/prisma');
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        id: subscriptionId,
+        userId: userId,
+      },
     });
 
     if (!subscription) {
@@ -113,7 +119,7 @@ const verifyMoyassarPayment = async (req, res, next) => {
         message: result.message,
         data: {
           subscription: {
-            id: result.subscription._id,
+            id: result.subscription.id,
             paymentStatus: result.subscription.paymentStatus,
             isActive: result.subscription.isActive,
             transactionId: result.subscription.transactionId,
@@ -127,7 +133,7 @@ const verifyMoyassarPayment = async (req, res, next) => {
         message: result.message,
         data: {
           subscription: {
-            id: result.subscription._id,
+            id: result.subscription.id,
             paymentStatus: result.subscription.paymentStatus,
             moyassarPaymentStatus: result.subscription.moyassarPaymentStatus,
           },
@@ -224,7 +230,7 @@ const getPaymentStatus = async (req, res, next) => {
       success: true,
       data: {
         subscription: {
-          id: subscription._id,
+          id: subscription.id,
           paymentStatus: subscription.paymentStatus,
           isActive: subscription.isActive,
           moyassarPaymentStatus: subscription.moyassarPaymentStatus,

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { disconnectDB } = require('./prisma');
 
 /**
  * Setup graceful shutdown handlers
@@ -6,8 +6,8 @@ const mongoose = require('mongoose');
 const setupGracefulShutdown = () => {
   // Graceful shutdown
   process.on('SIGINT', async () => {
-    await mongoose.connection.close();
-    console.log('MongoDB connection closed through app termination');
+    await disconnectDB();
+    console.log('PostgreSQL connection closed through app termination');
     process.exit(0);
   });
 };

@@ -1,17 +1,28 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import UserForm from "../../components/admin/userManagement/UserForm";
 import { useAdminUsers } from "../../context/AdminUsersContext";
+import { showErrorToast, showSuccessToast } from "../../utils/toastConfig";
 
 const AddUserPage = () => {
   const navigate = useNavigate();
   const { addUser } = useAdminUsers();
   const { t } = useLanguage();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (values) => {
-    addUser(values);
-    navigate("/admin/users");
+  const handleSubmit = async (values) => {
+    try {
+      setIsSubmitting(true);
+      await addUser(values);
+      showSuccessToast("User created successfully");
+      navigate("/admin/users");
+    } catch (error) {
+      const errorMessage = error.message || error.response?.data?.message || "Failed to create user";
+      showErrorToast(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -34,7 +45,7 @@ const AddUserPage = () => {
           <h2 className="mb-8 text-xl font-bold text-oxford-blue">
             {t('admin.addUser.form.title')}
           </h2>
-          <UserForm mode="add" onSubmit={handleSubmit} onCancel={handleCancel} />
+          <UserForm mode="add" onSubmit={handleSubmit} onCancel={handleCancel} isSubmitting={isSubmitting} />
         </section>
       </div>
     </div>

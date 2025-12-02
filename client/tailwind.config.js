@@ -81,7 +81,7 @@ module.exports = {
           md: '768px',
           lg: '1024px',
           xl: '1280px',
-          '2xl': '1400px', // Max width that works well on 1366px, 1440px, and 1920px
+          '2xl': '1400px', 
         },
       },
     },

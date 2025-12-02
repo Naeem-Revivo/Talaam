@@ -1,38 +1,44 @@
-const mongoose = require('mongoose');
+const { prisma } = require('../../config/db/prisma');
 
-const planSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: [true, 'Plan name is required'],
-      trim: true,
-    },
-    price: {
-      type: Number,
-      required: [true, 'Price is required'],
-      min: [0, 'Price must be a positive number'],
-    },
-    duration: {
-      type: String,
-      required: [true, 'Duration is required'],
-      enum: ['Monthly', 'Quarterly', 'Semi-Annual', 'Annual'],
-      default: 'Monthly',
-    },
-    description: {
-      type: String,
-      trim: true,
-      default: '',
-    },
-    status: {
-      type: String,
-      required: [true, 'Status is required'],
-      enum: ['active', 'inactive'],
-    },
+/**
+ * Plan Model using Prisma
+ */
+const Plan = {
+  // Create a new plan
+  async create(data) {
+    return await prisma.plan.create({ data });
   },
-  {
-    timestamps: true,
-  }
-);
 
-module.exports = mongoose.model('Plan', planSchema);
+  // Find plan by ID
+  async findById(id) {
+    return await prisma.plan.findUnique({ 
+      where: { id },
+      include: { subscriptions: true }
+    });
+  },
 
+  // Find all plans
+  async findMany(options = {}) {
+    return await prisma.plan.findMany(options);
+  },
+
+  // Find active plans
+  async findActive() {
+    return await prisma.plan.findMany({
+      where: { status: 'active' },
+      orderBy: { price: 'asc' }
+    });
+  },
+
+  // Update plan
+  async update(id, data) {
+    return await prisma.plan.update({ where: { id }, data });
+  },
+
+  // Delete plan
+  async delete(id) {
+    return await prisma.plan.delete({ where: { id } });
+  },
+};
+
+module.exports = Plan;

@@ -1,5 +1,5 @@
 const Subscription = require('../../models/subscription');
-const subscriptionService = require('../../services/subscription');
+const { prisma } = require('../../config/db/prisma');
 
 /**
  * Middleware to verify subscription
@@ -13,23 +13,29 @@ const verifySubscription = async (req, res, next) => {
 
     // First, check if user has an expired but still active subscription
     // and update it automatically
-    const expiredSubscription = await Subscription.findOne({
-      userId,
-      isActive: true,
-      expiryDate: { $lt: currentDate },
+    const expiredSubscription = await prisma.subscription.findFirst({
+      where: {
+        userId,
+        isActive: true,
+        expiryDate: { lt: currentDate },
+      },
     });
 
     if (expiredSubscription) {
       // Auto-update expired subscription
-      expiredSubscription.isActive = false;
-      await expiredSubscription.save();
+      await Subscription.update(expiredSubscription.id, {
+        isActive: false,
+      });
     }
 
     // Check if user has an active subscription with valid expiry date
-    const subscription = await Subscription.findOne({
-      userId,
-      isActive: true,
-      expiryDate: { $gte: currentDate },
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        userId,
+        isActive: true,
+        expiryDate: { gte: currentDate },
+      },
+      include: { plan: true },
     });
 
     if (!subscription) {

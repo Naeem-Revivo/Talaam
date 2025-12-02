@@ -165,30 +165,30 @@ const ClassificationIcon = ({ active }) => {
       <path
         d="M5.24999 0.75H2.25C1.42157 0.75 0.75 1.42162 0.75 2.2501V5.25029C0.75 6.07877 1.42157 6.75039 2.25 6.75039H5.24999C6.07842 6.75039 6.74999 6.07877 6.74999 5.25029V2.2501C6.74999 1.42162 6.07842 0.75 5.24999 0.75Z"
         stroke={fill}
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
         d="M17.25 0.75H14.25C13.4216 0.75 12.75 1.42162 12.75 2.2501V5.25029C12.75 6.07877 13.4216 6.75039 14.25 6.75039H17.25C18.0784 6.75039 18.75 6.07877 18.75 5.25029V2.2501C18.75 1.42162 18.0784 0.75 17.25 0.75Z"
         stroke={fill}
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
         d="M11.2499 12.75H8.24994C7.42151 12.75 6.74994 13.4216 6.74994 14.2501V17.2503C6.74994 18.0788 7.42151 18.7504 8.24994 18.7504H11.2499C12.0784 18.7504 12.7499 18.0788 12.7499 17.2503V14.2501C12.7499 13.4216 12.0784 12.75 11.2499 12.75Z"
         stroke={fill}
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
         d="M3.75 6.75V9.7502M15.75 6.75V9.7502M9.74999 12.7504V6.75"
         stroke={fill}
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );

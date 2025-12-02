@@ -1,6 +1,7 @@
 const { generateToken } = require('../../config/jwt');
 const { sendOTPEmail } = require('../../config/nodemailer');
 const { findUserByEmail } = require('./user.service');
+const User = require('../../models/user');
 
 /**
  * Generate a 6-digit OTP
@@ -51,17 +52,18 @@ const verifyOTP = async (email, otp) => {
     throw new Error('Your account has been suspended. Please contact administrator.');
   }
 
-  // Update user
-  user.isEmailVerified = true;
-  user.otp = undefined;
-  user.otpExpiry = undefined;
-  await user.save();
+  // Update user using Prisma
+  const updatedUser = await User.update(user.id, {
+    isEmailVerified: true,
+    otp: null,
+    otpExpiry: null,
+  });
 
   // Generate token
-  const token = generateToken(user._id);
+  const token = generateToken(updatedUser.id);
 
   return {
-    user,
+    user: updatedUser,
     token,
   };
 };
@@ -85,10 +87,11 @@ const resendOTP = async (email) => {
   const otp = generateOTP();
   const otpExpiry = getOTPExpiry();
 
-  // Update user
-  user.otp = otp;
-  user.otpExpiry = otpExpiry;
-  await user.save();
+  // Update user using Prisma
+  await User.update(user.id, {
+    otp,
+    otpExpiry,
+  });
 
   // Send OTP email
   await sendOTPEmail(email, user.name || email, otp);

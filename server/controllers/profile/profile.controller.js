@@ -19,7 +19,7 @@ const getProfile = async (req, res, next) => {
         },
       },
     };
-    console.log('[PROFILE] GET /profile → 200 (ok)', { userId: user._id, response });
+    console.log('[PROFILE] GET /profile → 200 (ok)', { userId: user.id, response });
     res.status(200).json(response);
   } catch (error) {
     console.error('[PROFILE] GET /profile → error', error);
@@ -61,7 +61,7 @@ const updateProfile = async (req, res, next) => {
         },
       },
     };
-    console.log('[PROFILE] PUT /profile → 200 (updated)', { userId: user._id, response });
+    console.log('[PROFILE] PUT /profile → 200 (updated)', { userId: user.id, response });
     res.status(200).json(response);
   } catch (error) {
     console.error('[PROFILE] PUT /profile → error', error);
@@ -103,7 +103,7 @@ const completeProfile = async (req, res, next) => {
         },
       },
     };
-    console.log('[PROFILE] POST /profile/complete → 200 (completed)', { userId: user._id, response });
+    console.log('[PROFILE] POST /profile/complete → 200 (completed)', { userId: user.id, response });
     res.status(200).json(response);
   } catch (error) {
     console.error('[PROFILE] POST /profile/complete → error', error);
