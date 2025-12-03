@@ -5,7 +5,6 @@ import { eye, openeye, google, linkedin } from '../../assets/svg/signup'
 import { useDispatch, useSelector } from 'react-redux'
 import { signup } from '../../store/slices/authSlice'
 import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
-import authAPI from '../../api/auth'
 
 const CreateAccount = () => {
   const { language, t } = useLanguage()
@@ -210,25 +209,21 @@ const CreateAccount = () => {
   }
 
 
-  const handleGoogleSignup = async () => {
-    try {
-      const res = await authAPI.getGoogleAuthUrl()
-      const url = res?.data?.url
-      if (url) {
-        window.location.href = url
-      } else {
-        showErrorToast(
-          t('createAccount.errors.google') || 'Unable to start Google sign in.',
-          { title: 'Authentication Error', isAuth: true }
-        )
-      }
-    } catch {
-      showErrorToast(
-        t('createAccount.errors.google') || 'Unable to start Google sign in.',
-        { title: 'Authentication Error' }
-      )
-    }
-  }
+  const handleGoogleSignup = () => {
+    // Direct redirect to backend OAuth endpoint
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    // Remove /api suffix if present, since we're adding it explicitly
+    const apiUrl = baseUrl.replace(/\/api$/, '');
+    window.location.href = `${apiUrl}/api/auth/google`;
+  };
+
+  const handleLinkedInSignup = () => {
+    // Direct redirect to backend OAuth endpoint
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    // Remove /api suffix if present, since we're adding it explicitly
+    const apiUrl = baseUrl.replace(/\/api$/, '');
+    window.location.href = `${apiUrl}/api/auth/linkedin`;
+  };
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4" dir={dir}>
@@ -395,7 +390,11 @@ const CreateAccount = () => {
               </button>
 
               {/* LinkedIn Button */}
-              <button className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full lg:w-[423px] h-[57px]">
+              <button
+                type="button"
+                onClick={handleLinkedInSignup}
+                className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full lg:w-[423px] h-[57px]"
+              >
                 <img src={linkedin} alt="LinkedIn" className="" />
                 <span className="font-roboto font-medium text-[16px] leading-[100%] tracking-[0] text-gray-900">
                   {t('createAccount.continueWithLinkedIn')}

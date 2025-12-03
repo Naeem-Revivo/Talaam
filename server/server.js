@@ -1,18 +1,29 @@
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
+const passport = require('passport');
 require('dotenv').config();
 
 const connectDB = require('./config/db');
+const sessionConfig = require('./config/session');
+require('./config/passport'); // Initialize Passport strategies
 
 const app = express();
 
 // Middlewares
 app.use(cors({
-  origin: '*',
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Session middleware (required for Passport OAuth)
+app.use(session(sessionConfig));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session()); // Enable session support for OAuth flows
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
