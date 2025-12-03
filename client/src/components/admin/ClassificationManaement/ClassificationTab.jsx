@@ -13,6 +13,7 @@ export default function Tabs({ activeTab, onTabChange }) {
       {tabs.map((tab) => (
         <button
           key={tab.key}
+          type="button"
           onClick={() => onTabChange(tab.key)}
           className={`rounded-full w-[150px] py-3 text-center text-[16px] leading-[100%] font-medium border transition-all
             ${

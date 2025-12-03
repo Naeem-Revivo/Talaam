@@ -96,6 +96,9 @@ import CreatorProfile from '../pages/Creator/CreatorProfile';
 import ProcessorProfile from '../pages/Processor/ProcessorProfile';
 import ExplainerProfile from '../pages/Explainer/ExplainerProfile';
 import AddNewExam from '../pages/admin/AddNewExam';
+import EditExam from '../pages/admin/EditExam';
+import EditSubject from '../pages/admin/EditSubject';
+import EditTopic from '../pages/admin/EditTopic';
 import CreatorViewVariant from '../pages/Creator/CreatorViewVariant';
 import ApprovedQuestions from '../pages/admin/ApprovedQuestions';
 
@@ -162,6 +165,9 @@ export const AppRoutes = () => {
           <Route path="classification/add-subtopic" element={<AddSubTopicPage />} />
           <Route path="classification/add-concept" element={<AddConceptPage />} />
           <Route path="classification/add-exam" element={<AddNewExam />} />
+          <Route path="classification/edit-exam/:examId" element={<EditExam />} />
+          <Route path="classification/edit-subject/:subjectId" element={<EditSubject />} />
+          <Route path="classification/edit-topic/:topicId" element={<EditTopic />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
           <Route path="question-management" element={<QuestionManagementPage />} />
           <Route path="question-bank/add-question" element={<AddNewQuestionPage />} />

@@ -149,10 +149,11 @@ const Login = () => {
         
         showErrorToast(errorMessage, { title: t('login.errors.title') || 'Login Failed', isAuth: true })
       }
-    } catch (e) {
-      // Only show error toast for unexpected errors (not Redux rejections)
-      // Redux Toolkit handles API errors through rejected actions, so this should rarely trigger
-      console.error('Unexpected login error:', e)
+    } catch {
+      showErrorToast(
+        'An unexpected error occurred. Please try again.',
+        { title: 'Login Failed' }
+      )
     }
   }
 

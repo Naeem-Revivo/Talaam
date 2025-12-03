@@ -32,6 +32,9 @@ const updateExam = async (exam, updateData) => {
   if (updateData.name !== undefined) {
     updateDataFiltered.name = updateData.name;
   }
+  if (updateData.description !== undefined) {
+    updateDataFiltered.description = updateData.description;
+  }
   if (updateData.status !== undefined) {
     updateDataFiltered.status = updateData.status;
   }
