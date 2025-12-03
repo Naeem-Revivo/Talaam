@@ -29,6 +29,11 @@ const User = {
     return await prisma.user.findUnique({ where: { googleId } });
   },
 
+  // Find user by LinkedIn ID
+  async findByLinkedInId(linkedinId) {
+    return await prisma.user.findUnique({ where: { linkedinId } });
+  },
+
   // Update user
   async update(id, data) {
     // Hash password if being updated

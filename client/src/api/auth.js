@@ -153,7 +153,7 @@ const authAPI = {
     }
   },
 
-  // Google OAuth URL
+  // Google OAuth URL (for backward compatibility)
   getGoogleAuthUrl: async () => {
     try {
       const response = await axiosClient.get('/auth/google/url');
@@ -161,6 +161,17 @@ const authAPI = {
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Failed to get Google auth URL' };
+    }
+  },
+
+  // LinkedIn OAuth URL (for backward compatibility)
+  getLinkedInAuthUrl: async () => {
+    try {
+      const response = await axiosClient.get('/auth/linkedin/url');
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to get LinkedIn auth URL' };
     }
   },
 

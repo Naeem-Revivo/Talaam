@@ -1,6 +1,7 @@
 const authService = require('../../services/auth');
 const { sendOTPEmail } = require('../../config/nodemailer');
-
+const passport = require('passport');
+const { generateToken } = require('../../config/jwt');
 // Signup
 const signup = async (req, res, next) => {
   try {
@@ -274,51 +275,127 @@ const getCurrentUser = async (req, res, next) => {
   }
 };
 
-// Google: Get OAuth URL
+// Google: Get OAuth URL (for backward compatibility, redirects directly to OAuth flow)
 const getGoogleAuthUrl = async (req, res) => {
   try {
-    const url = authService.getGoogleAuthUrlService();
-    return res.status(200).json({ success: true, data: { url } });
+    // Redirect directly to start OAuth flow instead of returning JSON
+    // This maintains backward compatibility while using the new Passport.js flow
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    // Get the base API URL
+    const apiBaseUrl = req.protocol + '://' + req.get('host');
+    // Redirect to the OAuth endpoint
+    return res.redirect(`${apiBaseUrl}/api/auth/google`);
   } catch (error) {
     console.error('[AUTH] GET /google/url → error', error);
     return res.status(500).json({ success: false, message: 'Failed to generate Google auth URL' });
   }
 };
 
+// Google: Start OAuth flow
+const googleAuth = passport.authenticate('google', {
+  scope: ['profile', 'email'],
+});
+
 // Google: OAuth callback
-const googleCallback = async (req, res, next) => {
-  try {
-    const { code } = req.query;
-    console.log('[AUTH] GET /google/callback → requested');
+const googleCallback = (req, res, next) => {
+  console.log('[AUTH] Google callback received', {
+    query: req.query,
+    hasCode: !!req.query.code,
+    hasError: !!req.query.error
+  });
 
-    const { user, token } = await authService.handleGoogleCallback(code);
-
-    const response = {
-      success: true,
-      message: 'Google login successful',
-      data: {
-        token,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          isEmailVerified: user.isEmailVerified,
-          avatar: user.avatar,
-        },
-      },
-    };
-
-    return res.status(200).json(response);
-  } catch (error) {
-    console.error('[AUTH] GET /google/callback → error', error);
-    if (error.message === 'Missing authorization code' || error.message === 'Google profile has no email') {
-      return res.status(400).json({ success: false, message: error.message });
-    }
-    if (error.message === 'Your account has been suspended. Please contact administrator.') {
-      return res.status(403).json({ success: false, message: error.message });
-    }
-    next(error);
+  // Check for OAuth error from Google
+  if (req.query.error) {
+    console.error('[AUTH] Google OAuth error from provider:', req.query.error);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const errorMessage = req.query.error_description || req.query.error || 'Authentication failed';
+      return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent(errorMessage)}`);
   }
+
+  passport.authenticate('google', { session: false }, (err, user, info) => {
+    if (err) {
+      console.error('[AUTH] Google callback error:', err);
+      console.error('[AUTH] Error stack:', err.stack);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent(err.message || 'Authentication failed')}`);
+    }
+
+    if (!user) {
+      console.error('[AUTH] Google callback: No user returned', { info });
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent('Authentication failed - user not found')}`);
+    }
+
+    try {
+      // Generate JWT token
+      const token = generateToken(user.id);
+
+      // Check if user is newly created or existing
+      const isNewUser = info?.isNewUser || false;
+      
+      // Redirect to frontend with token and account status
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      console.log('[AUTH] Google OAuth successful', { userId: user.id, email: user.email, isNewUser });
+      res.redirect(`${frontendUrl}/auth/callback?token=${token}&provider=google&isNewUser=${isNewUser}`);
+    } catch (tokenError) {
+      console.error('[AUTH] Error generating token:', tokenError);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent('Failed to generate authentication token')}`);
+    }
+  })(req, res, next);
+};
+
+// LinkedIn: Get OAuth URL (for backward compatibility, redirects directly to OAuth flow)
+const getLinkedInAuthUrl = async (req, res) => {
+  try {
+    // Redirect directly to start OAuth flow instead of returning JSON
+    // This maintains backward compatibility while using the new Passport.js flow
+    const apiBaseUrl = req.protocol + '://' + req.get('host');
+    // Redirect to the OAuth endpoint
+    return res.redirect(`${apiBaseUrl}/api/auth/linkedin`);
+  } catch (error) {
+    console.error('[AUTH] GET /linkedin/url → error', error);
+    return res.status(500).json({ success: false, message: 'Failed to generate LinkedIn auth URL' });
+  }
+};
+
+// LinkedIn: Start OAuth flow
+const linkedinAuth = passport.authenticate('linkedin', {
+  scope: ['r_liteprofile', 'r_emailaddress'],
+});
+
+// LinkedIn: OAuth callback
+const linkedinCallback = (req, res, next) => {
+  passport.authenticate('linkedin', { session: false }, (err, user, info) => {
+    if (err) {
+      console.error('[AUTH] LinkedIn callback error:', err);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent(err.message)}`);
+    }
+
+    if (!user) {
+      console.error('[AUTH] LinkedIn callback: No user returned');
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent('Authentication failed')}`);
+    }
+
+    try {
+      // Generate JWT token
+      const token = generateToken(user.id);
+
+      // Check if user is newly created or existing
+      const isNewUser = info?.isNewUser || false;
+
+      // Redirect to frontend with token and account status
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      console.log('[AUTH] LinkedIn OAuth successful', { userId: user.id, email: user.email, isNewUser });
+      res.redirect(`${frontendUrl}/auth/callback?token=${token}&provider=linkedin&isNewUser=${isNewUser}`);
+    } catch (tokenError) {
+      console.error('[AUTH] Error generating token:', tokenError);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent('Failed to generate authentication token')}`);
+    }
+  })(req, res, next);
 };
 
 module.exports = {
@@ -330,6 +407,10 @@ module.exports = {
   resetPassword,
   getCurrentUser,
   getGoogleAuthUrl,
+  googleAuth,
   googleCallback,
+  getLinkedInAuthUrl,
+  linkedinAuth,
+  linkedinCallback,
 };
 
