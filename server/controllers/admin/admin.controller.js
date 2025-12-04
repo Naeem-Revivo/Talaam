@@ -122,6 +122,35 @@ const createAdmin = async (req, res, next) => {
 
     const user = await adminService.createAdminUser(userData);
 
+    // Send account creation email for gatherer, creator, explainer, and processor roles
+    console.log('[ADMIN] Checking if email should be sent. adminRole:', adminRole);
+    if (['gatherer', 'creator', 'explainer', 'processor'].includes(adminRole)) {
+      console.log('[ADMIN] Admin role matches, attempting to send email to:', user.email);
+      try {
+        const { sendTaalamAccountEmail } = require('../../config/nodemailer/emailTemplates');
+        const emailResult = await sendTaalamAccountEmail(
+          user.email,
+          user.name || user.fullName,
+          adminRole,
+          userPassword
+        );
+        console.log('[ADMIN] Account creation email sent successfully to:', user.email, 'MessageId:', emailResult?.messageId);
+      } catch (emailError) {
+        // Log error but don't fail the user creation
+        console.error('[ADMIN] Error sending account creation email to:', user.email);
+        console.error('[ADMIN] Email error details:', {
+          message: emailError.message,
+          stack: emailError.stack,
+          code: emailError.code,
+          responseCode: emailError.responseCode,
+          command: emailError.command,
+        });
+        // Continue with response even if email fails
+      }
+    } else {
+      console.log('[ADMIN] Email not sent. Admin role:', adminRole, 'is not in the list of roles that receive emails');
+    }
+
     const response = {
       success: true,
       message: 'Admin user created successfully',

@@ -21,12 +21,17 @@ const User = {
 
   // Find user by email
   async findByEmail(email) {
-    return await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+    return await prisma.user.findFirst({ where: { email: email.toLowerCase() } });
   },
 
   // Find user by Google ID
   async findByGoogleId(googleId) {
     return await prisma.user.findUnique({ where: { googleId } });
+  },
+
+  // Find user by LinkedIn ID
+  async findByLinkedInId(linkedinId) {
+    return await prisma.user.findUnique({ where: { linkedinId } });
   },
 
   // Update user

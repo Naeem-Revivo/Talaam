@@ -14,6 +14,7 @@ import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import ForgotModalPage from '../pages/ForgotModalPage';
 import SetNewPasswordPage from '../pages/SetNewPasswordPage';
 import PasswordResetPage from '../pages/PasswordResetPage';
+import AuthCallbackPage from '../pages/AuthCallbackPage';
 import DashboardLayout from '../pages/dashboard/DashboardLayout';
 import DashboardPage from '../pages/dashboard/DashboardPage';
 import PracticePage from '../pages/dashboard/PracticePage';
@@ -115,6 +116,7 @@ export const AppRoutes = () => {
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/forgot-modal" element={<ForgotModalPage />} />
       <Route path="/set-new-password" element={<SetNewPasswordPage />} />
