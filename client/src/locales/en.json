@@ -2765,6 +2765,8 @@
         "optionD": "Option D"
       },
       "correctAnswer": "Correct Answer",
+      "explanation": "Explanation",
+      "optional": "Optional",
       "classification": {
         "title": "Classification",
         "subject": "Subject",
@@ -2772,13 +2774,24 @@
         "subtopic": "Subtopic",
         "source": "Source",
         "exam": "Exam",
-        "reference": "Reference"
+        "reference": "Reference",
+        "processor": "Assign Processor"
       },
       "placeholders": {
         "questionText": "Enter your question here...",
         "option": "Enter option text",
         "reference": "Enter reference",
-        "exam": "Select Exam"
+        "exam": "Select Exam",
+        "explanation": "Enter explanation (optional)"
+      },
+      "messages": {
+        "loading": "Loading...",
+        "noExamsAvailable": "No exams available",
+        "noSubjectsAvailable": "No subjects available",
+        "noTopicsAvailable": "No topics available",
+        "noProcessorsAvailable": "No processors available",
+        "selectExamFirst": "Select exam first",
+        "selectSubjectFirst": "Select subject first"
       }
     },
     "questionDetail": {

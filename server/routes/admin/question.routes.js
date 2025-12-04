@@ -93,6 +93,13 @@ router.put(
 );
 
 router.post(
+  '/creator/:questionId/flag',
+  authMiddleware,
+  creatorMiddleware,
+  questionController.flagQuestionByCreator
+);
+
+router.post(
   '/creator/:questionId/variant',
   authMiddleware,
   creatorMiddleware,
@@ -119,6 +126,13 @@ router.put(
   authMiddleware,
   explainerMiddleware,
   questionController.updateExplanation
+);
+
+router.post(
+  '/explainer/:questionId/flag',
+  authMiddleware,
+  explainerMiddleware,
+  questionController.flagQuestionByExplainer
 );
 
 // Processor routes (must be before /:questionId to avoid route conflicts)
@@ -149,6 +163,20 @@ router.post(
   authMiddleware,
   processorMiddleware,
   questionController.rejectQuestion
+);
+
+router.post(
+  '/processor/:questionId/flag/review',
+  authMiddleware,
+  processorMiddleware,
+  questionController.reviewCreatorFlag
+);
+
+router.post(
+  '/processor/:questionId/variant-flag/review',
+  authMiddleware,
+  processorMiddleware,
+  questionController.reviewExplainerFlag
 );
 
 // General POST route for processor (handles both approve and reject via body status)

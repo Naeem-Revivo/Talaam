@@ -2,12 +2,13 @@ import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
 import StatsCards from "../../components/common/StatsCards";
 import { Table } from "../../components/common/TableComponent";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReviewFeedback from "../../components/gatherer/ReviewFeedback";
 import WorkflowProgress from "../../components/gatherer/WorkflowProgress";
 import RecentActivity from "../../components/gatherer/RecentActiveity";
 import { useNavigate } from "react-router-dom";
 import { UploadFileModal } from "../../components/gatherer/UploadFileModal";
+import questionsAPI from "../../api/questions";
 
 const GathererQuestionBank = () => {
   const { t } = useLanguage();
@@ -15,6 +16,15 @@ const GathererQuestionBank = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [gathererData, setGathererData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+  const [stats, setStats] = useState([
+    { label: t("gatherer.questionBank.stats.questionAdded"), value: 0, color: "blue" },
+    { label: t("gatherer.questionBank.stats.pendingReview"), value: 0, color: "red" },
+    { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: 0, color: "red" },
+    { label: t("gatherer.questionBank.stats.rejected"), value: 0, color: "red" },
+  ]);
 
   const handleSubmit = (data) => {
     console.log("Submitted:", data);
@@ -27,47 +37,107 @@ const GathererQuestionBank = () => {
     { key: "status", label: t("gatherer.questionBank.table.status") },
     { key: "actions", label: t("gatherer.questionBank.table.actions") },
   ];
+  
   const handleAddQuestion = () => {
     navigate("/gatherer/question-bank/Gatherer-addQuestion");
   };
 
-  const gathererData = [
-    {
-      id: 1,
-      questionTitle: "Cell Theory Basics",
-      processor: "John Doe",
-      lastUpdate: "Today",
-      status: "Approved",
-      actionType: "viewicon",
-    },
-    {
-      id: 2,
-      questionTitle: "Newton MCQ",
-      processor: "John Smith",
-      lastUpdate: "Today",
-      status: "Approved",
-      actionType: "viewicon",
-    },
-    {
-      id: 3,
-      questionTitle: "Gravity Concepts",
-      processor: "Admin",
-      lastUpdate: "Yesterday",
-      status: "Sent back",
-      actionType: "viewicon",
-    },
-    {
-      id: 4,
-      questionTitle: "Organic Chemistry",
-      processor: "John Doe",
-      lastUpdate: "2 days ago",
-      status: "Reject",
-      actionType: "viewicon",
-    },
-  ];
+  // Format date to relative time
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return "Just now";
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    
+    return date.toLocaleDateString();
+  };
 
-  const handleView = () => {
-    navigate("/gatherer/question-bank/Gatherer-QuestionDetail");
+  // Format status for display
+  const formatStatus = (status) => {
+    if (!status) return "—";
+    const statusMap = {
+      pending_processor: "Pending Review",
+      pending_creator: "Pending Creator",
+      pending_explainer: "Pending Explainer",
+      approved: "Approved",
+      rejected: "Rejected",
+      completed: "Completed",
+      sent_back: "Sent Back",
+    };
+    return statusMap[status] || status;
+  };
+
+  // Fetch questions from API
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        setLoading(true);
+        const response = await questionsAPI.getGathererQuestionsByStatus({
+          status: undefined, // Get all questions
+        });
+
+        if (response.success && response.data?.questions) {
+          const questions = response.data.questions;
+          console.log('Questions from API:', questions);
+          console.log('First question assignedProcessor:', questions[0]?.assignedProcessor);
+          
+          // Map API response to table format
+          const mappedData = questions.map((question) => {
+            const processorName = question.assignedProcessor?.name || 
+                                  question.assignedProcessor?.fullName || 
+                                  question.assignedProcessor?.username || 
+                                  "—";
+            console.log('Question ID:', question.id, 'Processor:', processorName, 'assignedProcessor object:', question.assignedProcessor);
+            return {
+              id: question.id,
+              questionTitle: question.questionText?.substring(0, 50) + (question.questionText?.length > 50 ? "..." : "") || "—",
+              processor: processorName,
+              lastUpdate: formatDate(question.updatedAt || question.createdAt),
+              status: formatStatus(question.status),
+              actionType: "viewicon",
+            };
+          });
+
+          setGathererData(mappedData);
+          setTotalQuestions(questions.length);
+
+          // Calculate stats
+          const questionAdded = questions.length;
+          const pendingReview = questions.filter(q => q.status === "pending_processor").length;
+          const acceptedByProcessor = questions.filter(q => 
+            q.status === "pending_creator" || q.status === "pending_explainer" || q.status === "completed"
+          ).length;
+          const rejected = questions.filter(q => q.status === "rejected").length;
+
+          setStats([
+            { label: t("gatherer.questionBank.stats.questionAdded"), value: questionAdded, color: "blue" },
+            { label: t("gatherer.questionBank.stats.pendingReview"), value: pendingReview, color: "red" },
+            { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: acceptedByProcessor, color: "red" },
+            { label: t("gatherer.questionBank.stats.rejected"), value: rejected, color: "red" },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+        setGathererData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, [t]);
+
+  const handleView = (item) => {
+    if (item?.id) {
+      navigate(`/gatherer/question-bank/Gatherer-QuestionDetail/${item.id}`);
+    } else {
+      navigate("/gatherer/question-bank/Gatherer-QuestionDetail");
+    }
   };
 
   const handleEdit = (item) => {
@@ -78,46 +148,9 @@ const GathererQuestionBank = () => {
     console.log("Custom action for item:", item);
   };
 
-  const stats = [
-    { label: t("gatherer.questionBank.stats.questionAdded"), value: 128, color: "blue" },
-    { label: t("gatherer.questionBank.stats.pendingReview"), value: 12, color: "red" },
-    { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: 95, color: "red" },
-    { label: t("gatherer.questionBank.stats.rejected"), value: 8, color: "red" },
-  ];
+  const feedbackData = {};
 
-  const feedbackData = {
-    title: "Feedback For Q-ID-12345 Quantum Physics Basis",
-    message:
-      "\"The wording is unclear and potentially misleading. Please provide more context for the term 'quantum entanglement' and simplify the explanation for beginner audience.\"",
-    author: "Possessor A",
-  };
-
-  const activityData = [
-    {
-      icon: "submit",
-      title: t("gatherer.questionBank.activity.submitted"),
-      timestamp: "Today",
-      variant: "default",
-    },
-    {
-      icon: "reject",
-      title: t("gatherer.questionBank.activity.rejected"),
-      timestamp: "Today",
-      variant: "default",
-    },
-    {
-      icon: "approve",
-      title: t("gatherer.questionBank.activity.approved"),
-      timestamp: "Yesterday",
-      variant: "approved",
-    },
-    {
-      icon: "assign",
-      title: t("gatherer.questionBank.activity.assigned"),
-      timestamp: "2 days ago",
-      variant: "default",
-    },
-  ];
+  const activityData = [];
 
   const workflowSteps = [
     t("gatherer.questionBank.workflowSteps.gatherer"),
@@ -168,18 +201,24 @@ const GathererQuestionBank = () => {
           <div className="text-[24px] leading-[32px] font-bold text-blue-dark font-archivo mb-5">
             {t("gatherer.questionBank.mySubmissions")}
           </div>
-          <Table
-            items={gathererData}
-            columns={gathererColumns}
-            page={currentPage}
-            pageSize={10}
-            total={25}
-            onPageChange={setCurrentPage}
-            onView={handleView}
-            onEdit={handleEdit}
-            onCustomAction={handleCustomAction}
-            emptyMessage={t("gatherer.questionBank.emptyMessage")}
-          />
+          {loading ? (
+            <div className="text-center py-10">
+              <p className="text-[16px] text-gray-600">{t("gatherer.questionBank.loading") || "Loading questions..."}</p>
+            </div>
+          ) : (
+            <Table
+              items={gathererData}
+              columns={gathererColumns}
+              page={currentPage}
+              pageSize={10}
+              total={totalQuestions}
+              onPageChange={setCurrentPage}
+              onView={handleView}
+              onEdit={handleEdit}
+              onCustomAction={handleCustomAction}
+              emptyMessage={t("gatherer.questionBank.emptyMessage")}
+            />
+          )}
         </div>
 
         <div className="max-w-7xl mx-auto">
@@ -190,13 +229,15 @@ const GathererQuestionBank = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             {/* Left Column - Feedback Card and Workflow */}
             <div className="lg:col-span-2 space-y-6">
-              <ReviewFeedback
-                title={feedbackData.title}
-                message={feedbackData.message}
-                author={feedbackData.author}
-                onDismiss={handleDismiss}
-                onEdit={handleEdit}
-              />
+              {feedbackData.title && (
+                <ReviewFeedback
+                  title={feedbackData.title}
+                  message={feedbackData.message}
+                  author={feedbackData.author}
+                  onDismiss={handleDismiss}
+                  onEdit={handleEdit}
+                />
+              )}
               <div>
                 <h2 className="text-[24px] leading-[32px] font-bold font-archivo text-blue-dark mb-5">
                   {t("gatherer.questionBank.workflowProgress")}
@@ -213,16 +254,22 @@ const GathererQuestionBank = () => {
                 </h2>
 
                 <div className="space-y-3">
-                  {activityData.map((activity, index) => (
-                    <RecentActivity
-                      key={index}
-                      icon={activity.icon}
-                      title={activity.title}
-                      subtitle={activity.subtitle}
-                      timestamp={activity.timestamp}
-                      variant={activity.variant}
-                    />
-                  ))}
+                  {activityData.length > 0 ? (
+                    activityData.map((activity, index) => (
+                      <RecentActivity
+                        key={index}
+                        icon={activity.icon}
+                        title={activity.title}
+                        subtitle={activity.subtitle}
+                        timestamp={activity.timestamp}
+                        variant={activity.variant}
+                      />
+                    ))
+                  ) : (
+                    <p className="text-[14px] leading-5 font-normal font-roboto text-[#6B7280]">
+                      {t("gatherer.questionBank.noActivity") || "No recent activity"}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

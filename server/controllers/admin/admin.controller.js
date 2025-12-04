@@ -283,11 +283,13 @@ const getAllAdmins = async (req, res, next) => {
       search,
     });
 
-    // Ensure only superadmin can access this
-    if (req.user.role !== 'superadmin') {
+    // Allow all admin roles (gatherer, processor, creator, explainer, superadmin) to access this endpoint
+    // This is needed for gatherers to select processors when creating questions
+    // and for other admin roles to view users in their workflow
+    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Only superadmin can view all admin users',
+        message: 'Access denied. Admin privileges required.',
       });
     }
 
@@ -358,6 +360,15 @@ const getAllAdmins = async (req, res, next) => {
       success: true,
       message: 'Admin users retrieved successfully',
       data: {
+        users: result.admins.map((admin) => ({
+          id: admin.id,
+          name: admin.fullName || admin.name || 'N/A',
+          fullName: admin.fullName || admin.name || 'N/A',
+          email: admin.email,
+          workflowRole: admin.adminRole || null,
+          adminRole: admin.adminRole || null,
+          status: admin.status,
+        })),
         admins: result.admins.map((admin) => ({
           id: admin.id,
           username: admin.fullName || admin.name || 'N/A',

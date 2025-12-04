@@ -381,6 +381,7 @@ const createQuestion = async (req, res, next) => {
       options,
       correctAnswer,
       explanation,
+      assignedProcessor,
     } = req.body;
 
     console.log('[QUESTION] POST /admin/questions → requested', {
@@ -405,6 +406,9 @@ const createQuestion = async (req, res, next) => {
     }
     if (!questionType) {
       errors.push({ field: 'questionType', message: 'Question type is required' });
+    }
+    if (!assignedProcessor) {
+      errors.push({ field: 'assignedProcessor', message: 'Processor assignment is required' });
     }
 
     // Validate MCQ specific fields
@@ -440,6 +444,7 @@ const createQuestion = async (req, res, next) => {
       questionText: questionText.trim(),
       questionType,
       explanation: explanation ? explanation.trim() : '',
+      assignedProcessor,
     };
 
     if (questionType === 'MCQ') {
@@ -558,6 +563,7 @@ const getQuestions = async (req, res, next) => {
           status: q.status,
           createdBy: q.createdBy,
           lastModifiedBy: q.lastModifiedBy,
+          assignedProcessor: q.assignedProcessor,
           createdAt: q.createdAt,
           updatedAt: q.updatedAt,
         })),
@@ -1212,7 +1218,10 @@ const getTopicsBySubject = async (req, res, next) => {
       requestedBy: req.user.id,
     });
 
-    const topics = await questionService.getTopicsBySubject(subjectId);
+    const result = await questionService.getTopicsBySubject(subjectId);
+    
+    // Handle both array and object return types
+    const topics = Array.isArray(result) ? result : (result.topics || []);
 
     const response = {
       success: true,
@@ -1241,6 +1250,365 @@ const getTopicsBySubject = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         message: 'Invalid subject ID',
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * Flag question by Creator
+ * POST /admin/questions/creator/:questionId/flag
+ */
+const flagQuestionByCreator = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const { flagReason } = req.body;
+
+    console.log('[QUESTION] POST /admin/questions/creator/:questionId/flag → requested', {
+      questionId,
+      requestedBy: req.user.id,
+      requesterRole: req.user.adminRole,
+    });
+
+    if (!flagReason || !flagReason.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'flagReason',
+            message: 'Flag reason is required',
+          },
+        ],
+      });
+    }
+
+    const question = await questionService.flagQuestionByCreator(
+      questionId,
+      flagReason,
+      req.user.id
+    );
+
+    const response = {
+      success: true,
+      message: 'Question flagged successfully and sent to processor for review',
+      data: {
+        question: {
+          id: question._id || question.id,
+          isFlagged: question.isFlagged,
+          flagReason: question.flagReason,
+          flagType: question.flagType,
+          flagStatus: question.flagStatus,
+          status: question.status,
+          updatedAt: question.updatedAt,
+        },
+      },
+    };
+
+    console.log('[QUESTION] POST /admin/questions/creator/:questionId/flag → 200 (flagged)', {
+      questionId: question._id || question.id,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] POST /admin/questions/creator/:questionId/flag → error', error);
+    if (
+      error.message === 'Question not found' ||
+      error.message === 'Question is not in pending_creator status' ||
+      error.message === 'Flag reason is required'
+    ) {
+      return res.status(
+        error.message === 'Question not found' ? 404 : 400
+      ).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid question ID',
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * Review Creator's flag by Processor
+ * POST /admin/questions/processor/:questionId/flag/review
+ */
+const reviewCreatorFlag = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const { decision, rejectionReason } = req.body;
+
+    console.log('[QUESTION] POST /admin/questions/processor/:questionId/flag/review → requested', {
+      questionId,
+      decision,
+      requestedBy: req.user.id,
+      requesterRole: req.user.adminRole,
+    });
+
+    if (!decision || (decision !== 'approve' && decision !== 'reject')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'decision',
+            message: 'Decision is required and must be either "approve" or "reject"',
+          },
+        ],
+      });
+    }
+
+    if (decision === 'reject' && (!rejectionReason || !rejectionReason.trim())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'rejectionReason',
+            message: 'Rejection reason is required when rejecting a flag',
+          },
+        ],
+      });
+    }
+
+    const question = await questionService.reviewCreatorFlag(
+      questionId,
+      decision,
+      rejectionReason,
+      req.user.id
+    );
+
+    const response = {
+      success: true,
+      message: decision === 'approve' 
+        ? 'Flag approved. Question sent back to gatherer for correction.'
+        : 'Flag rejected. Question sent back to creator.',
+      data: {
+        question: {
+          id: question._id || question.id,
+          isFlagged: question.isFlagged,
+          flagStatus: question.flagStatus,
+          flagRejectionReason: question.flagRejectionReason,
+          status: question.status,
+          updatedAt: question.updatedAt,
+        },
+      },
+    };
+
+    console.log(`[QUESTION] POST /admin/questions/processor/:questionId/flag/review → 200 (${decision})`, {
+      questionId: question._id || question.id,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] POST /admin/questions/processor/:questionId/flag/review → error', error);
+    if (
+      error.message === 'Question not found' ||
+      error.message === 'Question is not flagged by creator or flag has already been reviewed' ||
+      error.message === 'Decision must be either "approve" or "reject"' ||
+      error.message === 'Rejection reason is required when rejecting a flag'
+    ) {
+      return res.status(
+        error.message === 'Question not found' ? 404 : 400
+      ).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid question ID',
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * Flag question or variant by Explainer
+ * POST /admin/questions/explainer/:questionId/flag
+ * Can flag both regular questions and question variants
+ */
+const flagQuestionByExplainer = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const { flagReason } = req.body;
+
+    console.log('[QUESTION] POST /admin/questions/explainer/:questionId/flag → requested', {
+      questionId,
+      requestedBy: req.user.id,
+      requesterRole: req.user.adminRole,
+    });
+
+    if (!flagReason || !flagReason.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'flagReason',
+            message: 'Flag reason is required',
+          },
+        ],
+      });
+    }
+
+    const question = await questionService.flagQuestionByExplainer(
+      questionId,
+      flagReason,
+      req.user.id
+    );
+
+    const questionType = question.isVariant ? 'variant' : 'question';
+    const response = {
+      success: true,
+      message: `${questionType === 'variant' ? 'Question variant' : 'Question'} flagged successfully and sent to processor for review`,
+      data: {
+        question: {
+          id: question._id || question.id,
+          isVariant: question.isVariant,
+          isFlagged: question.isFlagged,
+          flagReason: question.flagReason,
+          flagType: question.flagType,
+          flagStatus: question.flagStatus,
+          status: question.status,
+          updatedAt: question.updatedAt,
+        },
+      },
+    };
+
+    console.log('[QUESTION] POST /admin/questions/explainer/:questionId/flag → 200 (flagged)', {
+      questionId: question._id || question.id,
+      isVariant: question.isVariant,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] POST /admin/questions/explainer/:questionId/flag → error', error);
+    if (
+      error.message === 'Question not found' ||
+      error.message === 'Question is not in pending_explainer status' ||
+      error.message === 'Flag reason is required'
+    ) {
+      return res.status(
+        error.message === 'Question not found' ? 404 : 400
+      ).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid question ID',
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * Review Explainer's flag by Processor
+ * POST /admin/questions/processor/:questionId/variant-flag/review
+ */
+const reviewExplainerFlag = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const { decision, rejectionReason } = req.body;
+
+    console.log('[QUESTION] POST /admin/questions/processor/:questionId/variant-flag/review → requested', {
+      questionId,
+      decision,
+      requestedBy: req.user.id,
+      requesterRole: req.user.adminRole,
+    });
+
+    if (!decision || (decision !== 'approve' && decision !== 'reject')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'decision',
+            message: 'Decision is required and must be either "approve" or "reject"',
+          },
+        ],
+      });
+    }
+
+    if (decision === 'reject' && (!rejectionReason || !rejectionReason.trim())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'rejectionReason',
+            message: 'Rejection reason is required when rejecting a flag',
+          },
+        ],
+      });
+    }
+
+    const question = await questionService.reviewExplainerFlag(
+      questionId,
+      decision,
+      rejectionReason,
+      req.user.id
+    );
+
+    const questionType = question.isVariant ? 'variant' : 'question';
+    let message;
+    if (decision === 'approve') {
+      message = question.isVariant
+        ? 'Flag approved. Question variant sent back to creator for correction.'
+        : 'Flag approved. Question sent back to gatherer for correction.';
+    } else {
+      message = `Flag rejected. ${questionType === 'variant' ? 'Question variant' : 'Question'} sent back to explainer.`;
+    }
+
+    const response = {
+      success: true,
+      message,
+      data: {
+        question: {
+          id: question._id || question.id,
+          isVariant: question.isVariant,
+          isFlagged: question.isFlagged,
+          flagStatus: question.flagStatus,
+          flagRejectionReason: question.flagRejectionReason,
+          status: question.status,
+          updatedAt: question.updatedAt,
+        },
+      },
+    };
+
+    console.log(`[QUESTION] POST /admin/questions/processor/:questionId/variant-flag/review → 200 (${decision})`, {
+      questionId: question._id || question.id,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] POST /admin/questions/processor/:questionId/variant-flag/review → error', error);
+    if (
+      error.message === 'Question not found' ||
+      error.message === 'Question is not flagged by explainer or flag has already been reviewed' ||
+      error.message === 'Decision must be either "approve" or "reject"' ||
+      error.message === 'Rejection reason is required when rejecting a flag'
+    ) {
+      return res.status(
+        error.message === 'Question not found' ? 404 : 400
+      ).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid question ID',
       });
     }
     next(error);
@@ -1360,5 +1728,9 @@ module.exports = {
   rejectQuestion,
   getTopicsBySubject,
   addCommentToQuestion,
+  flagQuestionByCreator,
+  reviewCreatorFlag,
+  flagQuestionByExplainer,
+  reviewExplainerFlag,
 };
 

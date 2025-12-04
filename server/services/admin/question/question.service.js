@@ -21,12 +21,38 @@ const createQuestion = async (questionData, userId) => {
   }
 
   // Validate topic exists and belongs to subject
-  const topic = await Topic.findOne({
-    _id: questionData.topic,
-    parentSubject: questionData.subject,
+  const topics = await Topic.findMany({
+    where: {
+      id: questionData.topic,
+      parentSubject: questionData.subject,
+    },
   });
+  const topic = topics[0];
   if (!topic) {
     throw new Error('Topic not found or does not belong to the selected subject');
+  }
+
+  // Validate processor (required)
+  if (!questionData.assignedProcessor) {
+    throw new Error('Processor assignment is required');
+  }
+
+  const { prisma } = require('../../../config/db/prisma');
+  const processor = await prisma.user.findUnique({
+    where: { id: questionData.assignedProcessor },
+    select: { id: true, adminRole: true, status: true }
+  });
+  
+  if (!processor) {
+    throw new Error('Assigned processor not found');
+  }
+  
+  if (processor.adminRole !== 'processor') {
+    throw new Error('Assigned user is not a processor');
+  }
+  
+  if (processor.status !== 'active') {
+    throw new Error('Assigned processor is not active');
   }
 
   // Create or update classification
@@ -64,31 +90,33 @@ const createQuestion = async (questionData, userId) => {
     ],
   });
 
-  return await Question.findById(question._id)
-    .populate('exam', 'name')
-    .populate('subject', 'name')
-    .populate('topic', 'name')
-    .populate('createdBy', 'name email');
+  // Return the question with populated relations (already included by Prisma)
+  return await Question.findById(question.id);
 };
 
 /**
  * Get questions by status and role
  */
 const getQuestionsByStatus = async (status, userId, role) => {
-  const query = { status };
+  const where = { status };
 
   // Gatherer can only see their own questions
   if (role === 'gatherer') {
-    query.createdBy = userId;
+    where.createdById = userId;
   }
 
-  return await Question.find(query)
-    .populate('exam', 'name')
-    .populate('subject', 'name')
-    .populate('topic', 'name')
-    .populate('createdBy', 'name email')
-    .populate('lastModifiedBy', 'name email')
-    .sort({ createdAt: -1 });
+  return await Question.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      exam: { select: { name: true } },
+      subject: { select: { name: true } },
+      topic: { select: { name: true } },
+      createdBy: { select: { name: true, email: true } },
+      lastModifiedBy: { select: { name: true, email: true } },
+      assignedProcessor: { select: { name: true, fullName: true, email: true } }
+    }
+  });
 };
 
 /**
@@ -104,25 +132,28 @@ const createQuestionVariant = async (originalQuestionId, variantData, userId) =>
   }
 
   // Validate exam if provided, otherwise use original question's exam
-  const examId = variantData.exam || originalQuestion.exam;
+  const examId = variantData.exam || originalQuestion.examId || (originalQuestion.exam?.id);
   const exam = await Exam.findById(examId);
   if (!exam) {
     throw new Error('Exam not found');
   }
 
   // Validate subject if provided, otherwise use original question's subject
-  const subjectId = variantData.subject || originalQuestion.subject;
+  const subjectId = variantData.subject || originalQuestion.subjectId || (originalQuestion.subject?.id);
   const subject = await Subject.findById(subjectId);
   if (!subject) {
     throw new Error('Subject not found');
   }
 
   // Validate topic if provided, otherwise use original question's topic
-  const topicId = variantData.topic || originalQuestion.topic;
-  const topic = await Topic.findOne({
-    _id: topicId,
-    parentSubject: subjectId,
+  const topicId = variantData.topic || originalQuestion.topicId || (originalQuestion.topic?.id);
+  const topics = await Topic.findMany({
+    where: {
+      id: topicId,
+      parentSubject: subjectId,
+    },
   });
+  const topic = topics[0];
   if (!topic) {
     throw new Error('Topic not found or does not belong to the selected subject');
   }
@@ -170,7 +201,7 @@ const createQuestionVariant = async (originalQuestionId, variantData, userId) =>
     options: variantData.options || originalQuestion.options,
     correctAnswer: variantData.correctAnswer || originalQuestion.correctAnswer,
     explanation: variantData.explanation || originalQuestion.explanation || '',
-    originalQuestion: originalQuestionId,
+    originalQuestionId: originalQuestionId,
     isVariant: true,
     createdBy: userId,
     status: 'pending_processor',
@@ -185,44 +216,30 @@ const createQuestionVariant = async (originalQuestionId, variantData, userId) =>
     ],
   });
 
-  // Add history entry to original question
-  originalQuestion.history.push({
+  // Add history entry to original question using Prisma
+  await Question.addHistory(originalQuestionId, {
     action: 'variant_created',
-    performedBy: userId,
+    performedById: userId,
     role: 'creator',
     timestamp: new Date(),
-    notes: `Variant question ${variantQuestion._id} created from this question`,
+    notes: `Variant question ${variantQuestion.id} created from this question`,
   });
-  await originalQuestion.save();
 
-  return await Question.findById(variantQuestion._id)
-    .populate('exam', 'name')
-    .populate('subject', 'name')
-    .populate('topic', 'name')
-    .populate('createdBy', 'name email')
-    .populate('originalQuestion', 'questionText questionType');
+  return await Question.findById(variantQuestion.id);
 };
 
 /**
  * Get question by ID
  */
 const getQuestionById = async (questionId, userId, role) => {
-  const question = await Question.findById(questionId)
-    .populate('exam', 'name')
-    .populate('subject', 'name')
-    .populate('topic', 'name')
-    .populate('createdBy', 'name fullName email')
-    .populate('lastModifiedBy', 'name fullName email')
-    .populate('approvedBy', 'name fullName email')
-    .populate('rejectedBy', 'name fullName email')
-    .populate('comments.commentedBy', 'name fullName email');
+  const question = await Question.findById(questionId);
 
   if (!question) {
     throw new Error('Question not found');
   }
 
   // Gatherer can only access their own questions
-  if (role === 'gatherer' && question.createdBy._id.toString() !== userId.toString()) {
+  if (role === 'gatherer' && question.createdById !== userId) {
     throw new Error('Access denied');
   }
 
@@ -233,15 +250,18 @@ const getQuestionById = async (questionId, userId, role) => {
  * Get gatherer-level question statistics
  */
 const getGathererQuestionStats = async (gathererId) => {
-  const totalSubmitted = await Question.countDocuments({ createdBy: gathererId });
-  const totalApproved = await Question.countDocuments({
-    createdBy: gathererId,
-    status: 'completed',
+  const allQuestions = await Question.findMany({
+    where: { createdById: gathererId }
   });
-  const totalRejected = await Question.countDocuments({
-    createdBy: gathererId,
-    status: 'rejected',
-  });
+  const totalSubmitted = allQuestions.length;
+  
+  const approvedQuestions = allQuestions.filter(q => 
+    ['pending_creator', 'pending_explainer', 'completed'].includes(q.status)
+  );
+  const totalApproved = approvedQuestions.length;
+  
+  const rejectedQuestions = allQuestions.filter(q => q.status === 'rejected');
+  const totalRejected = rejectedQuestions.length;
 
   const totalPending = Math.max(
     totalSubmitted - totalApproved - totalRejected,
@@ -275,36 +295,31 @@ const getGathererQuestions = async (gathererId, { page = 1, limit = 20 } = {}) =
   const normalizedLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
   const skip = (normalizedPage - 1) * normalizedLimit;
 
-  const query = { createdBy: gathererId };
-
-  const [questions, totalSubmitted, stats] = await Promise.all([
-    Question.find(query)
-      .populate('exam', 'name')
-      .populate('subject', 'name')
-      .populate('topic', 'name')
-      .populate('createdBy', 'name fullName email')
-      .populate('approvedBy', 'name fullName email')
-      .populate('rejectedBy', 'name fullName email')
-      .sort({ updatedAt: -1 })
-      .skip(skip)
-      .limit(normalizedLimit),
-    Question.countDocuments(query),
+  const [questions, stats] = await Promise.all([
+    Question.findMany({
+      where: { createdById: gathererId },
+      orderBy: { updatedAt: 'desc' },
+      skip: skip,
+      take: normalizedLimit
+    }),
     getGathererQuestionStats(gathererId),
   ]);
+
+  const totalSubmitted = questions.length;
 
   const rows = questions.map((q) => {
     const processorUser = q.approvedBy || q.rejectedBy || null;
     return {
-      id: q._id,
+      id: q.id,
       questionText: q.questionText,
-      exam: q.exam ? { id: q.exam._id, name: q.exam.name } : null,
-      subject: q.subject ? { id: q.subject._id, name: q.subject.name } : null,
-      topic: q.topic ? { id: q.topic._id, name: q.topic.name } : null,
+      exam: q.exam ? { id: q.exam.id, name: q.exam.name } : null,
+      subject: q.subject ? { id: q.subject.id, name: q.subject.name } : null,
+      topic: q.topic ? { id: q.topic.id, name: q.topic.name } : null,
       status: q.status,
       updatedAt: q.updatedAt,
       processor: processorUser
         ? {
-            id: processorUser._id,
+            id: processorUser.id,
             name:
               processorUser.name ||
               processorUser.fullName ||
@@ -365,10 +380,13 @@ const updateQuestionByCreator = async (questionId, updateData, userId) => {
   // Validate topic if provided
   if (updateData.topic) {
     const subjectId = updateData.subject || question.subject;
-    const topic = await Topic.findOne({
-      _id: updateData.topic,
-      parentSubject: subjectId,
+    const topics = await Topic.findMany({
+      where: {
+        id: updateData.topic,
+        parentSubject: subjectId,
+      },
     });
+    const topic = topics[0];
     if (!topic) {
       throw new Error('Topic not found or does not belong to the selected subject');
     }
@@ -514,15 +532,21 @@ const approveQuestion = async (questionId, userId) => {
     throw new Error('Question is not in pending_processor status');
   }
 
+  // Check if question was updated after a flag was approved
+  const wasUpdatedAfterFlag = question.isFlagged && 
+    question.flagStatus === 'approved' && 
+    (question.history.some(h => h.role === 'gatherer' && h.action === 'updated') ||
+     question.history.some(h => h.role === 'creator' && h.action === 'updated'));
+
   // Determine next status based on current workflow
   let nextStatus;
   const lastAction = question.history[question.history.length - 1];
   
   if (lastAction && lastAction.role === 'gatherer') {
-    // After gatherer submission, move to creator
+    // After gatherer submission/update, move to creator
     nextStatus = 'pending_creator';
   } else if (lastAction && lastAction.role === 'creator') {
-    // After creator submission, move to explainer
+    // After creator submission/update, move to explainer
     nextStatus = 'pending_explainer';
   } else if (lastAction && lastAction.role === 'explainer') {
     // After explainer submission, mark as completed
@@ -533,18 +557,39 @@ const approveQuestion = async (questionId, userId) => {
   }
 
   question.status = nextStatus;
-  question.approvedBy = userId;
-  question.rejectedBy = undefined;
-  question.rejectionReason = undefined;
+  question.approvedById = userId;
+  question.rejectedById = null;
+  question.rejectionReason = null;
 
-  // Add history entry
-  question.history.push({
-    action: 'approved',
-    performedBy: userId,
-    role: 'processor',
-    timestamp: new Date(),
-    notes: `Question approved, moved to ${nextStatus}`,
-  });
+  // If question was updated after flag approval, remove the flag
+  if (wasUpdatedAfterFlag) {
+    const flagType = question.flagType; // 'creator' or 'explainer'
+    question.isFlagged = false;
+    question.flagStatus = null;
+    question.flaggedById = null;
+    question.flagReason = null;
+    question.flagReviewedById = null;
+    question.flagRejectionReason = null;
+    
+    // Add history entry with flag type info
+    const historyNote = `Question approved after ${flagType} flag correction, moved to ${nextStatus}. Flag removed.`;
+    question.history.push({
+      action: 'approved',
+      performedBy: userId,
+      role: 'processor',
+      timestamp: new Date(),
+      notes: historyNote,
+    });
+  } else {
+    // Add history entry
+    question.history.push({
+      action: 'approved',
+      performedBy: userId,
+      role: 'processor',
+      timestamp: new Date(),
+      notes: `Question approved, moved to ${nextStatus}`,
+    });
+  }
 
   return await question.save();
 };
@@ -588,26 +633,73 @@ const getTopicsBySubject = async (subjectId) => {
     throw new Error('Subject not found');
   }
 
-  return await Topic.find({ parentSubject: subjectId }).sort({ name: 1 });
+  return await Topic.findMany({
+    where: { parentSubject: subjectId },
+    orderBy: { name: 'asc' }
+  });
 };
 
 /**
  * Build a base query with optional search term
  */
 const buildSearchQuery = (baseFilters = {}, searchTerm = '') => {
-  const query = { ...baseFilters };
+  const where = { ...baseFilters };
 
-  if (searchTerm && searchTerm.trim()) {
-    const regex = new RegExp(searchTerm.trim(), 'i');
-    query.$or = [
-      { questionText: regex },
-      { explanation: regex },
-      { status: regex },
-      { 'history.notes': regex },
-    ];
+  // Convert Mongoose field names to Prisma field names
+  if (where.createdBy) {
+    where.createdById = where.createdBy;
+    delete where.createdBy;
+  }
+  if (where.exam) {
+    where.examId = where.exam;
+    delete where.exam;
+  }
+  if (where.subject) {
+    where.subjectId = where.subject;
+    delete where.subject;
+  }
+  if (where.topic) {
+    where.topicId = where.topic;
+    delete where.topic;
   }
 
-  return query;
+  // Handle status filter - convert $in to in for Prisma
+  if (where.status && typeof where.status === 'object' && where.status.$in) {
+    where.status = { in: where.status.$in };
+  }
+  // Handle status filter - convert in object to Prisma format
+  if (where.status && typeof where.status === 'object' && where.status.in) {
+    // Already in Prisma format
+  }
+
+  if (searchTerm && searchTerm.trim()) {
+    const searchConditions = [
+      { questionText: { contains: searchTerm.trim(), mode: 'insensitive' } },
+      { explanation: { contains: searchTerm.trim(), mode: 'insensitive' } },
+      { status: { contains: searchTerm.trim(), mode: 'insensitive' } },
+    ];
+    
+    // Combine existing conditions with search using AND
+    const existingConditions = { ...where };
+    delete existingConditions.OR;
+    
+    if (Object.keys(existingConditions).length > 0) {
+      where.AND = [
+        existingConditions,
+        { OR: searchConditions }
+      ];
+      // Remove individual conditions that are now in AND
+      Object.keys(existingConditions).forEach(key => {
+        if (key !== 'AND' && key !== 'OR') {
+          delete where[key];
+        }
+      });
+    } else {
+      where.OR = searchConditions;
+    }
+  }
+
+  return where;
 };
 
 /**
@@ -623,15 +715,10 @@ const getQuestionsWithFilters = async (filters = {}, userId = null, role = null,
 
   const query = buildSearchQuery(baseFilters, searchTerm);
 
-  return await Question.find(query)
-    .populate('exam', 'name')
-    .populate('subject', 'name')
-    .populate('topic', 'name')
-    .populate('createdBy', 'name email')
-    .populate('lastModifiedBy', 'name email')
-    .populate('approvedBy', 'name email')
-    .populate('rejectedBy', 'name email')
-    .sort({ createdAt: -1 });
+  return await Question.findMany({
+    where: query,
+    orderBy: { createdAt: 'desc' }
+  });
 };
 
 /**
@@ -722,7 +809,7 @@ const getAllQuestionsForSuperadmin = async (filters = {}, searchTerm = '', pagin
         baseFilters.status = 'completed';
         break;
       case 'pending':
-        baseFilters.status = { $in: ['pending_processor', 'pending_creator', 'pending_explainer'] };
+        baseFilters.status = { in: ['pending_processor', 'pending_creator', 'pending_explainer'] };
         break;
       case 'rejected':
         baseFilters.status = 'rejected';
@@ -743,16 +830,18 @@ const getAllQuestionsForSuperadmin = async (filters = {}, searchTerm = '', pagin
   const skip = (page - 1) * limit;
 
   // Get total count for pagination
-  const totalItems = await Question.countDocuments(query);
+  const allQuestions = await Question.findMany({
+    where: query
+  });
+  const totalItems = allQuestions.length;
 
   // Get paginated questions
-  const questions = await Question.find(query)
-    .populate('exam', 'name')
-    .populate('subject', 'name')
-    .populate('topic', 'name')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
+  const questions = await Question.findMany({
+    where: query,
+    orderBy: { createdAt: 'desc' },
+    skip: skip,
+    take: limit
+  });
 
   const totalPages = Math.ceil(totalItems / limit);
 
@@ -822,18 +911,465 @@ const addCommentToQuestion = async (questionId, comment, userId) => {
     throw new Error('Comment is required');
   }
 
-  // Add comment
-  question.comments.push({
+  // Add comment using Prisma
+  await Question.addComment(questionId, {
     comment: comment.trim(),
-    commentedBy: userId,
+    commentedById: userId,
     createdAt: new Date(),
   });
 
-  await question.save();
+  // Return question with comment data (already included by findById)
+  return await Question.findById(questionId);
+};
 
-  // Return question with populated comment data
-  return await Question.findById(questionId)
-    .populate('comments.commentedBy', 'name fullName email');
+/**
+ * Flag question by Creator
+ */
+const flagQuestionByCreator = async (questionId, flagReason, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (question.status !== 'pending_creator') {
+    throw new Error('Question is not in pending_creator status');
+  }
+
+  if (!flagReason || !flagReason.trim()) {
+    throw new Error('Flag reason is required');
+  }
+
+  // Update question with flag
+  question.isFlagged = true;
+  question.flaggedById = userId;
+  question.flagReason = flagReason.trim();
+  question.flagType = 'creator';
+  question.flagStatus = 'pending';
+  question.status = 'pending_processor'; // Send back to processor
+
+  // Add history entry
+  question.history.push({
+    action: 'flagged',
+    performedBy: userId,
+    role: 'creator',
+    timestamp: new Date(),
+    notes: `Question flagged by creator: ${flagReason.trim()}`,
+  });
+
+  return await question.save();
+};
+
+/**
+ * Review Creator's flag by Processor
+ */
+const reviewCreatorFlag = async (questionId, decision, rejectionReason, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (!question.isFlagged || question.flagType !== 'creator' || question.flagStatus !== 'pending') {
+    throw new Error('Question is not flagged by creator or flag has already been reviewed');
+  }
+
+  if (decision !== 'approve' && decision !== 'reject') {
+    throw new Error('Decision must be either "approve" or "reject"');
+  }
+
+  if (decision === 'reject' && (!rejectionReason || !rejectionReason.trim())) {
+    throw new Error('Rejection reason is required when rejecting a flag');
+  }
+
+  if (decision === 'approve') {
+    // Processor approves the flag - send back to Gatherer
+    question.flagStatus = 'approved';
+    question.flagReviewedById = userId;
+    question.status = 'pending_gatherer'; // Send back to gatherer for correction
+
+    // Add history entry
+    question.history.push({
+      action: 'flag_approved',
+      performedBy: userId,
+      role: 'processor',
+      timestamp: new Date(),
+      notes: `Creator's flag approved. Reason: ${question.flagReason}. Sent back to gatherer for correction.`,
+    });
+  } else {
+    // Processor rejects the flag - send back to Creator
+    question.flagStatus = 'rejected';
+    question.flagReviewedById = userId;
+    question.flagRejectionReason = rejectionReason.trim();
+    question.isFlagged = false; // Remove flag
+    question.flaggedById = null;
+    question.flagReason = null;
+    question.status = 'pending_creator'; // Send back to creator
+
+    // Add history entry
+    question.history.push({
+      action: 'flag_rejected',
+      performedBy: userId,
+      role: 'processor',
+      timestamp: new Date(),
+      notes: `Creator's flag rejected. Processor reason: ${rejectionReason.trim()}. Sent back to creator.`,
+    });
+  }
+
+  return await question.save();
+};
+
+/**
+ * Flag question or variant by Explainer
+ * Can flag both regular questions and question variants
+ */
+const flagQuestionByExplainer = async (questionId, flagReason, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (question.status !== 'pending_explainer') {
+    throw new Error('Question is not in pending_explainer status');
+  }
+
+  if (!flagReason || !flagReason.trim()) {
+    throw new Error('Flag reason is required');
+  }
+
+  // Update question with flag
+  question.isFlagged = true;
+  question.flaggedById = userId;
+  question.flagReason = flagReason.trim();
+  question.flagType = 'explainer';
+  question.flagStatus = 'pending';
+  question.status = 'pending_processor'; // Send back to processor
+
+  // Add history entry - note whether it's a variant or regular question
+  const questionType = question.isVariant ? 'variant' : 'question';
+  question.history.push({
+    action: 'flagged',
+    performedBy: userId,
+    role: 'explainer',
+    timestamp: new Date(),
+    notes: `${questionType === 'variant' ? 'Question variant' : 'Question'} flagged by explainer: ${flagReason.trim()}`,
+  });
+
+  return await question.save();
+};
+
+/**
+ * Review Explainer's flag by Processor
+ * Handles both regular questions (goes to Gatherer) and variants (goes to Creator)
+ */
+const reviewExplainerFlag = async (questionId, decision, rejectionReason, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (!question.isFlagged || question.flagType !== 'explainer' || question.flagStatus !== 'pending') {
+    throw new Error('Question is not flagged by explainer or flag has already been reviewed');
+  }
+
+  if (decision !== 'approve' && decision !== 'reject') {
+    throw new Error('Decision must be either "approve" or "reject"');
+  }
+
+  if (decision === 'reject' && (!rejectionReason || !rejectionReason.trim())) {
+    throw new Error('Rejection reason is required when rejecting a flag');
+  }
+
+  if (decision === 'approve') {
+    // Processor approves the flag
+    question.flagStatus = 'approved';
+    question.flagReviewedById = userId;
+    
+    // Determine where to send based on whether it's a variant or regular question
+    if (question.isVariant) {
+      // Variant: send back to Creator for correction
+      question.status = 'pending_creator';
+      question.history.push({
+        action: 'flag_approved',
+        performedBy: userId,
+        role: 'processor',
+        timestamp: new Date(),
+        notes: `Explainer's flag approved for variant. Reason: ${question.flagReason}. Sent back to creator for correction.`,
+      });
+    } else {
+      // Regular question: send back to Gatherer for correction
+      question.status = 'pending_gatherer';
+      question.history.push({
+        action: 'flag_approved',
+        performedBy: userId,
+        role: 'processor',
+        timestamp: new Date(),
+        notes: `Explainer's flag approved. Reason: ${question.flagReason}. Sent back to gatherer for correction.`,
+      });
+    }
+  } else {
+    // Processor rejects the flag - send back to Explainer
+    question.flagStatus = 'rejected';
+    question.flagReviewedById = userId;
+    question.flagRejectionReason = rejectionReason.trim();
+    question.isFlagged = false; // Remove flag
+    question.flaggedById = null;
+    question.flagReason = null;
+    question.status = 'pending_explainer'; // Send back to explainer
+
+    // Add history entry
+    const questionType = question.isVariant ? 'variant' : 'question';
+    question.history.push({
+      action: 'flag_rejected',
+      performedBy: userId,
+      role: 'processor',
+      timestamp: new Date(),
+      notes: `Explainer's flag rejected for ${questionType}. Processor reason: ${rejectionReason.trim()}. Sent back to explainer.`,
+    });
+  }
+
+  return await question.save();
+};
+
+/**
+ * Handle Gatherer's updated question after flag approval
+ * When gatherer updates a question that was flagged by creator and approved by processor
+ */
+const handleGathererUpdateAfterFlag = async (questionId, updateData, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (question.status !== 'pending_gatherer') {
+    throw new Error('Question is not in pending_gatherer status');
+  }
+
+  if (!question.isFlagged || question.flagStatus !== 'approved' || question.flagType !== 'creator') {
+    throw new Error('Question was not flagged by creator and approved by processor');
+  }
+
+  // Update question fields (similar to updateQuestionByCreator logic)
+  if (updateData.questionText !== undefined) {
+    question.questionText = updateData.questionText.trim();
+  }
+  if (updateData.questionType !== undefined) {
+    question.questionType = updateData.questionType;
+  }
+  if (updateData.options !== undefined) {
+    question.options = {
+      A: updateData.options.A.trim(),
+      B: updateData.options.B.trim(),
+      C: updateData.options.C.trim(),
+      D: updateData.options.D.trim(),
+    };
+  }
+  if (updateData.correctAnswer !== undefined) {
+    question.correctAnswer = updateData.correctAnswer;
+  }
+  if (updateData.exam !== undefined) {
+    question.exam = updateData.exam;
+  }
+  if (updateData.subject !== undefined) {
+    question.subject = updateData.subject;
+  }
+  if (updateData.topic !== undefined) {
+    question.topic = updateData.topic;
+  }
+
+  question.lastModifiedById = userId;
+  question.status = 'pending_processor'; // Send back to processor for review
+
+  // Add history entry
+  question.history.push({
+    action: 'updated',
+    performedBy: userId,
+    role: 'gatherer',
+    timestamp: new Date(),
+    notes: 'Question updated by gatherer after creator flag approval',
+  });
+
+  return await question.save();
+};
+
+/**
+ * Handle Creator's updated question variant after flag approval
+ * When creator updates a question variant that was flagged by explainer and approved by processor
+ */
+const handleCreatorUpdateVariantAfterFlag = async (questionId, updateData, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (question.status !== 'pending_creator') {
+    throw new Error('Question is not in pending_creator status');
+  }
+
+  if (!question.isFlagged || question.flagStatus !== 'approved' || question.flagType !== 'explainer') {
+    throw new Error('Question variant was not flagged by explainer and approved by processor');
+  }
+
+  // Update question fields
+  if (updateData.questionText !== undefined) {
+    question.questionText = updateData.questionText.trim();
+  }
+  if (updateData.questionType !== undefined) {
+    question.questionType = updateData.questionType;
+  }
+  if (updateData.options !== undefined) {
+    question.options = {
+      A: updateData.options.A.trim(),
+      B: updateData.options.B.trim(),
+      C: updateData.options.C.trim(),
+      D: updateData.options.D.trim(),
+    };
+  }
+  if (updateData.correctAnswer !== undefined) {
+    question.correctAnswer = updateData.correctAnswer;
+  }
+  if (updateData.explanation !== undefined) {
+    question.explanation = updateData.explanation.trim();
+  }
+
+  question.lastModifiedById = userId;
+  question.status = 'pending_processor'; // Send back to processor for review
+
+  // Add history entry
+  question.history.push({
+    action: 'updated',
+    performedBy: userId,
+    role: 'creator',
+    timestamp: new Date(),
+    notes: 'Question variant updated by creator after explainer flag approval',
+  });
+
+  return await question.save();
+};
+
+/**
+ * Handle Gatherer's updated question after explainer flag approval
+ * When gatherer updates a regular question that was flagged by explainer and approved by processor
+ */
+const handleGathererUpdateAfterExplainerFlag = async (questionId, updateData, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (question.status !== 'pending_gatherer') {
+    throw new Error('Question is not in pending_gatherer status');
+  }
+
+  if (!question.isFlagged || question.flagStatus !== 'approved' || question.flagType !== 'explainer') {
+    throw new Error('Question was not flagged by explainer and approved by processor');
+  }
+
+  if (question.isVariant) {
+    throw new Error('This method is for regular questions only. Use handleCreatorUpdateVariantAfterFlag for variants.');
+  }
+
+  // Update question fields (similar to updateQuestionByCreator logic)
+  if (updateData.questionText !== undefined) {
+    question.questionText = updateData.questionText.trim();
+  }
+  if (updateData.questionType !== undefined) {
+    question.questionType = updateData.questionType;
+  }
+  if (updateData.options !== undefined) {
+    question.options = {
+      A: updateData.options.A.trim(),
+      B: updateData.options.B.trim(),
+      C: updateData.options.C.trim(),
+      D: updateData.options.D.trim(),
+    };
+  }
+  if (updateData.correctAnswer !== undefined) {
+    question.correctAnswer = updateData.correctAnswer;
+  }
+  if (updateData.exam !== undefined) {
+    question.exam = updateData.exam;
+  }
+  if (updateData.subject !== undefined) {
+    question.subject = updateData.subject;
+  }
+  if (updateData.topic !== undefined) {
+    question.topic = updateData.topic;
+  }
+
+  question.lastModifiedById = userId;
+  question.status = 'pending_processor'; // Send back to processor for review
+
+  // Add history entry
+  question.history.push({
+    action: 'updated',
+    performedBy: userId,
+    role: 'gatherer',
+    timestamp: new Date(),
+    notes: 'Question updated by gatherer after explainer flag approval',
+  });
+
+  return await question.save();
+};
+
+/**
+ * Handle Processor approval after gatherer/creator updates flagged question
+ * When processor approves an updated question that was previously flagged
+ */
+const approveUpdatedFlaggedQuestion = async (questionId, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (question.status !== 'pending_processor') {
+    throw new Error('Question is not in pending_processor status');
+  }
+
+  // Determine next status and remove flag
+  let nextStatus;
+  const lastAction = question.history[question.history.length - 1];
+  
+  // Remove flag since question is now approved
+  question.isFlagged = false;
+  question.flagStatus = null;
+  question.flaggedById = null;
+  question.flagReason = null;
+  question.flagReviewedById = null;
+  question.flagRejectionReason = null;
+
+  if (lastAction && lastAction.role === 'gatherer') {
+    // After gatherer update (from creator flag), move to creator
+    nextStatus = 'pending_creator';
+  } else if (lastAction && lastAction.role === 'creator') {
+    // After creator update (from explainer flag), move to explainer
+    nextStatus = 'pending_explainer';
+  } else {
+    // Default fallback
+    nextStatus = 'pending_creator';
+  }
+
+  question.status = nextStatus;
+  question.approvedById = userId;
+  question.rejectedById = null;
+  question.rejectionReason = null;
+
+  // Add history entry
+  question.history.push({
+    action: 'approved',
+    performedBy: userId,
+    role: 'processor',
+    timestamp: new Date(),
+    notes: `Question approved after flag correction, moved to ${nextStatus}. Flag removed.`,
+  });
+
+  return await question.save();
 };
 
 module.exports = {
@@ -857,5 +1393,13 @@ module.exports = {
   addCommentToQuestion,
   getGathererQuestionStats,
   getGathererQuestions,
+  flagQuestionByCreator,
+  reviewCreatorFlag,
+  flagQuestionByExplainer,
+  reviewExplainerFlag,
+  handleGathererUpdateAfterFlag,
+  handleGathererUpdateAfterExplainerFlag,
+  handleCreatorUpdateVariantAfterFlag,
+  approveUpdatedFlaggedQuestion,
 };
 

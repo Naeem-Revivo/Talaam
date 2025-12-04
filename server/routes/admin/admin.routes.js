@@ -11,7 +11,8 @@ const {
 // Routes (all require superadmin access)
 router.get('/dashboard/statistics', authMiddleware, superadminMiddleware, adminController.getDashboardStatistics);
 router.get('/users/management', authMiddleware, superadminMiddleware, adminController.getUserManagementStatistics);
-router.get('/users', authMiddleware, superadminMiddleware, adminController.getAllAdmins);
+// Allow all admin roles to get users (for processor selection, etc.)
+router.get('/users', authMiddleware, adminController.getAllAdmins);
 router.post(
   '/create',
   authMiddleware,
