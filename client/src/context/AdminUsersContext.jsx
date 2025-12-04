@@ -85,10 +85,13 @@ export const AdminUsersProvider = ({ children }) => {
         setUsers((prev) => [newUser, ...prev]);
         return newUser;
       }
-      throw new Error(response.message || "Failed to create user");
+      // Create error object with full response data
+      const error = new Error(response.message || "Failed to create user");
+      error.response = { data: response };
+      throw error;
     } catch (err) {
-      const errorMessage = err.message || err.response?.data?.message || "Failed to create user";
-      setError(errorMessage);
+      // Don't set error state here - let the component handle error display
+      // Just pass through the error with all its data
       throw err;
     }
   };

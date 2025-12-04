@@ -5,6 +5,7 @@ import { eye, openeye, google, linkedin } from '../../assets/svg/signup'
 import { useDispatch, useSelector } from 'react-redux'
 import { login } from '../../store/slices/authSlice'
 import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
+import { getTranslatedAuthMessage } from '../../utils/authMessages'
 
 const Login = () => {
   const { language, t } = useLanguage()
@@ -28,10 +29,10 @@ const Login = () => {
   // Email validation function
   const validateEmail = (email) => {
     if (!email.trim()) {
-      return 'Email is required'
+      return t('login.validation.emailRequired')
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return 'Please enter a valid email address'
+      return t('login.validation.emailInvalid')
     }
     return ''
   }
@@ -39,7 +40,7 @@ const Login = () => {
   // Password validation function
   const validatePassword = (password) => {
     if (!password.trim()) {
-      return 'Password is required'
+      return t('login.validation.passwordRequired')
     }
     return ''
   }
@@ -111,12 +112,9 @@ const Login = () => {
         const role = user?.role
         const adminRole = user?.adminRole
         
-        // Show success toast
-        const successMessage = 
-          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
-          resultAction.payload?.message ||
-          t('login.success') ||
-          'Login successful!'
+        // Get success message from backend or translation
+        const backendMessage = resultAction.payload?.message || 'Login successful'
+        const successMessage = getTranslatedAuthMessage(backendMessage, t, 'login.success') || t('login.success') || 'Login successful!'
         
         showSuccessToast(successMessage, { 
           title: t('login.successTitle') || 'Login Successful',
@@ -154,21 +152,23 @@ const Login = () => {
           navigate('/', { replace: true })
         }
       } else if (login.rejected.match(resultAction)) {
-        // Extract error message from API response (check message field first)
-        const errorMessage = 
+        // Extract error message from API response
+        const backendMessage = 
           (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
           resultAction.error?.message ||
-          t('login.errors.generic') || 
-          'Login failed'
+          null
+        
+        // Get translated message or fallback
+        const errorMessage = backendMessage 
+          ? getTranslatedAuthMessage(backendMessage, t, 'login.errors.generic')
+          : t('login.errors.generic') || 'Login failed. Please check your credentials and try again.'
         
         showErrorToast(errorMessage, { title: t('login.errors.title') || 'Login Failed', isAuth: true })
       }
     } catch {
-      showErrorToast(
-        'An unexpected error occurred. Please try again.',
-        { title: 'Login Failed' }
-      )
+      const defaultError = t('auth.errors.default') || 'An unexpected error occurred. Please try again.'
+      showErrorToast(defaultError, { title: t('login.errors.title') || 'Login Failed', isAuth: true })
     }
   }
 

@@ -18,7 +18,27 @@ const AddUserPage = () => {
       showSuccessToast("User created successfully");
       navigate("/admin/users");
     } catch (error) {
-      const errorMessage = error.message || error.response?.data?.message || "Failed to create user";
+      // Handle error response from API - only show ONE error message
+      const errorData = error.response?.data || error;
+      
+      // Prioritize specific field error messages over generic "Validation failed"
+      let errorMessage = "Failed to create user";
+      
+      if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+        // Use the first specific error message (not the generic "Validation failed")
+        errorMessage = errorData.errors[0].message || errorMessage;
+      } else if (errorData.message && errorData.message !== "Validation failed") {
+        // Use the message if it's not the generic "Validation failed"
+        errorMessage = errorData.message;
+      } else if (error.message && error.message !== "Validation failed") {
+        // Fallback to error.message if it's not generic
+        errorMessage = error.message;
+      } else if (errorData.message) {
+        // Last resort: use the message even if it's "Validation failed"
+        errorMessage = errorData.message;
+      }
+      
+      // Show only ONE error toast
       showErrorToast(errorMessage);
     } finally {
       setIsSubmitting(false);

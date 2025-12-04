@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
-import { dropdownArrowAdmin } from "../../../assets/svg";
+import ProfileDropdown from "../../common/ProfileDropdown";
 
 const defaultValues = {
   name: "",
@@ -44,6 +44,10 @@ const UserForm = ({
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleDropdownChange = (fieldName) => (value) => {
+    setFormValues((prev) => ({ ...prev, [fieldName]: value }));
   };
 
   const handleSubmit = (event) => {
@@ -100,23 +104,12 @@ const UserForm = ({
         )}
         <label className="flex flex-col gap-2">
           <span className="text-[16px] font-roboto font-normal text-oxford-blue">{t('admin.addUser.form.fields.status')}</span>
-          <div className="relative w-full max-w-[476px]">
-            <select
-              name="status"
+          <div className="w-full max-w-[476px]">
+            <ProfileDropdown
               value={formValues.status}
-              onChange={handleChange}
-              className="h-[59px] w-full appearance-none rounded-[12px] border border-[#032746]/20 bg-white px-4 pr-10 text-[14px] font-roboto text-oxford-blue shadow-input outline-none"
-            >
-              {statusOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <img 
-              src={dropdownArrowAdmin} 
-              alt=""
-              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2"
+              options={statusOptions}
+              onChange={handleDropdownChange('status')}
+              className="w-full max-w-[476px]"
             />
           </div>
         </label>
@@ -124,25 +117,16 @@ const UserForm = ({
           <span className="text-[16px] font-roboto font-normal text-oxford-blue">
             {t('admin.addUser.form.fields.workflowRole')} <span className="text-[#ED4122]">*</span>
           </span>
-          <div className="relative w-full max-w-[476px]">
-            <select
-              required
-              name="workflowRole"
+          <div className="w-full max-w-[476px]">
+            <ProfileDropdown
               value={formValues.workflowRole}
-              onChange={handleChange}
-              className="h-[59px] w-full appearance-none rounded-[12px] border border-[#032746]/20 bg-white px-4 pr-10 text-[14px] font-roboto text-oxford-blue shadow-input outline-none"
-            >
-              <option value="">{t('admin.addUser.form.placeholders.selectWorkflowRole')}</option>
-              {workflowRoles.map((role) => (
-                <option key={role.value} value={role.value}>
-                  {role.label}
-                </option>
-              ))}
-            </select>
-            <img 
-              src={dropdownArrowAdmin} 
-              alt=""
-              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2"
+              options={[
+                { value: '', label: t('admin.addUser.form.placeholders.selectWorkflowRole') },
+                ...workflowRoles
+              ]}
+              onChange={handleDropdownChange('workflowRole')}
+              placeholder={t('admin.addUser.form.placeholders.selectWorkflowRole')}
+              className="w-full max-w-[476px]"
             />
           </div>
         </label>
