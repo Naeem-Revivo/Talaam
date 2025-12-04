@@ -16,9 +16,11 @@ export const RoleCard = ({ role, tasks, pendingCount, roleLabel, pendingTasksLab
         </ul>
       </div>
 
-      <div className="border-t border-[#CDD4DA] px-10 py-10">
-        <p className="text-[14px] leading-[100%] font-normal font-roboto text-[#6B7280]">{pendingTasksLabel}: <span className="font-medium">{pendingCount}</span></p>
-      </div>
+      {pendingCount !== undefined && pendingCount !== null && (
+        <div className="border-t border-[#CDD4DA] px-10 py-10">
+          <p className="text-[14px] leading-[100%] font-normal font-roboto text-[#6B7280]">{pendingTasksLabel}: <span className="font-medium">{pendingCount}</span></p>
+        </div>
+      )}
     </div>
   );
 };

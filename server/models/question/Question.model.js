@@ -7,18 +7,36 @@ const Question = {
   // Create a new question
   async create(data) {
     // Handle history and comments if provided
-    const { history, comments, ...questionData } = data;
+    const { history, comments, exam, subject, topic, createdBy, assignedProcessor, ...questionData } = data;
     
+    // Map relation fields to Prisma format (exam -> examId, etc.)
     const createData = {
       ...questionData,
+      ...(exam && { examId: exam }),
+      ...(subject && { subjectId: subject }),
+      ...(topic && { topicId: topic }),
+      ...(createdBy && { createdById: createdBy }),
+      ...(assignedProcessor && { assignedProcessorId: assignedProcessor }),
       ...(history && history.length > 0 && {
         history: {
-          create: history
+          create: history.map(h => {
+            const { performedBy, ...historyData } = h;
+            return {
+              ...historyData,
+              ...(performedBy && { performedById: performedBy })
+            };
+          })
         }
       }),
       ...(comments && comments.length > 0 && {
         comments: {
-          create: comments
+          create: comments.map(c => {
+            const { commentedBy, ...commentData } = c;
+            return {
+              ...commentData,
+              ...(commentedBy && { commentedById: commentedBy })
+            };
+          })
         }
       })
     };
@@ -29,7 +47,8 @@ const Question = {
         exam: true,
         subject: true,
         topic: true,
-        createdBy: true
+        createdBy: true,
+        assignedProcessor: true
       }
     });
   },
@@ -46,6 +65,9 @@ const Question = {
         lastModifiedBy: true,
         approvedBy: true,
         rejectedBy: true,
+        assignedProcessor: true,
+        flaggedBy: true,
+        flagReviewedBy: true,
         originalQuestion: true,
         variants: true,
         history: {
@@ -68,6 +90,7 @@ const Question = {
       subject: true,
       topic: true,
       createdBy: true,
+      assignedProcessor: true,
       ...include
     };
 
@@ -85,7 +108,8 @@ const Question = {
         exam: true,
         subject: true,
         topic: true,
-        createdBy: true
+        createdBy: true,
+        assignedProcessor: true
       },
       ...options
     });
@@ -111,18 +135,40 @@ const Question = {
 
   // Update question
   async update(id, data) {
-    const { history, comments, ...updateData } = data;
+    const { history, comments, exam, subject, topic, createdBy, lastModifiedBy, approvedBy, rejectedBy, flaggedBy, flagReviewedBy, ...updateData } = data;
     
+    // Map relation fields to Prisma format
     const update = {
       ...updateData,
+      ...(exam !== undefined && { examId: exam }),
+      ...(subject !== undefined && { subjectId: subject }),
+      ...(topic !== undefined && { topicId: topic }),
+      ...(createdBy !== undefined && { createdById: createdBy }),
+      ...(lastModifiedBy !== undefined && { lastModifiedById: lastModifiedBy }),
+      ...(approvedBy !== undefined && { approvedById: approvedBy }),
+      ...(rejectedBy !== undefined && { rejectedById: rejectedBy }),
+      ...(flaggedBy !== undefined && { flaggedById: flaggedBy }),
+      ...(flagReviewedBy !== undefined && { flagReviewedById: flagReviewedBy }),
       ...(history && history.length > 0 && {
         history: {
-          create: history
+          create: history.map(h => {
+            const { performedBy, ...historyData } = h;
+            return {
+              ...historyData,
+              ...(performedBy && { performedById: performedBy })
+            };
+          })
         }
       }),
       ...(comments && comments.length > 0 && {
         comments: {
-          create: comments
+          create: comments.map(c => {
+            const { commentedBy, ...commentData } = c;
+            return {
+              ...commentData,
+              ...(commentedBy && { commentedById: commentedBy })
+            };
+          })
         }
       })
     };

@@ -2826,6 +2826,8 @@
         "optionD": "الخيار د"
       },
       "correctAnswer": "الإجابة الصحيحة",
+      "explanation": "الشرح",
+      "optional": "اختياري",
       "classification": {
         "title": "التصنيف",
         "subject": "الموضوع",
@@ -2833,12 +2835,24 @@
         "subtopic": "الموضوع الفرعي",
         "source": "المصدر",
         "exam": "اختبار",
-        "reference": "المرجع"
+        "reference": "المرجع",
+        "processor": "تعيين المعالج"
       },
       "placeholders": {
         "questionText": "أدخل سؤالك هنا...",
         "option": "أدخل نص الخيار",
-        "reference": "أدخل المرجع"
+        "reference": "أدخل المرجع",
+        "exam": "اختر الاختبار",
+        "explanation": "أدخل الشرح (اختياري)"
+      },
+      "messages": {
+        "loading": "جاري التحميل...",
+        "noExamsAvailable": "لا توجد اختبارات متاحة",
+        "noSubjectsAvailable": "لا توجد مواضيع متاحة",
+        "noTopicsAvailable": "لا توجد مواضيع فرعية متاحة",
+        "noProcessorsAvailable": "لا يوجد معالجون متاحون",
+        "selectExamFirst": "اختر الاختبار أولاً",
+        "selectSubjectFirst": "اختر الموضوع أولاً"
       }
     },
     "questionDetail": {

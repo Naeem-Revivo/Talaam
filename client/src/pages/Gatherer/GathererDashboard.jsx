@@ -13,18 +13,11 @@ const GathererDashboard = () => {
       t("gatherer.dashboard.tasks.task3"),
       t("gatherer.dashboard.tasks.task4"),
     ],
-    pendingCount: 3,
   };
 
-  const performanceData = {
-    acceptanceRate: 89,
-    rejectionRate: 11,
-    daysRange: 50,
-  };
+  const performanceData = {};
 
-  const lastLoginData = {
-    loginTime: "Today at 09:05 PM",
-  };
+  const lastLoginData = {};
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6">
@@ -45,7 +38,6 @@ const GathererDashboard = () => {
             <RoleCard
               role={roleData.role}
               tasks={roleData.tasks}
-              pendingCount={roleData.pendingCount}
               roleLabel={t("explainer.dashboard.roleLabel")}
               pendingTasksLabel={t("explainer.dashboard.pendingTasks")}
             />
@@ -55,13 +47,9 @@ const GathererDashboard = () => {
           <div className="space-y-6">
             <PerformanceCard 
               data={performanceData}
-              fields={[
-                { key: 'rejectionRate', label: t('gatherer.dashboard.performance.rejectionRate'), format: 'percentage' },
-                { key: 'acceptanceRate', label: t('gatherer.dashboard.performance.acceptanceRate'), format: 'percentage' }
-              ]}
             />
 
-            <LastLoginCard loginTime={lastLoginData.loginTime} />
+            {lastLoginData.loginTime && <LastLoginCard loginTime={lastLoginData.loginTime} />}
           </div>
         </div>
       </div>

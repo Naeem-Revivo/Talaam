@@ -20,11 +20,39 @@ export const RoleRoute = ({ allow = [] }) => {
   const backendRole = user?.role;
   const role =
     backendRole === 'student' ? 'user' : backendRole || null;
+  const adminRole = user?.adminRole;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  if (allow.length > 0 && !allow.includes(role)) {
+
+  if (allow.length > 0) {
+    // Check if user has access based on role or adminRole
+    let hasAccess = false;
+
+    // For admin routes: allow superadmin OR admin without adminRole
+    if (allow.includes('admin') || allow.includes('superadmin')) {
+      if (role === 'superadmin') {
+        // Superadmin always has access to admin routes
+        hasAccess = true;
+      } else if (role === 'admin') {
+        // Admin only has access if they don't have an adminRole
+        // Users with adminRole should go to their specific role routes
+        hasAccess = !adminRole;
+      }
+    }
+
+    // For role-specific routes (gatherer, creator, processor, explainer)
+    // Allow if role matches OR if user is admin with matching adminRole
+    allow.forEach((allowedRole) => {
+      if (allowedRole !== 'admin' && allowedRole !== 'superadmin') {
+        if (role === allowedRole || (role === 'admin' && adminRole === allowedRole)) {
+          hasAccess = true;
+        }
+      }
+    });
+
+    if (!hasAccess) {
       // If user is logged in but not allowed, redirect them to their home
       const homeRoutes = {
         admin: '/admin',
@@ -35,7 +63,12 @@ export const RoleRoute = ({ allow = [] }) => {
         processor: '/processor',
         explainer: '/explainer'
       };
-    return <Navigate to={homeRoutes[role] || '/dashboard'} replace />;
+      
+      // Determine redirect based on adminRole if user is admin, otherwise use role
+      const redirectRole = (role === 'admin' && adminRole) ? adminRole : role;
+      return <Navigate to={homeRoutes[redirectRole] || '/dashboard'} replace />;
+    }
   }
+
   return <Outlet />;
 };
