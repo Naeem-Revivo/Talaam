@@ -332,6 +332,21 @@ const questionsAPI = {
     }
   },
 
+  // Submit/Complete question by Creator (after variant submission)
+  submitQuestionByCreator: async (questionId) => {
+    try {
+      const apiData = {
+        status: 'completed',
+      };
+
+      const response = await axiosClient.put(`/admin/questions/creator/${questionId}`, apiData);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to submit question' };
+    }
+  },
+
   // ============================================
   // EXPLAINER ENDPOINTS
   // ============================================

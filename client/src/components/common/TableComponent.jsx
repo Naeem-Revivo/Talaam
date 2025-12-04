@@ -18,11 +18,11 @@ const TableHeader = ({ columns }) => (
   </thead>
 );
 
-const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
+const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagReason }) => {
   const getFieldKey = (columnName) => {
     return columnName.toLowerCase().replace(/ /g, "");
   };
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const isRTL = language === "ar";
 
   return (
@@ -30,12 +30,47 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
       {columns.slice(0, -1).map((column) => {
         let value = item[column.key] || "—";
 
+        // Special rendering for indicators
+        if (column.key === "indicators") {
+          const indicators = item.indicators || {};
+          return (
+            <td key={column.key} className="px-6 py-8 text-center">
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                {indicators.approved && (
+                  <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-green-100 text-green-700">
+                    {t("creator.assignedQuestionPage.indicators.approved") || "Approved"}
+                  </span>
+                )}
+                {indicators.flag && (
+                  <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-red-100 text-red-700">
+                    {t("creator.assignedQuestionPage.indicators.flag") || "Flag"}
+                  </span>
+                )}
+                {indicators.reject && (
+                  <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-gray-100 text-gray-700">
+                    {t("creator.assignedQuestionPage.indicators.reject") || "Reject"}
+                  </span>
+                )}
+                {indicators.variant && (
+                  <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-blue-100 text-blue-700">
+                    {t("creator.assignedQuestionPage.indicators.variant") || "Variant"}
+                  </span>
+                )}
+                {!indicators.approved && !indicators.flag && !indicators.reject && !indicators.variant && (
+                  <span className="text-gray-400">—</span>
+                )}
+              </div>
+            </td>
+          );
+        }
+
         // Special rendering for status
         if (column.key === "status") {
           const isApproved = value.toLowerCase() === "approved";
           const isPending = value.toLowerCase() === "pending";
           const isSentBack = value.toLowerCase() === "sent back";
           const isReject = value.toLowerCase() === "reject";
+          const isFlag = value.toLowerCase() === "flag";
           const isaccept = value.toLowerCase() === "accepted";
           const isfixrequest = value.toLowerCase() === "fix request";
           const isRevision = value.toLowerCase() === "revision";
@@ -44,39 +79,53 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
           const isFailed = value.toLowerCase() === "failed";
           const isVisible = value.toLowerCase() === "visible";
           const isHidden = value.toLowerCase() === "hidden";
+          const isFlagged = item.indicators?.flag === true;
           return (
             <td key={column.key} className="px-6 py-8 text-center">
-              <span
-                className={`inline-block px-[12px] py-[5px] rounded-md text-[12px] leading-[100%] font-normal ${
-                  isApproved
-                    ? "bg-[#FDF0D5] text-[#ED4122]"
-                    : isPaid
-                    ? "bg-[#FDF0D5] text-[#ED4122]"
-                    : isFailed
-                    ? "bg-[#ED4122] text-white"
-                    : isVisible
-                    ? "bg-[#FDF0D5] text-[#ED4122]"
-                    : isHidden
-                    ? "bg-[#ED4122] text-white"
-                    : isaccept
-                    ? "bg-[#FDF0D5] text-[#ED4122]"
-                    : isDraft
-                    ? "bg-[#FDF0D5] text-[#ED4122]"
-                    : isSentBack
-                    ? "bg-[#ED4122] text-white"
-                    : isRevision
-                    ? "bg-[#ED4122] text-white"
-                    : isfixrequest
-                    ? "bg-[#ED4122] text-white"
-                    : isReject
-                    ? "bg-[#C6D8D3] text-blue-dark"
-                    : isPending
-                    ? "bg-[#FDF0D5] text-[#ED4122]"
-                    : "bg-gray-200 text-gray-700"
-                }`}
-              >
-                {value}
-              </span>
+              <div className="flex items-center justify-center gap-2">
+                <span
+                  className={`inline-block px-[12px] py-[5px] rounded-md text-[12px] leading-[100%] font-normal ${
+                    isFlag
+                      ? "bg-red-100 text-red-700"
+                      : isApproved
+                      ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : isPaid
+                      ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : isFailed
+                      ? "bg-[#ED4122] text-white"
+                      : isVisible
+                      ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : isHidden
+                      ? "bg-[#ED4122] text-white"
+                      : isaccept
+                      ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : isDraft
+                      ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : isSentBack
+                      ? "bg-[#ED4122] text-white"
+                      : isRevision
+                      ? "bg-[#ED4122] text-white"
+                      : isfixrequest
+                      ? "bg-[#ED4122] text-white"
+                      : isReject
+                      ? "bg-[#C6D8D3] text-blue-dark"
+                      : isPending
+                      ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  {value}
+                </span>
+                {isFlagged && onShowFlagReason && (
+                  <button
+                    type="button"
+                    onClick={() => onShowFlagReason(item.flagReason)}
+                    className="text-orange-dark text-[12px] font-normal leading-[16px] font-roboto hover:underline transition px-2 py-1"
+                  >
+                    {t("creator.assignedQuestionPage.reasonButton") || "Reason"}
+                  </button>
+                )}
+              </div>
             </td>
           );
         }
@@ -250,9 +299,9 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
   );
 };
 
-const MobileCard = ({ item, columns, onView, onEdit, onCustomAction }) => {
+const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagReason }) => {
   const displayColumns = columns.slice(0, -1);
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const isRTL = language === "ar";
 
   return (
@@ -261,50 +310,102 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction }) => {
         {displayColumns.map((column) => {
           let value = item[column.key] || "—";
 
+          // Special rendering for indicators
+          if (column.key === "indicators") {
+            const indicators = item.indicators || {};
+            return (
+              <div key={column.key} className="flex items-center gap-2">
+                <span className="text-[14px] font-normal text-oxford-blue">
+                  {column.label}:
+                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {indicators.approved && (
+                    <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-green-100 text-green-700">
+                      {t("creator.assignedQuestionPage.indicators.approved") || "Approved"}
+                    </span>
+                  )}
+                  {indicators.flag && (
+                    <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-red-100 text-red-700">
+                      {t("creator.assignedQuestionPage.indicators.flag") || "Flag"}
+                    </span>
+                  )}
+                  {indicators.reject && (
+                    <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-gray-100 text-gray-700">
+                      {t("creator.assignedQuestionPage.indicators.reject") || "Reject"}
+                    </span>
+                  )}
+                  {indicators.variant && (
+                    <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-blue-100 text-blue-700">
+                      {t("creator.assignedQuestionPage.indicators.variant") || "Variant"}
+                    </span>
+                  )}
+                  {!indicators.approved && !indicators.flag && !indicators.reject && !indicators.variant && (
+                    <span className="text-gray-400">—</span>
+                  )}
+                </div>
+              </div>
+            );
+          }
+
           // Special rendering for status
           if (column.key === "status") {
             const isApproved = value.toLowerCase() === "approved";
             const isPending = value.toLowerCase() === "pending";
             const isSentBack = value.toLowerCase() === "sent back";
             const isReject = value.toLowerCase() === "reject";
+            const isFlag = value.toLowerCase() === "flag";
             const isaccept = value.toLowerCase() === "accepted";
             const isfixrequest = value.toLowerCase() === "fix request";
             const isRevision = value.toLowerCase() === "revision";
             const isDraft = value.toLowerCase() === "draft";
             const isVisible = value.toLowerCase() === "visible";
             const isHidden = value.toLowerCase() === "hidden";
+            const isFlagged = item.indicators?.flag === true;
             return (
               <div key={column.key} className="flex items-center gap-2">
                 <span className="text-[14px] font-normal text-oxford-blue">
                   {column.label}:
                 </span>
-                <span
-                  className={`inline-block px-[12px] py-[5px] rounded-md text-[12px] leading-[100%] font-normal ${
-                    isApproved
-                      ? "bg-[#FDF0D5] text-[#ED4122]"
-                      : isaccept
-                      ? "bg-[#FDF0D5] text-[#ED4122]"
-                      : isVisible
-                      ? "bg-[#FDF0D5] text-[#ED4122]"
-                      : isHidden
-                      ? "bg-[#ED4122] text-white"
-                      : isDraft
-                      ? "bg-[#FDF0D5] text-[#ED4122]"
-                      : isSentBack
-                      ? "bg-[#ED4122] text-white"
-                      : isRevision
-                      ? "bg-[#ED4122] text-white"
-                      : isfixrequest
-                      ? "bg-[#ED4122] text-white"
-                      : isReject
-                      ? "bg-[#C6D8D3] text-blue-dark"
-                      : isPending
-                      ? "bg-[#FDF0D5] text-[#ED4122]"
-                      : "bg-gray-200 text-gray-700"
-                  }`}
-                >
-                  {value}
-                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span
+                    className={`inline-block px-[12px] py-[5px] rounded-md text-[12px] leading-[100%] font-normal ${
+                      isFlag
+                        ? "bg-red-100 text-red-700"
+                        : isApproved
+                        ? "bg-[#FDF0D5] text-[#ED4122]"
+                        : isaccept
+                        ? "bg-[#FDF0D5] text-[#ED4122]"
+                        : isVisible
+                        ? "bg-[#FDF0D5] text-[#ED4122]"
+                        : isHidden
+                        ? "bg-[#ED4122] text-white"
+                        : isDraft
+                        ? "bg-[#FDF0D5] text-[#ED4122]"
+                        : isSentBack
+                        ? "bg-[#ED4122] text-white"
+                        : isRevision
+                        ? "bg-[#ED4122] text-white"
+                        : isfixrequest
+                        ? "bg-[#ED4122] text-white"
+                        : isReject
+                        ? "bg-[#C6D8D3] text-blue-dark"
+                        : isPending
+                        ? "bg-[#FDF0D5] text-[#ED4122]"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                  >
+                    {value}
+                  </span>
+                  {isFlagged && onShowFlagReason && (
+                    <button
+                      type="button"
+                      onClick={() => onShowFlagReason(item.flagReason)}
+                      className="text-orange-dark text-[12px] font-normal leading-[16px] font-roboto hover:underline transition px-2 py-1"
+                    >
+                      {t("creator.assignedQuestionPage.reasonButton") || "Reason"}
+                    </button>
+                  )}
+                </div>
               </div>
             );
           }
@@ -568,6 +669,7 @@ export const Table = ({
   onCustomAction,
   emptyMessage,
   showPagination = true,
+  onShowFlagReason,
 }) => {
   const { t, language } = useLanguage();
   const dir = language === "ar" ? "rtl" : "ltr";
@@ -591,6 +693,7 @@ export const Table = ({
                   onView={onView}
                   onEdit={onEdit}
                   onCustomAction={onCustomAction}
+                  onShowFlagReason={onShowFlagReason}
                 />
               ))
             ) : (
@@ -616,6 +719,7 @@ export const Table = ({
               onView={onView}
               onEdit={onEdit}
               onCustomAction={onCustomAction}
+              onShowFlagReason={onShowFlagReason}
             />
           ))
         ) : (

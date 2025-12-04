@@ -2921,10 +2921,27 @@
       "searchPlaceholder": "Search draft explanations...",
       "table": {
         "question": "QUESTION",
+        "subject": "SUBJECT",
         "processor": "PROCESSOR",
+        "status": "STATUS",
         "difficulty": "DIFFICULTY",
+        "indicators": "INDICATORS",
         "updatedOn": "UPDATED ON",
         "actions": "ACTIONS"
+      },
+      "indicators": {
+        "approved": "Approved",
+        "flag": "Flag",
+        "reject": "Reject",
+        "variant": "Variant"
+      },
+      "reasonButton": "Reason",
+      "flagReasonModal": {
+        "title": "Flag Reason",
+        "subtitle": "The reason why this question was flagged.",
+        "reasonLabel": "Reason for Flagging",
+        "noReason": "No reason provided",
+        "close": "Close"
       },
       "emptyMessage": "No questions found"
     },
@@ -3217,6 +3234,7 @@
         "creator": "CREATOR",
         "variants": "VARIANTS",
         "status": "STATUS",
+        "rejectionReason": "REJECTION REASON",
         "submittedOn": "SUBMITTED ON",
         "actions": "ACTIONS"
       },
@@ -3227,6 +3245,7 @@
       "back": "Back",
       "table": {
         "question": "QUESTION",
+        "subject": "SUBJECT",
         "gatherer": "GATHERER",
         "uploadOn": "UPLOAD ON",
         "status": "STATUS",
@@ -3275,7 +3294,14 @@
       "status": "Status",
       "creatorGathererNotes": "Creator / Gatherer Notes",
       "attachments": "Attachments",
-      "questionHistory": "Question History"
+      "questionHistory": "Question History",
+      "rejectQuestion": "Reject Question",
+      "rejectReason": "Please provide a reason for rejecting this question:",
+      "rejectReasonPlaceholder": "Enter rejection reason...",
+      "cancel": "Cancel",
+      "confirmReject": "Confirm Reject",
+      "loading": "Loading question...",
+      "noOptions": "No options available for this question type."
     },
     "profile": {
       "title": "Account Settings",

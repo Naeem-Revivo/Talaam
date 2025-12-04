@@ -11,7 +11,9 @@ const ProcessorFilter = ({
   onTopicChange,
   onSubtopicChange,
   searchPlaceholder,
-  showRole=true
+  showRole=true,
+  subjectOptions: customSubjectOptions,
+  statusOptions: customStatusOptions
 }) => {
   const { t, language } = useLanguage();
   const dir = language === 'ar' ? 'rtl' : 'ltr'
@@ -44,9 +46,9 @@ const getSubtopicOptions = (t) => [
     searchPlaceholder ||
     t("admin.classificationManagement.filters.searchPlaceholder");
 
-  const subjectOptions = getSubjectOptions(t);
+  const subjectOptions = customSubjectOptions || getSubjectOptions(t);
   const topicOptions = getTopicOptions(t);
-  const subtopicOptions = getSubtopicOptions(t);
+  const subtopicOptions = customStatusOptions || getSubtopicOptions(t);
 
   return (
     <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6" dir="ltr">

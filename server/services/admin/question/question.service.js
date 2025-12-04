@@ -225,6 +225,13 @@ const createQuestionVariant = async (originalQuestionId, variantData, userId) =>
     notes: `Variant question ${variantQuestion.id} created from this question`,
   });
 
+  // Update original question status to 'completed' (approved) after variant creation
+  // This indicates the creator has completed their work on this question
+  const updateData = {
+    status: 'completed',
+  };
+  await Question.update(originalQuestionId, updateData);
+
   return await Question.findById(variantQuestion.id);
 };
 
@@ -540,7 +547,9 @@ const approveQuestion = async (questionId, userId) => {
 
   // Determine next status based on current workflow
   let nextStatus;
-  const lastAction = question.history[question.history.length - 1];
+  const lastAction = question.history && question.history.length > 0 
+    ? question.history[question.history.length - 1] 
+    : null;
   
   if (lastAction && lastAction.role === 'gatherer') {
     // After gatherer submission/update, move to creator
@@ -556,42 +565,46 @@ const approveQuestion = async (questionId, userId) => {
     nextStatus = 'pending_creator';
   }
 
-  question.status = nextStatus;
-  question.approvedById = userId;
-  question.rejectedById = null;
-  question.rejectionReason = null;
+  // Prepare update data
+  const updateData = {
+    status: nextStatus,
+    approvedBy: userId,
+    rejectedBy: null,
+    rejectionReason: null,
+  };
 
   // If question was updated after flag approval, remove the flag
   if (wasUpdatedAfterFlag) {
     const flagType = question.flagType; // 'creator' or 'explainer'
-    question.isFlagged = false;
-    question.flagStatus = null;
-    question.flaggedById = null;
-    question.flagReason = null;
-    question.flagReviewedById = null;
-    question.flagRejectionReason = null;
+    updateData.isFlagged = false;
+    updateData.flagStatus = null;
+    updateData.flaggedBy = null;
+    updateData.flagReason = null;
+    updateData.flagReviewedBy = null;
+    updateData.flagRejectionReason = null;
     
     // Add history entry with flag type info
     const historyNote = `Question approved after ${flagType} flag correction, moved to ${nextStatus}. Flag removed.`;
-    question.history.push({
+    updateData.history = [{
       action: 'approved',
       performedBy: userId,
       role: 'processor',
       timestamp: new Date(),
       notes: historyNote,
-    });
+    }];
   } else {
     // Add history entry
-    question.history.push({
+    updateData.history = [{
       action: 'approved',
       performedBy: userId,
       role: 'processor',
       timestamp: new Date(),
       notes: `Question approved, moved to ${nextStatus}`,
-    });
+    }];
   }
 
-  return await question.save();
+  // Use Prisma update instead of save
+  return await Question.update(questionId, updateData);
 };
 
 /**
@@ -608,20 +621,25 @@ const rejectQuestion = async (questionId, rejectionReason, userId) => {
     throw new Error('Question is not in pending_processor status');
   }
 
-  question.status = 'rejected';
-  question.rejectedBy = userId;
-  question.rejectionReason = rejectionReason || 'No reason provided';
+  const finalRejectionReason = rejectionReason || 'No reason provided';
 
-  // Add history entry
-  question.history.push({
-    action: 'rejected',
-    performedBy: userId,
-    role: 'processor',
-    timestamp: new Date(),
-    notes: `Question rejected: ${question.rejectionReason}`,
-  });
+  // Prepare update data
+  const updateData = {
+    status: 'rejected',
+    rejectedBy: userId,
+    rejectionReason: finalRejectionReason,
+    approvedBy: null,
+    history: [{
+      action: 'rejected',
+      performedBy: userId,
+      role: 'processor',
+      timestamp: new Date(),
+      notes: `Question rejected: ${finalRejectionReason}`,
+    }]
+  };
 
-  return await question.save();
+  // Use Prisma update instead of save
+  return await Question.update(questionId, updateData);
 };
 
 /**
@@ -940,24 +958,24 @@ const flagQuestionByCreator = async (questionId, flagReason, userId) => {
     throw new Error('Flag reason is required');
   }
 
-  // Update question with flag
-  question.isFlagged = true;
-  question.flaggedById = userId;
-  question.flagReason = flagReason.trim();
-  question.flagType = 'creator';
-  question.flagStatus = 'pending';
-  question.status = 'pending_processor'; // Send back to processor
-
-  // Add history entry
-  question.history.push({
-    action: 'flagged',
-    performedBy: userId,
-    role: 'creator',
-    timestamp: new Date(),
-    notes: `Question flagged by creator: ${flagReason.trim()}`,
+  // Update question with flag using Prisma update
+  const updatedQuestion = await Question.update(questionId, {
+    isFlagged: true,
+    flaggedById: userId,
+    flagReason: flagReason.trim(),
+    flagType: 'creator',
+    flagStatus: 'pending',
+    status: 'pending_processor', // Send back to processor
+    history: [{
+      action: 'flagged',
+      performedById: userId,
+      role: 'creator',
+      timestamp: new Date(),
+      notes: `Question flagged by creator: ${flagReason.trim()}`,
+    }]
   });
 
-  return await question.save();
+  return updatedQuestion;
 };
 
 /**
