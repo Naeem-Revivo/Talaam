@@ -309,7 +309,7 @@ const Login = () => {
               {t('login.signUp')}
             </Link>
           </p>
-        </div>
+        </div> 
       </div>
     </div>
   )
