@@ -139,7 +139,7 @@ export const AppRoutes = () => {
         <Route path="/dashboard/session-summary" element={<QuestionSessionSummaryPage />} />
       </Route>
       
-      {/* Admin Routes */}
+      {/* Admin Routes - Only for admin/superadmin without adminRole */}
       <Route element={<RoleRoute allow={['admin', 'superadmin']} />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
@@ -195,19 +195,20 @@ export const AppRoutes = () => {
         </Route>
       </Route>
 
-      {/* Gatherer Routes */}
+      {/* Gatherer Routes - Allow gatherer role or admin with gatherer adminRole */}
       <Route element={<RoleRoute allow={['gatherer']} />}>
         <Route path="/gatherer" element={<GathererLayout />}>
           <Route index element={<GathererDashboard />} />
           <Route path="profile" element={<GathererProfile />} />
           <Route path="question-bank" element={<GathererQuestionBank />} />
           <Route path="question-bank/Gatherer-addQuestion" element={<GathererAddNewQuestionPage />} />
+          <Route path="question-bank/Gatherer-QuestionDetail/:questionId" element={<GathererQuestionDetailsPage />} />
           <Route path="question-bank/Gatherer-QuestionDetail" element={<GathererQuestionDetailsPage />} />
           {/* Add gatherer specific routes here */}
         </Route>
       </Route>
 
-      {/* Processer dashboard */}
+      {/* Processor Routes - Allow processor role or admin with processor adminRole */}
       <Route element={<RoleRoute allow={['processor']} />}>
         <Route path="/processor" element={<ProcessorLayout />}>
           <Route index element={<ProcessorDashboard />} />
@@ -221,6 +222,7 @@ export const AppRoutes = () => {
         </Route>
       </Route>
 
+      {/* Creator Routes - Allow creator role or admin with creator adminRole */}
       <Route element={<RoleRoute allow={['creator']} />}>
         <Route path="/creator" element={<CreatorLayout />}>
           <Route index element={<CreatorDashboard />} />
@@ -233,6 +235,7 @@ export const AppRoutes = () => {
         </Route>
       </Route>
 
+      {/* Explainer Routes - Allow explainer role or admin with explainer adminRole */}
       <Route element={<RoleRoute allow={['explainer']} />}>
         <Route path="/explainer" element={<ExplainerLayout />}>
           <Route index element={<ExplainerDashboard />} />

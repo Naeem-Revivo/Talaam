@@ -17,8 +17,10 @@ const getClassification = async () => {
     orderBy: { createdAt: 'desc' }
   });
   
-  // Get all topics with their parent subjects (assuming Topic uses Mongoose - keep as is for now)
-  const topics = await Topic.find({}).populate('parentSubject', 'name').sort({ createdAt: -1 });
+  // Get all topics with their parent subjects using Prisma
+  const topics = await Topic.findMany({
+    orderBy: { createdAt: 'desc' }
+  });
   
   return {
     exams,
@@ -38,9 +40,8 @@ const getTopicsBySubject = async (subjectId) => {
     return { subject: null, topics: [] };
   }
   
-  // Get all topics for this subject (assuming Topic uses Mongoose - keep as is for now)
-  const topics = await Topic.find({ parentSubject: subjectId })
-    .sort({ createdAt: -1 });
+  // Get all topics for this subject using Prisma
+  const topics = await Topic.findBySubject(subjectId);
   
   return {
     subject,

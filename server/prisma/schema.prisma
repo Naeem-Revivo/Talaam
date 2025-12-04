@@ -40,6 +40,9 @@ model User {
   questionsModified     Question[]       @relation("QuestionLastModifiedBy")
   questionsApproved     Question[]       @relation("QuestionApprovedBy")
   questionsRejected     Question[]       @relation("QuestionRejectedBy")
+  questionsAssigned    Question[]       @relation("QuestionAssignedProcessor")
+  questionsFlagged      Question[]       @relation("QuestionFlaggedBy")
+  questionsFlagReviewed Question[]       @relation("QuestionFlagReviewedBy")
   studentAnswers        StudentAnswer[]
   questionHistory       QuestionHistory[]
   questionComments      QuestionComment[]
@@ -179,6 +182,15 @@ model Question {
   approvedById      String?  @map("approved_by_id")
   rejectedById      String?  @map("rejected_by_id")
   rejectionReason   String?  @map("rejection_reason")
+  assignedProcessorId String? @map("assigned_processor_id")
+  // Flagging fields
+  isFlagged         Boolean  @default(false) @map("is_flagged")
+  flaggedById      String?  @map("flagged_by_id")
+  flagReason        String?  @map("flag_reason")
+  flagType          String?  @map("flag_type") // creator, explainer
+  flagStatus        String?  @map("flag_status") // pending, approved, rejected
+  flagReviewedById  String?  @map("flag_reviewed_by_id")
+  flagRejectionReason String? @map("flag_rejection_reason")
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -192,6 +204,9 @@ model Question {
   lastModifiedBy    User?    @relation("QuestionLastModifiedBy", fields: [lastModifiedById], references: [id])
   approvedBy        User?    @relation("QuestionApprovedBy", fields: [approvedById], references: [id])
   rejectedBy        User?    @relation("QuestionRejectedBy", fields: [rejectedById], references: [id])
+  assignedProcessor User?    @relation("QuestionAssignedProcessor", fields: [assignedProcessorId], references: [id])
+  flaggedBy        User?    @relation("QuestionFlaggedBy", fields: [flaggedById], references: [id])
+  flagReviewedBy   User?    @relation("QuestionFlagReviewedBy", fields: [flagReviewedById], references: [id])
   history           QuestionHistory[]
   comments          QuestionComment[]
   studentAnswers    StudentAnswerQuestion[]
@@ -201,6 +216,7 @@ model Question {
   @@index([status])
   @@index([createdById])
   @@index([originalQuestionId])
+  @@index([isFlagged, flagStatus])
   @@map("questions")
 }
 

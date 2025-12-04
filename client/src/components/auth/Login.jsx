@@ -109,6 +109,7 @@ const Login = () => {
       if (login.fulfilled.match(resultAction)) {
         const user = resultAction.payload?.data?.user
         const role = user?.role
+        const adminRole = user?.adminRole
         
         // Show success toast
         const successMessage = 
@@ -125,6 +126,20 @@ const Login = () => {
         // Map backend roles to routes
         if (role === 'superadmin') {
           navigate('/admin', { replace: true })
+        } else if (role === 'admin') {
+          // For admin users, use adminRole to determine the dashboard
+          if (adminRole === 'gatherer') {
+            navigate('/gatherer', { replace: true })
+          } else if (adminRole === 'creator') {
+            navigate('/creator', { replace: true })
+          } else if (adminRole === 'processor') {
+            navigate('/processor', { replace: true })
+          } else if (adminRole === 'explainer') {
+            navigate('/explainer', { replace: true })
+          } else {
+            // Default admin users to admin dashboard
+            navigate('/admin', { replace: true })
+          }
         } else if (role === 'student' || role === 'user') {
           navigate('/dashboard', { replace: true })
         } else if (role === 'gatherer') {

@@ -1,13 +1,51 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
+import questionsAPI from "../../api/questions";
 
 const GathererQuestionDetailsPage = () => {
   const navigate = useNavigate();
+  const { questionId } = useParams();
   const { t, language } = useLanguage();
   const dir = language === "ar" ? "rtl" : "ltr";
   const [comments, setComments] = useState("");
+  const [question, setQuestion] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch question data
+  useEffect(() => {
+    const fetchQuestion = async () => {
+      if (!questionId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await questionsAPI.getGathererQuestionById(questionId);
+        
+        if (response.success && response.data?.question) {
+          setQuestion(response.data.question);
+        } else {
+          setError("Question not found");
+        }
+      } catch (err) {
+        console.error("Error fetching question:", err);
+        setError(err.response?.data?.message || "Failed to load question");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuestion();
+  }, [questionId]);
+
+  const handleCancel = () => {
+    navigate("/gatherer/question-bank");
+  };
 
   // Rich Text Editor Component using contentEditable (React 19 compatible)
   const RichTextEditor = ({
@@ -759,10 +797,6 @@ const GathererQuestionDetailsPage = () => {
     setComments("");
   };
 
-  const handleCancel = () => {
-    navigate("/gatherer/question-bank");
-  };
-
   return (
     <div
       className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]"
@@ -779,362 +813,292 @@ const GathererQuestionDetailsPage = () => {
           </div>
         </header>
 
-        {/* Main Content - Two Columns */}
-        <div className="flex flex-col gap-6 lg:flex-row">
-          {/* Left Column */}
-          <div className="flex-1 flex flex-col gap-6">
-            {/* Question Info Card */}
-            <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full h-auto lg:h-[472px]"
-              style={{}}
-            >
-              <h2 className="mb-2 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
-                {t("gatherer.questionDetail.questionInfo")}
-              </h2>
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-10">
+            <p className="text-[16px] text-gray-600">Loading question...</p>
+          </div>
+        )}
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                    ID:Q-GEO-0012
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-roboto text-[18px] font-normal leading-[20px] text-oxford-blue">
-                      {t("admin.questionDetails.fields.status")}:
+        {/* Error State */}
+        {error && !loading && (
+          <div className="text-center py-10">
+            <p className="text-[16px] text-red-600">{error}</p>
+            <OutlineButton 
+              text="Go Back" 
+              className="mt-4 py-[10px] px-5" 
+              onClick={handleCancel}
+            />
+          </div>
+        )}
+
+        {/* Main Content - Two Columns */}
+        {!loading && !error && question && (
+          <div className="flex flex-col gap-6 lg:flex-row">
+            {/* Left Column */}
+            <div className="flex-1 flex flex-col gap-6">
+              {/* Question Info Card */}
+              <div
+                className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full h-auto lg:h-[472px]"
+                style={{}}
+              >
+                <h2 className="mb-2 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+                  {t("gatherer.questionDetail.questionInfo")}
+                </h2>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                      ID: {question.id?.substring(0, 8) || "N/A"}
                     </span>
-                    <span className="font-roboto text-[18px] font-normal leading-[20px] text-[#ED4122]">
-                      {t("admin.questionDetails.status.inReview")}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-roboto text-[18px] font-normal leading-[20px] text-oxford-blue">
+                        {t("admin.questionDetails.fields.status")}:
+                      </span>
+                      <span className="font-roboto text-[18px] font-normal leading-[20px] text-[#ED4122]">
+                        {question.status || "N/A"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-[#E5E7EB] pt-4"></div>
+
+                  <div>
+                    <p
+                      className="pb-7 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue"
+                      dir="ltr"
+                      dangerouslySetInnerHTML={{ __html: question.questionText || "" }}
+                    />
+
+                    {/* Options - Only show for MCQ */}
+                    {question.questionType === "MCQ" && question.options && (
+                      <div className="space-y-5" dir="ltr">
+                        {['A', 'B', 'C', 'D'].map((option) => (
+                          <label key={option} className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="option"
+                              value={option}
+                              checked={question.correctAnswer === option}
+                              className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
+                              disabled
+                            />
+                            <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                              {option}. {question.options[option] || ""}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* True/False Options */}
+                    {question.questionType === "TRUE_FALSE" && (
+                      <div className="space-y-5" dir="ltr">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="option"
+                            value="TRUE"
+                            checked={question.correctAnswer === "TRUE"}
+                            className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
+                            disabled
+                          />
+                          <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                            True
+                          </span>
+                        </label>
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="option"
+                            value="FALSE"
+                            checked={question.correctAnswer === "FALSE"}
+                            className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
+                            disabled
+                          />
+                          <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                            False
+                          </span>
+                        </label>
+                      </div>
+                    )}
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Main Content - Two Columns */}
+        {!loading && !error && question && (
+          <div className="flex flex-col gap-6 lg:flex-row">
+            {/* Left Column */}
+            <div className="flex-1 flex flex-col gap-6">
+              {/* Comments Card */}
+              <div
+                className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 relative w-full h-auto lg:h-[271px]"
+                style={{}}
+              >
+                <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+                  {t("gatherer.questionDetail.comments.title")}
+                </h2>
+                <div className="flex flex-col gap-3 items-end ">
+                  <textarea
+                    value={comments}
+                    onChange={(e) => setComments(e.target.value)}
+                    placeholder={t(
+                      "gatherer.questionDetail.comments.placeholder"
+                    )}
+                    className="rounded-[8px] border border-[#03274633] bg-white py-3 px-4 font-roboto text-[16px] leading-[20px] text-oxford-blue placeholder:text-[#9CA3AF] outline-none w-full lg:h-[143px] min-h-[100px]"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddComment}
+                    className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 text-[16px] font-roboto font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]"
+                  >
+                    {t("gatherer.questionDetail.comments.addComment")}
+                  </button>
+                </div>
+              </div>
+
+              {/* Activity Log Card */}
+              <div
+                className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full h-auto lg:h-[351px]"
+                style={{}}
+              >
+                <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+                  {t("admin.questionDetails.sections.activityLog")}
+                </h2>
+                <div className="space-y-4">
+                  {question.history && question.history.length > 0 ? (
+                    question.history.map((activity, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-[672px] h-auto"
+                        dir="ltr"
+                      >
+                        <div className="flex-shrink-0">
+                          <svg
+                            width="30"
+                            height="30"
+                            viewBox="0 0 30 30"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <circle cx="15" cy="15" r="15" fill="#ED4122" />
+                            <path
+                              d="M21.125 14.125H15.875V8.875C15.875 8.392 15.483 8 15 8C14.517 8 14.125 8.392 14.125 8.875V14.125H8.875C8.392 14.125 8 14.517 8 15C8 15.483 8.392 15.875 8.875 15.875H14.125V21.125C14.125 21.608 14.517 22 15 22C15.483 22 15.875 21.608 15.875 21.125V15.875H21.125C21.608 15.875 22 15.483 22 15C22 14.517 21.608 14.125 21.125 14.125Z"
+                              fill="white"
+                              stroke="white"
+                              strokeWidth="0.5"
+                            />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                            {activity.notes || activity.action || "Activity"}
+                          </p>
+                          <p className="font-roboto text-[12px] font-normal leading-[20px] text-dark-gray">
+                            {activity.performedBy?.name || "Unknown"} - {new Date(activity.timestamp).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="font-roboto text-[14px] text-gray-500">
+                      No activity log available
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="flex flex-col gap-6 lg:w-[376px]">
+              {/* Classification Card */}
+              <div
+                className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[376px] h-auto lg:h-[338px]"
+                style={{}}
+              >
+                <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+                  {t("admin.questionDetails.sections.classification")}
+                </h2>
 
                 <div className="border-t border-[#E5E7EB] pt-4"></div>
 
-                <div>
-                  <p
-                    className="pb-7 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue"
-                    dir="ltr"
-                  >
-                    Which of the following mountain ranges is the longest in the
-                    world?
-                  </p>
-
-                  {/* Options */}
-                  <div className="space-y-5" dir="ltr">
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="option"
-                        value="A"
-                        className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
-                        disabled
-                      />
-                      <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                        A. The Himalayas
-                      </span>
+                <div className="space-y-6 mt-4">
+                  <div>
+                    <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                      Exam
                     </label>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="option"
-                        value="B"
-                        className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
-                        disabled
-                      />
-                      <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                        B. The Rocky Mountains
-                      </span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="option"
-                        value="C"
-                        checked
-                        className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
-                        disabled
-                      />
-                      <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                        C. The Andes
-                      </span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="option"
-                        value="D"
-                        className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
-                        disabled
-                      />
-                      <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                        D. The Great Dividing Range
-                      </span>
-                    </label>
-                  </div>
-
-                  <div className="border-t border-[#E5E7EB] mt-10 pt-4">
-                    <p className="font-archivo text-[20px] font-bold leading-[20px] text-oxford-blue mb-2">
-                      {t("gatherer.questionDetail.correctAnswer")}
+                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                      {question.exam?.name || "N/A"}
                     </p>
-                    <label
-                      className="flex items-center gap-3 pt-2 cursor-pointer"
-                      dir="ltr"
-                    >
-                      <input
-                        type="radio"
-                        name="correctAnswer"
-                        value="C"
-                        checked
-                        className="w-4 h-4 text-[#ED4122] border-[#03274633]"
-                        disabled
-                      />
-                      <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#ED4122]">
-                        C. The Andes
-                      </span>
+                  </div>
+                  <div>
+                    <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                      {t("admin.questionDetails.fields.subject")}
                     </label>
+                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                      {question.subject?.name || "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                      {t("admin.questionDetails.fields.topic")}
+                    </label>
+                    <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                      {question.topic?.name || "N/A"}
+                    </p>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Explanation Card */}
-            {/* <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full h-auto lg:h-[199px]"
-              style={{}}
-            >
-              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
-                {t("admin.questionDetails.sections.explanation")}
-              </h2>
-              <div className="border-t border-[#E5E7EB] pt-4">
-                <p
-                  className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue"
-                  dir="ltr"
-                >
-                  The Andes Mountains, running along the western coast of south
-                  America, are the longest continental mountain range in the
-                  world, stretching for approximately 7,000 kilometers (4,300
-                  miles).
-                </p>
-              </div>
-            </div> */}
+              {/* Workflow Information Card */}
+              <div
+                className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[376px] h-auto lg:h-[338px]"
+                style={{}}
+              >
+                <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+                  {t("admin.questionDetails.sections.workflowInformation")}
+                </h2>
 
-            {/* Comments Card */}
-            <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 relative w-full h-auto lg:h-[271px]"
-              style={{}}
-            >
-              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
-                {t("gatherer.questionDetail.comments.title")}
-              </h2>
-              <div className="flex flex-col gap-3 items-end ">
-                <textarea
-                  value={comments}
-                  onChange={(e) => setComments(e.target.value)}
-                  placeholder={t(
-                    "gatherer.questionDetail.comments.placeholder"
-                  )}
-                  className="rounded-[8px] border border-[#03274633] bg-white py-3 px-4 font-roboto text-[16px] leading-[20px] text-oxford-blue placeholder:text-[#9CA3AF] outline-none w-full lg:h-[143px] min-h-[100px]"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddComment}
-                  className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 text-[16px] font-roboto font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]"
-                >
-                  {t("gatherer.questionDetail.comments.addComment")}
-                </button>
-              </div>
-            </div>
+                <div className="border-t border-[#E5E7EB] pt-4"></div>
 
-            {/* Activity Log Card */}
-            <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full h-auto lg:h-[351px]"
-              style={{}}
-            >
-              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
-                {t("admin.questionDetails.sections.activityLog")}
-              </h2>
-              <div className="space-y-4">
-                <div
-                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-[672px] h-auto"
-                  dir="ltr"
-                >
-                  <div className="flex-shrink-0">
-                    <svg
-                      width="30"
-                      height="30"
-                      viewBox="0 0 30 30"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M30 15C30 23.2843 23.2843 30 15 30C6.71573 30 0 23.2843 0 15C0 6.71573 6.71573 0 15 0C23.2843 0 30 6.71573 30 15Z"
-                        fill="#ED4122"
-                      />
-                      <path
-                        d="M21.125 14.125H15.875V8.875C15.875 8.392 15.483 8 15 8C14.517 8 14.125 8.392 14.125 8.875V14.125H8.875C8.392 14.125 8 14.517 8 15C8 15.483 8.392 15.875 8.875 15.875H14.125V21.125C14.125 21.608 14.517 22 15 22C15.483 22 15.875 21.608 15.875 21.125V15.875H21.125C21.608 15.875 22 15.483 22 15C22 14.517 21.608 14.125 21.125 14.125Z"
-                        fill="white"
-                        stroke="white"
-                        strokeWidth="0.5"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
+                <div className="space-y-6 mt-4">
+                  <div>
+                    <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                      {t("admin.questionDetails.fields.createdBy")}
+                    </label>
                     <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
-                      Question Created by Sarah Ahmad
-                    </p>
-                    <p className="font-roboto text-[12px] font-normal leading-[20px] text-dark-gray">
-                      Jan 15, 2024
+                      {question.createdBy?.name || "N/A"}
                     </p>
                   </div>
-                </div>
-                <div
-                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-[672px] h-auto"
-                  dir="ltr"
-                >
-                  <div className="flex-shrink-0">
-                    <svg
-                      width="30"
-                      height="30"
-                      viewBox="0 0 30 30"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle cx="15" cy="15" r="15" fill="#6CA6C1" />
-                      <path
-                        d="M20.3967 15.0017C20.2376 15.0017 20.085 15.0649 19.9726 15.1774C19.8601 15.2899 19.7969 15.4425 19.7969 15.6016V19.2005C19.7969 19.3596 19.7337 19.5122 19.6212 19.6247C19.5087 19.7372 19.3561 19.8003 19.197 19.8003H10.7995C10.6404 19.8003 10.4878 19.7372 10.3753 19.6247C10.2628 19.5122 10.1997 19.3596 10.1997 19.2005V10.803C10.1997 10.6439 10.2628 10.4913 10.3753 10.3788C10.4878 10.2663 10.6404 10.2031 10.7995 10.2031H14.3984C14.5575 10.2031 14.7101 10.1399 14.8226 10.0274C14.9351 9.91496 14.9983 9.76239 14.9983 9.6033C14.9983 9.44422 14.9351 9.29165 14.8226 9.17916C14.7101 9.06667 14.5575 9.00348 14.3984 9.00348H10.7995C10.3222 9.00348 9.86452 9.19307 9.52706 9.53053C9.18959 9.868 9 10.3257 9 10.803V19.2005C9 19.6778 9.18959 20.1355 9.52706 20.4729C9.86452 20.8104 10.3222 21 10.7995 21H19.197C19.6743 21 20.132 20.8104 20.4695 20.4729C20.8069 20.1355 20.9965 19.6778 20.9965 19.2005V15.6016C20.9965 15.4425 20.9333 15.2899 20.8208 15.1774C20.7083 15.0649 20.5558 15.0017 20.3967 15.0017ZM11.3993 15.4576V18.0009C11.3993 18.16 11.4625 18.3125 11.575 18.425C11.6875 18.5375 11.84 18.6007 11.9991 18.6007H14.5424C14.6213 18.6012 14.6996 18.586 14.7727 18.5562C14.8458 18.5263 14.9122 18.4823 14.9683 18.4267L19.1191 14.27L20.8226 12.6024C20.8788 12.5467 20.9234 12.4803 20.9539 12.4072C20.9843 12.3341 21 12.2557 21 12.1766C21 12.0974 20.9843 12.019 20.9539 11.9459C20.9234 11.8728 20.8788 11.8064 20.8226 11.7507L18.2793 9.17743C18.2235 9.12121 18.1572 9.07658 18.0841 9.04613C18.011 9.01568 17.9326 9 17.8534 9C17.7742 9 17.6958 9.01568 17.6228 9.04613C17.5497 9.07658 17.4833 9.12121 17.4276 9.17743L15.736 10.8749L11.5733 15.0317C11.5177 15.0878 11.4737 15.1542 11.4438 15.2273C11.414 15.3004 11.3988 15.3787 11.3993 15.4576ZM17.8534 10.4491L19.5509 12.1466L18.6992 12.9983L17.0017 11.3008L17.8534 10.4491ZM12.599 15.7035L16.1559 12.1466L17.8534 13.8441L14.2965 17.401H12.599V15.7035Z"
-                        fill="white"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
+                  <div>
+                    <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                      {t("admin.questionDetails.fields.submittedOn")}
+                    </label>
                     <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
-                      Question Edited by David Chen
-                    </p>
-                    <p className="font-roboto text-[12px] font-normal leading-[20px] text-dark-gray">
-                      Jan 12, 2024
+                      {question.createdAt ? new Date(question.createdAt).toLocaleDateString() : "N/A"}
                     </p>
                   </div>
-                </div>
-                <div
-                  className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-[672px] h-auto"
-                  dir="ltr"
-                >
-                  <div className="flex-shrink-0">
-                    <svg
-                      width="30"
-                      height="30"
-                      viewBox="0 0 30 30"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle cx="15" cy="15" r="15" fill="#FDF0D5" />
-                      <path
-                        d="M12.7496 20C12.7496 20 12.7481 20 12.7466 20C12.5464 19.9993 12.3559 19.919 12.2156 19.7765L9.21582 16.7298C8.92484 16.4343 8.92859 15.9595 9.22407 15.6692C9.51955 15.379 9.99352 15.382 10.2845 15.6775L12.7541 18.1856L19.7197 11.22C20.0129 10.9267 20.4868 10.9267 20.7801 11.22C21.0733 11.5125 21.0733 11.988 20.7801 12.2805L13.2806 19.781C13.1396 19.9213 12.9483 20 12.7496 20Z"
-                        fill="#ED4122"
-                        stroke="#ED4122"
-                        strokeWidth="0.5"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
+                  <div>
+                    <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                      {t("admin.questionDetails.fields.lastUpdate")}
+                    </label>
                     <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
-                      Question Approved by Emily Wong
-                    </p>
-                    <p className="font-roboto text-[12px] font-normal leading-[20px] text-dark-gray">
-                      Jan 25, 2024
+                      {question.updatedAt ? new Date(question.updatedAt).toLocaleDateString() : "N/A"}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Right Column */}
-          <div className="flex flex-col gap-6 lg:w-[376px]">
-            {/* Classification Card */}
-            <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[376px] h-auto lg:h-[338px]"
-              style={{}}
-            >
-              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
-                {t("admin.questionDetails.sections.classification")}
-              </h2>
-
-              <div className="border-t border-[#E5E7EB] pt-4"></div>
-
-              <div className="space-y-6 mt-4">
-                <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                    Exam
-                  </label>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
-                    Tahseely
-                  </p>
-                </div>
-                {/* Subject */}
-                <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                    {t("admin.questionDetails.fields.subject")}
-                  </label>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
-                    Geography
-                  </p>
-                </div>
-
-                {/* Topic */}
-                <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                    {t("admin.questionDetails.fields.topic")}
-                  </label>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
-                    European Capitals
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Workflow Information Card */}
-            <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full lg:w-[376px] h-auto lg:h-[338px]"
-              style={{}}
-            >
-              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
-                {t("admin.questionDetails.sections.workflowInformation")}
-              </h2>
-
-              <div className="border-t border-[#E5E7EB] pt-4"></div>
-
-              <div className="space-y-6 mt-4">
-                <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                    {t("admin.questionDetails.fields.createdBy")}
-                  </label>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
-                    Alice Johnson
-                  </p>
-                </div>
-                <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                    {t("admin.questionDetails.fields.submittedOn")}
-                  </label>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
-                    14-03-2024
-                  </p>
-                </div>
-                <div>
-                  <label className="mb-2 block font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                    {t("admin.questionDetails.fields.lastUpdate")}
-                  </label>
-                  <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
-                    15-03-2024
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default GathererQuestionDetailsPage;
+

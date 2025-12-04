@@ -1,13 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
+import questionsAPI from "../../api/questions";
+import examsAPI from "../../api/exams";
+import subjectsAPI from "../../api/subjects";
+import topicsAPI from "../../api/topics";
+import usersAPI from "../../api/users";
+import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 
 const Dropdown = ({ label, value, options, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   // Automatically show default if value is empty
-  const displayValue = value && value.trim() !== "" ? value : options[0];
+  const displayValue = value && value.trim() !== "" ? value : (options && options.length > 0 ? options[0] : "Select...");
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -76,16 +82,242 @@ const GathererAddNewQuestionPage = () => {
   const [questionType, setQuestionType] = useState("Multiple Choice (MCQ)");
   const [options, setOptions] = useState({ A: "", B: "", C: "", D: "" });
   const [correctAnswer, setCorrectAnswer] = useState("Option A");
-  const [subject, setSubject] = useState("");
-  const [exam, setExam] = useState("");
-  const [topic, setTopic] = useState("");
   const [source, setSource] = useState("");
-  const [_explanation, _setExplanation] = useState(
-    "Red and yellow are primary colors. When mixed, they create the secondary color orange."
-  );
+  const [explanation, setExplanation] = useState("");
+
+  // Classification state - storing IDs and names
+  const [examId, setExamId] = useState("");
+  const [examName, setExamName] = useState("");
+  const [subjectId, setSubjectId] = useState("");
+  const [subjectName, setSubjectName] = useState("");
+  const [topicId, setTopicId] = useState("");
+  const [topicName, setTopicName] = useState("");
+
+  // Processor assignment
+  const [processorId, setProcessorId] = useState("");
+  const [processorName, setProcessorName] = useState("");
+  const [processors, setProcessors] = useState([]);
+  const [loadingProcessors, setLoadingProcessors] = useState(false);
+
+  // Classification data lists
+  const [exams, setExams] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [topics, setTopics] = useState([]);
+
+  // Loading states
+  const [loadingExams, setLoadingExams] = useState(false);
+  const [loadingSubjects, setLoadingSubjects] = useState(false);
+  const [loadingTopics, setLoadingTopics] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleOptionChange = (option, value) => {
     setOptions((prev) => ({ ...prev, [option]: value }));
+  };
+
+  // Fetch exams on component mount
+  useEffect(() => {
+    const fetchExams = async () => {
+      setLoadingExams(true);
+      try {
+        const response = await examsAPI.getAllExams({ status: "active" });
+        if (response.success && response.data?.exams) {
+          setExams(response.data.exams);
+        }
+      } catch (error) {
+        showErrorToast(
+          error.message || "Failed to load exams",
+          { title: "Error" }
+        );
+      } finally {
+        setLoadingExams(false);
+      }
+    };
+    fetchExams();
+  }, []);
+
+  // Fetch subjects when exam changes
+  useEffect(() => {
+    if (!examId) {
+      setSubjects([]);
+      setSubjectId("");
+      setSubjectName("");
+      setTopics([]);
+      setTopicId("");
+      setTopicName("");
+      return;
+    }
+
+    const fetchSubjects = async () => {
+      setLoadingSubjects(true);
+      try {
+        const response = await subjectsAPI.getAllSubjects();
+        if (response.success && response.data?.subjects) {
+          // Filter subjects by exam if needed, or use all subjects
+          setSubjects(response.data.subjects);
+        }
+      } catch (error) {
+        showErrorToast(
+          error.message || "Failed to load subjects",
+          { title: "Error" }
+        );
+      } finally {
+        setLoadingSubjects(false);
+      }
+    };
+    fetchSubjects();
+  }, [examId]);
+
+  // Fetch topics when subject changes
+  useEffect(() => {
+    if (!subjectId) {
+      setTopics([]);
+      setTopicId("");
+      setTopicName("");
+      return;
+    }
+
+    const fetchTopics = async () => {
+      setLoadingTopics(true);
+      try {
+        const response = await questionsAPI.getTopicsBySubject(subjectId);
+        if (response.success && response.data?.topics) {
+          setTopics(response.data.topics);
+        }
+      } catch (error) {
+        showErrorToast(
+          error.message || "Failed to load topics",
+          { title: "Error" }
+        );
+      } finally {
+        setLoadingTopics(false);
+      }
+    };
+    fetchTopics();
+  }, [subjectId]);
+
+  // Fetch processors on component mount
+  useEffect(() => {
+    const fetchProcessors = async () => {
+      setLoadingProcessors(true);
+      try {
+        const response = await usersAPI.getAllUsers({ 
+          adminRole: 'processor',
+          status: 'active',
+          limit: 100 
+        });
+        if (response.success && response.data?.users) {
+          const loadedProcessors = response.data.users;
+          setProcessors(loadedProcessors);
+          console.log('Processors loaded:', loadedProcessors);
+          
+          // Auto-select first processor if available
+          if (loadedProcessors.length > 0 && !processorId) {
+            const firstProcessor = loadedProcessors[0];
+            const displayName = firstProcessor.name || firstProcessor.fullName || firstProcessor.username || "Unnamed Processor";
+            setProcessorId(firstProcessor.id);
+            setProcessorName(displayName);
+            console.log('Auto-selected first processor:', { id: firstProcessor.id, name: displayName });
+          }
+        } else if (response.success && response.data?.admins) {
+          // Fallback to admins if users is not available
+          const loadedProcessors = response.data.admins;
+          setProcessors(loadedProcessors);
+          console.log('Processors loaded (from admins):', loadedProcessors);
+          
+          // Auto-select first processor if available
+          if (loadedProcessors.length > 0 && !processorId) {
+            const firstProcessor = loadedProcessors[0];
+            const displayName = firstProcessor.username || firstProcessor.name || firstProcessor.fullName || "Unnamed Processor";
+            setProcessorId(firstProcessor.id);
+            setProcessorName(displayName);
+            console.log('Auto-selected first processor:', { id: firstProcessor.id, name: displayName });
+          }
+        }
+      } catch (error) {
+        showErrorToast(
+          error.message || "Failed to load processors",
+          { title: "Error" }
+        );
+      } finally {
+        setLoadingProcessors(false);
+      }
+    };
+    fetchProcessors();
+  }, []);
+
+  // Handle exam selection
+  const handleExamChange = (selectedExamName) => {
+    const selectedExam = exams.find((e) => e.name === selectedExamName);
+    if (selectedExam) {
+      setExamId(selectedExam.id);
+      setExamName(selectedExamName);
+    } else {
+      setExamId("");
+      setExamName(selectedExamName);
+    }
+    // Reset subject and topic
+    setSubjectId("");
+    setSubjectName("");
+    setTopicId("");
+    setTopicName("");
+  };
+
+  // Handle subject selection
+  const handleSubjectChange = (selectedSubjectName) => {
+    const selectedSubject = subjects.find((s) => s.name === selectedSubjectName);
+    if (selectedSubject) {
+      setSubjectId(selectedSubject.id);
+      setSubjectName(selectedSubjectName);
+    } else {
+      setSubjectId("");
+      setSubjectName(selectedSubjectName);
+    }
+    // Reset topic
+    setTopicId("");
+    setTopicName("");
+  };
+
+  // Handle topic selection
+  const handleTopicChange = (selectedTopicName) => {
+    const selectedTopic = topics.find((t) => t.name === selectedTopicName);
+    if (selectedTopic) {
+      setTopicId(selectedTopic.id);
+      setTopicName(selectedTopicName);
+    } else {
+      setTopicId("");
+      setTopicName(selectedTopicName);
+    }
+  };
+
+  // Handle processor selection
+  const handleProcessorChange = (selectedProcessorName) => {
+    // Find processor by matching name, fullName, or username
+    const selectedProcessor = processors.find((p) => {
+      const pName = p.name || p.fullName || p.username || "";
+      const normalizedSelected = selectedProcessorName.trim();
+      const normalizedPName = pName.trim();
+      return normalizedPName === normalizedSelected;
+    });
+    
+    if (selectedProcessor && selectedProcessor.id) {
+      setProcessorId(selectedProcessor.id);
+      setProcessorName(selectedProcessorName);
+      console.log('Processor selected:', { 
+        id: selectedProcessor.id, 
+        name: selectedProcessorName,
+        processor: selectedProcessor 
+      });
+    } else {
+      console.warn('Processor not found for:', selectedProcessorName);
+      console.warn('Available processors:', processors.map(p => ({
+        id: p.id,
+        name: p.name,
+        fullName: p.fullName,
+        username: p.username
+      })));
+      setProcessorId("");
+      setProcessorName(selectedProcessorName);
+    }
   };
 
   const _handleSaveDraft = () => {
@@ -93,9 +325,117 @@ const GathererAddNewQuestionPage = () => {
     console.log("Save draft");
   };
 
-  const handleSubmit = () => {
-    // TODO: Implement submit functionality
-    console.log("Submit");
+  const handleSubmit = async () => {
+    // Validation
+    if (!questionText.trim()) {
+      showErrorToast("Question text is required", { title: "Validation Error" });
+      return;
+    }
+
+    if (!examId) {
+      showErrorToast("Please select an exam", { title: "Validation Error" });
+      return;
+    }
+
+    if (!subjectId) {
+      showErrorToast("Please select a subject", { title: "Validation Error" });
+      return;
+    }
+
+    if (!topicId) {
+      showErrorToast("Please select a topic", { title: "Validation Error" });
+      return;
+    }
+
+    if (!processorId) {
+      showErrorToast("Please select a processor", { title: "Validation Error" });
+      return;
+    }
+
+    // Validate MCQ fields
+    if (questionType === "Multiple Choice (MCQ)") {
+      if (!options.A.trim() || !options.B.trim() || !options.C.trim() || !options.D.trim()) {
+        showErrorToast("All options are required", { title: "Validation Error" });
+        return;
+      }
+      if (!correctAnswer) {
+        showErrorToast("Please select a correct answer", { title: "Validation Error" });
+        return;
+      }
+    }
+
+    setSubmitting(true);
+    try {
+      // Map question type from display name to API value
+      const questionTypeMap = {
+        "Multiple Choice (MCQ)": "MCQ",
+        "True/False": "TRUE_FALSE",
+        "Short Answer": "SHORT_ANSWER",
+        "Essay": "ESSAY",
+      };
+      const apiQuestionType = questionTypeMap[questionType] || "MCQ";
+
+      // Map correct answer from "Option A" to "A"
+      const correctAnswerLetter = correctAnswer.replace("Option ", "");
+
+      // Prepare question data
+      const questionData = {
+        exam: examId,
+        subject: subjectId,
+        topic: topicId,
+        questionText: questionText.trim(),
+        questionType: apiQuestionType,
+        explanation: explanation?.trim() || "",
+      };
+
+      // Add processor assignment (required)
+      console.log('Before submission - processorId:', processorId, 'processorName:', processorName);
+      if (!processorId || processorId.trim() === "") {
+        showErrorToast("Please select a processor", { title: "Validation Error" });
+        setSubmitting(false);
+        return;
+      }
+      questionData.assignedProcessor = processorId;
+      console.log('Question data with processor:', questionData);
+
+      // Add MCQ-specific fields
+      if (apiQuestionType === "MCQ") {
+        questionData.options = {
+          A: options.A.trim(),
+          B: options.B.trim(),
+          C: options.C.trim(),
+          D: options.D.trim(),
+        };
+        questionData.correctAnswer = correctAnswerLetter;
+      }
+
+      // Call the API
+      const response = await questionsAPI.createQuestion(questionData);
+
+      if (response.success) {
+        showSuccessToast(
+          response.message || "Question created successfully",
+          { title: "Success" }
+        );
+        // Navigate to question bank after successful creation
+        setTimeout(() => {
+          navigate("/gatherer/question-bank");
+        }, 1500);
+      } else {
+        showErrorToast(
+          response.message || "Failed to create question",
+          { title: "Error" }
+        );
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to create question";
+      showErrorToast(errorMessage, { title: "Error" });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -118,15 +458,37 @@ const GathererAddNewQuestionPage = () => {
   }) => {
     const editorRef = useRef(null);
     const [isFocused, setIsFocused] = useState(false);
+    const lastSyncedValueRef = useRef(value);
 
+    // Initialize editor content on mount
     useEffect(() => {
-      if (editorRef.current && editorRef.current.innerHTML !== value) {
+      if (editorRef.current && value && !editorRef.current.innerHTML) {
         editorRef.current.innerHTML = value;
+        lastSyncedValueRef.current = value;
       }
-    }, [value]);
+    }, []);
+
+    // Only sync when value changes externally AND editor is not focused
+    // This prevents interference while user is typing
+    useEffect(() => {
+      if (editorRef.current && !isFocused) {
+        const currentContent = editorRef.current.innerHTML || '';
+        const newValue = value || '';
+        
+        // Only update if the value prop is different from what we last synced
+        // This means it changed externally, not from user input
+        if (lastSyncedValueRef.current !== newValue && currentContent !== newValue) {
+          editorRef.current.innerHTML = newValue;
+          lastSyncedValueRef.current = newValue;
+        }
+      }
+    }, [value, isFocused]);
 
     const handleInput = (e) => {
       const html = e.target.innerHTML;
+      // Update the last synced value to match what user typed
+      lastSyncedValueRef.current = html;
+      // Call onChange to update parent state
       onChange(html);
     };
 
@@ -922,9 +1284,12 @@ const GathererAddNewQuestionPage = () => {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 md:px-6 text-[14px] md:text-[16px] font-archivo font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]"
+                disabled={submitting}
+                className={`flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 md:px-6 text-[14px] md:text-[16px] font-archivo font-medium leading-[16px] text-white transition hover:bg-[#d43a1f] ${
+                  submitting ? "opacity-70 cursor-not-allowed" : ""
+                }`}
               >
-                {t('gatherer.addNewQuestion.submit')}
+                {submitting ? "Submitting..." : t('gatherer.addNewQuestion.submit')}
               </button>
             </div>
           </header>
@@ -1036,6 +1401,19 @@ const GathererAddNewQuestionPage = () => {
                     ]}
                   />
                 </div>
+
+                {/* Explanation (Optional) */}
+                <div>
+                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                    {t('gatherer.addNewQuestion.explanation')} <span className="text-gray-500 text-sm">({t('gatherer.addNewQuestion.optional')})</span>
+                  </label>
+                  <RichTextEditor
+                    value={explanation}
+                    onChange={setExplanation}
+                    placeholder={t('gatherer.addNewQuestion.placeholders.explanation')}
+                    minHeight="150px"
+                  />
+                </div>
               </div>
             </div>
 
@@ -1053,12 +1431,15 @@ const GathererAddNewQuestionPage = () => {
                     {t('gatherer.addNewQuestion.classification.exam')}
                   </label>
                   <Dropdown
-                    value={exam}
-                    onChange={setExam}
-                    options={[
-                      'Tahseely',
-                      'Qudrat',
-                    ]}
+                    value={examName}
+                    onChange={handleExamChange}
+                    options={
+                      loadingExams
+                        ? [t('gatherer.addNewQuestion.messages.loading')]
+                        : exams.length > 0
+                        ? exams.map((exam) => exam.name || "Unnamed Exam").filter(Boolean)
+                        : [t('gatherer.addNewQuestion.messages.noExamsAvailable')]
+                    }
                   />
                 </div>
 
@@ -1067,14 +1448,17 @@ const GathererAddNewQuestionPage = () => {
                     {t('gatherer.addNewQuestion.classification.subject')}
                   </label>
                   <Dropdown
-                    value={subject}
-                    onChange={setSubject}
-                    options={[
-                      'Math',
-                      'Science',
-                      'History',
-                      'Geography'
-                    ]}
+                    value={subjectName}
+                    onChange={handleSubjectChange}
+                    options={
+                      !examId
+                        ? [t('gatherer.addNewQuestion.messages.selectExamFirst')]
+                        : loadingSubjects
+                        ? [t('gatherer.addNewQuestion.messages.loading')]
+                        : subjects.length > 0
+                        ? subjects.map((subject) => subject.name || "Unnamed Subject").filter(Boolean)
+                        : [t('gatherer.addNewQuestion.messages.noSubjectsAvailable')]
+                    }
                   />
                 </div>
 
@@ -1084,13 +1468,17 @@ const GathererAddNewQuestionPage = () => {
                     {t('gatherer.addNewQuestion.classification.topic')}
                   </label>
                   <Dropdown
-                    value={topic}
-                    onChange={setTopic}
-                    options={[
-                      'Algebra',
-                      'Geometry',
-                      'Calculus'
-                    ]}
+                    value={topicName}
+                    onChange={handleTopicChange}
+                    options={
+                      !subjectId
+                        ? [t('gatherer.addNewQuestion.messages.selectSubjectFirst')]
+                        : loadingTopics
+                        ? [t('gatherer.addNewQuestion.messages.loading')]
+                        : topics.length > 0
+                        ? topics.map((topic) => topic.name || "Unnamed Topic").filter(Boolean)
+                        : [t('gatherer.addNewQuestion.messages.noTopicsAvailable')]
+                    }
                   />
                 </div>
 
@@ -1105,6 +1493,27 @@ const GathererAddNewQuestionPage = () => {
                     onChange={(e) => setSource(e.target.value)}
                     className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                     placeholder={t('gatherer.addNewQuestion.placeholders.reference')}
+                  />
+                </div>
+
+                {/* Processor Assignment */}
+                <div>
+                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                    {t('gatherer.addNewQuestion.classification.processor')} <span className="text-red-500 text-sm">*</span>
+                  </label>
+                  <Dropdown
+                    value={processorId ? processorName : ""}
+                    onChange={handleProcessorChange}
+                    options={
+                      loadingProcessors
+                        ? [t('gatherer.addNewQuestion.messages.loading')]
+                        : processors.length > 0
+                        ? processors.map((processor) => {
+                            const displayName = processor.name || processor.fullName || processor.username || "Unnamed Processor";
+                            return displayName;
+                          }).filter(Boolean)
+                        : [t('gatherer.addNewQuestion.messages.noProcessorsAvailable')]
+                    }
                   />
                 </div>
               </div>
