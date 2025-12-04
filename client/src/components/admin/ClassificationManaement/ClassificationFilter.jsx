@@ -70,6 +70,11 @@ const ClassificationFilter = ({
               type="text"
               value={searchValue}
               onChange={(e) => onSearchChange?.(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                }
+              }}
               placeholder={placeholder}
               className="flex-1 h-full rounded-lg bg-transparent px-3 text-sm font-roboto text-oxford-blue placeholder:text-[#9CA3AF] focus:outline-none"
             />

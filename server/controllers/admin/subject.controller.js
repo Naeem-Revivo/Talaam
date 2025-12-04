@@ -51,6 +51,7 @@ const createSubject = async (req, res, next) => {
         subject: {
           id: subject.id,
           name: subject.name,
+          description: subject.description || '',
           createdAt: subject.createdAt,
           updatedAt: subject.updatedAt,
         },
@@ -91,6 +92,7 @@ const getAllSubjects = async (req, res, next) => {
         subjects: subjects.map((subject) => ({
           id: subject.id,
           name: subject.name,
+          description: subject.description || '',
           createdAt: subject.createdAt,
           updatedAt: subject.updatedAt,
         })),
@@ -133,6 +135,7 @@ const getSubjectById = async (req, res, next) => {
         subject: {
           id: subject.id,
           name: subject.name,
+          description: subject.description || '',
           createdAt: subject.createdAt,
           updatedAt: subject.updatedAt,
         },
@@ -219,6 +222,7 @@ const updateSubject = async (req, res, next) => {
         subject: {
           id: updatedSubject.id,
           name: updatedSubject.name,
+          description: updatedSubject.description || '',
           createdAt: updatedSubject.createdAt,
           updatedAt: updatedSubject.updatedAt,
         },

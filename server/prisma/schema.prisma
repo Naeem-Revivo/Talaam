@@ -95,6 +95,7 @@ model Subscription {
 model Exam {
   id          String         @id @default(uuid())
   name        String
+  description String?        // Optional description field
   status      String         @default("active") // active, inactive
   createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz

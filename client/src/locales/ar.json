@@ -1333,16 +1333,44 @@
       "fields": {
         "examName": "الامتحان",
         "subject": "المادة",
-        "description": "الوصف"
+        "description": "الوصف",
+        "status": "الحالة"
       },
       "placeholders": {
         "examName": "مثال: الامتحان النهائي 2024",
         "subject": "مثال: الرياضيات",
         "description": "وصف موجز للامتحان"
       },
+      "status": {
+        "active": "نشط",
+        "suspend": "تعليق"
+      },
       "buttons": {
         "cancel": "إلغاء",
         "saveExam": "حفظ الامتحان"
+      }
+    },
+    "editExam": {
+      "hero": {
+        "title": "تعديل الامتحان",
+        "subtitle": "تحديث معلومات وإعدادات الامتحان"
+      },
+      "fields": {
+        "examName": "اسم الامتحان",
+        "description": "الوصف",
+        "status": "الحالة"
+      },
+      "placeholders": {
+        "examName": "أدخل اسم الامتحان",
+        "description": "أدخل الوصف"
+      },
+      "status": {
+        "active": "نشط",
+        "suspend": "تعليق"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "updateExam": "تحديث الامتحان"
       }
     },
     "questionDetails": {
@@ -2008,10 +2036,12 @@
         "columns": {
           "subjectName": "اسم الموضوع",
           "topicName": "اسم الموضوع",
+          "parentSubject": "الموضوع الأصلي",
           "subtopicName": "اسم الموضوع الفرعي",
           "conceptName": "اسم المفهوم",
           "examName": "اسم الاختبار",
           "description": "الوصف",
+          "status": "الحالة",
           "createdBy": "تم الإنشاء بواسطة",
           "date": "التاريخ",
           "linkedSubtopic": "الموضوع الفرعي المرتبط",
@@ -2087,6 +2117,24 @@
         "create": "إنشاء"
       }
     },
+    "editSubject": {
+      "hero": {
+        "title": "تعديل الموضوع",
+        "subtitle": "تحديث معلومات وإعدادات الموضوع"
+      },
+      "fields": {
+        "subjectName": "اسم الموضوع",
+        "description": "الوصف"
+      },
+      "placeholders": {
+        "subjectName": "أدخل اسم الموضوع",
+        "description": "أدخل الوصف"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "updateSubject": "تحديث الموضوع"
+      }
+    },
     "addTopic": {
       "hero": {
         "title": "إضافة موضوع جديد",
@@ -2102,12 +2150,35 @@
       },
       "placeholders": {
         "subjectName": "أدخل اسم الموضوع",
+        "selectSubject": "اختر موضوع",
+        "loadingSubjects": "جاري تحميل المواضيع...",
         "topicName": "أدخل اسم الموضوع",
         "description": "وصف موجز للموضوع"
       },
       "buttons": {
         "cancel": "إلغاء",
         "create": "إنشاء"
+      }
+    },
+    "editTopic": {
+      "hero": {
+        "title": "تعديل الموضوع",
+        "subtitle": "تحديث معلومات وإعدادات الموضوع"
+      },
+      "fields": {
+        "parentSubject": "الموضوع الأصلي",
+        "topicName": "اسم الموضوع",
+        "description": "الوصف"
+      },
+      "placeholders": {
+        "selectSubject": "اختر موضوع",
+        "loadingSubjects": "جاري تحميل المواضيع...",
+        "topicName": "أدخل اسم الموضوع",
+        "description": "أدخل الوصف"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "updateTopic": "تحديث الموضوع"
       }
     },
     "addSubtopic": {

@@ -38,6 +38,7 @@ const examsAPI = {
     try {
       const apiData = {
         name: examData.name?.trim(),
+        description: examData.description?.trim() || null,
         status: examData.status || 'active',
       };
 
@@ -54,6 +55,7 @@ const examsAPI = {
     try {
       const apiData = {};
       if (examData.name !== undefined) apiData.name = examData.name?.trim();
+      if (examData.description !== undefined) apiData.description = examData.description?.trim() || null;
       if (examData.status !== undefined) apiData.status = examData.status;
 
       const response = await axiosClient.put(`/admin/exams/${examId}`, apiData);

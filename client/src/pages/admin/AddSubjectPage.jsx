@@ -1,23 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { useLanguage } from "../../context/LanguageContext";
+import { createSubject, clearError, clearSuccess } from "../../store/slices/subjectsSlice";
+import { showErrorToast, showSuccessToast } from "../../utils/toastConfig";
 
 export default function AddSubjectPage() {
     const { t } = useLanguage();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { loading, error, success } = useSelector((state) => state.subjects);
+    
     const [subjectName, setSubjectName] = useState("");
     const [description, setDescription] = useState("");
     const [code, setCode] = useState("");
 
-    const handleSubmit = (e) => {
+    // Handle success
+    useEffect(() => {
+        if (success) {
+            showSuccessToast("Subject created successfully");
+            dispatch(clearSuccess());
+            navigate("/admin/classification");
+        }
+    }, [success, navigate, dispatch]);
+
+    // Handle error
+    useEffect(() => {
+        if (error) {
+            showErrorToast(error);
+            dispatch(clearError());
+        }
+    }, [error, dispatch]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const subjectData = { subjectName, description, code };
-        console.log("Created Subject:", subjectData);
-        // TODO: Add API call or database save logic here
+        const subjectData = {
+            name: subjectName,
+            description: description,
+        };
+        dispatch(createSubject(subjectData));
     };
 
     const handleCancel = () => {
-        setSubjectName("");
-        setDescription("");
-        setCode("");
+        navigate("/admin/classification");
     };
 
     return (
@@ -80,15 +105,17 @@ export default function AddSubjectPage() {
                             <button
                                 type="button"
                                 onClick={handleCancel}
-                                className="px-4 sm:w-[120px] py-2 border border-[#E5E7EB] w-full rounded-lg text-base text-blue-dark font-medium bg-white hover:bg-gray-100 transition"
+                                disabled={loading}
+                                className="px-4 sm:w-[120px] py-2 border border-[#E5E7EB] w-full rounded-lg text-base text-blue-dark font-medium bg-white hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {t('admin.addSubject.buttons.cancel')}
                             </button>
                             <button
                                 type="submit"
-                                className="sm:w-[120px] py-2 bg-orange-dark w-full text-white text-base font-medium rounded-md hover:bg-orange-600 transition"
+                                disabled={loading}
+                                className="sm:w-[120px] py-2 bg-orange-dark w-full text-white text-base font-medium rounded-md hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {t('admin.addSubject.buttons.create')}
+                                {loading ? 'Creating...' : t('admin.addSubject.buttons.create')}
                             </button>
                         </div>
                     </form>
