@@ -54,13 +54,20 @@ const TableRow = ({ item, columns, onView, onEdit, onStatusToggle, t, activeTab 
                 }
                 
                 const value = item[column.key] || "—";
+                const isDescription = column.key === "description";
 
                 return (
                     <td
                         key={column.key}
-                        className={`px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center`}
+                        className={`px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center ${isDescription ? "max-w-[200px]" : ""}`}
                     >
-                        {value}
+                        {isDescription ? (
+                            <div className="max-w-[200px] mx-auto truncate" title={value}>
+                                {value}
+                            </div>
+                        ) : (
+                            value
+                        )}
                     </td>
                 );
             })}
@@ -165,13 +172,16 @@ const MobileCard = ({ item, columns, onView, onEdit, onStatusToggle, t, activeTa
                     
                     const value = item[column.key] || "—"; 
                     const icon = iconMap[column.key.toLowerCase()] || <FileText size={16} className="text-oxford-blue" />;
+                    const isDescription = column.key === "description";
 
                     return (
                         <div key={column.key} className="flex items-start gap-2">
                             {icon}
-                            <p className="text-[14px] font-roboto text-[#1F2937]">
+                            <p className={`text-[14px] font-roboto text-[#1F2937] ${isDescription ? "flex-1 min-w-0" : ""}`}>
                                 <span className="font-semibold capitalize">{column.label}:</span>{" "}
-                                <span className="text-[#374151]">{value}</span>
+                                <span className={`text-[#374151] ${isDescription ? "block truncate" : ""}`} title={isDescription ? value : undefined}>
+                                    {value}
+                                </span>
                             </p>
                         </div>
                     );
@@ -314,7 +324,7 @@ const ClassificationTable = ({
     const { t } = useLanguage();
 
     return (
-        <section className="w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard md:min-h-[348px]">
+        <section className={`w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard ${items.length === 0 ? "md:min-h-[280px]" : ""}`}>
             <div className="hidden overflow-x-auto md:block">
                 <table className="min-w-full border-collapse">
                     <TableHeader columns={columns} />
@@ -336,9 +346,11 @@ const ClassificationTable = ({
                             <tr>
                                 <td
                                     colSpan={columns.length}
-                                    className="px-6 py-10 text-center text-sm text-dark-gray"
+                                    className="p-4 text-center text-sm text-dark-gray"
                                 >
-                                    {emptyMessage}
+                                    <div className="flex items-center justify-center min-h-[180px]">
+                                        {emptyMessage}
+                                    </div>
                                 </td>
                             </tr>
                         )}

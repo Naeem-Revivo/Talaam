@@ -4,7 +4,7 @@ const transporter = require('./transporter');
  * Base email template styles (shared across all email templates)
  */
 const getBaseEmailStyles = () => {
-  return `
+    return `
     /* Reset and base styles */
     body {
         margin: 0;
@@ -155,7 +155,11 @@ const getBaseEmailStyles = () => {
         }
 
         .main-title {
+            font-family: 'Archivo', sans-serif;
+            font-weight: 700;
             font-size: 24px;
+            line-height: 40px;
+            color: #032746;
         }
 
         .content {
@@ -179,7 +183,7 @@ const getBaseEmailStyles = () => {
  * Create OTP email template
  */
 function createOTPEmailTemplate(userName, otp) {
-  return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -231,7 +235,7 @@ function createOTPEmailTemplate(userName, otp) {
  * Create password reset email template
  */
 function createPasswordResetEmailTemplate(userName, resetUrl) {
-  return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -295,72 +299,72 @@ function createPasswordResetEmailTemplate(userName, resetUrl) {
 
 // Send OTP email
 const sendOTPEmail = async (email, name, otp) => {
-  // Validate email configuration
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    const error = new Error('SMTP configuration is missing. SMTP_USER and SMTP_PASS environment variables are required.');
-    console.error('Email configuration error:', error.message);
-    throw error;
-  }
+    // Validate email configuration
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        const error = new Error('SMTP configuration is missing. SMTP_USER and SMTP_PASS environment variables are required.');
+        console.error('Email configuration error:', error.message);
+        throw error;
+    }
 
-  // Use generic greeting if name is same as email (name not provided)
-  const userName = name === email ? name.split('@')[0] : name;
-  
-  const mailOptions = {
-    from: `"${process.env.SMTP_FROM_NAME || 'Talaam'}" <${process.env.SMTP_USER}>`,
-    to: email,
-    subject: 'Email Verification OTP - Talaam',
-    html: createOTPEmailTemplate(userName, otp),
-  };
+    // Use generic greeting if name is same as email (name not provided)
+    const userName = name === email ? name.split('@')[0] : name;
 
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('OTP email sent successfully:', info.messageId);
-    return info;
-  } catch (error) {
-    console.error('Error sending OTP email:', error);
-    throw error;
-  }
+    const mailOptions = {
+        from: `"${process.env.SMTP_FROM_NAME || 'Talaam'}" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: 'Email Verification OTP - Talaam',
+        html: createOTPEmailTemplate(userName, otp),
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('OTP email sent successfully:', info.messageId);
+        return info;
+    } catch (error) {
+        console.error('Error sending OTP email:', error);
+        throw error;
+    }
 };
 
 // Send password reset email
 const sendPasswordResetEmail = async (email, name, resetToken) => {
-  // Validate email configuration
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    const error = new Error('SMTP configuration is missing. SMTP_USER and SMTP_PASS environment variables are required.');
-    console.error('Email configuration error:', error.message);
-    throw error;
-  }
+    // Validate email configuration
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        const error = new Error('SMTP configuration is missing. SMTP_USER and SMTP_PASS environment variables are required.');
+        console.error('Email configuration error:', error.message);
+        throw error;
+    }
 
-  // Use generic greeting if name is same as email (name not provided)
-  const userName = name === email ? name.split('@')[0] : name;
-  const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/set-new-password?token=${resetToken}`;
+    // Use generic greeting if name is same as email (name not provided)
+    const userName = name === email ? name.split('@')[0] : name;
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/set-new-password?token=${resetToken}`;
 
-  const mailOptions = {
-    from: `"${process.env.SMTP_FROM_NAME || 'Talaam'}" <${process.env.SMTP_USER}>`,
-    to: email,
-    subject: 'Password Reset Request - Talaam',
-    html: createPasswordResetEmailTemplate(userName, resetUrl),
-  };
+    const mailOptions = {
+        from: `"${process.env.SMTP_FROM_NAME || 'Talaam'}" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: 'Password Reset Request - Talaam',
+        html: createPasswordResetEmailTemplate(userName, resetUrl),
+    };
 
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Password reset email sent successfully:', info.messageId);
-    return info;
-  } catch (error) {
-    console.error('Error sending password reset email:', error);
-    throw error;
-  }
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Password reset email sent successfully:', info.messageId);
+        return info;
+    } catch (error) {
+        console.error('Error sending password reset email:', error);
+        throw error;
+    }
 };
 
 /**
  * Create Taalam account creation email template
  */
 function createTaalamAccountEmail(userData) {
-  const { userName, userEmail, userRole, userPassword } = userData;
-  
-  const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login`;
-  
-  return `<!DOCTYPE html>
+    const { userName, userEmail, userRole, userPassword } = userData;
+
+    const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login`;
+
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -382,10 +386,11 @@ function createTaalamAccountEmail(userData) {
             font-size: 16px;
             font-weight: 600;
             margin: 0;
-            color: #000000;
+            color: #032746;
             padding: 20px;
             background-color: #ffffff;
             border-bottom: 1px solid #e0e0e0;
+            font-family: 'Archivo', sans-serif;
         }
 
         .detail-row {
@@ -500,60 +505,273 @@ function createTaalamAccountEmail(userData) {
  * Send Taalam account creation email
  */
 const sendTaalamAccountEmail = async (email, name, role, password) => {
-  // Validate email configuration
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    const error = new Error('SMTP configuration is missing. SMTP_USER and SMTP_PASS environment variables are required.');
-    console.error('Email configuration error:', error.message);
-    throw error;
-  }
+    // Validate email configuration
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        const error = new Error('SMTP configuration is missing. SMTP_USER and SMTP_PASS environment variables are required.');
+        console.error('Email configuration error:', error.message);
+        throw error;
+    }
 
-  const userData = {
-    userName: name || email,
-    userEmail: email,
-    userRole: role.charAt(0).toUpperCase() + role.slice(1), // Capitalize first letter
-    userPassword: password,
-  };
+    const userData = {
+        userName: name || email,
+        userEmail: email,
+        userRole: role.charAt(0).toUpperCase() + role.slice(1), // Capitalize first letter
+        userPassword: password,
+    };
 
-  const mailOptions = {
-    from: `"${process.env.SMTP_FROM_NAME || 'Talaam'}" <${process.env.SMTP_USER}>`,
-    to: email,
-    subject: 'Your Taalam Account Has Been Created',
-    html: createTaalamAccountEmail(userData),
-  };
+    const mailOptions = {
+        from: `"${process.env.SMTP_FROM_NAME || 'Talaam'}" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: 'Your Taalam Account Has Been Created',
+        html: createTaalamAccountEmail(userData),
+    };
 
-  console.log('Attempting to send account creation email:', {
-    to: email,
-    from: mailOptions.from,
-    role: role,
-    smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
-    smtpUser: process.env.SMTP_USER ? 'Set' : 'Missing',
-  });
-
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Taalam account creation email sent successfully:', {
-      messageId: info.messageId,
-      to: email,
-      accepted: info.accepted,
-      rejected: info.rejected,
+    console.log('Attempting to send account creation email:', {
+        to: email,
+        from: mailOptions.from,
+        role: role,
+        smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
+        smtpUser: process.env.SMTP_USER ? 'Set' : 'Missing',
     });
-    return info;
-  } catch (error) {
-    console.error('Error sending Taalam account creation email:', {
-      message: error.message,
-      code: error.code,
-      responseCode: error.responseCode,
-      command: error.command,
-      response: error.response,
-      to: email,
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Taalam account creation email sent successfully:', {
+            messageId: info.messageId,
+            to: email,
+            accepted: info.accepted,
+            rejected: info.rejected,
+        });
+        return info;
+    } catch (error) {
+        console.error('Error sending Taalam account creation email:', {
+            message: error.message,
+            code: error.code,
+            responseCode: error.responseCode,
+            command: error.command,
+            response: error.response,
+            to: email,
+        });
+        throw error;
+    }
+};
+
+/**
+ * Create role change notification email template
+ */
+function createRoleChangeEmailTemplate(userData) {
+    const { userName, userEmail, oldRole, newRole } = userData;
+
+    const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login`;
+
+    // Map role codes to display names
+    const roleDisplayNames = {
+        gatherer: 'Question Gatherer',
+        creator: 'Question Creator',
+        explainer: 'Question Explainer',
+        processor: 'Processor',
+    };
+
+    const oldRoleDisplay = roleDisplayNames[oldRole] || oldRole;
+    const newRoleDisplay = roleDisplayNames[newRole] || newRole;
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Updated - Taalam</title>
+    <style>
+        ${getBaseEmailStyles()}
+        
+        /* Role change details box */
+        .role-change-details {
+            border: 1px solid #e0e0e0;
+            margin: 0 0 30px 0;
+            border-radius: 6px;
+            background-color: #f9f9f9;
+            overflow: hidden;
+        }
+
+        .role-change-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            color: #032746;
+            padding: 20px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+            font-family: 'Archivo', sans-serif;
+        }
+
+        .role-change-row {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            justify-content: space-between;
+        }
+
+        .role-change-row:last-of-type {
+            border-bottom: none;
+        }
+
+        .role-change-label {
+            font-weight: 600;
+            color: #003d6b;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+
+        .role-change-value {
+            color: #666666;
+            flex-grow: 1;
+            text-align: right;
+            font-size: 14px;
+        }
+
+        .old-role {
+            color: #999999;
+            text-decoration: line-through;
+        }
+
+        .new-role {
+            color: #032746;
+            font-weight: 600;
+        }
+
+        /* Mobile responsiveness for role change details */
+        @media only screen and (max-width: 600px) {
+            .role-change-row {
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+            }
+
+            .role-change-value {
+                text-align: left;
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="main-title">Your Role Has Been Updated</h1>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <p class="greeting">Hello ${userName},</p>
+            <p class="description">Your workflow role on Taalam-Question Bank Management System has been updated by the administrator.</p>
+
+            <!-- Role Change Details Box -->
+            <div class="role-change-details">
+                <h2 class="role-change-title">Role Update Details</h2>
+
+                <div class="role-change-row">
+                    <div class="role-change-label">Email:</div>
+                    <div class="role-change-value">${userEmail}</div>
+                </div>
+
+                <div class="role-change-row">
+                    <div class="role-change-label">Previous Role:</div>
+                    <div class="role-change-value">
+                        <span class="old-role">${oldRoleDisplay}</span>
+                    </div>
+                </div>
+
+                <div class="role-change-row">
+                    <div class="role-change-label">New Role:</div>
+                    <div class="role-change-value">
+                        <span class="new-role">${newRoleDisplay}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login Section -->
+            <div class="button-section">
+                <a href="${loginUrl}" class="action-button">Login to Your Account</a>
+            </div>
+
+            <!-- Security Note -->
+            <div class="security-note">
+                <strong>Note:</strong> If you have any questions about this role change, please contact your system administrator.
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p class="contact-note">If you face any issue accessing your account, please contact your system administrator.</p>
+        </div>
+    </div>
+</body>
+</html>`;
+}
+
+/**
+ * Send role change notification email
+ */
+const sendRoleChangeEmail = async (email, name, oldRole, newRole) => {
+    // Validate email configuration
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        const error = new Error('SMTP configuration is missing. SMTP_USER and SMTP_PASS environment variables are required.');
+        console.error('Email configuration error:', error.message);
+        throw error;
+    }
+
+    const userData = {
+        userName: name || email,
+        userEmail: email,
+        oldRole: oldRole || 'N/A',
+        newRole: newRole || 'N/A',
+    };
+
+    const mailOptions = {
+        from: `"${process.env.SMTP_FROM_NAME || 'Talaam'}" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: 'Your Role Has Been Updated - Taalam',
+        html: createRoleChangeEmailTemplate(userData),
+    };
+
+    console.log('Attempting to send role change email:', {
+        to: email,
+        from: mailOptions.from,
+        oldRole: oldRole,
+        newRole: newRole,
+        smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
+        smtpUser: process.env.SMTP_USER ? 'Set' : 'Missing',
     });
-    throw error;
-  }
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Role change email sent successfully:', {
+            messageId: info.messageId,
+            to: email,
+            accepted: info.accepted,
+            rejected: info.rejected,
+        });
+        return info;
+    } catch (error) {
+        console.error('Error sending role change email:', {
+            message: error.message,
+            code: error.code,
+            responseCode: error.responseCode,
+            command: error.command,
+            response: error.response,
+            to: email,
+        });
+        throw error;
+    }
 };
 
 module.exports = {
-  sendOTPEmail,
-  sendPasswordResetEmail,
-  sendTaalamAccountEmail,
+    sendOTPEmail,
+    sendPasswordResetEmail,
+    sendTaalamAccountEmail,
+    sendRoleChangeEmail,
 };
 

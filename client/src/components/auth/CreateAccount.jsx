@@ -5,6 +5,7 @@ import { eye, openeye, google, linkedin } from '../../assets/svg/signup'
 import { useDispatch, useSelector } from 'react-redux'
 import { signup } from '../../store/slices/authSlice'
 import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
+import { getTranslatedAuthMessage } from '../../utils/authMessages'
 
 const CreateAccount = () => {
   const { language, t } = useLanguage()
@@ -55,9 +56,9 @@ const CreateAccount = () => {
     switch (name) {
       case 'email':
         if (!value.trim()) {
-          newErrors.email = 'Email is required'
+          newErrors.email = t('createAccount.validation.emailRequired')
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          newErrors.email = 'Please enter a valid email address'
+          newErrors.email = t('createAccount.validation.emailInvalid')
         } else {
           newErrors.email = ''
         }
@@ -69,11 +70,11 @@ const CreateAccount = () => {
         const currentPasswordValid = Object.values(currentPasswordRequirements).every(Boolean)
         
         if (!value.trim()) {
-          newErrors.password = 'Password is required'
-          newErrors.passwordRequirements = 'Password must meet all requirements'
+          newErrors.password = t('createAccount.validation.passwordRequired')
+          newErrors.passwordRequirements = t('createAccount.validation.passwordRequirements')
         } else if (!currentPasswordValid) {
           newErrors.password = ''
-          newErrors.passwordRequirements = 'Password must meet all requirements'
+          newErrors.passwordRequirements = t('createAccount.validation.passwordRequirements')
         } else {
           // All requirements met - clear both errors
           newErrors.password = ''
@@ -83,7 +84,7 @@ const CreateAccount = () => {
         // If confirmPassword is filled, validate it again
         if (formData.confirmPassword) {
           if (value !== formData.confirmPassword) {
-            newErrors.confirmPassword = 'Passwords do not match'
+            newErrors.confirmPassword = t('createAccount.validation.passwordsMismatch')
           } else {
             newErrors.confirmPassword = ''
           }
@@ -92,9 +93,9 @@ const CreateAccount = () => {
         
       case 'confirmPassword':
         if (!value.trim()) {
-          newErrors.confirmPassword = 'Please confirm your password'
+          newErrors.confirmPassword = t('createAccount.validation.confirmPasswordRequired')
         } else if (value !== formData.password) {
-          newErrors.confirmPassword = 'Passwords do not match'
+          newErrors.confirmPassword = t('createAccount.validation.passwordsMismatch')
         } else {
           newErrors.confirmPassword = ''
         }
@@ -131,10 +132,10 @@ const CreateAccount = () => {
 
     // Email validation
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required'
+      newErrors.email = t('createAccount.validation.emailRequired')
       isValid = false
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = t('createAccount.validation.emailInvalid')
       isValid = false
     } else {
       newErrors.email = ''
@@ -142,12 +143,12 @@ const CreateAccount = () => {
 
     // Password validation
     if (!formData.password.trim()) {
-      newErrors.password = 'Password is required'
-      newErrors.passwordRequirements = 'Password must meet all requirements'
+      newErrors.password = t('createAccount.validation.passwordRequired')
+      newErrors.passwordRequirements = t('createAccount.validation.passwordRequirements')
       isValid = false
     } else if (!isPasswordValid()) {
       newErrors.password = ''
-      newErrors.passwordRequirements = 'Password must meet all requirements'
+      newErrors.passwordRequirements = t('createAccount.validation.passwordRequirements')
       isValid = false
     } else {
       newErrors.password = ''
@@ -156,10 +157,10 @@ const CreateAccount = () => {
 
     // Confirm password validation
     if (!formData.confirmPassword.trim()) {
-      newErrors.confirmPassword = 'Please confirm your password'
+      newErrors.confirmPassword = t('createAccount.validation.confirmPasswordRequired')
       isValid = false
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword = t('createAccount.validation.passwordsMismatch')
       isValid = false
     } else {
       newErrors.confirmPassword = ''
@@ -184,27 +185,26 @@ const CreateAccount = () => {
       )
 
       if (signup.fulfilled.match(resultAction)) {
-        const message =
-          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
-          resultAction.payload?.message ||
-          t('createAccount.success') ||
-          'Account created successfully.'
+        const backendMessage = resultAction.payload?.message || 'Account created successfully.'
+        const message = getTranslatedAuthMessage(backendMessage, t, 'createAccount.success') || t('createAccount.success') || 'Account created successfully.'
 
         showSuccessToast(message, { title: t('createAccount.successTitle') || 'Account Created', isAuth: true })
         navigate('/verify-email')
       } else {
-        const msg =
+        const backendMessage = 
           (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
-          t('createAccount.errors.generic') ||
-          'Signup failed.'
+          null
+        
+        const msg = backendMessage
+          ? getTranslatedAuthMessage(backendMessage, t, 'createAccount.errors.generic')
+          : t('createAccount.errors.generic') || 'Signup failed. Please try again.'
+        
         showErrorToast(msg, { title: t('createAccount.errors.title') || 'Signup Failed', isAuth: true })
       }
     } catch (e) {
-      showErrorToast(
-        t('createAccount.errors.generic') || 'Signup failed.',
-        { title: t('createAccount.errors.title') || 'Signup Failed', isAuth: true }
-      )
+      const defaultError = t('auth.errors.default') || 'An unexpected error occurred. Please try again.'
+      showErrorToast(defaultError, { title: t('createAccount.errors.title') || 'Signup Failed', isAuth: true })
     }
   }
 

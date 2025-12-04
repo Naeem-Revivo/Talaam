@@ -65,9 +65,12 @@ if (process.env.VERCEL !== '1') {
       await connectDBOnce();
       
       const PORT = process.env.PORT || 5000;
-      const HOST = process.env.HOST || 'localhost';
+      // Sanitize HOST: remove protocol prefixes (http://, https://) and trailing slashes
+      let HOST = process.env.HOST || '0.0.0.0';
+      HOST = HOST.replace(/^https?:\/\//, '').replace(/\/$/, '');
       app.listen(PORT, HOST, () => {
         console.log(`Server running on http://${HOST}:${PORT}`);
+        console.log(`Server accessible on network at http://${HOST}:${PORT}`);
       });
     } catch (error) {
       console.error('Failed to start server:', error);

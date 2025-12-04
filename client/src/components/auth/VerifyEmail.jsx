@@ -4,6 +4,7 @@ import { useLanguage } from '../../context/LanguageContext'
 import { resendOTP, verifyOTP } from '../../store/slices/authSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
+import { getTranslatedAuthMessage } from '../../utils/authMessages'
 
 const VerifyEmail = () => {
   const { language, t } = useLanguage()
@@ -91,7 +92,7 @@ const VerifyEmail = () => {
   const validateCode = () => {
     const fullCode = code.join('')
     if (fullCode.length !== 6) {
-      return 'Please enter the complete 6-digit verification code'
+      return t('verifyEmail.validation.codeRequired')
     }
     return ''
   }
@@ -113,25 +114,24 @@ const VerifyEmail = () => {
     try {
       const resultAction = await dispatch(resendOTP({ email: user.email }))
       if (resendOTP.fulfilled.match(resultAction)) {
-        const msg =
-          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
-          resultAction.payload?.message ||
-          t('verifyEmail.resendSuccess') ||
-          'Verification code resent to your email.'
+        const backendMessage = resultAction.payload?.message || 'OTP resent to your email'
+        const msg = getTranslatedAuthMessage(backendMessage, t, 'verifyEmail.resendSuccess') || t('verifyEmail.resendSuccess') || 'Verification code has been resent to your email.'
         showSuccessToast(msg, { title: t('verifyEmail.resendTitle') || 'Code Resent', isAuth: true })
       } else {
-        const msg =
+        const backendMessage = 
           (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
-          t('verifyEmail.errors.resend') ||
-          'Failed to resend verification code.'
+          null
+        
+        const msg = backendMessage
+          ? getTranslatedAuthMessage(backendMessage, t, 'verifyEmail.errors.resend')
+          : t('verifyEmail.errors.resend') || 'Failed to resend verification code. Please try again.'
+        
         showErrorToast(msg, { title: t('verifyEmail.errors.resendTitle') || 'Resend Failed', isAuth: true })
       }
     } catch {
-      showErrorToast(
-        t('verifyEmail.errors.resend') || 'Failed to resend verification code.',
-        { title: t('verifyEmail.errors.resendTitle') || 'Resend Failed', isAuth: true }
-      )
+      const defaultError = t('auth.errors.default') || 'An unexpected error occurred. Please try again.'
+      showErrorToast(defaultError, { title: t('verifyEmail.errors.resendTitle') || 'Resend Failed', isAuth: true })
     }
   }
 
@@ -157,42 +157,42 @@ const VerifyEmail = () => {
       )
 
       if (verifyOTP.fulfilled.match(resultAction)) {
-        const msg =
-          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
-          resultAction.payload?.message ||
-          t('verifyEmail.success') ||
-          'Email verified successfully.'
+        const backendMessage = resultAction.payload?.message || 'Email verified successfully'
+        const msg = getTranslatedAuthMessage(backendMessage, t, 'verifyEmail.success') || t('verifyEmail.success') || 'Email verified successfully.'
         showSuccessToast(msg, { title: t('verifyEmail.successTitle') || 'Email Verified', isAuth: true })
         navigate('/profile', { replace: true })
       } else {
         // Extract error message from API response
-        const errorMessage = 
+        const backendMessage = 
           (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
           ''
-        const isInvalidOTP = 
-          errorMessage.toLowerCase().includes('invalid') ||
-          errorMessage.toLowerCase().includes('incorrect') ||
-          errorMessage.toLowerCase().includes('wrong') ||
-          errorMessage.toLowerCase().includes('expired') ||
-          (resultAction.payload?.code && resultAction.payload.code === 'INVALID_OTP')
+        
+        // Check if it's an OTP-related error (invalid, expired, etc.)
+        const isInvalidOTP = backendMessage && (
+          backendMessage.toLowerCase().includes('invalid') ||
+          backendMessage.toLowerCase().includes('incorrect') ||
+          backendMessage.toLowerCase().includes('wrong') ||
+          backendMessage.toLowerCase().includes('expired') ||
+          backendMessage.toLowerCase().includes('otp')
+        )
         
         if (isInvalidOTP) {
-          const errorMsg = errorMessage || t('verifyEmail.errors.invalidCode') || 'The verification code is invalid or has expired. Please try again.'
+          // Use translation utility for OTP errors
+          const errorMsg = getTranslatedAuthMessage(backendMessage, t, 'verifyEmail.errors.invalidOtp') || t('verifyEmail.errors.invalidOtp') || 'The verification code is invalid or has expired. Please try again.'
           setCodeError(errorMsg)
-        } else {
-          const msg =
-            errorMessage ||
-            t('verifyEmail.errors.generic') ||
-            'Failed to verify code.'
+        } else if (backendMessage) {
+          // Use translation utility for other errors
+          const msg = getTranslatedAuthMessage(backendMessage, t, 'verifyEmail.errors.generic') || t('verifyEmail.errors.generic') || 'Failed to verify code.'
           showErrorToast(msg, { title: t('verifyEmail.errors.title') || 'Verification Failed', isAuth: true })
+        } else {
+          // No message, use generic
+          showErrorToast(t('verifyEmail.errors.generic') || 'Failed to verify code.', { title: t('verifyEmail.errors.title') || 'Verification Failed', isAuth: true })
         }
       }
     } catch {
-      showErrorToast(
-        t('verifyEmail.errors.generic') || 'Failed to verify code.',
-        { title: t('verifyEmail.errors.title') || 'Verification Failed', isAuth: true }
-      )
+      const defaultError = t('auth.errors.default') || 'An unexpected error occurred. Please try again.'
+      showErrorToast(defaultError, { title: t('verifyEmail.errors.title') || 'Verification Failed', isAuth: true })
     }
   }
 
@@ -203,8 +203,8 @@ const VerifyEmail = () => {
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4" dir={dir}>
-      <div className="bg-white rounded-[14px] border border-[#03274633] shadow-lg p-4 lg:p-8 w-[382px] h-[486px] lg:w-[505px] lg:h-[486px] flex flex-col">
-        <div className="w-full lg:w-[425px] lg:h-[337px] pt-10 lg:pt-3 flex flex-col mx-auto">
+      <div className="bg-white rounded-[14px] border border-[#03274633] shadow-lg p-4 lg:p-8 w-[382px] min-h-[486px] lg:w-[505px] lg:min-h-[486px] flex flex-col">
+        <div className="w-full lg:w-[425px] pt-10 lg:pt-3 flex flex-col mx-auto flex-1">
           {/* Main Heading */}
           <h1 className="font-archivo font-semibold mb-6 lg:mb-6 text-[18px] lg:text-[30px] leading-none tracking-normal text-oxford-blue">
             {t('verifyEmail.title')}
@@ -290,10 +290,10 @@ const VerifyEmail = () => {
           </button>
 
           {/* Skip for now */}
-          <div className="text-center">
+          <div className="text-center mt-auto">
             <button 
               onClick={handleSkip}
-              className="font-roboto font-normal pt-6 lg:pt-0 text-[16px] leading-none tracking-normal text-dark-gray hover:text-gray-700 hover:underline"
+              className="inline-block font-roboto font-normal text-[16px] leading-normal tracking-normal text-dark-gray hover:text-gray-700 hover:underline px-0 py-0 border-0 bg-transparent cursor-pointer"
             >
               {t('verifyEmail.skipForNow')}
             </button>

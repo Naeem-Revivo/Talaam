@@ -63,7 +63,9 @@ const authAPI = {
       return payload;
     } catch (error) {
       const apiError = error.response?.data;
-      throw apiError || { message: 'Signup failed' };
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'Signup failed';
+      throw { ...apiError, message: errorMessage };
     }
   },
 
@@ -84,7 +86,9 @@ const authAPI = {
       return payload;
     } catch (error) {
       const apiError = error.response?.data;
-      throw apiError || { message: 'Login failed' };
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'Login failed';
+      throw { ...apiError, message: errorMessage };
     }
   },
 
@@ -116,7 +120,9 @@ const authAPI = {
       return data;
     } catch (error) {
       const apiError = error.response?.data;
-      throw apiError || { message: 'OTP verification failed' };
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'OTP verification failed';
+      throw { ...apiError, message: errorMessage };
     }
   },
 
@@ -127,7 +133,9 @@ const authAPI = {
       return response.data;
     } catch (error) {
       const apiError = error.response?.data;
-      throw apiError || { message: 'Failed to resend OTP' };
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'Failed to resend OTP';
+      throw { ...apiError, message: errorMessage };
     }
   },
 
@@ -138,7 +146,9 @@ const authAPI = {
       return response.data;
     } catch (error) {
       const apiError = error.response?.data;
-      throw apiError || { message: 'Forgot password request failed' };
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'Forgot password request failed';
+      throw { ...apiError, message: errorMessage };
     }
   },
 
@@ -149,7 +159,9 @@ const authAPI = {
       return response.data;
     } catch (error) {
       const apiError = error.response?.data;
-      throw apiError || { message: 'Reset password failed' };
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'Reset password failed';
+      throw { ...apiError, message: errorMessage };
     }
   },
 

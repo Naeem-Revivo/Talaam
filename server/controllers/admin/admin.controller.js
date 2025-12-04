@@ -482,12 +482,37 @@ const updateAdmin = async (req, res, next) => {
       }
     }
 
+    // Store old role before update
+    const oldRole = user.adminRole;
+
     const updatedUser = await adminService.updateAdminDetails(user, {
       name,
       email,
       status,
       adminRole,
     });
+
+    // Send role change email if adminRole was changed
+    if (adminRole !== undefined && adminRole !== oldRole && adminRole !== null) {
+      console.log('[ADMIN] Role changed detected. Old role:', oldRole, 'New role:', adminRole);
+      try {
+        const { sendRoleChangeEmail } = require('../../config/nodemailer/emailTemplates');
+        const emailResult = await sendRoleChangeEmail(
+          updatedUser.email,
+          updatedUser.name || updatedUser.fullName,
+          oldRole,
+          adminRole
+        );
+        console.log('[ADMIN] Role change email sent successfully to:', updatedUser.email, 'MessageId:', emailResult?.messageId);
+      } catch (emailError) {
+        // Log error but don't fail the user update
+        console.error('[ADMIN] Failed to send role change email:', {
+          error: emailError.message,
+          userId: updatedUser.id,
+          email: updatedUser.email,
+        });
+      }
+    }
 
     const response = {
       success: true,
