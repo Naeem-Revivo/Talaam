@@ -608,16 +608,17 @@ const getGathererStats = async (req, res, next) => {
 
 /**
  * Get gatherer questions table data
- * GET /admin/questions/gatherer/list?page=1&limit=20
+ * GET /admin/questions/gatherer/list?page=1&limit=20&status=pending_processor
  */
 const getGathererQuestions = async (req, res, next) => {
   try {
     const gathererId = req.user.id;
-    const { page = 1, limit = 20 } = req.query;
+    const { page = 1, limit = 20, status } = req.query;
 
     const result = await questionService.getGathererQuestions(gathererId, {
       page,
       limit,
+      status: status || undefined, // Only pass status if it's provided
     });
 
     const response = {

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { RichTextEditor } from "../../components/common/RichTextEditor";
+import React, { useState } from "react";
+import RichTextEditor from "../../components/common/RichTextEditor";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
 import { useNavigate, useLocation } from "react-router-dom";
 import questionsAPI from "../../api/questions";

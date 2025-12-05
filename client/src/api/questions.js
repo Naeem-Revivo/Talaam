@@ -32,13 +32,14 @@ const questionsAPI = {
     }
   },
 
-  // Get gatherer questions list (with pagination)
+  // Get gatherer questions list (with pagination and status filter)
   getGathererQuestions: async (params = {}) => {
     try {
-      const { page = 1, limit = 20 } = params;
+      const { page = 1, limit = 20, status } = params;
       const queryParams = new URLSearchParams();
       if (page) queryParams.append('page', page);
       if (limit) queryParams.append('limit', limit);
+      if (status) queryParams.append('status', status);
 
       const url = queryParams.toString()
         ? `/admin/questions/gatherer/list?${queryParams.toString()}`
