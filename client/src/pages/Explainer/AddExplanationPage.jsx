@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { RichTextEditor } from "../../components/common/RichTextEditor";
+import RichTextEditor from "../../components/common/RichTextEditor";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
 import { useNavigate } from "react-router-dom";
 

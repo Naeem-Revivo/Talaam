@@ -2,13 +2,14 @@ import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
 import StatsCards from "../../components/common/StatsCards";
 import { Table } from "../../components/common/TableComponent";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import ReviewFeedback from "../../components/gatherer/ReviewFeedback";
 import WorkflowProgress from "../../components/gatherer/WorkflowProgress";
 import RecentActivity from "../../components/gatherer/RecentActiveity";
 import { useNavigate } from "react-router-dom";
 import { UploadFileModal } from "../../components/gatherer/UploadFileModal";
 import questionsAPI from "../../api/questions";
+import Dropdown from "../../components/shared/Dropdown";
 
 const GathererQuestionBank = () => {
   const { t } = useLanguage();
@@ -19,6 +20,7 @@ const GathererQuestionBank = () => {
   const [gathererData, setGathererData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalQuestions, setTotalQuestions] = useState(0);
+  const [statusFilter, setStatusFilter] = useState(""); // Empty string means "all"
   const [stats, setStats] = useState([
     { label: t("gatherer.questionBank.stats.questionAdded"), value: 0, color: "blue" },
     { label: t("gatherer.questionBank.stats.pendingReview"), value: 0, color: "red" },
@@ -30,17 +32,17 @@ const GathererQuestionBank = () => {
     console.log("Submitted:", data);
   };
 
-  const gathererColumns = [
+  const gathererColumns = useMemo(() => [
     { key: "questionTitle", label: t("gatherer.questionBank.table.question") },
     { key: "processor", label: t("gatherer.questionBank.table.processor") },
     { key: "lastUpdate", label: t("gatherer.questionBank.table.lastUpdate") },
     { key: "status", label: t("gatherer.questionBank.table.status") },
     { key: "actions", label: t("gatherer.questionBank.table.actions") },
-  ];
+  ], [t]);
   
-  const handleAddQuestion = () => {
+  const handleAddQuestion = useCallback(() => {
     navigate("/gatherer/question-bank/Gatherer-addQuestion");
-  };
+  }, [navigate]);
 
   // Format date to relative time
   const formatDate = (dateString) => {
@@ -58,7 +60,11 @@ const GathererQuestionBank = () => {
   };
 
   // Format status for display
-  const formatStatus = (status) => {
+  const formatStatus = (status, isFlagged) => {
+    // If question is flagged, show "Flagged" status
+    if (isFlagged) {
+      return "Flagged";
+    }
     if (!status) return "—";
     const statusMap = {
       pending_processor: "Pending Review",
@@ -77,9 +83,17 @@ const GathererQuestionBank = () => {
     const fetchQuestions = async () => {
       try {
         setLoading(true);
-        const response = await questionsAPI.getGathererQuestionsByStatus({
-          status: undefined, // Get all questions
-        });
+        const params = {
+          page: currentPage,
+          limit: 10,
+        };
+        
+        // Add status filter if selected
+        if (statusFilter) {
+          params.status = statusFilter;
+        }
+
+        const response = await questionsAPI.getGathererQuestions(params);
 
         if (response.success && response.data?.questions) {
           const questions = response.data.questions;
@@ -98,28 +112,42 @@ const GathererQuestionBank = () => {
               questionTitle: question.questionText?.substring(0, 50) + (question.questionText?.length > 50 ? "..." : "") || "—",
               processor: processorName,
               lastUpdate: formatDate(question.updatedAt || question.createdAt),
-              status: formatStatus(question.status),
+              status: formatStatus(question.status, question.isFlagged),
               actionType: "viewicon",
             };
           });
 
           setGathererData(mappedData);
-          setTotalQuestions(questions.length);
+          
+          // Use pagination totalItems if available, otherwise use questions length
+          const total = response.data?.pagination?.totalItems || questions.length;
+          setTotalQuestions(total);
 
-          // Calculate stats
-          const questionAdded = questions.length;
-          const pendingReview = questions.filter(q => q.status === "pending_processor").length;
-          const acceptedByProcessor = questions.filter(q => 
-            q.status === "pending_creator" || q.status === "pending_explainer" || q.status === "completed"
-          ).length;
-          const rejected = questions.filter(q => q.status === "rejected").length;
+          // Calculate stats from summary if available, otherwise calculate from current questions
+          if (response.data?.summary) {
+            const summary = response.data.summary;
+            setStats([
+              { label: t("gatherer.questionBank.stats.questionAdded"), value: summary.totalSubmitted || 0, color: "blue" },
+              { label: t("gatherer.questionBank.stats.pendingReview"), value: summary.totalPending || 0, color: "red" },
+              { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: summary.totalApproved || 0, color: "red" },
+              { label: t("gatherer.questionBank.stats.rejected"), value: summary.totalRejected || 0, color: "red" },
+            ]);
+          } else {
+            // Fallback: calculate from current questions
+            const questionAdded = questions.length;
+            const pendingReview = questions.filter(q => q.status === "pending_processor").length;
+            const acceptedByProcessor = questions.filter(q => 
+              q.status === "pending_creator" || q.status === "pending_explainer" || q.status === "completed"
+            ).length;
+            const rejected = questions.filter(q => q.status === "rejected").length;
 
-          setStats([
-            { label: t("gatherer.questionBank.stats.questionAdded"), value: questionAdded, color: "blue" },
-            { label: t("gatherer.questionBank.stats.pendingReview"), value: pendingReview, color: "red" },
-            { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: acceptedByProcessor, color: "red" },
-            { label: t("gatherer.questionBank.stats.rejected"), value: rejected, color: "red" },
-          ]);
+            setStats([
+              { label: t("gatherer.questionBank.stats.questionAdded"), value: questionAdded, color: "blue" },
+              { label: t("gatherer.questionBank.stats.pendingReview"), value: pendingReview, color: "red" },
+              { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: acceptedByProcessor, color: "red" },
+              { label: t("gatherer.questionBank.stats.rejected"), value: rejected, color: "red" },
+            ]);
+          }
         }
       } catch (error) {
         console.error("Error fetching questions:", error);
@@ -130,43 +158,58 @@ const GathererQuestionBank = () => {
     };
 
     fetchQuestions();
-  }, [t]);
+  }, [t, currentPage, statusFilter]);
 
-  const handleView = (item) => {
+  const handleView = useCallback((item) => {
     if (item?.id) {
       navigate(`/gatherer/question-bank/Gatherer-QuestionDetail/${item.id}`);
     } else {
       navigate("/gatherer/question-bank/Gatherer-QuestionDetail");
     }
-  };
+  }, [navigate]);
 
-  const handleEdit = (item) => {
+  const handleEdit = useCallback((item) => {
     console.log("Edit item:", item);
-  };
+  }, []);
 
-  const handleCustomAction = (item) => {
+  const handleCustomAction = useCallback((item) => {
     console.log("Custom action for item:", item);
-  };
+  }, []);
 
-  const feedbackData = {};
+  const feedbackData = useMemo(() => ({}), []);
 
-  const activityData = [];
+  const activityData = useMemo(() => [], []);
 
-  const workflowSteps = [
+  const workflowSteps = useMemo(() => [
     t("gatherer.questionBank.workflowSteps.gatherer"),
     t("gatherer.questionBank.workflowSteps.processor"),
     t("gatherer.questionBank.workflowSteps.creator"),
     t("gatherer.questionBank.workflowSteps.processor"),
     t("gatherer.questionBank.workflowSteps.explainer"),
-  ];
+  ], [t]);
 
-  const handleDismiss = () => {
+  const handleDismiss = useCallback(() => {
     console.log("Dismissed");
-  };
+  }, []);
 
-  const _handleEditNotification = () => {
+  const _handleEditNotification = useCallback(() => {
     console.log("Edit Question");
-  };
+  }, []);
+
+  const statusFilterOptions = useMemo(() => [
+    { value: "", label: "All Statuses" },
+    { value: "pending_processor", label: "Pending Review" },
+    { value: "pending_creator", label: "Pending Creator" },
+    { value: "pending_explainer", label: "Pending Explainer" },
+    { value: "completed", label: "Completed" },
+    { value: "rejected", label: "Rejected" },
+    { value: "flagged", label: "Flagged" },
+  ], []);
+
+  const handleStatusFilterChange = useCallback((value) => {
+    setStatusFilter(value);
+    setCurrentPage(1); // Reset to first page when filter changes
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6">
@@ -198,14 +241,30 @@ const GathererQuestionBank = () => {
         <StatsCards stats={stats} />
 
         <div>
-          <div className="text-[24px] leading-[32px] font-bold text-blue-dark font-archivo mb-5">
-            {t("gatherer.questionBank.mySubmissions")}
+          <div className="flex items-center justify-between mb-5">
+            <div className="text-[24px] leading-[32px] font-bold text-blue-dark font-archivo">
+              {t("gatherer.questionBank.mySubmissions")}
+            </div>
+            <div className="flex items-center gap-3">
+              <label htmlFor="status-filter" className="text-[14px] font-medium text-gray-700">
+                Filter by Status:
+              </label>
+              <Dropdown
+                value={statusFilter}
+                onChange={handleStatusFilterChange}
+                options={statusFilterOptions}
+                showDefaultOnEmpty={true}
+                className="min-w-[200px]"
+                height="h-[40px]"
+                textClassName="text-[14px] font-roboto text-gray-700"
+              />
+            </div>
           </div>
-          {loading ? (
+          {/* {loading ? (
             <div className="text-center py-10">
               <p className="text-[16px] text-gray-600">{t("gatherer.questionBank.loading") || "Loading questions..."}</p>
             </div>
-          ) : (
+          ) : ( */}
             <Table
               items={gathererData}
               columns={gathererColumns}
@@ -218,10 +277,10 @@ const GathererQuestionBank = () => {
               onCustomAction={handleCustomAction}
               emptyMessage={t("gatherer.questionBank.emptyMessage")}
             />
-          )}
+          {/* )} */}
         </div>
 
-        <div className="max-w-7xl mx-auto">
+        <div className="">
           <h1 className="text-[24px] leading-[32px] font-bold font-archivo text-blue-dark mb-4">
             {t("gatherer.questionBank.reviewFeedback")}
           </h1>
