@@ -70,12 +70,17 @@ const ProcessorViewQuestion = () => {
   const dir = language === "ar" ? "rtl" : "ltr";
   const [searchParams] = useSearchParams();
   const questionId = searchParams.get("questionId");
+  const source = searchParams.get("source"); // Check if coming from creator submission
   
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
+  
+  // Determine if this is from creator submission
+  const isFromCreatorSubmission = source === "creator-submission" || 
+                                   (question && question.approvedBy && question.status === "pending_processor");
 
   // Fetch question data
   useEffect(() => {
@@ -109,7 +114,11 @@ const ProcessorViewQuestion = () => {
   }, [questionId, navigate]);
 
   const handleClose = () => {
-    navigate("/processor/question-bank/gatherer-submission");
+    if (isFromCreatorSubmission) {
+      navigate("/processor/question-bank/creator-submission");
+    } else {
+      navigate("/processor/question-bank/gatherer-submission");
+    }
   };
 
   const handleReject = async () => {
@@ -118,14 +127,18 @@ const ProcessorViewQuestion = () => {
       return;
     }
 
-    try {
-      setProcessing(true);
-      await questionsAPI.rejectQuestion(questionId, rejectionReason);
-      showSuccessToast("Question rejected successfully");
-      // Add a small delay to ensure backend has processed the update
-      setTimeout(() => {
-        navigate("/processor/question-bank/gatherer-submission");
-      }, 500);
+      try {
+        setProcessing(true);
+        await questionsAPI.rejectQuestion(questionId, rejectionReason);
+        showSuccessToast("Question rejected successfully");
+        // Add a small delay to ensure backend has processed the update
+        setTimeout(() => {
+          if (isFromCreatorSubmission) {
+            navigate("/processor/question-bank/creator-submission");
+          } else {
+            navigate("/processor/question-bank/gatherer-submission");
+          }
+        }, 500);
     } catch (error) {
       console.error("Error rejecting question:", error);
       showErrorToast(error.response?.data?.message || "Failed to reject question");
@@ -140,10 +153,18 @@ const ProcessorViewQuestion = () => {
     try {
       setProcessing(true);
       await questionsAPI.approveQuestion(questionId, { status: "approve" });
-      showSuccessToast("Question approved and sent to creator");
+      if (isFromCreatorSubmission) {
+        showSuccessToast("Question approved and sent to explainer");
+      } else {
+        showSuccessToast("Question approved and sent to creator");
+      }
       // Add a small delay to ensure backend has processed the update
       setTimeout(() => {
-        navigate("/processor/question-bank/gatherer-submission");
+        if (isFromCreatorSubmission) {
+          navigate("/processor/question-bank/creator-submission");
+        } else {
+          navigate("/processor/question-bank/gatherer-submission");
+        }
       }, 500);
     } catch (error) {
       console.error("Error approving question:", error);
@@ -228,7 +249,9 @@ const ProcessorViewQuestion = () => {
             />
 
             <PrimaryButton
-              text={t("processor.viewQuestion.acceptAndSend")}
+              text={isFromCreatorSubmission 
+                ? (t("processor.viewQuestion.acceptAndSendToExplainer") || "Accept and sent to explainer")
+                : t("processor.viewQuestion.acceptAndSend")}
               className="py-[10px] px-5"
               onClick={handleAccept}
               disabled={processing}
