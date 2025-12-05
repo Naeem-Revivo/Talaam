@@ -3310,6 +3310,8 @@
       "table": {
         "question": "QUESTION",
         "explainer": "EXPLAINER",
+        "processorStatus": "PROCESSOR STATUS",
+        "explainerStatus": "EXPLAINER STATUS",
         "explanationSummary": "EXPLANATION SUMMARY",
         "submittedOn": "SUBMITTED ON",
         "actions": "ACTIONS"
@@ -3333,6 +3335,8 @@
       "close": "Close",
       "reject": "Reject",
       "acceptAndSend": "Accept & Sent to Creator",
+      "acceptAndSendToExplainer": "Accept and sent to explainer",
+      "approveQuestion": "Approve Question",
       "questionInfo": "Question Info",
       "options": "Options:",
       "correctAnswer": "Correct Answer",
@@ -3344,6 +3348,7 @@
       "variant": "variant",
       "status": "Status",
       "creatorGathererNotes": "Creator / Gatherer Notes",
+      "explanation": "Explanation",
       "attachments": "Attachments",
       "questionHistory": "Question History",
       "rejectQuestion": "Reject Question",

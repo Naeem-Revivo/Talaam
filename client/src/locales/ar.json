@@ -3320,6 +3320,8 @@
       "table": {
         "question": "السؤال",
         "explainer": "المشرح",
+        "processorStatus": "حالة المعالج",
+        "explainerStatus": "حالة المشرح",
         "explanationSummary": "ملخص الشرح",
         "submittedOn": "تم الإرسال في",
         "actions": "الإجراءات"
@@ -3343,6 +3345,8 @@
       "close": "إغلاق",
       "reject": "رفض",
       "acceptAndSend": "قبول وإرسال إلى المنشئ",
+      "acceptAndSendToExplainer": "قبول وإرسال إلى المشرح",
+      "approveQuestion": "الموافقة على السؤال",
       "questionInfo": "معلومات السؤال",
       "options": "الخيارات:",
       "correctAnswer": "الإجابة الصحيحة",
@@ -3354,6 +3358,7 @@
       "variant": "المتغير",
       "status": "الحالة",
       "creatorGathererNotes": "ملاحظات المنشئ / المجمع",
+      "explanation": "الشرح",
       "attachments": "المرفقات",
       "questionHistory": "تاريخ السؤال",
       "rejectQuestion": "رفض السؤال",

@@ -70,7 +70,7 @@ const ProcessorViewQuestion = () => {
   const dir = language === "ar" ? "rtl" : "ltr";
   const [searchParams] = useSearchParams();
   const questionId = searchParams.get("questionId");
-  const source = searchParams.get("source"); // Check if coming from creator submission
+  const source = searchParams.get("source"); // Check if coming from creator submission or explainer submission
   
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -81,6 +81,10 @@ const ProcessorViewQuestion = () => {
   // Determine if this is from creator submission
   const isFromCreatorSubmission = source === "creator-submission" || 
                                    (question && question.approvedBy && question.status === "pending_processor");
+  
+  // Determine if this is from explainer submission
+  const isFromExplainerSubmission = source === "explainer-submission" ||
+                                    (question && question.explanation && question.status === "pending_processor");
 
   // Fetch question data
   useEffect(() => {
@@ -114,7 +118,9 @@ const ProcessorViewQuestion = () => {
   }, [questionId, navigate]);
 
   const handleClose = () => {
-    if (isFromCreatorSubmission) {
+    if (isFromExplainerSubmission) {
+      navigate("/processor/question-bank/explainer-submission");
+    } else if (isFromCreatorSubmission) {
       navigate("/processor/question-bank/creator-submission");
     } else {
       navigate("/processor/question-bank/gatherer-submission");
@@ -133,7 +139,9 @@ const ProcessorViewQuestion = () => {
         showSuccessToast("Question rejected successfully");
         // Add a small delay to ensure backend has processed the update
         setTimeout(() => {
-          if (isFromCreatorSubmission) {
+          if (isFromExplainerSubmission) {
+            navigate("/processor/question-bank/explainer-submission");
+          } else if (isFromCreatorSubmission) {
             navigate("/processor/question-bank/creator-submission");
           } else {
             navigate("/processor/question-bank/gatherer-submission");
@@ -153,14 +161,18 @@ const ProcessorViewQuestion = () => {
     try {
       setProcessing(true);
       await questionsAPI.approveQuestion(questionId, { status: "approve" });
-      if (isFromCreatorSubmission) {
+      if (isFromExplainerSubmission) {
+        showSuccessToast("Question approved successfully");
+      } else if (isFromCreatorSubmission) {
         showSuccessToast("Question approved and sent to explainer");
       } else {
         showSuccessToast("Question approved and sent to creator");
       }
       // Add a small delay to ensure backend has processed the update
       setTimeout(() => {
-        if (isFromCreatorSubmission) {
+        if (isFromExplainerSubmission) {
+          navigate("/processor/question-bank/explainer-submission");
+        } else if (isFromCreatorSubmission) {
           navigate("/processor/question-bank/creator-submission");
         } else {
           navigate("/processor/question-bank/gatherer-submission");
@@ -249,7 +261,9 @@ const ProcessorViewQuestion = () => {
             />
 
             <PrimaryButton
-              text={isFromCreatorSubmission 
+              text={isFromExplainerSubmission
+                ? (t("processor.viewQuestion.approveQuestion") || "Approve Question")
+                : isFromCreatorSubmission 
                 ? (t("processor.viewQuestion.acceptAndSendToExplainer") || "Accept and sent to explainer")
                 : t("processor.viewQuestion.acceptAndSend")}
               className="py-[10px] px-5"
@@ -341,6 +355,21 @@ const ProcessorViewQuestion = () => {
                 )}
               </div>
             </div>
+
+            {/* Explanation Section - Show for explainer submissions */}
+            {isFromExplainerSubmission && question.explanation && (
+              <div className="rounded-[12px] border border-[#03274633] bg-white pt-[20px] px-[30px] pb-[30px] w-full">
+                <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[32px] text-oxford-blue">
+                  {t("processor.viewQuestion.explanation") || "Explanation"}
+                </h2>
+                <div
+                  className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue whitespace-pre-wrap"
+                  dir="ltr"
+                >
+                  {question.explanation}
+                </div>
+              </div>
+            )}
 
             {question.attachments && question.attachments.length > 0 && (
               <Attachments files={question.attachments} t={t} />
