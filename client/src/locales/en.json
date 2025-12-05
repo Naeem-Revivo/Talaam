@@ -3283,9 +3283,9 @@
       "table": {
         "question": "QUESTION",
         "creator": "CREATOR",
-        "variants": "VARIANTS",
-        "status": "STATUS",
-        "rejectionReason": "REJECTION REASON",
+        "processorStatus": "PROCESSOR STATUS",
+        "creatorStatus": "CREATOR STATUS",
+        "indicators": "INDICATORS",
         "submittedOn": "SUBMITTED ON",
         "actions": "ACTIONS"
       },

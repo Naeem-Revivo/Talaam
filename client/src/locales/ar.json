@@ -3293,9 +3293,9 @@
       "table": {
         "question": "السؤال",
         "creator": "المنشئ",
-        "variants": "المتغيرات",
-        "status": "الحالة",
-        "rejectionReason": "سبب الرفض",
+        "processorStatus": "حالة المعالج",
+        "creatorStatus": "حالة المنشئ",
+        "indicators": "المؤشرات",
         "submittedOn": "تم الإرسال في",
         "actions": "الإجراءات"
       },
