@@ -288,27 +288,41 @@ const getGathererQuestionStats = async (gathererId) => {
 };
 
 /**
- * Get gatherer questions for dashboard table (with pagination)
+ * Get gatherer questions for dashboard table (with pagination and status filter)
  */
-const getGathererQuestions = async (gathererId, { page = 1, limit = 20 } = {}) => {
+const getGathererQuestions = async (gathererId, { page = 1, limit = 20, status } = {}) => {
   const normalizedPage = Math.max(parseInt(page, 10) || 1, 1);
   const normalizedLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
   const skip = (normalizedPage - 1) * normalizedLimit;
 
-  const [questions, stats] = await Promise.all([
+  // Build where clause
+  const where = { createdById: gathererId };
+  if (status) {
+    where.status = status;
+  }
+
+  const { prisma } = require('../../../config/db/prisma');
+
+  const [questions, stats, totalCount] = await Promise.all([
     Question.findMany({
-      where: { createdById: gathererId },
+      where,
+      include: {
+        exam: { select: { id: true, name: true } },
+        subject: { select: { id: true, name: true } },
+        topic: { select: { id: true, name: true } },
+        assignedProcessor: { select: { id: true, name: true, fullName: true, email: true } },
+      },
       orderBy: { updatedAt: 'desc' },
       skip: skip,
       take: normalizedLimit
     }),
     getGathererQuestionStats(gathererId),
+    // Get total count for pagination (with status filter if applied) using count
+    prisma.question.count({ where }),
   ]);
 
-  const totalSubmitted = questions.length;
-
   const rows = questions.map((q) => {
-    const processorUser = q.approvedBy || q.rejectedBy || null;
+    const processorUser = q.assignedProcessor;
     return {
       id: q.id,
       questionText: q.questionText,
@@ -317,13 +331,12 @@ const getGathererQuestions = async (gathererId, { page = 1, limit = 20 } = {}) =
       topic: q.topic ? { id: q.topic.id, name: q.topic.name } : null,
       status: q.status,
       updatedAt: q.updatedAt,
-      processor: processorUser
+      createdAt: q.createdAt,
+      assignedProcessor: processorUser
         ? {
             id: processorUser.id,
-            name:
-              processorUser.name ||
-              processorUser.fullName ||
-              'Processor',
+            name: processorUser.name || processorUser.fullName || 'Processor',
+            fullName: processorUser.fullName,
             email: processorUser.email,
           }
         : null,
@@ -333,15 +346,15 @@ const getGathererQuestions = async (gathererId, { page = 1, limit = 20 } = {}) =
   return {
     summary: {
       ...stats,
-      totalSubmitted,
+      totalSubmitted: totalCount,
     },
     questions: rows,
     pagination: {
       page: normalizedPage,
       limit: normalizedLimit,
-      totalItems: totalSubmitted,
-      totalPages: Math.ceil(totalSubmitted / normalizedLimit),
-      hasNextPage: skip + rows.length < totalSubmitted,
+      totalItems: totalCount,
+      totalPages: Math.ceil(totalCount / normalizedLimit),
+      hasNextPage: skip + rows.length < totalCount,
       hasPreviousPage: normalizedPage > 1,
     },
   };

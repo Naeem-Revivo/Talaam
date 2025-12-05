@@ -19,6 +19,7 @@ const GathererQuestionBank = () => {
   const [gathererData, setGathererData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalQuestions, setTotalQuestions] = useState(0);
+  const [statusFilter, setStatusFilter] = useState(""); // Empty string means "all"
   const [stats, setStats] = useState([
     { label: t("gatherer.questionBank.stats.questionAdded"), value: 0, color: "blue" },
     { label: t("gatherer.questionBank.stats.pendingReview"), value: 0, color: "red" },
@@ -77,9 +78,17 @@ const GathererQuestionBank = () => {
     const fetchQuestions = async () => {
       try {
         setLoading(true);
-        const response = await questionsAPI.getGathererQuestionsByStatus({
-          status: undefined, // Get all questions
-        });
+        const params = {
+          page: currentPage,
+          limit: 10,
+        };
+        
+        // Add status filter if selected
+        if (statusFilter) {
+          params.status = statusFilter;
+        }
+
+        const response = await questionsAPI.getGathererQuestions(params);
 
         if (response.success && response.data?.questions) {
           const questions = response.data.questions;
@@ -104,22 +113,36 @@ const GathererQuestionBank = () => {
           });
 
           setGathererData(mappedData);
-          setTotalQuestions(questions.length);
+          
+          // Use pagination totalItems if available, otherwise use questions length
+          const total = response.data?.pagination?.totalItems || questions.length;
+          setTotalQuestions(total);
 
-          // Calculate stats
-          const questionAdded = questions.length;
-          const pendingReview = questions.filter(q => q.status === "pending_processor").length;
-          const acceptedByProcessor = questions.filter(q => 
-            q.status === "pending_creator" || q.status === "pending_explainer" || q.status === "completed"
-          ).length;
-          const rejected = questions.filter(q => q.status === "rejected").length;
+          // Calculate stats from summary if available, otherwise calculate from current questions
+          if (response.data?.summary) {
+            const summary = response.data.summary;
+            setStats([
+              { label: t("gatherer.questionBank.stats.questionAdded"), value: summary.totalSubmitted || 0, color: "blue" },
+              { label: t("gatherer.questionBank.stats.pendingReview"), value: summary.totalPending || 0, color: "red" },
+              { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: summary.totalApproved || 0, color: "red" },
+              { label: t("gatherer.questionBank.stats.rejected"), value: summary.totalRejected || 0, color: "red" },
+            ]);
+          } else {
+            // Fallback: calculate from current questions
+            const questionAdded = questions.length;
+            const pendingReview = questions.filter(q => q.status === "pending_processor").length;
+            const acceptedByProcessor = questions.filter(q => 
+              q.status === "pending_creator" || q.status === "pending_explainer" || q.status === "completed"
+            ).length;
+            const rejected = questions.filter(q => q.status === "rejected").length;
 
-          setStats([
-            { label: t("gatherer.questionBank.stats.questionAdded"), value: questionAdded, color: "blue" },
-            { label: t("gatherer.questionBank.stats.pendingReview"), value: pendingReview, color: "red" },
-            { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: acceptedByProcessor, color: "red" },
-            { label: t("gatherer.questionBank.stats.rejected"), value: rejected, color: "red" },
-          ]);
+            setStats([
+              { label: t("gatherer.questionBank.stats.questionAdded"), value: questionAdded, color: "blue" },
+              { label: t("gatherer.questionBank.stats.pendingReview"), value: pendingReview, color: "red" },
+              { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: acceptedByProcessor, color: "red" },
+              { label: t("gatherer.questionBank.stats.rejected"), value: rejected, color: "red" },
+            ]);
+          }
         }
       } catch (error) {
         console.error("Error fetching questions:", error);
@@ -130,7 +153,7 @@ const GathererQuestionBank = () => {
     };
 
     fetchQuestions();
-  }, [t]);
+  }, [t, currentPage, statusFilter]);
 
   const handleView = (item) => {
     if (item?.id) {
@@ -198,8 +221,31 @@ const GathererQuestionBank = () => {
         <StatsCards stats={stats} />
 
         <div>
-          <div className="text-[24px] leading-[32px] font-bold text-blue-dark font-archivo mb-5">
-            {t("gatherer.questionBank.mySubmissions")}
+          <div className="flex items-center justify-between mb-5">
+            <div className="text-[24px] leading-[32px] font-bold text-blue-dark font-archivo">
+              {t("gatherer.questionBank.mySubmissions")}
+            </div>
+            <div className="flex items-center gap-3">
+              <label htmlFor="status-filter" className="text-[14px] font-medium text-gray-700">
+                Filter by Status:
+              </label>
+              <select
+                id="status-filter"
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setCurrentPage(1); // Reset to first page when filter changes
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-[14px] font-roboto text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px]"
+              >
+                <option value="">All Statuses</option>
+                <option value="pending_processor">Pending Review</option>
+                <option value="pending_creator">Pending Creator</option>
+                <option value="pending_explainer">Pending Explainer</option>
+                <option value="completed">Completed</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
           </div>
           {loading ? (
             <div className="text-center py-10">
