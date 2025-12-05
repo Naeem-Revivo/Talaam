@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
+import questionsAPI from "../../api/questions";
+import { showSuccessToast, showErrorToast } from "../../utils/toastConfig.jsx";
 
 const Attachments = ({ files, t }) => {
   return (
@@ -66,42 +68,139 @@ const ProcessorViewQuestion = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const dir = language === "ar" ? "rtl" : "ltr";
-  const [comments, setComments] = useState("");
+  const [searchParams] = useSearchParams();
+  const questionId = searchParams.get("questionId");
+  
+  const [question, setQuestion] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [showRejectModal, setShowRejectModal] = useState(false);
 
-  const attachments = [{ name: "Image-1.png" }, { name: "Diagram.jpg" }];
+  // Fetch question data
+  useEffect(() => {
+    const fetchQuestion = async () => {
+      if (!questionId) {
+        showErrorToast("Question ID is missing");
+        navigate("/processor/question-bank/gatherer-submission");
+        return;
+      }
 
-  const history = [
-    {
-      text: "Creator submitted 2 new variant",
-      date: "Jan 15, 2024",
-    },
-    {
-      text: "Creator submitted this question",
-      date: "Jan 15, 2024",
-    },
-  ];
+      try {
+        setLoading(true);
+        const response = await questionsAPI.getProcessorQuestionById(questionId);
+        
+        if (response.success && response.data?.question) {
+          setQuestion(response.data.question);
+        } else {
+          showErrorToast("Failed to load question");
+          navigate("/processor/question-bank/gatherer-submission");
+        }
+      } catch (error) {
+        console.error("Error fetching question:", error);
+        showErrorToast("Failed to load question");
+        navigate("/processor/question-bank/gatherer-submission");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Rich Text Editor Component using contentEditable (React 19 compatible)
+    fetchQuestion();
+  }, [questionId, navigate]);
 
-  const handleDelete = () => {
-    // TODO: Implement delete functionality
-    console.log("Delete question");
+  const handleClose = () => {
+    navigate("/processor/question-bank/gatherer-submission");
   };
 
-  const handleEdit = () => {
-    // TODO: Implement edit functionality
-    navigate("/admin/add-question");
+  const handleReject = async () => {
+    if (!rejectionReason.trim()) {
+      showErrorToast("Please provide a rejection reason");
+      return;
+    }
+
+    try {
+      setProcessing(true);
+      await questionsAPI.rejectQuestion(questionId, rejectionReason);
+      showSuccessToast("Question rejected successfully");
+      // Add a small delay to ensure backend has processed the update
+      setTimeout(() => {
+        navigate("/processor/question-bank/gatherer-submission");
+      }, 500);
+    } catch (error) {
+      console.error("Error rejecting question:", error);
+      showErrorToast(error.response?.data?.message || "Failed to reject question");
+    } finally {
+      setProcessing(false);
+      setShowRejectModal(false);
+      setRejectionReason("");
+    }
   };
 
-  const handleCreateVariant = () => {
-    navigate("/admin/create-variant");
+  const handleAccept = async () => {
+    try {
+      setProcessing(true);
+      await questionsAPI.approveQuestion(questionId, { status: "approve" });
+      showSuccessToast("Question approved and sent to creator");
+      // Add a small delay to ensure backend has processed the update
+      setTimeout(() => {
+        navigate("/processor/question-bank/gatherer-submission");
+      }, 500);
+    } catch (error) {
+      console.error("Error approving question:", error);
+      showErrorToast(error.response?.data?.message || "Failed to approve question");
+    } finally {
+      setProcessing(false);
+    }
   };
 
-  const handleAddComment = () => {
-    // TODO: Implement add comment functionality
-    console.log("Add comment", comments);
-    setComments("");
+  // Format date for history
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
   };
+
+  // Build history from question data
+  const getHistory = () => {
+    if (!question) return [];
+    const history = [];
+    
+    if (question.createdAt) {
+      history.push({
+        text: `Submitted by ${question.createdBy?.name || "Gatherer"}`,
+        date: formatDate(question.createdAt)
+      });
+    }
+    
+    if (question.history && Array.isArray(question.history)) {
+      question.history.forEach(item => {
+        history.push({
+          text: item.action || item.description || "Status updated",
+          date: formatDate(item.timestamp || item.createdAt)
+        });
+      });
+    }
+    
+    return history;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px] flex items-center justify-center">
+        <div className="text-oxford-blue text-lg font-roboto">
+          {t("processor.viewQuestion.loading") || "Loading question..."}
+        </div>
+      </div>
+    );
+  }
+
+  if (!question) {
+    return null;
+  }
 
   return (
     <div
@@ -117,19 +216,22 @@ const ProcessorViewQuestion = () => {
           <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
             <OutlineButton
               text={t("processor.viewQuestion.close")}
-              //   onClick={() => setIsModalOpen(true)}
-              className="py-[10px], px-[14px]"
+              onClick={handleClose}
+              className="py-[10px] px-[14px]"
+              disabled={processing}
             />
             <OutlineButton
               text={t("processor.viewQuestion.reject")}
-              //   onClick={() => setIsModalOpen(true)}
-              className="py-[10px], px-[14px]"
+              onClick={() => setShowRejectModal(true)}
+              className="py-[10px] px-[14px]"
+              disabled={processing}
             />
 
             <PrimaryButton
               text={t("processor.viewQuestion.acceptAndSend")}
               className="py-[10px] px-5"
-              //   onClick={handleAddQuestion}
+              onClick={handleAccept}
+              disabled={processing}
             />
           </div>
         </header>
@@ -148,14 +250,14 @@ const ProcessorViewQuestion = () => {
               </h2>
               <div className="flex items-center justify-between">
                 <span className="font-roboto text-[16px] font-normal leading-[100%] text-[#6B7280]">
-                  ID:Q-GEO-0012
+                  ID: {question.id || "N/A"}
                 </span>
               </div>
               <p
                 className="font-roboto text-[16px] font-normal leading-[100%] text-oxford-blue pt-[30px]"
                 dir="ltr"
               >
-                What is the function of chlorophyll in plants?
+                {question.questionText || "—"}
               </p>
             </div>
             <div
@@ -167,84 +269,62 @@ const ProcessorViewQuestion = () => {
                   {t("processor.viewQuestion.options")}
                 </div>
                 {/* Options */}
-                <div className="space-y-5" dir="ltr">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="option"
-                      value="A"
-                      className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
-                      disabled
-                    />
-                    <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                      A. It absorbs sunlight
-                    </span>
-                  </label>
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="option"
-                      value="B"
-                      className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
-                      disabled
-                    />
-                    <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                      B. It produces oxygen
-                    </span>
-                  </label>
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="option"
-                      value="C"
-                      checked
-                      className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
-                      disabled
-                    />
-                    <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                      C. It transfers water
-                    </span>
-                  </label>
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="option"
-                      value="D"
-                      className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
-                      disabled
-                    />
-                    <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                      D. It controls leaf temp
-                    </span>
-                  </label>
-                </div>
+                {question.questionType === "MCQ" && question.options ? (
+                  <>
+                    <div className="space-y-5" dir="ltr">
+                      {Object.entries(question.options).map(([key, value]) => (
+                        <label key={key} className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="option"
+                            value={key}
+                            checked={key === question.correctAnswer}
+                            className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
+                            disabled
+                          />
+                          <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                            {key}. {value}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
 
-                <div className="border-t border-[#E5E7EB] mt-10 pt-4">
-                  <p className="font-archivo text-[20px] font-bold leading-[20px] text-oxford-blue mb-2">
-                    {t("admin.questionDetails.fields.correctAnswer")}
+                    <div className="border-t border-[#E5E7EB] mt-10 pt-4">
+                      <p className="font-archivo text-[20px] font-bold leading-[20px] text-oxford-blue mb-2">
+                        {t("admin.questionDetails.fields.correctAnswer")}
+                      </p>
+                      <label
+                        className="flex items-center gap-3 pt-2 cursor-pointer"
+                        dir="ltr"
+                      >
+                        <input
+                          type="radio"
+                          name="correctAnswer"
+                          value={question.correctAnswer}
+                          checked
+                          className="w-4 h-4 text-[#ED4122] border-[#03274633]"
+                          disabled
+                        />
+                        <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#ED4122]">
+                          {question.correctAnswer}. {question.options[question.correctAnswer]}
+                        </span>
+                      </label>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-dark-gray font-roboto text-[16px]">
+                    {t("processor.viewQuestion.noOptions") || "No options available for this question type."}
                   </p>
-                  <label
-                    className="flex items-center gap-3 pt-2 cursor-pointer"
-                    dir="ltr"
-                  >
-                    <input
-                      type="radio"
-                      name="correctAnswer"
-                      value="C"
-                      checked
-                      className="w-4 h-4 text-[#ED4122] border-[#03274633]"
-                      disabled
-                    />
-                    <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#ED4122]">
-                      A. It absorbs sunlight
-                    </span>
-                  </label>
-                </div>
+                )}
               </div>
             </div>
 
-            <Attachments files={attachments} t={t} />
-            <QuestionHistory historyItems={history} t={t} />
+            {question.attachments && question.attachments.length > 0 && (
+              <Attachments files={question.attachments} t={t} />
+            )}
+            {getHistory().length > 0 && (
+              <QuestionHistory historyItems={getHistory()} t={t} />
+            )}
           </div>
 
           <div className="flex flex-col gap-4 lg:w-[376px]">
@@ -256,29 +336,39 @@ const ProcessorViewQuestion = () => {
               </h2>
               </div>
               <div className="space-y-5 text-[18px] leading-[100%] font-normal text-blue-dark pt-10 px-6 pb-6">
-                <div>
-                  <span className="">Difficulty: </span>
-                  <span className="">Medium</span>
-                </div>
+                {question.difficulty && (
+                  <div>
+                    <span className="">Difficulty: </span>
+                    <span className="">{question.difficulty}</span>
+                  </div>
+                )}
                 <div>
                   <span className="">Subject: </span>
-                  <span className="">Biology</span>
+                  <span className="">{question.subject?.name || "—"}</span>
                 </div>
                 <div>
                   <span className="">Topic: </span>
-                  <span className="">Photosynthesis</span>
+                  <span className="">{question.topic?.name || "—"}</span>
                 </div>
-                <div>
-                  <span className="">Subtopic: </span>
-                  <span className="">Chloroplast</span>
-                </div>
-                <div>
-                  <span className="">variant: </span>
-                  <span className="">3</span>
-                </div>
+                {question.subtopic && (
+                  <div>
+                    <span className="">Subtopic: </span>
+                    <span className="">{question.subtopic.name || question.subtopic || "—"}</span>
+                  </div>
+                )}
+                {question.isVariant && (
+                  <div>
+                    <span className="">Variant: </span>
+                    <span className="">{question.variantNumber || "Yes"}</span>
+                  </div>
+                )}
                 <div>
                   <span className="">Status: </span>
-                  <span className="text-orange-dark">Submitted by gatherer</span>
+                  <span className="text-orange-dark">
+                    {question.status === "pending_processor" 
+                      ? "Submitted by gatherer" 
+                      : question.status || "—"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -291,12 +381,49 @@ const ProcessorViewQuestion = () => {
               </h2>
               </div>
               <p className="text-[16px] leading-[100%] font-normal font-roboto text-[#6B7280] pb-[60px] pt-[30px] px-6">
-                Basic-level question from chapter 4
+                {question.notes || question.gathererNotes || question.creatorNotes || "No notes available"}
               </p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-oxford-blue mb-4">
+              {t("processor.viewQuestion.rejectQuestion")}
+            </h3>
+            <p className="text-dark-gray mb-4">
+              {t("processor.viewQuestion.rejectReason")}
+            </p>
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="w-full border border-[#E5E7EB] rounded-lg p-3 min-h-[100px] font-roboto text-[16px]"
+              placeholder={t("processor.viewQuestion.rejectReasonPlaceholder")}
+            />
+            <div className="flex gap-4 mt-6">
+              <OutlineButton
+                text={t("processor.viewQuestion.cancel")}
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectionReason("");
+                }}
+                className="flex-1"
+                disabled={processing}
+              />
+              <PrimaryButton
+                text={t("processor.viewQuestion.confirmReject")}
+                onClick={handleReject}
+                className="flex-1"
+                disabled={processing || !rejectionReason.trim()}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

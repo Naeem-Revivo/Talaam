@@ -564,6 +564,13 @@ const getQuestions = async (req, res, next) => {
           createdBy: q.createdBy,
           lastModifiedBy: q.lastModifiedBy,
           assignedProcessor: q.assignedProcessor,
+          approvedBy: q.approvedBy,
+          isFlagged: q.isFlagged || false,
+          flagReason: q.flagReason || null,
+          flagType: q.flagType || null,
+          flaggedBy: q.flaggedBy || null,
+          flagStatus: q.flagStatus || null,
+          isVariant: q.isVariant || false,
           createdAt: q.createdAt,
           updatedAt: q.updatedAt,
         })),
@@ -709,6 +716,7 @@ const updateQuestion = async (req, res, next) => {
       questionType,
       options,
       correctAnswer,
+      status,
     } = req.body;
 
     console.log('[QUESTION] PUT /admin/questions/:questionId → requested', {
@@ -759,6 +767,7 @@ const updateQuestion = async (req, res, next) => {
       };
     }
     if (correctAnswer !== undefined) updateData.correctAnswer = correctAnswer;
+    if (status !== undefined) updateData.status = status;
 
     const question = await questionService.updateQuestionByCreator(
       questionId,

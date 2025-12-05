@@ -1,10 +1,11 @@
 
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProcessorFilter from "../../components/Processor/ProcessorFilter";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
+import questionsAPI from "../../api/questions";
 
 const CreaterSubmission = () => {
   const { t } = useLanguage();
@@ -15,55 +16,132 @@ const CreaterSubmission = () => {
   const [topic, setTopic] = useState("");
   const [subtopic, setSubtopic] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [submissions, setSubmissions] = useState([]);
+  const [total, setTotal] = useState(0);
 
-    const createSubmissionColumns = [
+  const createSubmissionColumns = [
     { key: 'questionTitle', label: t("processor.creatorSubmission.table.question") },
     { key: 'creator', label: t("processor.creatorSubmission.table.creator") },
     { key: 'variants', label: t("processor.creatorSubmission.table.variants") },
     { key: 'status', label: t("processor.creatorSubmission.table.status") },
+    { key: 'rejectionReason', label: t("processor.creatorSubmission.table.rejectionReason") },
     { key: 'submittedOn', label: t("processor.creatorSubmission.table.submittedOn") },
     { key: 'actions', label: t("processor.creatorSubmission.table.actions") }
   ];
 
-  // Sample data matching the image
-  const createSubmissionData = [
-    {
-      id: 1,
-      questionTitle: 'Newtons 2nd Law',
-      creator: 'Ali Raza',
-      variants: 3,
-      status: 'Approved',
-      submittedOn: 'Today',
-      actionType: 'review'
-    },
-    {
-      id: 2,
-      questionTitle: 'Photosynthesis',
-      creator: 'Sarah',
-      variants: 2,
-      status: 'Approved',
-      submittedOn: 'Today',
-      actionType: 'review'
-    },
-    {
-      id: 3,
-      questionTitle: 'Acid Base Theory',
-      creator: 'John Doe',
-      variants: 1,
-      status: 'Revision',
-      submittedOn: 'Yesterday',
-      actionType: 'review'
-    },
-    {
-      id: 4,
-      questionTitle: 'Newtons 2nd Law',
-      creator: 'Ali Raza',
-      variants: 5,
-      status: 'Pending',
-      submittedOn: 'Today',
-      actionType: 'review'
-    }
-  ];
+  // Fetch creator submissions from API
+  useEffect(() => {
+    const fetchCreatorSubmissions = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch both pending and rejected questions
+        const [pendingResponse, rejectedResponse] = await Promise.all([
+          questionsAPI.getProcessorQuestions({ status: 'pending_processor' }),
+          questionsAPI.getProcessorQuestions({ status: 'rejected' })
+        ]);
+
+        let allQuestions = [];
+
+        // Combine pending questions
+        if (pendingResponse.success && pendingResponse.data) {
+          allQuestions = [...allQuestions, ...(pendingResponse.data.questions || [])];
+        }
+
+        // Combine rejected questions
+        if (rejectedResponse.success && rejectedResponse.data) {
+          const rejectedQuestions = rejectedResponse.data.questions || [];
+          
+          // Fetch individual question details for rejected questions to get rejection reason
+          const rejectedWithReasons = await Promise.all(
+            rejectedQuestions.map(async (question) => {
+              try {
+                const detailResponse = await questionsAPI.getProcessorQuestionById(question.id);
+                if (detailResponse.success && detailResponse.data) {
+                  return {
+                    ...question,
+                    rejectionReason: detailResponse.data.question?.rejectionReason || null
+                  };
+                }
+                return question;
+              } catch (error) {
+                console.error(`Error fetching details for question ${question.id}:`, error);
+                return question;
+              }
+            })
+          );
+          
+          allQuestions = [...allQuestions, ...rejectedWithReasons];
+        }
+
+        // Transform API data to match table structure
+        const transformedData = allQuestions.map((question) => {
+          // Format date
+          const formatDate = (dateString) => {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (date.toDateString() === today.toDateString()) {
+              return 'Today';
+            } else if (date.toDateString() === yesterday.toDateString()) {
+              return 'Yesterday';
+            } else {
+              return date.toLocaleDateString();
+            }
+          };
+
+          // Get creator name (lastModifiedBy would be the creator who submitted)
+          const creatorName = question.lastModifiedBy?.name || 
+                             question.lastModifiedBy?.username || 
+                             question.createdBy?.name || 
+                             question.createdBy?.username || 
+                             'Unknown';
+
+          // Get rejection reason
+          const rejectionReason = question.rejectionReason || null;
+
+          // Format status
+          const formatStatus = (status) => {
+            if (!status) return 'Pending';
+            const statusMap = {
+              'pending_processor': 'Pending',
+              'pending_creator': 'Pending',
+              'pending_explainer': 'Pending',
+              'completed': 'Approved',
+              'rejected': 'Rejected'
+            };
+            return statusMap[status] || status;
+          };
+
+          return {
+            id: question.id,
+            questionTitle: question.questionText || 'Untitled Question',
+            creator: creatorName,
+            variants: question.variants?.length || 0, // Assuming variants array exists
+            status: formatStatus(question.status),
+            submittedOn: formatDate(question.updatedAt || question.createdAt),
+            rejectionReason: rejectionReason || (question.status === 'rejected' ? 'N/A' : ''), // Show rejection reason or N/A for rejected, empty for pending
+            actionType: 'review'
+          };
+        });
+
+        setSubmissions(transformedData);
+        setTotal(transformedData.length);
+      } catch (error) {
+        console.error('Error fetching creator submissions:', error);
+        setSubmissions([]);
+        setTotal(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCreatorSubmissions();
+  }, [currentPage, search, subject, topic, subtopic]);
 
   // Handler for review action
   const handleReview = (item) => {
@@ -110,18 +188,24 @@ const CreaterSubmission = () => {
         showRole={false}
       />
 
-      <Table
-        items={createSubmissionData}
-        columns={createSubmissionColumns}
-        page={currentPage}
-        pageSize={10}
-        total={25}
-        onPageChange={setCurrentPage}
-        onView={handleView}
-        onEdit={handleEdit}
-        onCustomAction={handleReview}
-        emptyMessage={t("processor.creatorSubmission.emptyMessage")}
-      />
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="text-oxford-blue font-roboto text-lg">Loading...</div>
+        </div>
+      ) : (
+        <Table
+          items={submissions}
+          columns={createSubmissionColumns}
+          page={currentPage}
+          pageSize={10}
+          total={total}
+          onPageChange={setCurrentPage}
+          onView={handleView}
+          onEdit={handleEdit}
+          onCustomAction={handleReview}
+          emptyMessage={t("processor.creatorSubmission.emptyMessage")}
+        />
+      )}
       </div>
     </div>
   );

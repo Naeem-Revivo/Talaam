@@ -2,13 +2,14 @@ import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
 import StatsCards from "../../components/common/StatsCards";
 import { Table } from "../../components/common/TableComponent";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import ReviewFeedback from "../../components/gatherer/ReviewFeedback";
 import WorkflowProgress from "../../components/gatherer/WorkflowProgress";
 import RecentActivity from "../../components/gatherer/RecentActiveity";
 import { useNavigate } from "react-router-dom";
 import { UploadFileModal } from "../../components/gatherer/UploadFileModal";
 import questionsAPI from "../../api/questions";
+import Dropdown from "../../components/shared/Dropdown";
 
 const GathererQuestionBank = () => {
   const { t } = useLanguage();
@@ -31,17 +32,17 @@ const GathererQuestionBank = () => {
     console.log("Submitted:", data);
   };
 
-  const gathererColumns = [
+  const gathererColumns = useMemo(() => [
     { key: "questionTitle", label: t("gatherer.questionBank.table.question") },
     { key: "processor", label: t("gatherer.questionBank.table.processor") },
     { key: "lastUpdate", label: t("gatherer.questionBank.table.lastUpdate") },
     { key: "status", label: t("gatherer.questionBank.table.status") },
     { key: "actions", label: t("gatherer.questionBank.table.actions") },
-  ];
+  ], [t]);
   
-  const handleAddQuestion = () => {
+  const handleAddQuestion = useCallback(() => {
     navigate("/gatherer/question-bank/Gatherer-addQuestion");
-  };
+  }, [navigate]);
 
   // Format date to relative time
   const formatDate = (dateString) => {
@@ -155,41 +156,55 @@ const GathererQuestionBank = () => {
     fetchQuestions();
   }, [t, currentPage, statusFilter]);
 
-  const handleView = (item) => {
+  const handleView = useCallback((item) => {
     if (item?.id) {
       navigate(`/gatherer/question-bank/Gatherer-QuestionDetail/${item.id}`);
     } else {
       navigate("/gatherer/question-bank/Gatherer-QuestionDetail");
     }
-  };
+  }, [navigate]);
 
-  const handleEdit = (item) => {
+  const handleEdit = useCallback((item) => {
     console.log("Edit item:", item);
-  };
+  }, []);
 
-  const handleCustomAction = (item) => {
+  const handleCustomAction = useCallback((item) => {
     console.log("Custom action for item:", item);
-  };
+  }, []);
 
-  const feedbackData = {};
+  const feedbackData = useMemo(() => ({}), []);
 
-  const activityData = [];
+  const activityData = useMemo(() => [], []);
 
-  const workflowSteps = [
+  const workflowSteps = useMemo(() => [
     t("gatherer.questionBank.workflowSteps.gatherer"),
     t("gatherer.questionBank.workflowSteps.processor"),
     t("gatherer.questionBank.workflowSteps.creator"),
     t("gatherer.questionBank.workflowSteps.processor"),
     t("gatherer.questionBank.workflowSteps.explainer"),
-  ];
+  ], [t]);
 
-  const handleDismiss = () => {
+  const handleDismiss = useCallback(() => {
     console.log("Dismissed");
-  };
+  }, []);
 
-  const _handleEditNotification = () => {
+  const _handleEditNotification = useCallback(() => {
     console.log("Edit Question");
-  };
+  }, []);
+
+  const statusFilterOptions = useMemo(() => [
+    { value: "", label: "All Statuses" },
+    { value: "pending_processor", label: "Pending Review" },
+    { value: "pending_creator", label: "Pending Creator" },
+    { value: "pending_explainer", label: "Pending Explainer" },
+    { value: "completed", label: "Completed" },
+    { value: "rejected", label: "Rejected" },
+  ], []);
+
+  const handleStatusFilterChange = useCallback((value) => {
+    setStatusFilter(value);
+    setCurrentPage(1); // Reset to first page when filter changes
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6">
@@ -229,29 +244,22 @@ const GathererQuestionBank = () => {
               <label htmlFor="status-filter" className="text-[14px] font-medium text-gray-700">
                 Filter by Status:
               </label>
-              <select
-                id="status-filter"
+              <Dropdown
                 value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setCurrentPage(1); // Reset to first page when filter changes
-                }}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-[14px] font-roboto text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px]"
-              >
-                <option value="">All Statuses</option>
-                <option value="pending_processor">Pending Review</option>
-                <option value="pending_creator">Pending Creator</option>
-                <option value="pending_explainer">Pending Explainer</option>
-                <option value="completed">Completed</option>
-                <option value="rejected">Rejected</option>
-              </select>
+                onChange={handleStatusFilterChange}
+                options={statusFilterOptions}
+                showDefaultOnEmpty={true}
+                className="min-w-[200px]"
+                height="h-[40px]"
+                textClassName="text-[14px] font-roboto text-gray-700"
+              />
             </div>
           </div>
-          {loading ? (
+          {/* {loading ? (
             <div className="text-center py-10">
               <p className="text-[16px] text-gray-600">{t("gatherer.questionBank.loading") || "Loading questions..."}</p>
             </div>
-          ) : (
+          ) : ( */}
             <Table
               items={gathererData}
               columns={gathererColumns}
@@ -264,7 +272,7 @@ const GathererQuestionBank = () => {
               onCustomAction={handleCustomAction}
               emptyMessage={t("gatherer.questionBank.emptyMessage")}
             />
-          )}
+          {/* )} */}
         </div>
 
         <div className="max-w-7xl mx-auto">
