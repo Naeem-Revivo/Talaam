@@ -418,6 +418,14 @@
       "1lowercase": "1 lowercase",
       "1number": "1 number"
     },
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordRequirements": "Password must meet all requirements",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordsMismatch": "Passwords do not match"
+    },
     "buttonText": "Create account",
     "buttonLoading": "Creating account...",
     "success": "Account created successfully.",
@@ -428,7 +436,8 @@
       "passwordMismatch": "Passwords do not match.",
       "passwordWeak": "Password does not meet the requirements.",
       "generic": "Signup failed. Please try again.",
-      "google": "Unable to start Google sign in. Please try again."
+      "google": "Unable to start Google sign in. Please try again.",
+      "userExists": "An account with this email already exists."
     },
     "orContinueWith": "or continue with",
     "continueWithGoogle": "Continue with Google",
@@ -452,6 +461,9 @@
     "resendCodeIn": "Resend code in",
     "verifyAccount": "Verify Account",
     "skipForNow": "Skip for now",
+    "validation": {
+      "codeRequired": "Please enter the complete 6-digit verification code"
+    },
     "success": "Email verified successfully.",
     "successTitle": "Email Verified",
     "resendSuccess": "Verification code has been resent to your email.",
@@ -464,7 +476,13 @@
       "requiredCode": "Please enter the 6-digit code.",
       "invalidCode": "The verification code is invalid or has expired. Please try again.",
       "resend": "Failed to resend verification code. Please try again.",
-      "generic": "Failed to verify code. Please try again."
+      "generic": "Failed to verify code. Please try again.",
+      "userNotFound": "User not found. Please try again.",
+      "alreadyVerified": "Email is already verified.",
+      "otpNotFound": "OTP not found. Please request a new OTP.",
+      "otpExpired": "OTP has expired. Please request a new OTP.",
+      "invalidOtp": "The verification code is invalid or has expired. Please try again.",
+      "emailSendFailed": "Failed to send OTP email. Please try again."
     }
   },
   "profile": {
@@ -476,6 +494,10 @@
     "country": "Country",
     "timeZone": "Time Zone",
     "language": "Language",
+    "validation": {
+      "fullNameRequired": "Full name is required",
+      "fullNameMinLength": "Full name must be at least 2 characters"
+    },
     "finishSetup": "Finish Setup",
     "buttonLoading": "Saving...",
     "success": "Profile completed successfully.",
@@ -494,6 +516,11 @@
     "passwordPlaceholder": "Enter your password",
     "rememberMe": "Remember me",
     "forgotPassword": "Forgot Password?",
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required"
+    },
     "buttonText": "Sign In",
     "buttonLoading": "Signing in...",
     "orContinueWith": "or continue with",
@@ -506,7 +533,14 @@
     "errors": {
       "title": "Login Failed",
       "generic": "Login failed. Please check your credentials and try again.",
-      "google": "Unable to start Google login. Please try again."
+      "google": "Unable to start Google login. Please try again.",
+      "invalidCredentials": "Invalid email or password. Please check your credentials and try again.",
+      "accountSuspended": "Your account has been suspended. Please contact administrator.",
+      "oauthFailed": "Authentication failed. Please try again.",
+      "oauthUserNotFound": "Authentication failed - user not found.",
+      "tokenGenerationFailed": "Failed to generate authentication token. Please try again.",
+      "googleUrlFailed": "Unable to start Google login. Please try again.",
+      "linkedinUrlFailed": "Unable to start LinkedIn login. Please try again."
     }
   },
   "forgotPassword": {
@@ -514,6 +548,10 @@
     "instruction": "Enter your registered email address and we'll send you a verification code to reset your password.",
     "email": "Email Address",
     "emailPlaceholder": "Enter your registered email",
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address"
+    },
     "buttonText": "Send Verification Code",
     "backToLogin": "Back to Login",
     "buttonLoading": "Sending...",
@@ -522,7 +560,8 @@
     "errors": {
       "title": "Reset Failed",
       "required": "Please enter your email.",
-      "generic": "Failed to request password reset. Please try again."
+      "generic": "Failed to request password reset. Please try again.",
+      "emailSendFailed": "Failed to send reset email. Please try again."
     }
   },
   "forgotModal": {
@@ -538,6 +577,11 @@
     "newPasswordPlaceholder": "Enter new password",
     "confirmPassword": "Confirm New Password",
     "confirmPasswordPlaceholder": "Confirm new password",
+    "validation": {
+      "newPasswordRequired": "New password is required",
+      "confirmPasswordRequired": "Please confirm your new password",
+      "passwordsMismatch": "Passwords do not match"
+    },
     "buttonText": "Set New Password",
     "buttonLoading": "Saving...",
     "success": "Password reset successfully.",
@@ -548,13 +592,20 @@
       "missingToken": "Reset link is invalid or expired.",
       "requiredFields": "Please fill all fields.",
       "passwordMismatch": "Passwords do not match.",
-      "generic": "Failed to reset password. Please try again."
+      "generic": "Failed to reset password. Please try again.",
+      "invalidToken": "Reset link is invalid or expired."
     }
   },
   "passwordReset": {
     "title": "Password Reset!",
     "description": "Your password has been successfully reset. Click below to continue to login.",
     "buttonText": "Continue to Sign in"
+  },
+  "auth": {
+    "errors": {
+      "userNotFound": "User not found. Please try again.",
+      "default": "An unexpected error occurred. Please try again."
+    }
   },
   "dashboard": {
     "header": {

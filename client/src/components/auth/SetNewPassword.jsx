@@ -5,6 +5,7 @@ import { eye, openeye, lock } from '../../assets/svg/signup'
 import { useDispatch, useSelector } from 'react-redux'
 import { resetPassword } from '../../store/slices/authSlice'
 import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
+import { getTranslatedAuthMessage } from '../../utils/authMessages'
 
 const SetNewPassword = () => {
   const { language, t } = useLanguage()
@@ -32,7 +33,7 @@ const SetNewPassword = () => {
   // Password validation function
   const validateNewPassword = (password) => {
     if (!password.trim()) {
-      return 'New password is required'
+      return t('setNewPassword.validation.newPasswordRequired')
     }
     
     // Optional: Add password strength validation if needed
@@ -43,10 +44,10 @@ const SetNewPassword = () => {
   // Confirm password validation function
   const validateConfirmPassword = (confirmPassword) => {
     if (!confirmPassword.trim()) {
-      return 'Please confirm your new password'
+      return t('setNewPassword.validation.confirmPasswordRequired')
     }
     if (confirmPassword !== formData.newPassword) {
-      return 'Passwords do not match'
+      return t('setNewPassword.validation.passwordsMismatch')
     }
     return ''
   }
@@ -123,45 +124,40 @@ const SetNewPassword = () => {
       )
 
       if (resetPassword.fulfilled.match(resultAction)) {
-        const msg =
-          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
-          resultAction.payload?.message ||
-          t('setNewPassword.success') ||
-          'Password reset successfully.'
+        const backendMessage = resultAction.payload?.message || 'Password reset successfully'
+        const msg = getTranslatedAuthMessage(backendMessage, t, 'setNewPassword.success') || t('setNewPassword.success') || 'Password reset successfully.'
         showSuccessToast(msg, { title: t('setNewPassword.successTitle') || 'Password Reset', isAuth: true })
         navigate('/password-reset', { replace: true })
       } else {
         // Extract error message from API response
-        const errorMessage = 
+        const backendMessage = 
           (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
           ''
         
         // Check if it's a token-related error
-        const isTokenError = 
-          errorMessage.toLowerCase().includes('invalid token') ||
-          errorMessage.toLowerCase().includes('expired') ||
-          errorMessage.toLowerCase().includes('invalid reset link') ||
+        const isTokenError = backendMessage && (
+          backendMessage.toLowerCase().includes('invalid token') ||
+          backendMessage.toLowerCase().includes('expired') ||
+          backendMessage.toLowerCase().includes('invalid reset link') ||
           (resultAction.payload?.code && 
            (resultAction.payload.code === 'INVALID_TOKEN' || 
             resultAction.payload.code === 'TOKEN_EXPIRED'))
+        )
         
         if (isTokenError) {
-          const msg = errorMessage || t('setNewPassword.errors.missingToken') || 'Reset link is invalid or has expired.'
+          const msg = getTranslatedAuthMessage(backendMessage, t, 'setNewPassword.errors.invalidToken') || t('setNewPassword.errors.invalidToken') || 'Reset link is invalid or expired.'
           showErrorToast(msg, { title: t('setNewPassword.errors.tokenTitle') || 'Invalid Reset Link', isAuth: true })
-        } else {
-          const msg =
-            errorMessage ||
-            t('setNewPassword.errors.generic') ||
-            'Failed to reset password.'
+        } else if (backendMessage) {
+          const msg = getTranslatedAuthMessage(backendMessage, t, 'setNewPassword.errors.generic') || t('setNewPassword.errors.generic') || 'Failed to reset password. Please try again.'
           showErrorToast(msg, { title: t('setNewPassword.errors.title') || 'Reset Failed', isAuth: true })
+        } else {
+          showErrorToast(t('setNewPassword.errors.generic') || 'Failed to reset password. Please try again.', { title: t('setNewPassword.errors.title') || 'Reset Failed', isAuth: true })
         }
       }
     } catch {
-      showErrorToast(
-        t('setNewPassword.errors.generic') || 'An unexpected error occurred. Please try again.',
-        { title: t('setNewPassword.errors.title') || 'Reset Failed', isAuth: true }
-      )
+      const defaultError = t('auth.errors.default') || 'An unexpected error occurred. Please try again.'
+      showErrorToast(defaultError, { title: t('setNewPassword.errors.title') || 'Reset Failed', isAuth: true })
     }
   }
 

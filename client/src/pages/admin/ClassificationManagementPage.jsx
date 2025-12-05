@@ -391,7 +391,62 @@ const ClassificationManagement = () => {
   };
 
   const handleExport = () => {
-    alert("Export clicked");
+    try {
+      // Get the data to export (all filtered data, not just paginated)
+      const dataToExport = filteredData;
+      
+      if (!dataToExport || dataToExport.length === 0) {
+        showErrorToast("No data to export");
+        return;
+      }
+
+      // Get column headers (excluding actions column)
+      const exportColumns = currentConfig.columns.filter(col => col.key !== "actions");
+      const headers = exportColumns.map(col => col.label);
+
+      // Helper function to escape CSV values
+      const escapeCSV = (value) => {
+        if (value === null || value === undefined) return "";
+        const stringValue = String(value);
+        // If value contains comma, quote, or newline, wrap in quotes and escape quotes
+        if (stringValue.includes(",") || stringValue.includes('"') || stringValue.includes("\n")) {
+          return `"${stringValue.replace(/"/g, '""')}"`;
+        }
+        return stringValue;
+      };
+
+      // Create CSV rows
+      const csvRows = [
+        headers.join(","),
+        ...dataToExport.map((item) => {
+          return exportColumns.map((col) => {
+            const value = item[col.key] || "";
+            return escapeCSV(value);
+          }).join(",");
+        }),
+      ];
+
+      // Create blob and download
+      const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      
+      // Generate filename based on active tab
+      const tabName = activeTab === "Exams" ? "exams" : activeTab === "Subject" ? "subjects" : "topics";
+      const timestamp = new Date().toISOString().split("T")[0];
+      link.download = `classification_${tabName}_${timestamp}.csv`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      showSuccessToast(`Exported ${dataToExport.length} ${tabName} successfully`);
+    } catch (error) {
+      console.error("Error exporting classification data:", error);
+      showErrorToast("Failed to export data. Please try again.");
+    }
   };
 
   const statsData = [

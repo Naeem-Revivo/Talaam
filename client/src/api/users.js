@@ -55,8 +55,14 @@ const usersAPI = {
       const response = await axiosClient.post('/admin/create', apiData);
       return response.data;
     } catch (error) {
+      // Preserve the full error response structure
       const apiError = error.response?.data;
-      throw apiError || { message: 'Failed to create user' };
+      // Create error object that preserves the response structure
+      const errorObj = apiError || { message: 'Failed to create user' };
+      // Attach response for proper error handling
+      const err = new Error(errorObj.message || 'Failed to create user');
+      err.response = { data: errorObj };
+      throw err;
     }
   },
 
