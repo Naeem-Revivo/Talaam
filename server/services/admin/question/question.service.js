@@ -370,7 +370,12 @@ const getGathererQuestions = async (gathererId, { page = 1, limit = 20, status }
   // Build where clause
   const where = { createdById: gathererId };
   if (status) {
-    where.status = status;
+    // Handle "flagged" as a special status that filters by isFlagged
+    if (status === 'flagged') {
+      where.isFlagged = true;
+    } else {
+      where.status = status;
+    }
   }
 
   const { prisma } = require('../../../config/db/prisma');
@@ -402,6 +407,7 @@ const getGathererQuestions = async (gathererId, { page = 1, limit = 20, status }
       subject: q.subject ? { id: q.subject.id, name: q.subject.name } : null,
       topic: q.topic ? { id: q.topic.id, name: q.topic.name } : null,
       status: q.status,
+      isFlagged: q.isFlagged || false,
       updatedAt: q.updatedAt,
       createdAt: q.createdAt,
       assignedProcessor: processorUser

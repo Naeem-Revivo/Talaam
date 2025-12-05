@@ -60,7 +60,11 @@ const GathererQuestionBank = () => {
   };
 
   // Format status for display
-  const formatStatus = (status) => {
+  const formatStatus = (status, isFlagged) => {
+    // If question is flagged, show "Flagged" status
+    if (isFlagged) {
+      return "Flagged";
+    }
     if (!status) return "—";
     const statusMap = {
       pending_processor: "Pending Review",
@@ -108,7 +112,7 @@ const GathererQuestionBank = () => {
               questionTitle: question.questionText?.substring(0, 50) + (question.questionText?.length > 50 ? "..." : "") || "—",
               processor: processorName,
               lastUpdate: formatDate(question.updatedAt || question.createdAt),
-              status: formatStatus(question.status),
+              status: formatStatus(question.status, question.isFlagged),
               actionType: "viewicon",
             };
           });
@@ -199,6 +203,7 @@ const GathererQuestionBank = () => {
     { value: "pending_explainer", label: "Pending Explainer" },
     { value: "completed", label: "Completed" },
     { value: "rejected", label: "Rejected" },
+    { value: "flagged", label: "Flagged" },
   ], []);
 
   const handleStatusFilterChange = useCallback((value) => {
@@ -275,7 +280,7 @@ const GathererQuestionBank = () => {
           {/* )} */}
         </div>
 
-        <div className="max-w-7xl mx-auto">
+        <div className="">
           <h1 className="text-[24px] leading-[32px] font-bold font-archivo text-blue-dark mb-4">
             {t("gatherer.questionBank.reviewFeedback")}
           </h1>
