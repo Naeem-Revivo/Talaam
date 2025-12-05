@@ -19,16 +19,93 @@ const CreaterSubmission = () => {
   const [loading, setLoading] = useState(true);
   const [submissions, setSubmissions] = useState([]);
   const [total, setTotal] = useState(0);
+  const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
+  const [selectedFlagReason, setSelectedFlagReason] = useState("");
 
   const createSubmissionColumns = [
     { key: 'questionTitle', label: t("processor.creatorSubmission.table.question") },
     { key: 'creator', label: t("processor.creatorSubmission.table.creator") },
-    { key: 'variants', label: t("processor.creatorSubmission.table.variants") },
-    { key: 'status', label: t("processor.creatorSubmission.table.status") },
-    { key: 'rejectionReason', label: t("processor.creatorSubmission.table.rejectionReason") },
+    { key: 'processorStatus', label: t("processor.creatorSubmission.table.processorStatus") || "PROCESSOR STATUS" },
+    { key: 'creatorStatus', label: t("processor.creatorSubmission.table.creatorStatus") || "CREATOR STATUS" },
     { key: 'submittedOn', label: t("processor.creatorSubmission.table.submittedOn") },
     { key: 'actions', label: t("processor.creatorSubmission.table.actions") }
   ];
+
+  // Format date to "Today", "Yesterday", or formatted date
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // Reset time to compare only dates
+    today.setHours(0, 0, 0, 0);
+    yesterday.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+
+    if (date.getTime() === today.getTime()) {
+      return "Today";
+    } else if (date.getTime() === yesterday.getTime()) {
+      return "Yesterday";
+    } else {
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
+    }
+  };
+
+  // Map API status to processor status
+  const mapProcessorStatus = (status) => {
+    const statusMap = {
+      'pending_processor': 'Pending Review',
+      'pending_creator': 'Approved',
+      'pending_explainer': 'Approved',
+      'completed': 'Approved',
+      'approved': 'Approved',
+      'accepted': 'Approved',
+      'rejected': 'Rejected',
+      'reject': 'Rejected',
+      'flagged': 'Pending Review', // Flagged questions are still pending processor review
+      'flag': 'Pending Review'
+    };
+    return statusMap[status?.toLowerCase()] || 'Pending Review';
+  };
+
+  // Map API status to creator status - comprehensive mapping for creator statuses
+  const mapCreatorStatus = (status, isFlagged, hasVariants, isSubmittedByCreator, isCompleted) => {
+    // Priority: Flag > Variant Created > Approved (if submitted/completed by creator or sent to explainer) > Other statuses
+    if (isFlagged) {
+      return 'Flag';
+    }
+    
+    if (hasVariants && status === 'pending_processor') {
+      return 'Variant Created';
+    }
+
+    // Check if approved/completed or sent to explainer (means creator approved and processor sent to explainer)
+    if (isSubmittedByCreator || isCompleted || status === 'completed' || status === 'pending_explainer') {
+      return 'Approved';
+    }
+
+    const statusMap = {
+      'pending_processor': 'Pending',
+      'pending_creator': 'Pending',
+      'pending_explainer': 'Approved', // Sent to explainer means creator approved it
+      'completed': 'Approved',
+      'approved': 'Approved',
+      'accepted': 'Approved',
+      'rejected': 'Rejected',
+      'reject': 'Rejected',
+      'flagged': 'Flag',
+      'flag': 'Flag',
+      'variant_created': 'Variant Created'
+    };
+    return statusMap[status?.toLowerCase()] || 'Pending';
+  };
 
   // Fetch creator submissions from API
   useEffect(() => {
@@ -36,32 +113,66 @@ const CreaterSubmission = () => {
       try {
         setLoading(true);
         
-        // Fetch both pending and rejected questions
-        const [pendingResponse, rejectedResponse] = await Promise.all([
-          questionsAPI.getProcessorQuestions({ status: 'pending_processor' }),
-          questionsAPI.getProcessorQuestions({ status: 'rejected' })
-        ]);
+        // Fetch questions with multiple statuses to get all creator submissions
+        // This includes: pending_processor (submitted by creator), rejected, flagged, 
+        // pending_explainer (approved and sent to explainer), completed, etc.
+        const statusesToFetch = [
+          'pending_processor', 
+          'rejected',
+          'flagged',
+          'pending_explainer', // Questions approved and sent to explainer
+          'completed'
+        ];
 
         let allQuestions = [];
 
-        // Combine pending questions
-        if (pendingResponse.success && pendingResponse.data) {
-          allQuestions = [...allQuestions, ...(pendingResponse.data.questions || [])];
+        // Fetch questions for each status
+        const promises = statusesToFetch.map(status => 
+          questionsAPI.getProcessorQuestions({ status })
+        );
+        
+        const responses = await Promise.all(promises);
+        
+        // Combine all questions
+        responses.forEach(response => {
+          if (response.success && response.data?.questions) {
+            allQuestions = [...allQuestions, ...response.data.questions];
         }
-
-        // Combine rejected questions
-        if (rejectedResponse.success && rejectedResponse.data) {
-          const rejectedQuestions = rejectedResponse.data.questions || [];
+        });
+        
+        // Remove duplicates based on question ID
+        const uniqueQuestions = [];
+        const seenIds = new Set();
+        allQuestions.forEach(q => {
+          if (!seenIds.has(q.id)) {
+            seenIds.add(q.id);
+            uniqueQuestions.push(q);
+          }
+        });
+        allQuestions = uniqueQuestions;
           
-          // Fetch individual question details for rejected questions to get rejection reason
-          const rejectedWithReasons = await Promise.all(
-            rejectedQuestions.map(async (question) => {
+        // Fetch individual question details to get full information (rejection reason, flag reason, variants, etc.)
+        const questionsWithDetails = await Promise.all(
+          allQuestions.map(async (question) => {
               try {
                 const detailResponse = await questionsAPI.getProcessorQuestionById(question.id);
                 if (detailResponse.success && detailResponse.data) {
+                const detailedQuestion = detailResponse.data.question;
                   return {
                     ...question,
-                    rejectionReason: detailResponse.data.question?.rejectionReason || null
+                  ...detailedQuestion, // Merge detailed question data
+                  rejectionReason: detailedQuestion?.rejectionReason || question.rejectionReason || null,
+                  flagReason: detailedQuestion?.flagReason || question.flagReason || null,
+                  // Only mark as flagged if explicitly set to true or status indicates flagged
+                  // Don't use flagReason alone as it might be from history
+                  isFlagged: detailedQuestion?.isFlagged === true || 
+                            detailedQuestion?.isFlagged === 'true' ||
+                            detailedQuestion?.status?.toLowerCase() === 'flagged' ||
+                            detailedQuestion?.status?.toLowerCase() === 'flag',
+                  variants: detailedQuestion?.variants || question.variants || [],
+                  history: detailedQuestion?.history || question.history || [],
+                  approvedBy: detailedQuestion?.approvedBy || question.approvedBy || null,
+                  isVariant: detailedQuestion?.isVariant || question.isVariant || false
                   };
                 }
                 return question;
@@ -71,29 +182,9 @@ const CreaterSubmission = () => {
               }
             })
           );
-          
-          allQuestions = [...allQuestions, ...rejectedWithReasons];
-        }
 
         // Transform API data to match table structure
-        const transformedData = allQuestions.map((question) => {
-          // Format date
-          const formatDate = (dateString) => {
-            if (!dateString) return 'N/A';
-            const date = new Date(dateString);
-            const today = new Date();
-            const yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
-            
-            if (date.toDateString() === today.toDateString()) {
-              return 'Today';
-            } else if (date.toDateString() === yesterday.toDateString()) {
-              return 'Yesterday';
-            } else {
-              return date.toLocaleDateString();
-            }
-          };
-
+        const transformedData = questionsWithDetails.map((question) => {
           // Get creator name (lastModifiedBy would be the creator who submitted)
           const creatorName = question.lastModifiedBy?.name || 
                              question.lastModifiedBy?.username || 
@@ -101,31 +192,78 @@ const CreaterSubmission = () => {
                              question.createdBy?.username || 
                              'Unknown';
 
-          // Get rejection reason
-          const rejectionReason = question.rejectionReason || null;
+          // Check if question has a flag reason (for display purposes)
+          const hasFlagReason = question.flagReason !== null && 
+                               question.flagReason !== undefined && 
+                               typeof question.flagReason === 'string' &&
+                               question.flagReason.trim() !== '';
 
-          // Format status
-          const formatStatus = (status) => {
-            if (!status) return 'Pending';
-            const statusMap = {
-              'pending_processor': 'Pending',
-              'pending_creator': 'Pending',
-              'pending_explainer': 'Pending',
-              'completed': 'Approved',
-              'rejected': 'Rejected'
-            };
-            return statusMap[status] || status;
-          };
+          // Check if question has variants created from it
+          // Check if question has variants array with items, or if history shows variant_created action
+          const hasVariants = (question.variants && Array.isArray(question.variants) && question.variants.length > 0) ||
+                             (question.history && Array.isArray(question.history) && question.history.some(h => h.action === 'variant_created'));
+
+          // Check if creator has submitted the question back to processor (approved submission)
+          // A question is considered "approved" by creator if:
+          // 1. Status is pending_processor AND has approvedBy (processor approved it, sent to creator, creator submitted back)
+          // 2. Status is completed (fully approved)
+          // 3. Status is pending_processor AND was previously in pending_creator (went through creator workflow)
+          const hasApprovedBy = question.approvedBy || question.originalData?.approvedBy;
+          const wasInCreatorWorkflow = question.history && Array.isArray(question.history) && 
+                                      question.history.some(h => h.status === 'pending_creator' || h.action === 'approved');
+          
+          // Check if question is currently flagged
+          // A question is flagged if:
+          // 1. isFlagged property is explicitly true
+          // 2. status is 'flagged' or 'flag'
+          // 3. has flagReason AND status is 'pending_processor' AND doesn't have approvedBy (flagged, not approved submission)
+          // 4. Check history for recent flag action (creator flagged it)
+          const hasRecentFlagAction = question.history && Array.isArray(question.history) &&
+                                     question.history.some(h => 
+                                       (h.action === 'flag' || h.action === 'flagged') &&
+                                       // Check if flag action is recent (within last workflow cycle)
+                                       (h.status === 'pending_processor' || !h.status || h.status.includes('processor'))
+                                     );
+          
+          const isFlagged = question.isFlagged === true || 
+                           question.status?.toLowerCase() === 'flagged' ||
+                           question.status?.toLowerCase() === 'flag' ||
+                           (hasFlagReason && question.status === 'pending_processor' && !hasApprovedBy) ||
+                           hasRecentFlagAction;
+          
+          const isSubmittedByCreator = question.status === 'pending_processor' && 
+                                       !isFlagged && 
+                                       (hasApprovedBy || wasInCreatorWorkflow);
+          
+          // Check if question was completed (approved by processor)
+          const isCompleted = question.status === 'completed' && !isFlagged;
+
+          // Get processor status
+          const processorStatus = mapProcessorStatus(question.status);
+
+          // Get creator status with proper mapping
+          // Priority: Flag > Variant Created > Approved (if submitted/completed) > Other statuses
+          const creatorStatus = mapCreatorStatus(question.status, isFlagged, hasVariants, isSubmittedByCreator, isCompleted);
+
+          // Get flag reason
+          const flagReason = question.flagReason || null;
 
           return {
             id: question.id,
             questionTitle: question.questionText || 'Untitled Question',
             creator: creatorName,
-            variants: question.variants?.length || 0, // Assuming variants array exists
-            status: formatStatus(question.status),
+            processorStatus: processorStatus,
+            creatorStatus: creatorStatus,
             submittedOn: formatDate(question.updatedAt || question.createdAt),
-            rejectionReason: rejectionReason || (question.status === 'rejected' ? 'N/A' : ''), // Show rejection reason or N/A for rejected, empty for pending
-            actionType: 'review'
+            flagReason: flagReason,
+            indicators: {
+              approved: creatorStatus === 'Approved' || question.status === 'completed' || isSubmittedByCreator,
+              flag: isFlagged,
+              reject: question.status === 'rejected',
+              variant: hasVariants
+            },
+            actionType: 'review',
+            originalData: question // Store original data for navigation
           };
         });
 
@@ -145,18 +283,33 @@ const CreaterSubmission = () => {
 
   // Handler for review action
   const handleReview = (item) => {
-    console.log('Review item:', item);
-    // Add your review logic here
+    if (item.originalData?.id) {
+      navigate(`/processor/Processed-ViewQuestion?questionId=${item.originalData.id}&source=creator-submission`);
+    }
   };
 
-  // Handler for view action (if needed)
+  // Handler for view action
   const handleView = (item) => {
-    console.log('View item:', item);
+    if (item.originalData?.id) {
+      navigate(`/processor/Processed-ViewQuestion?questionId=${item.originalData.id}&source=creator-submission`);
+    }
   };
 
-  // Handler for edit action (if needed)
+  // Handler for edit action
   const handleEdit = (item) => {
     console.log('Edit item:', item);
+  };
+
+  // Handler for showing flag reason
+  const handleShowFlagReason = (flagReason) => {
+    setSelectedFlagReason(flagReason || "");
+    setIsFlagModalOpen(true);
+  };
+
+  // Handler for closing flag modal
+  const handleCloseFlagModal = () => {
+    setIsFlagModalOpen(false);
+    setSelectedFlagReason("");
   };
 
   const handleCancel = () => {
@@ -203,8 +356,40 @@ const CreaterSubmission = () => {
           onView={handleView}
           onEdit={handleEdit}
           onCustomAction={handleReview}
+          onShowFlagReason={handleShowFlagReason}
           emptyMessage={t("processor.creatorSubmission.emptyMessage")}
         />
+      )}
+
+      {/* Flag Reason Modal */}
+      {isFlagModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold text-oxford-blue mb-2">
+              {t("creator.assignedQuestionPage.flagReasonModal.title") || "Flag Reason"}
+            </h2>
+            <p className="text-gray-600 mb-4">
+              {t("creator.assignedQuestionPage.flagReasonModal.subtitle") || "The reason why this question was flagged."}
+            </p>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-oxford-blue mb-2">
+                {t("creator.assignedQuestionPage.flagReasonModal.reasonLabel") || "Reason for Flagging"}
+              </label>
+              <div className="p-3 bg-gray-50 rounded border border-gray-200 min-h-[100px]">
+                <p className="text-gray-700 text-sm">
+                  {selectedFlagReason || t("creator.assignedQuestionPage.flagReasonModal.noReason") || "No reason provided"}
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <OutlineButton
+                text={t("creator.assignedQuestionPage.flagReasonModal.close") || "Close"}
+                onClick={handleCloseFlagModal}
+                className="py-[10px] px-5"
+              />
+            </div>
+          </div>
+        </div>
       )}
       </div>
     </div>
