@@ -2982,10 +2982,27 @@
       "searchPlaceholder": "البحث في مسودات الشروحات...",
       "table": {
         "question": "السؤال",
+        "subject": "المادة",
         "processor": "المعالج",
+        "status": "الحالة",
         "difficulty": "الصعوبة",
+        "indicators": "المؤشرات",
         "updatedOn": "تم التحديث في",
         "actions": "الإجراءات"
+      },
+      "indicators": {
+        "approved": "معتمد",
+        "flag": "إبلاغ",
+        "reject": "رفض",
+        "variant": "متغير"
+      },
+      "reasonButton": "السبب",
+      "flagReasonModal": {
+        "title": "سبب الإبلاغ",
+        "subtitle": "السبب وراء الإبلاغ عن هذا السؤال.",
+        "reasonLabel": "سبب الإبلاغ",
+        "noReason": "لم يتم تقديم سبب",
+        "close": "إغلاق"
       },
       "emptyMessage": "لم يتم العثور على أسئلة"
     },
@@ -3278,6 +3295,7 @@
         "creator": "المنشئ",
         "variants": "المتغيرات",
         "status": "الحالة",
+        "rejectionReason": "سبب الرفض",
         "submittedOn": "تم الإرسال في",
         "actions": "الإجراءات"
       },
@@ -3288,6 +3306,7 @@
       "back": "رجوع",
       "table": {
         "question": "السؤال",
+        "subject": "المادة",
         "gatherer": "المجمع",
         "uploadOn": "تم الرفع في",
         "status": "الحالة",
@@ -3336,7 +3355,14 @@
       "status": "الحالة",
       "creatorGathererNotes": "ملاحظات المنشئ / المجمع",
       "attachments": "المرفقات",
-      "questionHistory": "تاريخ السؤال"
+      "questionHistory": "تاريخ السؤال",
+      "rejectQuestion": "رفض السؤال",
+      "rejectReason": "يرجى تقديم سبب لرفض هذا السؤال:",
+      "rejectReasonPlaceholder": "أدخل سبب الرفض...",
+      "cancel": "إلغاء",
+      "confirmReject": "تأكيد الرفض",
+      "loading": "جاري تحميل السؤال...",
+      "noOptions": "لا توجد خيارات متاحة لهذا النوع من الأسئلة."
     },
     "profile": {
       "title": "إعدادات الحساب",

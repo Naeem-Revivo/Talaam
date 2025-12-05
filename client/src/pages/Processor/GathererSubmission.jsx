@@ -6,6 +6,7 @@ import ProcessorFilter from "../../components/Processor/ProcessorFilter";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
 import questionsAPI from "../../api/questions";
+import subjectsAPI from "../../api/subjects";
 
 
 const GathererSubmission = () => {
@@ -21,9 +22,11 @@ const GathererSubmission = () => {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [pageSize] = useState(10);
+  const [subjects, setSubjects] = useState([]);
 
   const gathererSubmissionColumns = [
     { key: 'questionTitle', label: t("processor.gathererSubmission.table.question") },
+    { key: 'subject', label: t("processor.gathererSubmission.table.subject") },
     { key: 'gatherer', label: t("processor.gathererSubmission.table.gatherer") },
     { key: 'uploadOn', label: t("processor.gathererSubmission.table.uploadOn") },
     { key: 'status', label: t("processor.gathererSubmission.table.status") },
@@ -62,16 +65,18 @@ const GathererSubmission = () => {
   const mapStatus = (status) => {
     const statusMap = {
       'pending_processor': 'Pending',
-      'pending_creator': 'Pending',
-      'pending_explainer': 'Pending',
-      'approved': 'Accepted',
-      'accepted': 'Accepted',
+      'pending_creator': 'Approved', // Approved and moved to creator
+      'pending_explainer': 'Approved', // Approved and moved to explainer
+      'approved': 'Approved',
+      'accepted': 'Approved',
       'rejected': 'Reject',
       'reject': 'Reject',
       'fix_request': 'Fix Request',
       'fix_requested': 'Fix Request',
       'revision': 'Fix Request',
-      'completed': 'Accepted'
+      'completed': 'Approved',
+      'flagged': 'Flag',
+      'flag': 'Flag'
     };
     return statusMap[status?.toLowerCase()] || status || 'Pending';
   };
@@ -81,6 +86,7 @@ const GathererSubmission = () => {
     return questions.map((question) => ({
       id: question.id,
       questionTitle: question.questionText || "—",
+      subject: question.subject?.name || "—",
       gatherer: question.createdBy?.name || "—",
       uploadOn: formatDate(question.createdAt),
       status: mapStatus(question.status),
@@ -93,58 +99,112 @@ const GathererSubmission = () => {
   const fetchGathererSubmissions = useCallback(async () => {
     try {
       setLoading(true);
-      const params = {};
       
-      // Map subtopic (status filter) to API status
-      // Note: ProcessorFilter currently uses hardcoded options, so we check for common status strings
-      if (subtopic) {
+      // Fetch all questions by getting multiple statuses
+      // When no filter is selected, fetch all relevant statuses
+      let allQuestions = [];
+      
+      if (subtopic && subtopic !== t("filter.status")) {
+        // Filter by specific status
         const statusFilterMap = {
-          'Pending': 'pending_processor',
-          'Accepted': 'approved',
-          'Reject': 'rejected',
-          'Fix Request': 'fix_request',
-          'pending_processor': 'pending_processor',
-          'approved': 'approved',
-          'rejected': 'rejected',
-          'fix_request': 'fix_request'
+          'Pending': ['pending_processor'],
+          'Approved': ['approved', 'pending_creator', 'pending_explainer', 'completed'],
+          'Reject': ['rejected'],
+          'Flag': ['flagged'],
+          'Fix Request': ['fix_request', 'fix_requested', 'revision'],
+          'pending_processor': ['pending_processor'],
+          'approved': ['approved', 'pending_creator', 'pending_explainer', 'completed'],
+          'rejected': ['rejected'],
+          'flagged': ['flagged'],
+          'fix_request': ['fix_request', 'fix_requested', 'revision']
         };
         
-        const mappedStatus = statusFilterMap[subtopic];
-        if (mappedStatus) {
-          params.status = mappedStatus;
-        }
-      }
-
-      const response = await questionsAPI.getProcessorQuestions(params);
-      
-      if (response.success && response.data?.questions) {
-        let questions = response.data.questions;
-
-        // Filter by search term
-        if (search) {
-          const searchLower = search.toLowerCase();
-          questions = questions.filter(q => 
-            q.questionText?.toLowerCase().includes(searchLower) ||
-            q.createdBy?.name?.toLowerCase().includes(searchLower)
-          );
-        }
-
-        // Filter by subject
-        if (subject) {
-          questions = questions.filter(q => 
-            q.subject?.name === subject || 
-            q.subject?.id === subject ||
-            (q.subject && subject.includes(q.subject.name))
-          );
-        }
-
-        const transformedData = transformQuestionData(questions);
-        setGathererSubmissionData(transformedData);
-        setTotal(transformedData.length);
+        const statusesToFetch = statusFilterMap[subtopic] || [subtopic.toLowerCase()];
+        
+        // Fetch questions for each status
+        const promises = statusesToFetch.map(status => 
+          questionsAPI.getProcessorQuestions({ status })
+        );
+        
+        const responses = await Promise.all(promises);
+        
+        // Combine all questions
+        responses.forEach(response => {
+          if (response.success && response.data?.questions) {
+            allQuestions = [...allQuestions, ...response.data.questions];
+          }
+        });
+        
+        // Remove duplicates based on question ID
+        const uniqueQuestions = [];
+        const seenIds = new Set();
+        allQuestions.forEach(q => {
+          if (!seenIds.has(q.id)) {
+            seenIds.add(q.id);
+            uniqueQuestions.push(q);
+          }
+        });
+        allQuestions = uniqueQuestions;
       } else {
-        setGathererSubmissionData([]);
-        setTotal(0);
+        // No status filter - fetch all relevant statuses for gatherer submissions
+        const allStatuses = [
+          'pending_processor',
+          'pending_creator',
+          'pending_explainer',
+          'approved',
+          'rejected',
+          'flagged',
+          'fix_request',
+          'fix_requested',
+          'revision',
+          'completed'
+        ];
+        
+        const promises = allStatuses.map(status => 
+          questionsAPI.getProcessorQuestions({ status })
+        );
+        
+        const responses = await Promise.all(promises);
+        
+        // Combine all questions
+        responses.forEach(response => {
+          if (response.success && response.data?.questions) {
+            allQuestions = [...allQuestions, ...response.data.questions];
+          }
+        });
+        
+        // Remove duplicates based on question ID
+        const uniqueQuestions = [];
+        const seenIds = new Set();
+        allQuestions.forEach(q => {
+          if (!seenIds.has(q.id)) {
+            seenIds.add(q.id);
+            uniqueQuestions.push(q);
+          }
+        });
+        allQuestions = uniqueQuestions;
       }
+      
+      // Filter by search term
+      if (search) {
+        const searchLower = search.toLowerCase();
+        allQuestions = allQuestions.filter(q => 
+          q.questionText?.toLowerCase().includes(searchLower) ||
+          q.createdBy?.name?.toLowerCase().includes(searchLower)
+        );
+      }
+
+      // Filter by subject
+      if (subject && subject !== t("filter.subject")) {
+        allQuestions = allQuestions.filter(q => 
+          q.subject?.name === subject || 
+          q.subject?.id === subject
+        );
+      }
+
+      const transformedData = transformQuestionData(allQuestions);
+      setGathererSubmissionData(transformedData);
+      setTotal(transformedData.length);
     } catch (error) {
       console.error('Error fetching gatherer submissions:', error);
       setGathererSubmissionData([]);
@@ -152,7 +212,34 @@ const GathererSubmission = () => {
     } finally {
       setLoading(false);
     }
-  }, [search, subject, subtopic]);
+  }, [search, subject, subtopic, t]);
+
+  // Fetch subjects on component mount
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const response = await subjectsAPI.getAllSubjects();
+        let subjectsList = [];
+        
+        // Handle different response structures
+        if (response.success) {
+          if (response.data?.subjects && Array.isArray(response.data.subjects)) {
+            subjectsList = response.data.subjects;
+          } else if (Array.isArray(response.data)) {
+            subjectsList = response.data;
+          }
+        }
+        
+        const subjectNames = [t("filter.subject"), ...subjectsList.map(s => s.name || s)];
+        setSubjects(subjectNames);
+      } catch (error) {
+        console.error('Error fetching subjects:', error);
+        // Fallback to placeholder only
+        setSubjects([t("filter.subject")]);
+      }
+    };
+    fetchSubjects();
+  }, [t]);
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -163,6 +250,25 @@ const GathererSubmission = () => {
   useEffect(() => {
     fetchGathererSubmissions();
   }, [fetchGathererSubmissions]);
+
+  // Refresh data when component becomes visible (e.g., returning from view page)
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchGathererSubmissions();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [fetchGathererSubmissions]);
+
+  // Status options for filter
+  const statusOptions = [
+    t("filter.status"),
+    "Pending",
+    "Approved",
+    "Flag",
+    "Reject"
+  ];
 
   // Handler for view action
   const handleView = (item) => {
@@ -203,6 +309,8 @@ const GathererSubmission = () => {
         onTopicChange={setTopic}
         onSubtopicChange={setSubtopic}
         showRole={false}
+        subjectOptions={subjects.length > 0 ? subjects : undefined}
+        statusOptions={statusOptions}
       />
 
       {loading ? (

@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
+import questionsAPI from "../../api/questions";
+import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 
 const Dropdown = ({ label, value, options, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -78,22 +80,45 @@ const Dropdown = ({ label, value, options, onChange }) => {
 
 const CreatorVariantsPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useLanguage();
   
-  // Original question state
-  const [questionText, setQuestionText] = useState("");
-  const [questionType, setQuestionType] = useState("Multiple Choice (MCQ)");
-  const [options, setOptions] = useState({ A: "", B: "", C: "", D: "" });
-  const [correctAnswer, setCorrectAnswer] = useState("Option A");
+  // Get question data from location state or fetch it
+  const questionId = location.state?.questionId;
+  const [originalQuestion, setOriginalQuestion] = useState(location.state?.question || null);
+  const [loading, setLoading] = useState(!originalQuestion && !questionId);
+  const [questionIdDisplay, setQuestionIdDisplay] = useState(
+    originalQuestion?.id || questionId || "QB-1442"
+  );
+  
+  // Original question state - initialize from passed data or API
+  const [questionText, setQuestionText] = useState(originalQuestion?.questionText || "");
+  const [questionType, setQuestionType] = useState(
+    originalQuestion?.questionType === "MCQ" 
+      ? "Multiple Choice (MCQ)" 
+      : originalQuestion?.questionType || "Multiple Choice (MCQ)"
+  );
+  const [options, setOptions] = useState(
+    originalQuestion?.options || { A: "", B: "", C: "", D: "" }
+  );
+  const [correctAnswer, setCorrectAnswer] = useState(
+    originalQuestion?.correctAnswer 
+      ? `Option ${originalQuestion.correctAnswer}` 
+      : "Option A"
+  );
   
   // Classification state (shared)
-  const [subject, setSubject] = useState("");
-  const [topic, setTopic] = useState("");
+  const [exam, setExam] = useState(originalQuestion?.exam?.name || "");
+  const [subject, setSubject] = useState(originalQuestion?.subject?.name || "");
+  const [topic, setTopic] = useState(originalQuestion?.topic?.name || "");
   const [cognitiveLevel, setCognitiveLevel] = useState("");
   const [source, setSource] = useState("");
-  const [explanation, setExplanation] = useState(
-    "Red and yellow are primary colors. When mixed, they create the secondary color orange."
-  );
+  const [explanation, setExplanation] = useState(originalQuestion?.explanation || "");
+  
+  // Flag modal state
+  const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
+  const [flagReason, setFlagReason] = useState("");
+  const [isFlagging, setIsFlagging] = useState(false);
 
   // Variants state - array of variant objects
   const [variants, setVariants] = useState([
@@ -158,15 +183,158 @@ const CreatorVariantsPage = () => {
     ]);
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSaveDraft = () => {
     // TODO: Implement save draft functionality
     console.log("Save draft");
   };
 
-  const handleSubmit = () => {
-    // TODO: Implement submit functionality
-    console.log("Submit");
+  const handleSubmit = async () => {
+    if (!questionId && !originalQuestion?.id) {
+      showErrorToast("Question ID is missing. Cannot submit question.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const idToUse = questionId || originalQuestion?.id;
+
+      // Filter out empty variants (variants with no question text)
+      // Creating variants is OPTIONAL - if no variants are created, we still submit the question
+      const validVariants = variants.filter(
+        (variant) => variant.questionText && variant.questionText.trim() !== ""
+      );
+
+      // If there are valid variants, create them first
+      if (validVariants.length > 0) {
+        // Create all variants
+        const variantPromises = validVariants.map((variant) => {
+          // Extract correct answer letter from "Option A" format
+          const correctAnswerLetter = variant.correctAnswer.replace("Option ", "").trim();
+          
+          // Convert question type from display format to API format
+          const questionTypeMap = {
+            "Multiple Choice (MCQ)": "MCQ",
+            "True/False": "TrueFalse",
+            "Short Answer": "ShortAnswer",
+            "Essay": "Essay",
+          };
+          const apiQuestionType = questionTypeMap[variant.questionType] || "MCQ";
+
+          // Get IDs from original question - ensure we get string IDs, not objects
+          const examId = typeof originalQuestion?.exam === 'string' 
+            ? originalQuestion.exam 
+            : (originalQuestion?.exam?.id || originalQuestion?.examId || null);
+          const subjectId = typeof originalQuestion?.subject === 'string' 
+            ? originalQuestion.subject 
+            : (originalQuestion?.subject?.id || originalQuestion?.subjectId || null);
+          const topicId = typeof originalQuestion?.topic === 'string' 
+            ? originalQuestion.topic 
+            : (originalQuestion?.topic?.id || originalQuestion?.topicId || null);
+
+          const variantData = {
+            questionText: variant.questionText.trim(),
+            questionType: apiQuestionType,
+            options: {
+              A: variant.options.A?.trim() || "",
+              B: variant.options.B?.trim() || "",
+              C: variant.options.C?.trim() || "",
+              D: variant.options.D?.trim() || "",
+            },
+            correctAnswer: correctAnswerLetter,
+            exam: examId,
+            subject: subjectId,
+            topic: topicId,
+          };
+
+          return questionsAPI.createQuestionVariant(idToUse, variantData);
+        });
+
+        await Promise.all(variantPromises);
+        showSuccessToast(`Successfully created ${validVariants.length} variant(s)!`);
+        // Note: Server-side automatically updates original question status to 'pending_processor' when variants are created
+      }
+
+      // IMPORTANT: Always submit the question, whether variants were created or not
+      // If variants were created, the server already updated the status, but we ensure it's submitted
+      // If no variants were created, we explicitly submit the question here
+      try {
+        // Submit the question (this updates status to 'pending_processor')
+        // This is safe to call even if variants were created, as the server handles it correctly
+        await questionsAPI.submitQuestionByCreator(idToUse);
+        
+        if (validVariants.length === 0) {
+          showSuccessToast("Question submitted successfully (no variants created).");
+        }
+      } catch (submitError) {
+        // If submitQuestionByCreator fails, try alternative method
+        console.warn("Primary submit method failed, trying alternative:", submitError);
+        try {
+          await questionsAPI.updateQuestion(idToUse, { status: 'pending_processor' });
+          if (validVariants.length === 0) {
+            showSuccessToast("Question submitted successfully (no variants created).");
+          }
+        } catch (altError) {
+          // If both methods fail, throw the error
+          throw new Error(altError.message || "Failed to submit question. Please try again.");
+        }
+      }
+
+      // Navigate back to assigned questions page
+      setTimeout(() => {
+        navigate("/creator/question-bank/assigned-question");
+      }, 1500);
+    } catch (error) {
+      console.error("Error submitting question:", error);
+      showErrorToast(error.message || "Failed to submit question. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  // Fetch question data if not provided in location state
+  useEffect(() => {
+    const fetchQuestion = async () => {
+      if (!originalQuestion && questionId) {
+        try {
+          setLoading(true);
+          const response = await questionsAPI.getCreatorQuestionById(questionId);
+          if (response.success && response.data?.question) {
+            const question = response.data.question;
+            setOriginalQuestion(question);
+            setQuestionText(question.questionText || "");
+            setQuestionType(
+              question.questionType === "MCQ" 
+                ? "Multiple Choice (MCQ)" 
+                : question.questionType || "Multiple Choice (MCQ)"
+            );
+            setOptions(question.options || { A: "", B: "", C: "", D: "" });
+            setCorrectAnswer(
+              question.correctAnswer 
+                ? `Option ${question.correctAnswer}` 
+                : "Option A"
+            );
+            setExam(question.exam?.name || "");
+            setSubject(question.subject?.name || "");
+            setTopic(question.topic?.name || "");
+            setExplanation(question.explanation || "");
+            setQuestionIdDisplay(question.id || questionId);
+          }
+        } catch (error) {
+          console.error("Error fetching question:", error);
+        } finally {
+          setLoading(false);
+        }
+      } else if (originalQuestion) {
+        // If question data was passed, use it to set question ID display
+        setQuestionIdDisplay(originalQuestion.id || questionId || "QB-1442");
+        setLoading(false);
+      }
+    };
+
+    fetchQuestion();
+  }, [questionId, originalQuestion]);
 
   const handleCancel = () => {
     navigate("/creator/question-bank");
@@ -177,6 +345,64 @@ const CreatorVariantsPage = () => {
     console.log("Save question");
     // Navigate to question details page after saving
     navigate("/admin/question-details");
+  };
+
+  const handleFlagClick = () => {
+    setIsFlagModalOpen(true);
+  };
+
+  const handleFlagClose = () => {
+    setIsFlagModalOpen(false);
+    setFlagReason("");
+  };
+
+  const handleFlagSubmit = async () => {
+    if (!flagReason.trim()) {
+      showErrorToast("Please enter a reason for flagging the question.");
+      return;
+    }
+
+    if (!questionId && !originalQuestion?.id) {
+      showErrorToast("Question ID is missing. Cannot flag question.");
+      return;
+    }
+
+    // Check if question is in the correct status for flagging
+    const questionStatus = originalQuestion?.status;
+    if (questionStatus !== 'pending_creator') {
+      showErrorToast("This question cannot be flagged. Only questions in 'Pending' status can be flagged.");
+      handleFlagClose();
+      return;
+    }
+
+    try {
+      setIsFlagging(true);
+      const idToUse = questionId || originalQuestion?.id;
+      await questionsAPI.flagQuestion(idToUse, flagReason);
+      
+      // Show success message
+      showSuccessToast("Question flagged successfully and sent to processor for review!");
+      
+      // Close modal and reset
+      handleFlagClose();
+      
+      // Refresh the question data to reflect the status change
+      if (questionId) {
+        const response = await questionsAPI.getCreatorQuestionById(questionId);
+        if (response.success && response.data?.question) {
+          const question = response.data.question;
+          setOriginalQuestion(question);
+        }
+      }
+      
+      // Optionally navigate back or refresh
+      // navigate("/creator/question-bank");
+    } catch (error) {
+      console.error("Error flagging question:", error);
+      showErrorToast(error.message || "Failed to flag question. Please try again.");
+    } finally {
+      setIsFlagging(false);
+    }
   };
 
   // Rich Text Editor Component using contentEditable (React 19 compatible)
@@ -975,7 +1201,7 @@ const CreatorVariantsPage = () => {
           min-height: 150px;
         }
       `}</style>
-      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 lg:px-8 pb-24 relative">
         <div className="mx-auto max-w-[1200px]">
           {/* Header */}
           <header className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center mb-10">
@@ -984,7 +1210,7 @@ const CreatorVariantsPage = () => {
                 {t("creator.createVariants.title")}
               </h1>
               <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
-                Questions ID: QB-1442
+                {loading ? "Loading question..." : `Questions ID: ${questionIdDisplay}`}
               </p>
             </div>
             <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
@@ -999,6 +1225,11 @@ const CreatorVariantsPage = () => {
           </header>
 
           {/* Main Content - Two Columns */}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-oxford-blue text-lg font-roboto">Loading question data...</div>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
             {/* Left Column - Question Details (2/3 width on xl screens) */}
             <div className="xl:col-span-2 space-y-[30px]">
@@ -1252,15 +1483,16 @@ const CreatorVariantsPage = () => {
                     Exam
                   </label>
                   <Dropdown
-                    value={subject}
-                    onChange={setSubject}
+                    value={exam}
+                    onChange={setExam}
                     options={[
                       "Select Exam",
+                      originalQuestion?.exam?.name || "",
                       "Math",
                       "Science",
                       "History",
                       "Geography",
-                    ]}
+                    ].filter(Boolean)}
                   />
                 </div>
                 {/* Subject */}
@@ -1337,13 +1569,77 @@ const CreatorVariantsPage = () => {
               </div>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row sm:justify-end gap-3 px-5 pb-6 pt-2">
+          )}
+        </div>
+      </div>
+      
+      {/* Sticky Footer Buttons - Only within page content */}
+      <div className="sticky bottom-0 bg-white border-t border-[#E5E7EB] shadow-lg z-40 mt-6 overflow-x-hidden">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:justify-end gap-3 py-4">
             <OutlineButton text={t("creator.createVariants.cancel")} className="py-[10px] px-7 text-nowrap" onClick={handleCancel}/>
-            <OutlineButton text={t("creator.createVariants.saveDraft")} className="py-[10px] px-7 text-nowrap"/>
-            <PrimaryButton text={t("creator.createVariants.submitVariant")} className="py-[10px] px-7 text-nowrap"/>
+            <OutlineButton text={t("creator.createVariants.saveDraft")} className="py-[10px] px-7 text-nowrap" onClick={handleSaveDraft}/>
+            <button
+              type="button"
+              onClick={handleFlagClick}
+              className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#ED4122] bg-white px-4 md:px-7 text-[14px] md:text-[16px] font-archivo font-semibold leading-[16px] text-[#ED4122] transition hover:bg-[#FDF0D5] text-nowrap py-[10px]"
+            >
+              Flag Question
+            </button>
+            <PrimaryButton 
+              text={isSubmitting ? "Submitting..." : t("creator.createVariants.submitVariant")} 
+              className="py-[10px] px-7 text-nowrap"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            />
           </div>
         </div>
       </div>
+
+      {/* Flag Question Modal */}
+      {isFlagModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white rounded-lg shadow-xl max-w-[600px] w-full p-8">
+            <h2 className="text-[24px] leading-[100%] font-bold text-oxford-blue mb-2">
+              Flag Question
+            </h2>
+            <p className="text-[16px] leading-[100%] font-normal text-dark-gray mb-6">
+              Please provide a reason for flagging this question. This will send the question back to the processor for review.
+            </p>
+            
+            <div className="mb-6">
+              <label className="block text-[16px] leading-[100%] font-roboto font-normal text-oxford-blue mb-2">
+                Reason for Flagging
+              </label>
+              <textarea
+                value={flagReason}
+                onChange={(e) => setFlagReason(e.target.value)}
+                placeholder="Enter the reason for flagging this question..."
+                className="w-full h-[120px] rounded-[8px] border border-[#03274633] bg-white px-4 py-3 font-roboto text-[16px] leading-[20px] text-oxford-blue outline-none placeholder:text-[#9CA3AF] resize-none focus:border-oxford-blue"
+                disabled={isFlagging}
+              />
+            </div>
+            
+            <div className="flex gap-4">
+              <button
+                onClick={handleFlagClose}
+                disabled={isFlagging}
+                className="flex-1 font-roboto px-4 py-3 border-[0.5px] text-base font-normal border-[#032746] rounded-lg text-blue-dark hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              
+              <button
+                onClick={handleFlagSubmit}
+                disabled={isFlagging || !flagReason.trim()}
+                className="flex-1 font-roboto px-4 py-3 bg-[#ED4122] text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#d43a1f]"
+              >
+                {isFlagging ? "Flagging..." : "Submit Flag"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -332,6 +332,22 @@ const questionsAPI = {
     }
   },
 
+  // Submit question by Creator (after variant submission or without creating variant)
+  // Sets status to 'pending_processor' to send back to processor for review
+  submitQuestionByCreator: async (questionId) => {
+    try {
+      const apiData = {
+        status: 'pending_processor',
+      };
+
+      const response = await axiosClient.put(`/admin/questions/creator/${questionId}`, apiData);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to submit question' };
+    }
+  },
+
   // ============================================
   // EXPLAINER ENDPOINTS
   // ============================================
