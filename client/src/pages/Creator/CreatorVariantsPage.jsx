@@ -192,7 +192,7 @@ const CreatorVariantsPage = () => {
 
   const handleSubmit = async () => {
     if (!questionId && !originalQuestion?.id) {
-      showErrorToast("Question ID is missing. Cannot submit variant.");
+      showErrorToast("Question ID is missing. Cannot submit question.");
       return;
     }
 
@@ -201,11 +201,12 @@ const CreatorVariantsPage = () => {
       const idToUse = questionId || originalQuestion?.id;
 
       // Filter out empty variants (variants with no question text)
+      // Creating variants is OPTIONAL - if no variants are created, we still submit the question
       const validVariants = variants.filter(
         (variant) => variant.questionText && variant.questionText.trim() !== ""
       );
 
-      // If there are valid variants, create them
+      // If there are valid variants, create them first
       if (validVariants.length > 0) {
         // Create all variants
         const variantPromises = validVariants.map((variant) => {
@@ -221,10 +222,16 @@ const CreatorVariantsPage = () => {
           };
           const apiQuestionType = questionTypeMap[variant.questionType] || "MCQ";
 
-          // Get IDs from original question
-          const examId = originalQuestion?.exam?.id || originalQuestion?.exam;
-          const subjectId = originalQuestion?.subject?.id || originalQuestion?.subject;
-          const topicId = originalQuestion?.topic?.id || originalQuestion?.topic;
+          // Get IDs from original question - ensure we get string IDs, not objects
+          const examId = typeof originalQuestion?.exam === 'string' 
+            ? originalQuestion.exam 
+            : (originalQuestion?.exam?.id || originalQuestion?.examId || null);
+          const subjectId = typeof originalQuestion?.subject === 'string' 
+            ? originalQuestion.subject 
+            : (originalQuestion?.subject?.id || originalQuestion?.subjectId || null);
+          const topicId = typeof originalQuestion?.topic === 'string' 
+            ? originalQuestion.topic 
+            : (originalQuestion?.topic?.id || originalQuestion?.topicId || null);
 
           const variantData = {
             questionText: variant.questionText.trim(),
@@ -246,23 +253,32 @@ const CreatorVariantsPage = () => {
 
         await Promise.all(variantPromises);
         showSuccessToast(`Successfully created ${validVariants.length} variant(s)!`);
-        // Note: Server-side automatically updates original question status to 'completed' when variants are created
-      } else {
-        // No variants created - creator is submitting the question as-is without creating variants
-        // Update the original question status to 'completed' (approved) manually
-        try {
-          await questionsAPI.submitQuestionByCreator(idToUse);
-        } catch (updateError) {
-          // If status update fails, log but don't fail the whole submission
-          console.warn("Could not update question status:", updateError);
-          // Try alternative: use updateQuestion if submitQuestionByCreator doesn't work
-          try {
-            await questionsAPI.updateQuestion(idToUse, { status: 'completed' });
-          } catch (altError) {
-            console.warn("Alternative status update also failed:", altError);
-          }
+        // Note: Server-side automatically updates original question status to 'pending_processor' when variants are created
+      }
+
+      // IMPORTANT: Always submit the question, whether variants were created or not
+      // If variants were created, the server already updated the status, but we ensure it's submitted
+      // If no variants were created, we explicitly submit the question here
+      try {
+        // Submit the question (this updates status to 'pending_processor')
+        // This is safe to call even if variants were created, as the server handles it correctly
+        await questionsAPI.submitQuestionByCreator(idToUse);
+        
+        if (validVariants.length === 0) {
+          showSuccessToast("Question submitted successfully (no variants created).");
         }
-        showSuccessToast("Question submitted successfully (no variants created).");
+      } catch (submitError) {
+        // If submitQuestionByCreator fails, try alternative method
+        console.warn("Primary submit method failed, trying alternative:", submitError);
+        try {
+          await questionsAPI.updateQuestion(idToUse, { status: 'pending_processor' });
+          if (validVariants.length === 0) {
+            showSuccessToast("Question submitted successfully (no variants created).");
+          }
+        } catch (altError) {
+          // If both methods fail, throw the error
+          throw new Error(altError.message || "Failed to submit question. Please try again.");
+        }
       }
 
       // Navigate back to assigned questions page
@@ -270,8 +286,8 @@ const CreatorVariantsPage = () => {
         navigate("/creator/question-bank/assigned-question");
       }, 1500);
     } catch (error) {
-      console.error("Error submitting variant:", error);
-      showErrorToast(error.message || "Failed to submit variant. Please try again.");
+      console.error("Error submitting question:", error);
+      showErrorToast(error.message || "Failed to submit question. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

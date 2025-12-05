@@ -332,11 +332,12 @@ const questionsAPI = {
     }
   },
 
-  // Submit/Complete question by Creator (after variant submission)
+  // Submit question by Creator (after variant submission or without creating variant)
+  // Sets status to 'pending_processor' to send back to processor for review
   submitQuestionByCreator: async (questionId) => {
     try {
       const apiData = {
-        status: 'completed',
+        status: 'pending_processor',
       };
 
       const response = await axiosClient.put(`/admin/questions/creator/${questionId}`, apiData);

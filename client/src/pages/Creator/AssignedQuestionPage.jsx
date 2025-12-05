@@ -96,8 +96,23 @@ const AssignedQuestionPage = () => {
       const isRejected = question.status === 'rejected';
       const isVariant = question.isVariant === true;
       
-      // Get status - show actual status, but if flagged, we'll show it in indicators and add reason button
-      const status = formatStatus(question.status);
+      // Check if creator has submitted the question
+      // If status is pending_processor and question is in creator's assigned list (has approvedBy or was in pending_creator),
+      // it means creator has submitted it back, so show as "Approved"
+      // We check for approvedBy because questions assigned to creator come from processor with approvedBy set
+      const isSubmittedByCreator = question.status === 'pending_processor' && 
+                                   !isFlagged && 
+                                   (question.approvedBy || question.originalData?.approvedBy); // Has approvedBy means it was assigned to creator before
+      
+      // Get status - priority: Flag > Approved (if submitted by creator) > Original status
+      let status;
+      if (isFlagged) {
+        status = 'Flag';
+      } else if (isSubmittedByCreator) {
+        status = 'Approved';
+      } else {
+        status = formatStatus(question.status);
+      }
       
       // Extract question title from questionText (first 50 characters)
       const questionTitle = question.questionText 
@@ -113,7 +128,7 @@ const AssignedQuestionPage = () => {
         processor: processorName,
         status: status,
         indicators: {
-          approved: isApproved,
+          approved: isApproved || isSubmittedByCreator, // Show approved indicator if completed or submitted by creator
           flag: isFlagged,
           reject: isRejected,
           variant: isVariant
@@ -194,8 +209,10 @@ const AssignedQuestionPage = () => {
     if (subtopic && subtopic !== "Status") {
       filtered = filtered.filter((item) => {
         if (subtopic.toLowerCase() === "flag") {
-          // Filter by flagged status
-          return item.indicators?.flag === true || item.originalData?.isFlagged === true;
+          // Filter by flagged status - check status field, indicators, or original data
+          return item.status?.toLowerCase() === "flag" ||
+                 item.indicators?.flag === true || 
+                 item.originalData?.isFlagged === true;
         } else {
           // Filter by regular status
           const questionStatus = item.originalData?.status || "";
