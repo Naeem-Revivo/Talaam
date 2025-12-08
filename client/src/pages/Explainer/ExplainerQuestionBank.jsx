@@ -54,10 +54,13 @@ const ExplainerQuestionBank = () => {
       const difficulty = question.difficulty || question.metadata?.difficulty || "—";
       
       // Extract question title from questionText (first 50 characters)
+      // Add prefix for variants
+      const isVariant = question.isVariant === true || question.isVariant === 'true';
+      const questionTitlePrefix = isVariant ? "  └─ Variant: " : "";
       const questionTitle = question.questionText 
         ? (question.questionText.length > 50 
-            ? question.questionText.substring(0, 50) + "..." 
-            : question.questionText)
+            ? questionTitlePrefix + question.questionText.substring(0, 50) + "..." 
+            : questionTitlePrefix + question.questionText)
         : "—";
 
       return {
@@ -67,6 +70,8 @@ const ExplainerQuestionBank = () => {
         difficulty: difficulty,
         finalUpdate: formatDate(question.updatedAt || question.createdAt),
         actionType: "addExplanation",
+        isVariant: isVariant,
+        originalQuestionId: question.originalQuestionId || null,
         originalData: question // Store original data for navigation
       };
     });

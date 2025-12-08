@@ -3367,7 +3367,15 @@
       "cancel": "إلغاء",
       "confirmReject": "تأكيد الرفض",
       "loading": "جاري تحميل السؤال...",
-      "noOptions": "لا توجد خيارات متاحة لهذا النوع من الأسئلة."
+      "noOptions": "لا توجد خيارات متاحة لهذا النوع من الأسئلة.",
+      "approveReason": "الموافقة على السبب",
+      "rejectReasonButton": "رفض السبب",
+      "flagReason": "سبب الإبلاغ",
+      "flagReasonDescription": "قام المنشئ بالإبلاغ عن هذا السؤال للأسباب التالية:",
+      "rejectFlagReason": "رفض سبب الإبلاغ",
+      "rejectFlagReasonDescription": "يرجى تقديم سبب لرفض إبلاغ المنشئ. سيتم إرسال السؤال مرة أخرى إلى المنشئ.",
+      "rejectFlagReasonPlaceholder": "أدخل سبب رفض الإبلاغ...",
+      "confirmRejectFlag": "رفض سبب الإبلاغ"
     },
     "profile": {
       "title": "إعدادات الحساب",

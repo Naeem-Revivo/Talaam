@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import RichTextEditor from "../../components/common/RichTextEditor";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -175,7 +175,7 @@ const SupportingMaterial = ({ file, onFileChange, onRemove }) => {
 };
 
 // Flag Modal Component
-const FlagModal = ({ isOpen, onClose, onConfirm, questionTitle, isVariant }) => {
+const FlagModal = ({ isOpen, onClose, onConfirm, isVariant }) => {
   const [flagReason, setFlagReason] = useState("");
 
   if (!isOpen) return null;
@@ -248,8 +248,6 @@ export default function AddExplanationPage() {
   // Flag modal state
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
   const [selectedQuestionForFlag, setSelectedQuestionForFlag] = useState(null);
-  const [flagReason, setFlagReason] = useState("");
-  const [isFlagging, setIsFlagging] = useState(false);
   const [flaggedQuestions, setFlaggedQuestions] = useState(new Set());
 
   // Get question ID from location state or URL
@@ -330,7 +328,6 @@ export default function AddExplanationPage() {
     if (!selectedQuestionForFlag) return;
 
     try {
-      setIsFlagging(true);
       const idToFlag = selectedQuestionForFlag.id || selectedQuestionForFlag._id;
       
       await questionsAPI.flagQuestionByExplainer(idToFlag, reason);
@@ -353,8 +350,6 @@ export default function AddExplanationPage() {
     } catch (err) {
       console.error("Error flagging question:", err);
       showErrorToast(err.message || "Failed to flag question. Please try again.");
-    } finally {
-      setIsFlagging(false);
     }
   };
 
@@ -532,9 +527,6 @@ export default function AddExplanationPage() {
           setSelectedQuestionForFlag(null);
         }}
         onConfirm={handleFlagConfirm}
-        questionTitle={
-          selectedQuestionForFlag?.questionText || "Question"
-        }
         isVariant={selectedQuestionForFlag?.isVariant || false}
       />
     </div>

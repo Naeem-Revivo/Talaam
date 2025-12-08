@@ -105,7 +105,7 @@ const getQuestionsByStatus = async (status, userId, role) => {
     where.createdById = userId;
   }
 
-  return await Question.findMany({
+  const questions = await Question.findMany({
     where,
     orderBy: { createdAt: 'desc' },
     include: {
@@ -118,6 +118,55 @@ const getQuestionsByStatus = async (status, userId, role) => {
       approvedBy: { select: { name: true, fullName: true, email: true } }
     }
   });
+
+  // For explainer, group questions: parent first, then variants
+  if (role === 'explainer' && status === 'pending_explainer') {
+    const parentQuestions = [];
+    const variantQuestions = [];
+    const parentIdSet = new Set();
+
+    // Separate parents and variants
+    questions.forEach(q => {
+      if (q.isVariant && q.originalQuestionId) {
+        variantQuestions.push(q);
+        parentIdSet.add(q.originalQuestionId);
+      } else {
+        parentQuestions.push(q);
+      }
+    });
+
+    // Get parent questions that have variants
+    const parentsWithVariants = parentQuestions.filter(p => parentIdSet.has(p.id));
+    const parentsWithoutVariants = parentQuestions.filter(p => !parentIdSet.has(p.id));
+
+    // Group variants by parent ID
+    const variantsByParent = {};
+    variantQuestions.forEach(v => {
+      const parentId = v.originalQuestionId;
+      if (!variantsByParent[parentId]) {
+        variantsByParent[parentId] = [];
+      }
+      variantsByParent[parentId].push(v);
+    });
+
+    // Build ordered list: parent with variants first, then their variants, then parents without variants
+    const orderedQuestions = [];
+    
+    // Add parents with variants, followed by their variants
+    parentsWithVariants.forEach(parent => {
+      orderedQuestions.push(parent);
+      if (variantsByParent[parent.id]) {
+        orderedQuestions.push(...variantsByParent[parent.id]);
+      }
+    });
+
+    // Add parents without variants
+    orderedQuestions.push(...parentsWithoutVariants);
+
+    return orderedQuestions;
+  }
+
+  return questions;
 };
 
 /**

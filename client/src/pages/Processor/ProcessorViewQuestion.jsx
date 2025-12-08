@@ -77,6 +77,8 @@ const ProcessorViewQuestion = () => {
   const [processing, setProcessing] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [flagRejectionReason, setFlagRejectionReason] = useState("");
+  const [showRejectFlagModal, setShowRejectFlagModal] = useState(false);
   
   // Determine if this is from creator submission
   const isFromCreatorSubmission = source === "creator-submission" || 
@@ -85,6 +87,12 @@ const ProcessorViewQuestion = () => {
   // Determine if this is from explainer submission
   const isFromExplainerSubmission = source === "explainer-submission" ||
                                     (question && question.explanation && question.status === "pending_processor");
+
+  // Determine if question is flagged by creator
+  const isFlaggedByCreator = question && 
+                              question.isFlagged === true && 
+                              question.flagType === 'creator' && 
+                              (question.flagStatus === 'pending' || !question.flagStatus);
 
   // Fetch question data
   useEffect(() => {
@@ -154,6 +162,47 @@ const ProcessorViewQuestion = () => {
       setProcessing(false);
       setShowRejectModal(false);
       setRejectionReason("");
+    }
+  };
+
+  // Handle approve flag reason (send back to gatherer)
+  const handleApproveFlagReason = async () => {
+    try {
+      setProcessing(true);
+      await questionsAPI.reviewCreatorFlag(questionId, 'approve');
+      showSuccessToast("Flag reason approved. Question sent back to gatherer for correction.");
+      setTimeout(() => {
+        navigate("/processor/question-bank/creator-submission");
+      }, 500);
+    } catch (error) {
+      console.error("Error approving flag reason:", error);
+      showErrorToast(error.response?.data?.message || "Failed to approve flag reason");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // Handle reject flag reason (send back to creator)
+  const handleRejectFlagReason = async () => {
+    if (!flagRejectionReason.trim()) {
+      showErrorToast("Please provide a reason for rejecting the flag");
+      return;
+    }
+
+    try {
+      setProcessing(true);
+      await questionsAPI.reviewCreatorFlag(questionId, 'reject', flagRejectionReason);
+      showSuccessToast("Flag reason rejected. Question sent back to creator.");
+      setTimeout(() => {
+        navigate("/processor/question-bank/creator-submission");
+      }, 500);
+    } catch (error) {
+      console.error("Error rejecting flag reason:", error);
+      showErrorToast(error.response?.data?.message || "Failed to reject flag reason");
+    } finally {
+      setProcessing(false);
+      setShowRejectFlagModal(false);
+      setFlagRejectionReason("");
     }
   };
 
@@ -253,23 +302,42 @@ const ProcessorViewQuestion = () => {
               className="py-[10px] px-[14px]"
               disabled={processing}
             />
-            <OutlineButton
-              text={t("processor.viewQuestion.reject")}
-              onClick={() => setShowRejectModal(true)}
-              className="py-[10px] px-[14px]"
-              disabled={processing}
-            />
-
-            <PrimaryButton
-              text={isFromExplainerSubmission
-                ? (t("processor.viewQuestion.approveQuestion") || "Approve Question")
-                : isFromCreatorSubmission 
-                ? (t("processor.viewQuestion.acceptAndSendToExplainer") || "Accept and sent to explainer")
-                : t("processor.viewQuestion.acceptAndSend")}
-              className="py-[10px] px-5"
-              onClick={handleAccept}
-              disabled={processing}
-            />
+            {/* Show different buttons for flagged questions from creator */}
+            {isFlaggedByCreator ? (
+              <>
+                <OutlineButton
+                  text={t("processor.viewQuestion.rejectReasonButton") || "Reject Reason"}
+                  onClick={() => setShowRejectFlagModal(true)}
+                  className="py-[10px] px-[14px]"
+                  disabled={processing}
+                />
+                <PrimaryButton
+                  text={t("processor.viewQuestion.approveReason") || "Approve Reason"}
+                  className="py-[10px] px-5"
+                  onClick={handleApproveFlagReason}
+                  disabled={processing}
+                />
+              </>
+            ) : (
+              <>
+                <OutlineButton
+                  text={t("processor.viewQuestion.reject")}
+                  onClick={() => setShowRejectModal(true)}
+                  className="py-[10px] px-[14px]"
+                  disabled={processing}
+                />
+                <PrimaryButton
+                  text={isFromExplainerSubmission
+                    ? (t("processor.viewQuestion.approveQuestion") || "Approve Question")
+                    : isFromCreatorSubmission 
+                    ? (t("processor.viewQuestion.acceptAndSendToExplainer") || "Accept and sent to explainer")
+                    : t("processor.viewQuestion.acceptAndSend")}
+                  className="py-[10px] px-5"
+                  onClick={handleAccept}
+                  disabled={processing}
+                />
+              </>
+            )}
           </div>
         </header>
 
@@ -355,6 +423,26 @@ const ProcessorViewQuestion = () => {
                 )}
               </div>
             </div>
+
+            {/* Flag Reason Section - Show for flagged questions from creator */}
+            {isFlaggedByCreator && question.flagReason && (
+              <div className="rounded-[12px] border-2 border-orange-dark bg-orange-50 pt-[20px] px-[30px] pb-[30px] w-full">
+                <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[32px] text-orange-dark">
+                  {t("processor.viewQuestion.flagReason") || "Flag Reason"}
+                </h2>
+                <div className="mb-2">
+                  <p className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280] mb-2">
+                    {t("processor.viewQuestion.flagReasonDescription") || "The creator has flagged this question with the following reason:"}
+                  </p>
+                </div>
+                <div
+                  className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue whitespace-pre-wrap bg-white p-4 rounded-lg border border-orange-200"
+                  dir="ltr"
+                >
+                  {question.flagReason}
+                </div>
+              </div>
+            )}
 
             {/* Explanation Section - Show for explainer submissions */}
             {isFromExplainerSubmission && question.explanation && (
@@ -471,6 +559,43 @@ const ProcessorViewQuestion = () => {
                 onClick={handleReject}
                 className="flex-1"
                 disabled={processing || !rejectionReason.trim()}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Flag Reason Modal */}
+      {showRejectFlagModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-oxford-blue mb-4">
+              {t("processor.viewQuestion.rejectFlagReason") || "Reject Flag Reason"}
+            </h3>
+            <p className="text-dark-gray mb-4">
+              {t("processor.viewQuestion.rejectFlagReasonDescription") || "Please provide a reason for rejecting the creator's flag. The question will be sent back to the creator."}
+            </p>
+            <textarea
+              value={flagRejectionReason}
+              onChange={(e) => setFlagRejectionReason(e.target.value)}
+              className="w-full border border-[#E5E7EB] rounded-lg p-3 min-h-[100px] font-roboto text-[16px]"
+              placeholder={t("processor.viewQuestion.rejectFlagReasonPlaceholder") || "Enter reason for rejecting the flag..."}
+            />
+            <div className="flex gap-4 mt-6">
+              <OutlineButton
+                text={t("processor.viewQuestion.cancel")}
+                onClick={() => {
+                  setShowRejectFlagModal(false);
+                  setFlagRejectionReason("");
+                }}
+                className="flex-1"
+                disabled={processing}
+              />
+              <PrimaryButton
+                text={t("processor.viewQuestion.confirmRejectFlag") || "Reject Flag Reason"}
+                onClick={handleRejectFlagReason}
+                className="flex-1"
+                disabled={processing || !flagRejectionReason.trim()}
               />
             </div>
           </div>

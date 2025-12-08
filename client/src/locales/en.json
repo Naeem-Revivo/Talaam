@@ -3357,7 +3357,15 @@
       "cancel": "Cancel",
       "confirmReject": "Confirm Reject",
       "loading": "Loading question...",
-      "noOptions": "No options available for this question type."
+      "noOptions": "No options available for this question type.",
+      "approveReason": "Approve Reason",
+      "rejectReasonButton": "Reject Reason",
+      "flagReason": "Flag Reason",
+      "flagReasonDescription": "The creator has flagged this question with the following reason:",
+      "rejectFlagReason": "Reject Flag Reason",
+      "rejectFlagReasonDescription": "Please provide a reason for rejecting the creator's flag. The question will be sent back to the creator.",
+      "rejectFlagReasonPlaceholder": "Enter reason for rejecting the flag...",
+      "confirmRejectFlag": "Reject Flag Reason"
     },
     "profile": {
       "title": "Account Settings",
