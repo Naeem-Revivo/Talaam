@@ -86,11 +86,24 @@ const ExplainerQuestionBank = () => {
       // Fetch questions with pending_explainer status
       const response = await questionsAPI.getExplainerQuestions({ status: 'pending_explainer' });
       
-      if (response.success && response.data?.questions) {
-        const transformedData = transformQuestionData(response.data.questions);
-        setExplanationRequestsData(transformedData);
-        setTotalQuestions(response.data.total || transformedData.length);
+      console.log("Explainer questions API response:", response);
+      
+      if (response && response.success && response.data) {
+        const questions = response.data.questions || [];
+        console.log("Questions received:", questions.length, questions);
+        
+        if (questions.length > 0) {
+          const transformedData = transformQuestionData(questions);
+          console.log("Transformed data:", transformedData);
+          setExplanationRequestsData(transformedData);
+          setTotalQuestions(response.data.total || transformedData.length);
+        } else {
+          console.log("No questions found in response");
+          setExplanationRequestsData([]);
+          setTotalQuestions(0);
+        }
       } else {
+        console.log("Response structure issue:", response);
         setExplanationRequestsData([]);
         setTotalQuestions(0);
       }
