@@ -2,106 +2,182 @@ import React from "react";
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
 import StatsCards from "../../components/common/StatsCards";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
-import WorkflowProgress from "../../components/gatherer/WorkflowProgress";
-import RecentActivity from "../../components/gatherer/RecentActiveity";
+import questionsAPI from "../../api/questions";
 
 const ExplainerQuestionBank = () => {
   const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
+  const [explanationRequestsData, setExplanationRequestsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+  const pollingIntervalRef = useRef(null);
 
   const explanationRequestsColumns = [
     { key: "questionTitle", label: t("explainer.questionBank.table.question") },
     { key: "fromProcessor", label: t("explainer.questionBank.table.fromProcessor") },
-    { key: "difficulty", label: t("explainer.questionBank.table.difficulty") },
     { key: "finalUpdate", label: t("explainer.questionBank.table.finalUpdate") },
     { key: "actions", label: t("explainer.questionBank.table.actions") },
   ];
 
-  // Sample data matching the image (with the typos as shown)
-  const explanationRequestsData = [
-    {
-      id: 1,
-      questionTitle: "Photopyrthicetic Basics",
-      fromProcessor: "John Doe",
-      difficulty: "Easy",
-      finalUpdate: "Today",
-      actionType: "addExplanation",
-    },
-    {
-      id: 2,
-      questionTitle: "Newton's 1st Law",
-      fromProcessor: "John Smith",
-      difficulty: "Medium",
-      finalUpdate: "Today",
-      actionType: "addExplanation",
-    },
-    {
-      id: 3,
-      questionTitle: "Add Base Theory",
-      fromProcessor: "Sarah",
-      difficulty: "Heat",
-      finalUpdate: "Vesterley",
-      actionType: "addExplanation",
-    },
-  ];
+  // Format date to relative time (Today, Yesterday, or date)
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const questionDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-  // Handler for review action
-  const _handleReview = (item) => {
-    console.log("Review item:", item);
-    // Add your review logic here
+    if (questionDate.getTime() === today.getTime()) {
+      return "Today";
+    } else if (questionDate.getTime() === yesterday.getTime()) {
+      return "Yesterday";
+    } else {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
   };
 
-  // Handler for view action (if needed)
-  const handleView = () => {
-    navigate("/processor/Processed-ViewQuestion");
+  // Transform API response to table format
+  const transformQuestionData = (questions) => {
+    return questions.map((question) => {
+      // Get processor name from approvedBy or assignedProcessor
+      const processorName = question.approvedBy?.name || question.assignedProcessor?.name || "—";
+      
+      // Get difficulty from question data or default
+      const difficulty = question.difficulty || question.metadata?.difficulty || "—";
+      
+      // Extract question title from questionText (first 50 characters)
+      // Add prefix for variants
+      const isVariant = question.isVariant === true || question.isVariant === 'true';
+      const questionTitlePrefix = isVariant ? "  └─ Variant: " : "";
+      const questionTitle = question.questionText 
+        ? (question.questionText.length > 50 
+            ? questionTitlePrefix + question.questionText.substring(0, 50) + "..." 
+            : questionTitlePrefix + question.questionText)
+        : "—";
+
+      return {
+        id: question.id || question._id,
+        questionTitle: questionTitle,
+        fromProcessor: processorName,
+        difficulty: difficulty,
+        finalUpdate: formatDate(question.updatedAt || question.createdAt),
+        actionType: "addExplanation",
+        isVariant: isVariant,
+        originalQuestionId: question.originalQuestionId || null,
+        originalData: question // Store original data for navigation
+      };
+    });
   };
 
-  // Handler for edit action (if needed)
-  const handleEdit = (item) => {
-    console.log("Edit item:", item);
+  // Fetch explainer questions from API
+  const fetchExplainerQuestions = async () => {
+    try {
+      setError(null);
+      setLoading(true);
+      
+      // Fetch questions with pending_explainer status
+      const response = await questionsAPI.getExplainerQuestions({ status: 'pending_explainer' });
+      
+      if (response.success && response.data?.questions) {
+        const transformedData = transformQuestionData(response.data.questions);
+        setExplanationRequestsData(transformedData);
+        setTotalQuestions(response.data.total || transformedData.length);
+      } else {
+        setExplanationRequestsData([]);
+        setTotalQuestions(0);
+      }
+    } catch (err) {
+      console.error("Error fetching explainer questions:", err);
+      setError(err.message || "Failed to fetch questions");
+      setExplanationRequestsData([]);
+      setTotalQuestions(0);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const workflowSteps = [
-    t("explainer.questionBank.workflowSteps.gatherer"),
-    t("explainer.questionBank.workflowSteps.processor"),
-    t("explainer.questionBank.workflowSteps.creator"),
-    t("explainer.questionBank.workflowSteps.processor"),
-    t("explainer.questionBank.workflowSteps.explainer"),
-  ];
+  // Set up polling for real-time updates
+  useEffect(() => {
+    // Fetch immediately on mount
+    fetchExplainerQuestions();
 
-  const activityData = [
-    {
-      icon: "submit",
-      title: t("explainer.questionBank.activity.addedDiagrams", { count: 2 }),
-      timestamp: "Today",
-      variant: "default",
-    },
-    {
-      icon: "reject",
-      title: t("explainer.questionBank.activity.sentBack", { item: "NewtonVariant" }),
-      timestamp: "Today",
-      variant: "default",
-    },
-    {
-      icon: "approve",
-      title: t("explainer.questionBank.activity.completedExplanation", { item: "Force & Motion" }),
-      timestamp: "Yesterday",
-      variant: "approved",
-    },
-  ];
+    // Set up polling every 30 seconds for real-time updates
+    pollingIntervalRef.current = setInterval(() => {
+      fetchExplainerQuestions();
+    }, 30000);
 
-  const stats = [
-    { label: t("explainer.questionBank.stats.questionsNeedingExplanation"), value: 12, color: "blue" },
-    { label: t("explainer.questionBank.stats.completedExplanations"), value: 84, color: "blue" },
-    { label: t("explainer.questionBank.stats.draftExplanations"), value: 5, color: "red" },
-    { label: t("explainer.questionBank.stats.sentBackForRevision"), value: 2, color: "red" },
-  ];
+    // Cleanup interval on unmount
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, []);
 
-  const handleAddExplanation = () => {
+  // Handler for add explanation action
+  const handleAddExplanation = (item) => {
+    // Navigate to add explanation page with question ID
+    if (item.originalData) {
+      navigate(`/explainer/question-bank/add-explanation`, { 
+        state: { question: item.originalData } 
+      });
+    } else {
+      navigate(`/explainer/question-bank/add-explanation`);
+    }
+  };
+
+  // Calculate stats from real-time data
+  const [stats, setStats] = useState([
+    { label: t("explainer.questionBank.stats.questionsNeedingExplanation"), value: 0, color: "blue" },
+    { label: t("explainer.questionBank.stats.completedExplanations"), value: 0, color: "blue" },
+    { label: t("explainer.questionBank.stats.draftExplanations"), value: 0, color: "red" },
+    { label: t("explainer.questionBank.stats.sentBackForRevision"), value: 0, color: "red" },
+  ]);
+
+  // Fetch stats from API
+  const fetchStats = async () => {
+    try {
+      // Fetch questions with different statuses to calculate stats
+      const [pendingResponse, completedResponse, draftResponse, sentBackResponse] = await Promise.all([
+        questionsAPI.getExplainerQuestions({ status: 'pending_explainer' }).catch(() => ({ success: false, data: { questions: [] } })),
+        questionsAPI.getExplainerQuestions({ status: 'completed' }).catch(() => ({ success: false, data: { questions: [] } })),
+        questionsAPI.getExplainerQuestions({ status: 'draft' }).catch(() => ({ success: false, data: { questions: [] } })),
+        questionsAPI.getExplainerQuestions({ status: 'revision' }).catch(() => ({ success: false, data: { questions: [] } })),
+      ]);
+
+      const pendingCount = pendingResponse.success ? (pendingResponse.data?.total || pendingResponse.data?.questions?.length || 0) : 0;
+      const completedCount = completedResponse.success ? (completedResponse.data?.total || completedResponse.data?.questions?.length || 0) : 0;
+      const draftCount = draftResponse.success ? (draftResponse.data?.total || draftResponse.data?.questions?.length || 0) : 0;
+      const sentBackCount = sentBackResponse.success ? (sentBackResponse.data?.total || sentBackResponse.data?.questions?.length || 0) : 0;
+
+      setStats([
+        { label: t("explainer.questionBank.stats.questionsNeedingExplanation"), value: pendingCount, color: "blue" },
+        { label: t("explainer.questionBank.stats.completedExplanations"), value: completedCount, color: "blue" },
+        { label: t("explainer.questionBank.stats.draftExplanations"), value: draftCount, color: "red" },
+        { label: t("explainer.questionBank.stats.sentBackForRevision"), value: sentBackCount, color: "red" },
+      ]);
+    } catch (err) {
+      console.error("Error fetching stats:", err);
+    }
+  };
+
+  // Fetch stats when component mounts
+  useEffect(() => {
+    fetchStats();
+    // Refresh stats every 30 seconds
+    const statsInterval = setInterval(fetchStats, 30000);
+    return () => clearInterval(statsInterval);
+  }, []);
+
+  const handleAddExplanationButton = () => {
     navigate("/explainer/question-bank/add-explanation");
   };
 
@@ -141,7 +217,7 @@ const ExplainerQuestionBank = () => {
             <PrimaryButton
               text={t("explainer.questionBank.addExplanation")}
               className="py-[10px] px-8"
-                onClick={handleAddExplanation}
+                onClick={handleAddExplanationButton}
             />
           </div>
         </header>
@@ -152,61 +228,28 @@ const ExplainerQuestionBank = () => {
           <div className="text-[24px] leading-[32px] font-bold text-blue-dark font-archivo mb-5">
             {t("explainer.questionBank.pendingExplanations")}
           </div>
-          <Table
-            items={explanationRequestsData}
-            columns={explanationRequestsColumns}
-            page={currentPage}
-            pageSize={10}
-            total={25}
-            onPageChange={setCurrentPage}
-            onView={handleView}
-            onEdit={handleEdit}
-            onCustomAction={() => {
-              console.log("custom");
-              // Handle different custom actions based on actionType
-              //   if (item.actionType === 'open') {
-              //     handleOpen(item);
-              //   } else if (item.actionType === 'createVariant') {
-              //     handleCreateVariant(item);
-              //   }
-            }}
-            emptyMessage={t("explainer.questionBank.emptyMessage")}
-          />
+          {loading ? (
+            <div className="flex items-center justify-center py-10">
+              <p className="text-dark-gray">{t("common.loading") || "Loading..."}</p>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center py-10">
+              <p className="text-red-600">{error}</p>
+            </div>
+          ) : (
+            <Table
+              items={explanationRequestsData}
+              columns={explanationRequestsColumns}
+              page={currentPage}
+              pageSize={10}
+              total={totalQuestions}
+              onPageChange={setCurrentPage}
+              onCustomAction={handleAddExplanation}
+              emptyMessage={t("explainer.questionBank.emptyMessage")}
+            />
+          )}
         </div>
 
-        <div>
-          <h2 className="text-[24px] leading-[32px] font-bold font-archivo text-blue-dark mb-5">
-            {t("explainer.questionBank.workflowProgress")}
-          </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            {/* Left Column - Feedback Card and Workflow */}
-            <div className="lg:col-span-2 space-y-6">
-              <WorkflowProgress steps={workflowSteps} currentStep={5} />
-            </div>
-
-            {/* Right Column - Recent Activity */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg p-6 border border-[#E5E7EB]">
-                <h2 className="text-[20px] leading-[28px] font-semibold font-archivo text-blue-dark mb-4">
-                  {t("explainer.questionBank.recentActivity")}
-                </h2>
-
-                <div className="space-y-3">
-                  {activityData.map((activity, index) => (
-                    <RecentActivity
-                      key={index}
-                      icon={activity.icon}
-                      title={activity.title}
-                      subtitle={activity.subtitle}
-                      timestamp={activity.timestamp}
-                      variant={activity.variant}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

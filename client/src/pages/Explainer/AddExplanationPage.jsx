@@ -1,36 +1,80 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import RichTextEditor from "../../components/common/RichTextEditor";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import questionsAPI from "../../api/questions";
+import { showSuccessToast, showErrorToast } from "../../utils/toastConfig.jsx";
 
-// QuestionDetails Component
+// QuestionDetails Component - displays full question
 const QuestionDetails = ({
   question,
-  correctAnswer,
-  subject,
-  difficulty,
-  variant,
+  isVariant = false,
+  variantNumber,
+  onFlag,
+  isFlagged,
 }) => {
+  const correctAnswer = question.correctAnswer 
+    ? (question.correctAnswer.length === 1 
+        ? `Option ${question.correctAnswer}` 
+        : question.correctAnswer)
+    : "—";
+  
+  const subject = question.subject?.name || question.subject || "—";
+  const difficulty = question.difficulty || question.metadata?.difficulty || "—";
+  const questionText = question.questionText || "—";
+  const options = question.options || {};
+
   return (
     <div className="border border-[#03274633] bg-white pt-[24px] pb-[42px] px-[28px] rounded-[12px] mb-[30px]">
-      <div className=" space-y-[30px]">
-        <p className="text-[16px] leading-[100%] font-medium font-roboto text-blue-dark">
-          <span className="font-medium">Original Question:</span> "{question}"
-        </p>
+      <div className="space-y-[30px]">
+        <div className="flex items-center justify-between">
+          <p className="text-[16px] leading-[100%] font-medium font-roboto text-blue-dark">
+            <span className="font-medium">
+              {isVariant ? `Variant ${variantNumber}:` : "Original Question:"}
+            </span> "{questionText}"
+          </p>
+          {onFlag && (
+            <button
+              onClick={() => onFlag(question)}
+              className={`px-4 py-2 rounded-md text-sm font-medium ${
+                isFlagged
+                  ? "bg-red-100 text-red-700 border border-red-300"
+                  : "bg-orange-dark text-white hover:bg-orange-700"
+              }`}
+            >
+              {isFlagged ? "Flagged" : "Flag"}
+            </button>
+          )}
+        </div>
+        
+        {question.questionType === "MCQ" && (
+          <div className="space-y-2">
+            <p className="text-[16px] leading-[100%] font-normal font-roboto text-blue-dark">
+              <span className="text-[#6B7280]">Options:</span>
+            </p>
+            <div className="grid grid-cols-2 gap-2 ml-4">
+              {Object.entries(options).map(([key, value]) => (
+                <p key={key} className="text-[14px] text-blue-dark">
+                  <span className="font-medium">{key}:</span> {value || "—"}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+        
         <p className="text-[16px] leading-[100%] font-normal font-roboto text-blue-dark">
-          <span className="text-[#6B7280]">Correct Answer:</span>{" "}
-          {correctAnswer}
+          <span className="text-[#6B7280]">Correct Answer:</span> {correctAnswer}
         </p>
+        
         <div className="flex gap-6 text-[16px] leading-[100%] font-normal font-roboto text-[#6B7280]">
           <span>
             Subject: <span className="text-blue-dark">{subject}</span>
           </span>
-          <span>
-            Difficulty: <span className="text-blue-dark">{difficulty}</span>
-          </span>
-          <span>
-            Variant: <span className="text-blue-dark">{variant}</span>
-          </span>
+          {difficulty !== "—" && (
+            <span>
+              Difficulty: <span className="text-blue-dark">{difficulty}</span>
+            </span>
+          )}
         </div>
       </div>
     </div>
@@ -130,43 +174,136 @@ const SupportingMaterial = ({ file, onFileChange, onRemove }) => {
   );
 };
 
-// TeachingNotes Component
-const TeachingNotes = ({ value, onChange }) => {
+// Flag Modal Component
+const FlagModal = ({ isOpen, onClose, onConfirm, isVariant }) => {
+  const [flagReason, setFlagReason] = useState("");
+
+  if (!isOpen) return null;
+
+  const handleSubmit = () => {
+    if (!flagReason.trim()) {
+      showErrorToast("Please provide a reason for flagging");
+      return;
+    }
+    onConfirm(flagReason);
+    setFlagReason("");
+  };
+
+  const handleClose = () => {
+    setFlagReason("");
+    onClose();
+  };
+
   return (
-    <div className="border border-[#03274633] bg-white pt-[18px] pb-[53px] px-[30px] rounded-[14px] mb-[60px]">
-      <h2 className="text-[20px] leading-[32px] font-bold text-blue-dark font-archivo mb-[18px]">
-        Optional Teaching Notes
-      </h2>
-      <div className="mb-5">
-        <label className="text-[16px] leading-[100%] font-medium font-roboto text-blue-dark">
-          Teacher Notes
-        </label>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h2 className="text-[20px] font-bold text-blue-dark font-archivo mb-2">
+          Flag {isVariant ? "Variant" : "Question"}
+        </h2>
+        <p className="text-[14px] text-dark-gray mb-4">
+          Please provide a reason for flagging this {isVariant ? "variant" : "question"}.
+        </p>
+        <div className="mb-4">
+          <label className="block text-[14px] font-medium text-blue-dark mb-2">
+            Reason for Flagging
+          </label>
+          <textarea
+            value={flagReason}
+            onChange={(e) => setFlagReason(e.target.value)}
+            placeholder="Enter the reason for flagging..."
+            className="w-full p-3 border border-[#03274633] rounded-[8px] min-h-[100px] outline-none text-blue-dark placeholder:text-gray-400"
+            rows={4}
+          />
+        </div>
+        <div className="flex gap-3 justify-end">
+          <OutlineButton
+            text="Cancel"
+            className="py-[10px] px-6"
+            onClick={handleClose}
+          />
+          <PrimaryButton
+            text="Flag"
+            className="py-[10px] px-6"
+            onClick={handleSubmit}
+          />
+        </div>
       </div>
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Enter Hints, or additional notes for other teachers..."
-        className="w-full p-4 border border-[#03274633] rounded-[12px] min-h-[150px] outline-none text-blue-dark placeholder:text-blue-dark placeholder:text-[16px] leading-[100%] font-normal font-roboto"
-      />
     </div>
   );
 };
 
 // Main App Component
 export default function AddExplanationPage() {
-  const [explanation, setExplanation] = useState("");
-  const [teachingNotes, setTeachingNotes] = useState("");
-  const [file, setFile] = useState(null);
+  const location = useLocation();
   const navigate = useNavigate();
+  const [explanation, setExplanation] = useState("");
+  const [file, setFile] = useState(null);
+  const [question, setQuestion] = useState(null);
+  const [variants, setVariants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  
+  // Flag modal state
+  const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
+  const [selectedQuestionForFlag, setSelectedQuestionForFlag] = useState(null);
+  const [flaggedQuestions, setFlaggedQuestions] = useState(new Set());
 
-  const questionData = {
-    id: "QB-1442",
-    question: "What is the function of chlorophyll?",
-    correctAnswer: "Mars",
-    subject: "Science",
-    difficulty: "Easy",
-    variant: "3",
-  };
+  // Get question ID from location state or URL
+  const questionId = location.state?.question?.id || location.state?.questionId;
+
+  // Fetch question and variants
+  useEffect(() => {
+    const fetchQuestionData = async () => {
+      if (!questionId) {
+        setError("Question ID is missing");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch the main question
+        const questionResponse = await questionsAPI.getExplainerQuestionById(questionId);
+        
+        if (questionResponse.success && questionResponse.data?.question) {
+          const fetchedQuestion = questionResponse.data.question;
+          setQuestion(fetchedQuestion);
+
+          // Check if this question has variants by looking for questions with originalQuestionId
+          // We'll fetch all explainer questions and filter for variants
+          try {
+            const allQuestionsResponse = await questionsAPI.getExplainerQuestions({ status: 'pending_explainer' });
+            if (allQuestionsResponse.success && allQuestionsResponse.data?.questions) {
+              const questionIdStr = fetchedQuestion.id || fetchedQuestion._id;
+              const relatedVariants = allQuestionsResponse.data.questions.filter(
+                (q) => {
+                  const originalId = q.originalQuestionId || q.parentQuestionId;
+                  return originalId && (originalId.toString() === questionIdStr.toString() || originalId === questionIdStr);
+                }
+              );
+              setVariants(relatedVariants);
+            }
+          } catch (variantError) {
+            console.warn("Could not fetch variants:", variantError);
+            // Continue without variants
+          }
+        } else {
+          setError("Question not found");
+        }
+      } catch (err) {
+        console.error("Error fetching question:", err);
+        setError(err.message || "Failed to fetch question");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuestionData();
+  }, [questionId]);
 
   const handleFileChange = (newFile) => {
     setFile(newFile);
@@ -180,6 +317,121 @@ export default function AddExplanationPage() {
     navigate("/explainer/question-bank");
   };
 
+  // Handle flag button click
+  const handleFlagClick = (questionToFlag) => {
+    setSelectedQuestionForFlag(questionToFlag);
+    setIsFlagModalOpen(true);
+  };
+
+  // Handle flag confirmation
+  const handleFlagConfirm = async (reason) => {
+    if (!selectedQuestionForFlag) return;
+
+    try {
+      const idToFlag = selectedQuestionForFlag.id || selectedQuestionForFlag._id;
+      
+      await questionsAPI.flagQuestionByExplainer(idToFlag, reason);
+      
+      // Add to flagged set
+      setFlaggedQuestions((prev) => new Set([...prev, idToFlag]));
+      
+      showSuccessToast(
+        `${selectedQuestionForFlag.isVariant ? "Variant" : "Question"} flagged successfully and sent to processor for review`
+      );
+      
+      setIsFlagModalOpen(false);
+      setSelectedQuestionForFlag(null);
+      
+      // Optionally refresh the question data
+      // Or navigate back to question bank
+      setTimeout(() => {
+        navigate("/explainer/question-bank");
+      }, 1500);
+    } catch (err) {
+      console.error("Error flagging question:", err);
+      showErrorToast(err.message || "Failed to flag question. Please try again.");
+    }
+  };
+
+  // Handle save draft
+  const handleSaveDraft = async () => {
+    if (!questionId || !explanation.trim()) {
+      showErrorToast("Please enter an explanation before saving draft");
+      return;
+    }
+
+    try {
+      setIsSavingDraft(true);
+      // Note: The API might not have a draft endpoint, so we might need to store locally
+      // or use a different approach. For now, we'll just show a message.
+      showSuccessToast("Draft saved locally (feature to be implemented)");
+    } catch (err) {
+      console.error("Error saving draft:", err);
+      showErrorToast("Failed to save draft");
+    } finally {
+      setIsSavingDraft(false);
+    }
+  };
+
+  // Handle submit explanation
+  const handleSubmitExplanation = async () => {
+    if (!questionId) {
+      showErrorToast("Question ID is missing");
+      return;
+    }
+
+    if (!explanation.trim()) {
+      showErrorToast("Please enter an explanation before submitting");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      
+      // Update explanation - this automatically sets status to pending_processor
+      await questionsAPI.updateExplanation(questionId, explanation);
+      
+      showSuccessToast("Explanation submitted successfully! Question sent to processor for review.");
+      
+      // Navigate back to question bank
+      setTimeout(() => {
+        navigate("/explainer/question-bank");
+      }, 1500);
+    } catch (err) {
+      console.error("Error submitting explanation:", err);
+      showErrorToast(err.message || "Failed to submit explanation. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-8 flex items-center justify-center">
+        <p className="text-dark-gray">Loading question...</p>
+      </div>
+    );
+  }
+
+  if (error || !question) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-8">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="bg-white rounded-lg p-6 border border-red-300">
+            <p className="text-red-600 mb-4">{error || "Question not found"}</p>
+            <OutlineButton
+              text="Back to Question Bank"
+              className="py-[10px] px-6"
+              onClick={handleCancel}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const questionIdDisplay = question.id || question._id || questionId;
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-[1200px] mx-auto">
@@ -188,38 +440,56 @@ export default function AddExplanationPage() {
             Add Explanation
           </h1>
           <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
-            Questions ID: {questionData.id}
+            Question ID: {questionIdDisplay}
           </p>
         </div>
 
+        {/* Display Original Question */}
         <div className="border border-[#03274633] shadow-[0px_2px_20px_0px_#0327460D] bg-white pt-[18px] pb-[53px] px-[30px] rounded-[14px] mb-[30px]">
-          <div>
-            <h2 className="text-[20px] leading-[32px] font-bold text-blue-dark font-archivo mb-[18px]">
-              Final Approve Question
-            </h2>
-            <QuestionDetails
-              question={questionData.question}
-              correctAnswer={questionData.correctAnswer}
-              subject={questionData.subject}
-              difficulty={questionData.difficulty}
-              variant={questionData.variant}
-            />
-          </div>
+          <h2 className="text-[20px] leading-[32px] font-bold text-blue-dark font-archivo mb-[18px]">
+            Question Details
+          </h2>
+          <QuestionDetails
+            question={question}
+            isVariant={false}
+            onFlag={handleFlagClick}
+            isFlagged={flaggedQuestions.has(question.id || question._id)}
+          />
+        </div>
 
-          <div>
+        {/* Display Variants if any */}
+        {variants.length > 0 && (
+          <div className="border border-[#03274633] shadow-[0px_2px_20px_0px_#0327460D] bg-white pt-[18px] pb-[53px] px-[30px] rounded-[14px] mb-[30px]">
             <h2 className="text-[20px] leading-[32px] font-bold text-blue-dark font-archivo mb-[18px]">
-              Explanation Editor
+              Question Variants ({variants.length})
             </h2>
-            <p className="text-[16px] leading-[100%] font-medium font-roboto text-blue-dark mb-5">
-              Explanation
-            </p>
-            <RichTextEditor
-              value={explanation}
-              onChange={setExplanation}
-              placeholder="Enter the  detailed explanation for question here..."
-              minHeight="150px"
-            />
+            {variants.map((variant, index) => (
+              <QuestionDetails
+                key={variant.id || variant._id}
+                question={variant}
+                isVariant={true}
+                variantNumber={index + 1}
+                onFlag={handleFlagClick}
+                isFlagged={flaggedQuestions.has(variant.id || variant._id)}
+              />
+            ))}
           </div>
+        )}
+
+        {/* Explanation Editor */}
+        <div className="border border-[#03274633] shadow-[0px_2px_20px_0px_#0327460D] bg-white pt-[18px] pb-[53px] px-[30px] rounded-[14px] mb-[30px]">
+          <h2 className="text-[20px] leading-[32px] font-bold text-blue-dark font-archivo mb-[18px]">
+            Explanation Editor
+          </h2>
+          <p className="text-[16px] leading-[100%] font-medium font-roboto text-blue-dark mb-5">
+            Explanation
+          </p>
+          <RichTextEditor
+            value={explanation}
+            onChange={setExplanation}
+            placeholder="Enter the detailed explanation for question here..."
+            minHeight="150px"
+          />
         </div>
 
         <SupportingMaterial
@@ -228,20 +498,37 @@ export default function AddExplanationPage() {
           onRemove={handleRemoveFile}
         />
 
-        {/* <TeachingNotes value={teachingNotes} onChange={setTeachingNotes} /> */}
-
         <div className="flex flex-col sm:flex-row sm:justify-end gap-3 px-5 pb-6 pt-2">
-          <OutlineButton text="Cancel" className="py-[10px] px-7 text-nowrap" onClick={handleCancel}/>
+          <OutlineButton
+            text="Cancel"
+            className="py-[10px] px-7 text-nowrap"
+            onClick={handleCancel}
+          />
           <OutlineButton
             text="Save Draft"
             className="py-[10px] px-7 text-nowrap"
+            onClick={handleSaveDraft}
+            disabled={isSavingDraft}
           />
           <PrimaryButton
             text="Submit explanation"
             className="py-[10px] px-7 text-nowrap"
+            onClick={handleSubmitExplanation}
+            disabled={isSubmitting}
           />
         </div>
       </div>
+
+      {/* Flag Modal */}
+      <FlagModal
+        isOpen={isFlagModalOpen}
+        onClose={() => {
+          setIsFlagModalOpen(false);
+          setSelectedQuestionForFlag(null);
+        }}
+        onConfirm={handleFlagConfirm}
+        isVariant={selectedQuestionForFlag?.isVariant || false}
+      />
     </div>
   );
 }

@@ -3310,6 +3310,8 @@
       "table": {
         "question": "QUESTION",
         "explainer": "EXPLAINER",
+        "processorStatus": "PROCESSOR STATUS",
+        "explainerStatus": "EXPLAINER STATUS",
         "explanationSummary": "EXPLANATION SUMMARY",
         "submittedOn": "SUBMITTED ON",
         "actions": "ACTIONS"
@@ -3333,6 +3335,8 @@
       "close": "Close",
       "reject": "Reject",
       "acceptAndSend": "Accept & Sent to Creator",
+      "acceptAndSendToExplainer": "Accept and sent to explainer",
+      "approveQuestion": "Approve Question",
       "questionInfo": "Question Info",
       "options": "Options:",
       "correctAnswer": "Correct Answer",
@@ -3344,6 +3348,7 @@
       "variant": "variant",
       "status": "Status",
       "creatorGathererNotes": "Creator / Gatherer Notes",
+      "explanation": "Explanation",
       "attachments": "Attachments",
       "questionHistory": "Question History",
       "rejectQuestion": "Reject Question",
@@ -3352,7 +3357,15 @@
       "cancel": "Cancel",
       "confirmReject": "Confirm Reject",
       "loading": "Loading question...",
-      "noOptions": "No options available for this question type."
+      "noOptions": "No options available for this question type.",
+      "approveReason": "Approve Reason",
+      "rejectReasonButton": "Reject Reason",
+      "flagReason": "Flag Reason",
+      "flagReasonDescription": "The creator has flagged this question with the following reason:",
+      "rejectFlagReason": "Reject Flag Reason",
+      "rejectFlagReasonDescription": "Please provide a reason for rejecting the creator's flag. The question will be sent back to the creator.",
+      "rejectFlagReasonPlaceholder": "Enter reason for rejecting the flag...",
+      "confirmRejectFlag": "Reject Flag Reason"
     },
     "profile": {
       "title": "Account Settings",
