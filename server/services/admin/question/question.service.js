@@ -119,51 +119,93 @@ const getQuestionsByStatus = async (status, userId, role) => {
     }
   });
 
+  // Log for debugging
+  if (role === 'explainer' && status === 'pending_explainer') {
+    console.log(`[EXPLAINER] Found ${questions.length} questions with status ${status}`);
+  }
+
   // For explainer, group questions: parent first, then variants
   if (role === 'explainer' && status === 'pending_explainer') {
-    const parentQuestions = [];
-    const variantQuestions = [];
-    const parentIdSet = new Set();
+    // If no questions, return empty array
+    if (!questions || questions.length === 0) {
+      return questions;
+    }
 
-    // Separate parents and variants
-    questions.forEach(q => {
-      if (q.isVariant && q.originalQuestionId) {
-        variantQuestions.push(q);
-        parentIdSet.add(q.originalQuestionId);
-      } else {
-        parentQuestions.push(q);
-      }
-    });
+    try {
+      const parentQuestions = [];
+      const variantQuestions = [];
+      const parentIdSet = new Set();
 
-    // Get parent questions that have variants
-    const parentsWithVariants = parentQuestions.filter(p => parentIdSet.has(p.id));
-    const parentsWithoutVariants = parentQuestions.filter(p => !parentIdSet.has(p.id));
+      // Helper to normalize ID (handle both string and object IDs)
+      const normalizeId = (id) => {
+        if (!id) return null;
+        if (typeof id === 'string') return id;
+        if (typeof id === 'object' && id.toString) return id.toString();
+        return String(id);
+      };
 
-    // Group variants by parent ID
-    const variantsByParent = {};
-    variantQuestions.forEach(v => {
-      const parentId = v.originalQuestionId;
-      if (!variantsByParent[parentId]) {
-        variantsByParent[parentId] = [];
-      }
-      variantsByParent[parentId].push(v);
-    });
+      // Separate parents and variants
+      questions.forEach(q => {
+        const questionId = normalizeId(q.id);
+        // Check isVariant more flexibly
+        const isVariant = q.isVariant === true || 
+                         q.isVariant === 'true' || 
+                         q.isVariant === 1 ||
+                         (q.isVariant !== false && q.isVariant !== 'false' && q.isVariant !== 0 && q.originalQuestionId);
+        const originalQuestionId = normalizeId(q.originalQuestionId);
+        
+        if (isVariant && originalQuestionId) {
+          variantQuestions.push(q);
+          parentIdSet.add(originalQuestionId);
+        } else {
+          parentQuestions.push(q);
+        }
+      });
 
-    // Build ordered list: parent with variants first, then their variants, then parents without variants
-    const orderedQuestions = [];
-    
-    // Add parents with variants, followed by their variants
-    parentsWithVariants.forEach(parent => {
-      orderedQuestions.push(parent);
-      if (variantsByParent[parent.id]) {
-        orderedQuestions.push(...variantsByParent[parent.id]);
-      }
-    });
+      // Get parent questions that have variants (normalize IDs for comparison)
+      const parentsWithVariants = parentQuestions.filter(p => {
+        const parentId = normalizeId(p.id);
+        return parentIdSet.has(parentId);
+      });
+      const parentsWithoutVariants = parentQuestions.filter(p => {
+        const parentId = normalizeId(p.id);
+        return !parentIdSet.has(parentId);
+      });
 
-    // Add parents without variants
-    orderedQuestions.push(...parentsWithoutVariants);
+      // Group variants by parent ID
+      const variantsByParent = {};
+      variantQuestions.forEach(v => {
+        const parentId = normalizeId(v.originalQuestionId);
+        if (parentId) {
+          if (!variantsByParent[parentId]) {
+            variantsByParent[parentId] = [];
+          }
+          variantsByParent[parentId].push(v);
+        }
+      });
 
-    return orderedQuestions;
+      // Build ordered list: parent with variants first, then their variants, then parents without variants
+      const orderedQuestions = [];
+      
+      // Add parents with variants, followed by their variants
+      parentsWithVariants.forEach(parent => {
+        orderedQuestions.push(parent);
+        const parentId = normalizeId(parent.id);
+        if (parentId && variantsByParent[parentId]) {
+          orderedQuestions.push(...variantsByParent[parentId]);
+        }
+      });
+
+      // Add parents without variants
+      orderedQuestions.push(...parentsWithoutVariants);
+
+      // Ensure we return at least the original questions if ordering fails
+      return orderedQuestions.length > 0 ? orderedQuestions : questions;
+    } catch (error) {
+      console.error('Error grouping explainer questions:', error);
+      // Return original questions if grouping fails
+      return questions;
+    }
   }
 
   return questions;
