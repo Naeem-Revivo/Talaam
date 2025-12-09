@@ -1147,22 +1147,26 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
       // Normal flow: move to creator
       nextStatus = 'pending_creator';
     }
-  } else if (lastAction && lastAction.role === 'creator') {
+  } 
+  // PRIORITY 5: Check if question has explanation (regardless of last action role)
+  // This ensures that if explainer added explanation, question is marked complete when processor approves
+  // This is the FINAL STEP - after explanation is added, approval should mark as completed
+  // This check must come BEFORE creator/explainer role checks to ensure completion takes priority
+  else if (question.explanation && question.explanation.trim() !== '') {
+    // Question has explanation - this is the final step, mark as completed
+    nextStatus = 'completed';
+  } 
+  // PRIORITY 6: Normal workflow based on last action role (only if no explanation exists)
+  else if (lastAction && lastAction.role === 'creator') {
     // After creator submission/update, check if it was an accept or flag
     // If creator accepted (status was set to pending_processor), move to explainer
     // If creator flagged, it's already handled above in flag approval logic
     // For normal creator accept flow, move to explainer
     nextStatus = 'pending_explainer';
   } else if (lastAction && lastAction.role === 'explainer') {
-    // After explainer adds explanation, check if explanation exists
-    // If explanation exists and processor is approving, mark as completed
-    // Question will remain visible in explainer submission page due to filtering logic
-    if (question.explanation && question.explanation.trim() !== '') {
-      nextStatus = 'completed';
-    } else {
-      // No explanation yet, keep in explainer submission
-      nextStatus = 'pending_explainer';
-    }
+    // After explainer action but no explanation exists yet
+    // Keep in explainer submission
+    nextStatus = 'pending_explainer';
   } else {
     // Default fallback
     nextStatus = 'pending_creator';

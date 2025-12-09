@@ -388,17 +388,21 @@ const ProcessorViewQuestion = () => {
 
   // Check if question already has assigned creator/explainer
   // Show modal only when:
-  // 1. Accepting from gatherer (first time) - need to select creator
-  // 2. Accepting from creator (second time) - need to select explainer
+  // 1. Accepting from gatherer (first time) - need to select creator (if not already assigned)
+  // 2. Accepting from creator (first time sending to explainer) - need to select explainer (if not already assigned)
   // After that, the same users remain assigned
   // We check if question has been approved before by looking at history
   const hasBeenApprovedBefore = question && question.history && 
     question.history.some(h => h.role === 'processor' && h.action === 'approved');
   
-  // If coming from gatherer and never approved before, need to select creator
-  // If coming from creator and already approved once (sent to creator), need to select explainer
-  const needsCreatorSelection = isFromGathererSubmission && !hasBeenApprovedBefore;
-  const needsExplainerSelection = isFromCreatorSubmission && hasBeenApprovedBefore;
+  // Check if question already has assigned users
+  const hasAssignedCreator = question && (question.assignedCreatorId || question.assignedCreator?.id);
+  const hasAssignedExplainer = question && (question.assignedExplainerId || question.assignedExplainer?.id);
+  
+  // If coming from gatherer and creator not assigned, need to select creator
+  // If coming from creator and explainer not assigned, need to select explainer
+  const needsCreatorSelection = isFromGathererSubmission && !hasAssignedCreator;
+  const needsExplainerSelection = isFromCreatorSubmission && !hasAssignedExplainer;
 
   const handleAccept = async (assignedUserId = null) => {
     try {
