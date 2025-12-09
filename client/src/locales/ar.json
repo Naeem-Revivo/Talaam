@@ -2853,7 +2853,18 @@
         "noProcessorsAvailable": "لا يوجد معالجون متاحون",
         "selectExamFirst": "اختر الاختبار أولاً",
         "selectSubjectFirst": "اختر الموضوع أولاً"
-      }
+      },
+      "rejectFlag": {
+        "button": "رفض الإبلاغ",
+        "title": "رفض الإبلاغ",
+        "description": "يرجى تقديم سبب لاعتقادك أن هذا الإبلاغ غير صحيح:",
+        "placeholder": "أدخل سبب رفضك للإبلاغ...",
+        "cancel": "إلغاء",
+        "submit": "إرسال",
+        "submitting": "جاري الإرسال..."
+      },
+      "update": "تحديث",
+      "updating": "جاري التحديث..."
     },
     "questionDetail": {
       "title": "تفاصيل السؤال",
@@ -3278,10 +3289,15 @@
       "table": {
         "question": "السؤال",
         "gatherer": "المجمع",
+        "submittedBy": "تم الإرسال بواسطة",
+        "source": "المصدر",
         "dateSubmitted": "تاريخ الإرسال",
         "subject": "الموضوع",
+        "status": "الحالة",
         "actions": "الإجراءات"
       },
+      "allSubmissions": "جميع التقديمات",
+      "loading": "جاري التحميل...",
       "workflowProgress": "تقدم سير العمل",
       "recentActivity": "النشاط الأخير",
       "searchPlaceholder": "البحث في مسودات الشروحات...",
@@ -3304,6 +3320,7 @@
     "gathererSubmission": {
       "title": "تقديمات المجمع",
       "back": "رجوع",
+      "loading": "جاري التحميل...",
       "table": {
         "question": "السؤال",
         "subject": "المادة",
@@ -3345,6 +3362,7 @@
       "close": "إغلاق",
       "reject": "رفض",
       "acceptAndSend": "قبول وإرسال إلى المنشئ",
+      "acceptAndSendToCreator": "قبول وإرسال إلى المنشئ",
       "acceptAndSendToExplainer": "قبول وإرسال إلى المشرح",
       "approveQuestion": "الموافقة على السؤال",
       "questionInfo": "معلومات السؤال",
@@ -3372,10 +3390,17 @@
       "rejectReasonButton": "رفض السبب",
       "flagReason": "سبب الإبلاغ",
       "flagReasonDescription": "قام المنشئ بالإبلاغ عن هذا السؤال للأسباب التالية:",
+      "flagReasonDescriptionExplainer": "قام المشرح بالإبلاغ عن هذا السؤال للأسباب التالية:",
       "rejectFlagReason": "رفض سبب الإبلاغ",
       "rejectFlagReasonDescription": "يرجى تقديم سبب لرفض إبلاغ المنشئ. سيتم إرسال السؤال مرة أخرى إلى المنشئ.",
+      "rejectFlagReasonDescriptionExplainer": "يرجى تقديم سبب لرفض إبلاغ المشرح. سيتم إرسال السؤال مرة أخرى إلى المشرح.",
       "rejectFlagReasonPlaceholder": "أدخل سبب رفض الإبلاغ...",
-      "confirmRejectFlag": "رفض سبب الإبلاغ"
+      "confirmRejectFlag": "رفض سبب الإبلاغ",
+      "gathererFlagRejection": "رفض المجمع للإبلاغ",
+      "gathererFlagRejectionDescription": "رفض المجمع الإبلاغ للأسباب التالية:",
+      "acceptGathererRejection": "قبول رفض المجمع",
+      "rejectGathererRejection": "رفض رفض المجمع",
+      "rejectGathererRejectionDescription": "يرجى تقديم سبب لرفض رفض المجمع للإبلاغ. سيتم استعادة الإبلاغ وسيتم إرسال السؤال مرة أخرى إلى المجمع."
     },
     "profile": {
       "title": "إعدادات الحساب",

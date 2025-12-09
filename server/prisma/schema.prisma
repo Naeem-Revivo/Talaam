@@ -41,6 +41,8 @@ model User {
   questionsApproved     Question[]       @relation("QuestionApprovedBy")
   questionsRejected     Question[]       @relation("QuestionRejectedBy")
   questionsAssigned    Question[]       @relation("QuestionAssignedProcessor")
+  questionsAssignedCreator Question[]    @relation("QuestionAssignedCreator")
+  questionsAssignedExplainer Question[]  @relation("QuestionAssignedExplainer")
   questionsFlagged      Question[]       @relation("QuestionFlaggedBy")
   questionsFlagReviewed Question[]       @relation("QuestionFlagReviewedBy")
   studentAnswers        StudentAnswer[]
@@ -183,6 +185,8 @@ model Question {
   rejectedById      String?  @map("rejected_by_id")
   rejectionReason   String?  @map("rejection_reason")
   assignedProcessorId String? @map("assigned_processor_id")
+  assignedCreatorId String?  @map("assigned_creator_id")
+  assignedExplainerId String? @map("assigned_explainer_id")
   // Flagging fields
   isFlagged         Boolean  @default(false) @map("is_flagged")
   flaggedById      String?  @map("flagged_by_id")
@@ -205,6 +209,8 @@ model Question {
   approvedBy        User?    @relation("QuestionApprovedBy", fields: [approvedById], references: [id])
   rejectedBy        User?    @relation("QuestionRejectedBy", fields: [rejectedById], references: [id])
   assignedProcessor User?    @relation("QuestionAssignedProcessor", fields: [assignedProcessorId], references: [id])
+  assignedCreator   User?    @relation("QuestionAssignedCreator", fields: [assignedCreatorId], references: [id])
+  assignedExplainer User?    @relation("QuestionAssignedExplainer", fields: [assignedExplainerId], references: [id])
   flaggedBy        User?    @relation("QuestionFlaggedBy", fields: [flaggedById], references: [id])
   flagReviewedBy   User?    @relation("QuestionFlagReviewedBy", fields: [flagReviewedById], references: [id])
   history           QuestionHistory[]

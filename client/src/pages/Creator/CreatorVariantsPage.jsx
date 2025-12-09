@@ -4,6 +4,9 @@ import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
 import RichTextEditor from "../../components/common/RichTextEditor";
 import questionsAPI from "../../api/questions";
+import examsAPI from "../../api/exams";
+import subjectsAPI from "../../api/subjects";
+import topicsAPI from "../../api/topics";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 
 const Dropdown = ({ label, value, options, onChange }) => {
@@ -90,8 +93,10 @@ const CreatorVariantsPage = () => {
   
   // Get question data from location state or fetch it
   const questionId = location.state?.questionId;
-  const [originalQuestion, setOriginalQuestion] = useState(location.state?.question || null);
-  const [loading, setLoading] = useState(!originalQuestion && !questionId);
+  const variantToEdit = location.state?.variant || null;
+  const isEditMode = location.state?.isFlagged === true && variantToEdit;
+  const [originalQuestion, setOriginalQuestion] = useState(location.state?.originalQuestion || location.state?.question || null);
+  const [loading, setLoading] = useState(!originalQuestion && !questionId && !isEditMode);
   const [questionIdDisplay, setQuestionIdDisplay] = useState(
     originalQuestion?.id || questionId || "QB-1442"
   );
@@ -112,13 +117,26 @@ const CreatorVariantsPage = () => {
       : "Option A"
   );
   
-  // Classification state (shared)
-  const [exam, setExam] = useState(originalQuestion?.exam?.name || "");
-  const [subject, setSubject] = useState(originalQuestion?.subject?.name || "");
-  const [topic, setTopic] = useState(originalQuestion?.topic?.name || "");
+  // Classification state - storing IDs and names (like gatherer page)
+  const [examId, setExamId] = useState("");
+  const [examName, setExamName] = useState(originalQuestion?.exam?.name || "");
+  const [subjectId, setSubjectId] = useState("");
+  const [subjectName, setSubjectName] = useState(originalQuestion?.subject?.name || "");
+  const [topicId, setTopicId] = useState("");
+  const [topicName, setTopicName] = useState(originalQuestion?.topic?.name || "");
   const [cognitiveLevel, setCognitiveLevel] = useState("");
   const [source, setSource] = useState("");
   const [explanation, setExplanation] = useState(originalQuestion?.explanation || "");
+
+  // Classification data lists
+  const [exams, setExams] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [topics, setTopics] = useState([]);
+
+  // Loading states
+  const [loadingExams, setLoadingExams] = useState(false);
+  const [loadingSubjects, setLoadingSubjects] = useState(false);
+  const [loadingTopics, setLoadingTopics] = useState(false);
   
   // Flag modal state
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
@@ -126,15 +144,33 @@ const CreatorVariantsPage = () => {
   const [isFlagging, setIsFlagging] = useState(false);
 
   // Variants state - array of variant objects
-  const [variants, setVariants] = useState([
-    {
-      id: 1,
-      questionText: "",
-      questionType: "Multiple Choice (MCQ)",
-      options: { A: "", B: "", C: "", D: "" },
-      correctAnswer: "Option A",
-    },
-  ]);
+  // If in edit mode, initialize with the variant to edit
+  const [variants, setVariants] = useState(
+    isEditMode && variantToEdit
+      ? [
+          {
+            id: variantToEdit.id || 1,
+            questionText: variantToEdit.questionText || "",
+            questionType: variantToEdit.questionType === "MCQ" 
+              ? "Multiple Choice (MCQ)" 
+              : variantToEdit.questionType || "Multiple Choice (MCQ)",
+            options: variantToEdit.options || { A: "", B: "", C: "", D: "" },
+            correctAnswer: variantToEdit.correctAnswer 
+              ? `Option ${variantToEdit.correctAnswer}` 
+              : "Option A",
+            explanation: variantToEdit.explanation || "",
+          },
+        ]
+      : [
+          {
+            id: 1,
+            questionText: "",
+            questionType: "Multiple Choice (MCQ)",
+            options: { A: "", B: "", C: "", D: "" },
+            correctAnswer: "Option A",
+          },
+        ]
+  );
 
   const handleOptionChange = (option, value) => {
     setOptions((prev) => ({ ...prev, [option]: value }));
@@ -190,17 +226,149 @@ const CreatorVariantsPage = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Handle exam selection
+  const handleExamChange = (selectedExamName) => {
+    if (selectedExamName === "Select exam" || selectedExamName === t("gatherer.addNewQuestion.messages.noExamsAvailable")) {
+      setExamId("");
+      setExamName("");
+      setSubjects([]);
+      setSubjectId("");
+      setSubjectName("");
+      setTopics([]);
+      setTopicId("");
+      setTopicName("");
+      return;
+    }
+    
+    const selectedExam = exams.find((e) => e.name === selectedExamName);
+    if (selectedExam) {
+      setExamId(selectedExam.id);
+      setExamName(selectedExamName);
+    } else {
+      setExamId("");
+      setExamName("");
+    }
+    setSubjectId("");
+    setSubjectName("");
+    setTopics([]);
+    setTopicId("");
+    setTopicName("");
+  };
+
+  // Handle subject selection
+  const handleSubjectChange = (selectedSubjectName) => {
+    if (selectedSubjectName === t("gatherer.addNewQuestion.messages.selectExamFirst") || 
+        selectedSubjectName === t("gatherer.addNewQuestion.messages.noSubjectsAvailable")) {
+      setSubjectId("");
+      setSubjectName("");
+      setTopics([]);
+      setTopicId("");
+      setTopicName("");
+      return;
+    }
+
+    const selectedSubject = subjects.find((s) => s.name === selectedSubjectName);
+    if (selectedSubject) {
+      setSubjectId(selectedSubject.id);
+      setSubjectName(selectedSubjectName);
+    } else {
+      setSubjectId("");
+      setSubjectName("");
+    }
+    setTopicId("");
+    setTopicName("");
+  };
+
+  // Handle topic selection
+  const handleTopicChange = (selectedTopicName) => {
+    if (selectedTopicName === t("gatherer.addNewQuestion.messages.selectSubjectFirst") || 
+        selectedTopicName === t("gatherer.addNewQuestion.messages.noTopicsAvailable")) {
+      setTopicId("");
+      setTopicName("");
+      return;
+    }
+
+    const selectedTopic = topics.find((t) => t.name === selectedTopicName);
+    if (selectedTopic) {
+      setTopicId(selectedTopic.id);
+      setTopicName(selectedTopicName);
+    } else {
+      setTopicId("");
+      setTopicName("");
+    }
+  };
+
   const handleSaveDraft = () => {
     // TODO: Implement save draft functionality
     console.log("Save draft");
   };
 
   const handleSubmit = async () => {
+    // If in edit mode, handle updating flagged variant
+    if (isEditMode && variantToEdit) {
+      try {
+        setIsSubmitting(true);
+        const variantId = variantToEdit.id;
+        const validVariant = variants.find(
+          (variant) => variant.questionText && variant.questionText.trim() !== ""
+        );
+
+        if (!validVariant) {
+          showErrorToast("Variant question text is required.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Extract correct answer letter from "Option A" format
+        const correctAnswerLetter = validVariant.correctAnswer.replace("Option ", "").trim();
+        
+        // Convert question type from display format to API format
+        const questionTypeMap = {
+          "Multiple Choice (MCQ)": "MCQ",
+          "True/False": "TRUE_FALSE",
+          "Short Answer": "SHORT_ANSWER",
+          "Essay": "ESSAY",
+        };
+        const apiQuestionType = questionTypeMap[validVariant.questionType] || "MCQ";
+
+        const variantData = {
+          questionText: validVariant.questionText.trim(),
+          questionType: apiQuestionType,
+          options: {
+            A: validVariant.options.A?.trim() || "",
+            B: validVariant.options.B?.trim() || "",
+            C: validVariant.options.C?.trim() || "",
+            D: validVariant.options.D?.trim() || "",
+          },
+          correctAnswer: correctAnswerLetter,
+          explanation: validVariant.explanation?.trim() || "",
+        };
+
+        await questionsAPI.updateFlaggedVariant(variantId, variantData);
+        showSuccessToast("Variant updated successfully. Sent to processor for review.");
+        setTimeout(() => {
+          navigate("/creator/question-bank/variants-list");
+        }, 1500);
+      } catch (error) {
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to update variant";
+        showErrorToast(errorMessage);
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    // Original create mode logic
     if (!questionId && !originalQuestion?.id) {
       showErrorToast("Question ID is missing. Cannot submit question.");
       return;
     }
 
+    let shouldRedirect = false;
+    let redirectPath = "/creator/question-bank/assigned-question";
     try {
       setIsSubmitting(true);
       const idToUse = questionId || originalQuestion?.id;
@@ -227,16 +395,16 @@ const CreatorVariantsPage = () => {
           };
           const apiQuestionType = questionTypeMap[variant.questionType] || "MCQ";
 
-          // Get IDs from original question - ensure we get string IDs, not objects
-          const examId = typeof originalQuestion?.exam === 'string' 
+          // Use classification IDs from state (or fallback to original question)
+          const variantExamId = examId || (typeof originalQuestion?.exam === 'string' 
             ? originalQuestion.exam 
-            : (originalQuestion?.exam?.id || originalQuestion?.examId || null);
-          const subjectId = typeof originalQuestion?.subject === 'string' 
+            : (originalQuestion?.exam?.id || originalQuestion?.examId || null));
+          const variantSubjectId = subjectId || (typeof originalQuestion?.subject === 'string' 
             ? originalQuestion.subject 
-            : (originalQuestion?.subject?.id || originalQuestion?.subjectId || null);
-          const topicId = typeof originalQuestion?.topic === 'string' 
+            : (originalQuestion?.subject?.id || originalQuestion?.subjectId || null));
+          const variantTopicId = topicId || (typeof originalQuestion?.topic === 'string' 
             ? originalQuestion.topic 
-            : (originalQuestion?.topic?.id || originalQuestion?.topicId || null);
+            : (originalQuestion?.topic?.id || originalQuestion?.topicId || null));
 
           const variantData = {
             questionText: variant.questionText.trim(),
@@ -248,55 +416,150 @@ const CreatorVariantsPage = () => {
               D: variant.options.D?.trim() || "",
             },
             correctAnswer: correctAnswerLetter,
-            exam: examId,
-            subject: subjectId,
-            topic: topicId,
+            exam: variantExamId,
+            subject: variantSubjectId,
+            topic: variantTopicId,
+            explanation: explanation?.trim() || "",
+            // Note: source/reference is not stored in database, so not included in variantData
           };
 
-          return questionsAPI.createQuestionVariant(idToUse, variantData);
+          return questionsAPI.createQuestionVariant(idToUse, variantData).catch((error) => {
+            // Wrap error to include variant context
+            const errorMsg = error?.message || error?.response?.data?.message || "Failed to create variant";
+            throw new Error(`Failed to create variant: ${errorMsg}`);
+          });
         });
 
+        // Wait for all variants to be created
+        // If any fail, Promise.all will reject with the first error
         await Promise.all(variantPromises);
-        showSuccessToast(`Successfully created ${validVariants.length} variant(s)!`);
         // Note: Server-side automatically updates original question status to 'pending_processor' when variants are created
-      }
-
-      // IMPORTANT: Always submit the question, whether variants were created or not
-      // If variants were created, the server already updated the status, but we ensure it's submitted
-      // If no variants were created, we explicitly submit the question here
-      try {
-        // Submit the question (this updates status to 'pending_processor')
-        // This is safe to call even if variants were created, as the server handles it correctly
-        await questionsAPI.submitQuestionByCreator(idToUse);
+        // So we should NOT try to submit again - the server already handled it
         
-        if (validVariants.length === 0) {
-          showSuccessToast("Question submitted successfully (no variants created).");
-        }
-      } catch (submitError) {
-        // If submitQuestionByCreator fails, try alternative method
-        console.warn("Primary submit method failed, trying alternative:", submitError);
+        // Show success message
+        showSuccessToast(`Successfully created ${validVariants.length} variant(s)!`);
+        shouldRedirect = true;
+        // Redirect to variants list page after creating variants
+        redirectPath = "/creator/question-bank/variants-list";
+      } else {
+        // No variants created - submit the question explicitly
         try {
-          await questionsAPI.updateQuestion(idToUse, { status: 'pending_processor' });
-          if (validVariants.length === 0) {
+          await questionsAPI.submitQuestionByCreator(idToUse);
+          showSuccessToast("Question submitted successfully (no variants created).");
+          shouldRedirect = true;
+        } catch (submitError) {
+          // If submitQuestionByCreator fails, try alternative method
+          console.warn("Primary submit method failed, trying alternative:", submitError);
+          try {
+            await questionsAPI.updateQuestion(idToUse, { status: 'pending_processor' });
             showSuccessToast("Question submitted successfully (no variants created).");
+            shouldRedirect = true;
+          } catch (altError) {
+            // If both methods fail, throw the error
+            throw new Error(altError.message || "Failed to submit question. Please try again.");
           }
-        } catch (altError) {
-          // If both methods fail, throw the error
-          throw new Error(altError.message || "Failed to submit question. Please try again.");
         }
       }
-
-      // Navigate back to assigned questions page
-      setTimeout(() => {
-        navigate("/creator/question-bank/assigned-question");
-      }, 1500);
     } catch (error) {
       console.error("Error submitting question:", error);
-      showErrorToast(error.message || "Failed to submit question. Please try again.");
+      // Extract error message - handle both string and object errors
+      let errorMessage = "Failed to submit question. Please try again.";
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      showErrorToast(errorMessage);
     } finally {
       setIsSubmitting(false);
+      // Redirect only if everything succeeded
+      if (shouldRedirect) {
+        navigate(redirectPath);
+      }
     }
   };
+
+  // Fetch exams on component mount
+  useEffect(() => {
+    const fetchExams = async () => {
+      setLoadingExams(true);
+      try {
+        const response = await examsAPI.getAllExams({ status: "active" });
+        if (response.success && response.data?.exams) {
+          setExams(response.data.exams);
+        }
+      } catch (error) {
+        showErrorToast(
+          error.message || "Failed to load exams",
+          { title: "Error" }
+        );
+      } finally {
+        setLoadingExams(false);
+      }
+    };
+    fetchExams();
+  }, []);
+
+  // Fetch subjects when exam changes
+  useEffect(() => {
+    if (!examId) {
+      setSubjects([]);
+      setSubjectId("");
+      setSubjectName("");
+      setTopics([]);
+      setTopicId("");
+      setTopicName("");
+      return;
+    }
+
+    const fetchSubjects = async () => {
+      setLoadingSubjects(true);
+      try {
+        const response = await subjectsAPI.getAllSubjects();
+        if (response.success && response.data?.subjects) {
+          setSubjects(response.data.subjects);
+        }
+      } catch (error) {
+        showErrorToast(
+          error.message || "Failed to load subjects",
+          { title: "Error" }
+        );
+      } finally {
+        setLoadingSubjects(false);
+      }
+    };
+    fetchSubjects();
+  }, [examId]);
+
+  // Fetch topics when subject changes
+  useEffect(() => {
+    if (!subjectId) {
+      setTopics([]);
+      setTopicId("");
+      setTopicName("");
+      return;
+    }
+
+    const fetchTopics = async () => {
+      setLoadingTopics(true);
+      try {
+        const response = await questionsAPI.getTopicsBySubject(subjectId);
+        if (response.success && response.data?.topics) {
+          setTopics(response.data.topics);
+        }
+      } catch (error) {
+        showErrorToast(
+          error.message || "Failed to load topics",
+          { title: "Error" }
+        );
+      } finally {
+        setLoadingTopics(false);
+      }
+    };
+    fetchTopics();
+  }, [subjectId]);
 
   // Fetch question data if not provided in location state
   useEffect(() => {
@@ -320,9 +583,25 @@ const CreatorVariantsPage = () => {
                 ? `Option ${question.correctAnswer}` 
                 : "Option A"
             );
-            setExam(question.exam?.name || "");
-            setSubject(question.subject?.name || "");
-            setTopic(question.topic?.name || "");
+            // Set classification with IDs
+            if (question.exam) {
+              const examIdValue = typeof question.exam === 'string' ? question.exam : (question.exam?.id || question.examId);
+              const examNameValue = typeof question.exam === 'string' ? "" : (question.exam?.name || "");
+              setExamId(examIdValue || "");
+              setExamName(examNameValue || "");
+            }
+            if (question.subject) {
+              const subjectIdValue = typeof question.subject === 'string' ? question.subject : (question.subject?.id || question.subjectId);
+              const subjectNameValue = typeof question.subject === 'string' ? "" : (question.subject?.name || "");
+              setSubjectId(subjectIdValue || "");
+              setSubjectName(subjectNameValue || "");
+            }
+            if (question.topic) {
+              const topicIdValue = typeof question.topic === 'string' ? question.topic : (question.topic?.id || question.topicId);
+              const topicNameValue = typeof question.topic === 'string' ? "" : (question.topic?.name || "");
+              setTopicId(topicIdValue || "");
+              setTopicName(topicNameValue || "");
+            }
             setExplanation(question.explanation || "");
             setQuestionIdDisplay(question.id || questionId);
           }
@@ -332,8 +611,27 @@ const CreatorVariantsPage = () => {
           setLoading(false);
         }
       } else if (originalQuestion) {
-        // If question data was passed, use it to set question ID display
+        // If question data was passed, use it to set question ID display and classification
         setQuestionIdDisplay(originalQuestion.id || questionId || "QB-1442");
+        // Set classification with IDs from original question
+        if (originalQuestion.exam) {
+          const examIdValue = typeof originalQuestion.exam === 'string' ? originalQuestion.exam : (originalQuestion.exam?.id || originalQuestion.examId);
+          const examNameValue = typeof originalQuestion.exam === 'string' ? "" : (originalQuestion.exam?.name || "");
+          setExamId(examIdValue || "");
+          setExamName(examNameValue || "");
+        }
+        if (originalQuestion.subject) {
+          const subjectIdValue = typeof originalQuestion.subject === 'string' ? originalQuestion.subject : (originalQuestion.subject?.id || originalQuestion.subjectId);
+          const subjectNameValue = typeof originalQuestion.subject === 'string' ? "" : (originalQuestion.subject?.name || "");
+          setSubjectId(subjectIdValue || "");
+          setSubjectName(subjectNameValue || "");
+        }
+        if (originalQuestion.topic) {
+          const topicIdValue = typeof originalQuestion.topic === 'string' ? originalQuestion.topic : (originalQuestion.topic?.id || originalQuestion.topicId);
+          const topicNameValue = typeof originalQuestion.topic === 'string' ? "" : (originalQuestion.topic?.name || "");
+          setTopicId(topicIdValue || "");
+          setTopicName(topicNameValue || "");
+        }
         setLoading(false);
       }
     };
@@ -490,6 +788,7 @@ const CreatorVariantsPage = () => {
                 {loading ? "Loading question..." : `Questions ID: ${questionIdDisplay}`}
               </p>
             </div>
+            {!isEditMode && (
             <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
               <button
                 type="button"
@@ -499,6 +798,7 @@ const CreatorVariantsPage = () => {
                 + Add New Variant
               </button>
             </div>
+            )}
           </header>
 
           {/* Main Content - Two Columns */}
@@ -510,6 +810,7 @@ const CreatorVariantsPage = () => {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
             {/* Left Column - Question Details (2/3 width on xl screens) */}
             <div className="xl:col-span-2 space-y-[30px]">
+              {!isEditMode && (
               <div className=" bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
                 <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark mb-[30px]">
                   Original Question
@@ -626,7 +927,8 @@ const CreatorVariantsPage = () => {
                   </div>
                 </div>
               </div>
-              
+              )}
+
               {/* Variants - Dynamically rendered */}
               {variants.map((variant, index) => (
                 <div key={variant.id} className=" bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
@@ -755,55 +1057,64 @@ const CreatorVariantsPage = () => {
               </h2>
 
               <div className="space-y-6">
+                {/* Exam */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    Exam
+                    {t('gatherer.addNewQuestion.classification.exam')}
                   </label>
                   <Dropdown
-                    value={exam}
-                    onChange={setExam}
-                    options={[
-                      "Select Exam",
-                      originalQuestion?.exam?.name || "",
-                      "Math",
-                      "Science",
-                      "History",
-                      "Geography",
-                    ].filter(Boolean)}
+                    value={examName}
+                    onChange={handleExamChange}
+                    options={
+                      loadingExams
+                        ? [t('gatherer.addNewQuestion.messages.loading')]
+                        : exams.length > 0
+                        ? [
+                            "Select exam",
+                            ...exams.map((exam) => exam.name || "Unnamed Exam").filter(Boolean)
+                          ]
+                        : [t('gatherer.addNewQuestion.messages.noExamsAvailable')]
+                    }
                   />
                 </div>
+
                 {/* Subject */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t("creator.createVariants.fields.subject")}
+                    {t('gatherer.addNewQuestion.classification.subject')}
                   </label>
                   <Dropdown
-                    value={subject}
-                    onChange={setSubject}
-                    options={[
-                      t("creator.createVariants.placeholders.selectSubject"),
-                      "Math",
-                      "Science",
-                      "History",
-                      "Geography",
-                    ]}
+                    value={subjectName}
+                    onChange={handleSubjectChange}
+                    options={
+                      !examId
+                        ? [t('gatherer.addNewQuestion.messages.selectExamFirst')]
+                        : loadingSubjects
+                        ? [t('gatherer.addNewQuestion.messages.loading')]
+                        : subjects.length > 0
+                        ? subjects.map((subject) => subject.name || "Unnamed Subject").filter(Boolean)
+                        : [t('gatherer.addNewQuestion.messages.noSubjectsAvailable')]
+                    }
                   />
                 </div>
 
                 {/* Topic */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t("creator.createVariants.fields.topic")}
+                    {t('gatherer.addNewQuestion.classification.topic')}
                   </label>
                   <Dropdown
-                    value={topic}
-                    onChange={setTopic}
-                    options={[
-                      t("creator.createVariants.placeholders.selectTopic"),
-                      "Algebra",
-                      "Geometry",
-                      "Calculus",
-                    ]}
+                    value={topicName}
+                    onChange={handleTopicChange}
+                    options={
+                      !subjectId
+                        ? [t('gatherer.addNewQuestion.messages.selectSubjectFirst')]
+                        : loadingTopics
+                        ? [t('gatherer.addNewQuestion.messages.loading')]
+                        : topics.length > 0
+                        ? topics.map((topic) => topic.name || "Unnamed Topic").filter(Boolean)
+                        : [t('gatherer.addNewQuestion.messages.noTopicsAvailable')]
+                    }
                   />
                 </div>
 
@@ -855,16 +1166,20 @@ const CreatorVariantsPage = () => {
         <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:justify-end gap-3 py-4">
             <OutlineButton text={t("creator.createVariants.cancel")} className="py-[10px] px-7 text-nowrap" onClick={handleCancel}/>
-            <OutlineButton text={t("creator.createVariants.saveDraft")} className="py-[10px] px-7 text-nowrap" onClick={handleSaveDraft}/>
-            <button
-              type="button"
-              onClick={handleFlagClick}
-              className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#ED4122] bg-white px-4 md:px-7 text-[14px] md:text-[16px] font-archivo font-semibold leading-[16px] text-[#ED4122] transition hover:bg-[#FDF0D5] text-nowrap py-[10px]"
-            >
-              Flag Question
-            </button>
+            {!isEditMode && (
+              <>
+                <OutlineButton text={t("creator.createVariants.saveDraft")} className="py-[10px] px-7 text-nowrap" onClick={handleSaveDraft}/>
+                <button
+                  type="button"
+                  onClick={handleFlagClick}
+                  className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#ED4122] bg-white px-4 md:px-7 text-[14px] md:text-[16px] font-archivo font-semibold leading-[16px] text-[#ED4122] transition hover:bg-[#FDF0D5] text-nowrap py-[10px]"
+                >
+                  Flag Question
+                </button>
+              </>
+            )}
             <PrimaryButton 
-              text={isSubmitting ? "Submitting..." : t("creator.createVariants.submitVariant")} 
+              text={isSubmitting ? (isEditMode ? "Updating..." : "Submitting...") : (isEditMode ? "Update Variant" : t("creator.createVariants.submitVariant"))} 
               className="py-[10px] px-7 text-nowrap"
               onClick={handleSubmit}
               disabled={isSubmitting}
@@ -922,3 +1237,5 @@ const CreatorVariantsPage = () => {
 };
 
 export default CreatorVariantsPage;
+
+

@@ -68,6 +68,7 @@ import GathererLayout from '../components/gatherer/GathererLayout';
 import GathererDashboard from '../pages/Gatherer/GathererDashboard';
 import GathererQuestionBank from '../pages/Gatherer/GathererQuestionBank';
 import GathererAddNewQuestionPage from '../pages/Gatherer/GathererAddNewQuestion';
+import GathererEditQuestionPage from '../pages/Gatherer/GathererEditQuestion';
 import GathererQuestionDetailsPage from '../pages/Gatherer/GathererQuestionDetail';
 import ProcessorDashboard from '../pages/Processor/ProcessorDashboard';
 import ProcessorLayout from '../components/Processor/ProcessorLayout';
@@ -100,6 +101,8 @@ import EditExam from '../pages/admin/EditExam';
 import EditSubject from '../pages/admin/EditSubject';
 import EditTopic from '../pages/admin/EditTopic';
 import CreatorViewVariant from '../pages/Creator/CreatorViewVariant';
+import CreatorVariantsListPage from '../pages/Creator/CreatorVariantsListPage';
+import CreatorViewQuestion from '../pages/Creator/CreatorViewQuestion';
 import ApprovedQuestions from '../pages/admin/ApprovedQuestions';
 
 export const AppRoutes = () => {
@@ -202,6 +205,7 @@ export const AppRoutes = () => {
           <Route path="profile" element={<GathererProfile />} />
           <Route path="question-bank" element={<GathererQuestionBank />} />
           <Route path="question-bank/Gatherer-addQuestion" element={<GathererAddNewQuestionPage />} />
+          <Route path="question-bank/Gatherer-editQuestion/:questionId" element={<GathererEditQuestionPage />} />
           <Route path="question-bank/Gatherer-QuestionDetail/:questionId" element={<GathererQuestionDetailsPage />} />
           <Route path="question-bank/Gatherer-QuestionDetail" element={<GathererQuestionDetailsPage />} />
           {/* Add gatherer specific routes here */}
@@ -231,7 +235,10 @@ export const AppRoutes = () => {
           <Route path="question-bank/assigned-question" element={<AssignedQuestionPage />} />
           <Route path="question-bank/completed-question" element={<CompletedQuestionPage />} />
           <Route path="question-bank/create-variants" element={<CreatorVariantsPage />} />
+          <Route path="question-bank/edit-variant" element={<CreatorVariantsPage />} />
           <Route path="question-bank/view-variant" element={<CreatorViewVariant />} />
+          <Route path="question-bank/variants-list" element={<CreatorVariantsListPage />} />
+          <Route path="question-bank/question/:questionId" element={<CreatorViewQuestion />} />
         </Route>
       </Route>
 

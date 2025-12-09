@@ -70,6 +70,20 @@ router.get(
   questionController.getQuestions
 );
 
+router.put(
+  '/gatherer/:questionId',
+  authMiddleware,
+  gathererMiddleware,
+  questionController.updateFlaggedQuestionByGatherer
+);
+
+router.post(
+  '/gatherer/:questionId/reject-flag',
+  authMiddleware,
+  gathererMiddleware,
+  questionController.rejectFlagByGatherer
+);
+
 // Creator routes (must be before /:questionId to avoid route conflicts)
 router.get(
   '/creator',
@@ -106,12 +120,33 @@ router.post(
   questionController.createQuestionVariant
 );
 
+router.put(
+  '/creator/:questionId/update-flagged-variant',
+  authMiddleware,
+  creatorMiddleware,
+  questionController.updateFlaggedVariantByCreator
+);
+
+router.post(
+  '/creator/:questionId/reject-flag',
+  authMiddleware,
+  creatorMiddleware,
+  questionController.rejectFlagByCreator
+);
+
 // Explainer routes (must be before /:questionId to avoid route conflicts)
 router.get(
   '/explainer',
   authMiddleware,
   explainerMiddleware,
   questionController.getQuestions
+);
+
+router.get(
+  '/explainer/completed-explanations',
+  authMiddleware,
+  explainerMiddleware,
+  questionController.getCompletedExplanations
 );
 
 router.get(
@@ -177,6 +212,13 @@ router.post(
   authMiddleware,
   processorMiddleware,
   questionController.reviewExplainerFlag
+);
+
+router.post(
+  '/processor/:questionId/reject-gatherer-flag-rejection',
+  authMiddleware,
+  processorMiddleware,
+  questionController.rejectGathererFlagRejection
 );
 
 // General POST route for processor (handles both approve and reject via body status)
