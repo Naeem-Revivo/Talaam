@@ -168,7 +168,11 @@ const CreatorQuestionBank = () => {
               onClick={handleCompletedQuestion}
               className="py-[10px] px-[14px]"
             />
-
+            <OutlineButton
+              text="View Variants"
+              onClick={() => navigate("/creator/question-bank/variants-list")}
+              className="py-[10px] px-[14px]"
+            />
             <PrimaryButton
               text={t("creator.questionBank.assignedQuestions")}
               className="py-[10px] px-5"

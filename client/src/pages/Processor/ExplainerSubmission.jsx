@@ -111,19 +111,19 @@ const ExplainerSubmission = () => {
         
         // Fetch questions with multiple statuses to get all explainer submissions
         // This includes: pending_explainer (assigned to explainer), pending_processor (submitted by explainer),
-        // flagged (flagged by explainer), completed, etc.
+        // flagged (flagged by explainer), completed, rejected (rejected after explainer submitted), etc.
         const statusesToFetch = [
-          'pending_explainer', 
-          'pending_processor', // Questions submitted by explainer back to processor
-          'flagged', // Questions flagged by explainer
-          'completed' // Completed questions
+          'pending_explainer', // Questions assigned to explainer (may or may not have explanation yet)
+          'pending_processor', // Questions submitted by explainer back to processor (with explanation)
+          'completed', // Completed questions
+          'rejected' // Questions rejected after explainer submitted explanation
         ];
 
         let allQuestions = [];
 
-        // Fetch questions for each status
+        // Fetch questions for each status, filtered by explainer role
         const promises = statusesToFetch.map(status => 
-          questionsAPI.getProcessorQuestions({ status })
+          questionsAPI.getProcessorQuestions({ status, submittedBy: 'explainer' })
         );
         
         const responses = await Promise.all(promises);
@@ -157,11 +157,12 @@ const ExplainerSubmission = () => {
                   ...question,
                   ...detailedQuestion, // Merge detailed question data
                   flagReason: detailedQuestion?.flagReason || question.flagReason || null,
-                  // Check if flagged by explainer (variant flag)
-                  isFlagged: detailedQuestion?.isFlagged === true || 
-                            detailedQuestion?.isFlagged === 'true' ||
-                            detailedQuestion?.status?.toLowerCase() === 'flagged' ||
-                            detailedQuestion?.status?.toLowerCase() === 'flag',
+                  flagStatus: detailedQuestion?.flagStatus || question.flagStatus || null,
+                  // Only mark as flagged if explicitly set to true AND flagStatus is pending
+                  // Don't use flagReason alone as it might be from history
+                  isFlagged: (detailedQuestion?.isFlagged === true || detailedQuestion?.isFlagged === 'true') &&
+                            (detailedQuestion?.flagStatus === 'pending' || detailedQuestion?.flagStatus === null || detailedQuestion?.flagStatus === undefined) &&
+                            (detailedQuestion?.status?.toLowerCase() !== 'completed' && detailedQuestion?.status?.toLowerCase() !== 'pending_creator'),
                   explanation: detailedQuestion?.explanation || question.explanation || null,
                   history: detailedQuestion?.history || question.history || [],
                   assignedExplainer: detailedQuestion?.assignedExplainer || question.assignedExplainer || null
@@ -175,8 +176,52 @@ const ExplainerSubmission = () => {
           })
         );
 
+        // Filter out questions that haven't been through explainer workflow yet
+        // A question should only appear in Explainer Submission if:
+        // 1. It's assigned to explainer (status pending_explainer) - explainer needs to work on it
+        // 2. OR it has explanation AND status is pending_processor/completed (explainer submitted it)
+        // 3. OR it's flagged by explainer
+        // 4. OR it's completed (went through explainer)
+        const filteredQuestions = questionsWithDetails.filter((question) => {
+          // Always include if status is pending_explainer (assigned to explainer, waiting for explainer to work)
+          if (question.status === 'pending_explainer') {
+            return true;
+          }
+          
+          // Always include if completed (went through explainer)
+          if (question.status === 'completed') {
+            return true;
+          }
+          
+          // Check if flagged by explainer
+          if (question.isFlagged && question.flagType === 'explainer') {
+            return true;
+          }
+          
+          // Check if question has explanation (explainer submitted it)
+          const hasExplanation = question.explanation !== null && 
+                                question.explanation !== undefined && 
+                                typeof question.explanation === 'string' &&
+                                question.explanation.trim() !== '';
+          
+          // For pending_processor status, only include if explainer has submitted explanation
+          // This ensures we don't show questions that are just in pending_processor but haven't been worked on by explainer
+          if (question.status === 'pending_processor') {
+            return hasExplanation; // Only include if explainer has added explanation
+          }
+          
+          // For rejected status, only include if explainer has submitted explanation
+          // This shows questions that were rejected after explainer submitted their explanation
+          if (question.status === 'rejected') {
+            return hasExplanation; // Only include if explainer has added explanation
+          }
+          
+          // Include all other questions (backend already filtered by explainer role)
+          return true;
+        });
+
         // Transform API data to match table structure
-        const transformedData = questionsWithDetails.map((question) => {
+        const transformedData = filteredQuestions.map((question) => {
           // Get explainer name (assignedExplainer or lastModifiedBy if explainer submitted)
           const explainerName = question.assignedExplainer?.name || 
                                question.assignedExplainer?.username ||
@@ -191,21 +236,15 @@ const ExplainerSubmission = () => {
                                 question.explanation.trim() !== '';
 
           // Check if question is currently flagged by explainer
-          // A question is flagged by explainer if:
+          // A question is flagged ONLY if:
           // 1. isFlagged property is explicitly true
-          // 2. status is 'flagged' or 'flag'
-          // 3. Check history for recent flag action by explainer
-          const hasRecentFlagAction = question.history && Array.isArray(question.history) &&
-                                     question.history.some(h => 
-                                       (h.action === 'flag' || h.action === 'flagged') &&
-                                       // Check if flag action is from explainer workflow
-                                       (h.status === 'pending_processor' || h.status === 'pending_explainer' || !h.status)
-                                     );
-          
-          const isFlagged = question.isFlagged === true || 
-                           question.status?.toLowerCase() === 'flagged' ||
-                           question.status?.toLowerCase() === 'flag' ||
-                           hasRecentFlagAction;
+          // 2. flagStatus is 'pending' (or null/undefined for backward compatibility)
+          // 3. Status is not 'completed' or 'pending_creator' (flag has been resolved if moved forward)
+          // Note: Don't check history or flagReason alone, as these persist even after flag is cleared
+          const isFlagged = (question.isFlagged === true || question.isFlagged === 'true') &&
+                           (question.flagStatus === 'pending' || question.flagStatus === null || question.flagStatus === undefined) &&
+                           question.status?.toLowerCase() !== 'completed' &&
+                           question.status?.toLowerCase() !== 'pending_creator';
           
           // Check if explainer has submitted (has explanation and status is pending_processor or completed)
           const isSubmittedByExplainer = hasExplanation && 

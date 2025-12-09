@@ -104,6 +104,16 @@ const getQuestionsByStatus = async (status, userId, role) => {
   if (role === 'gatherer') {
     where.createdById = userId;
   }
+  
+  // Creator can only see questions assigned to them
+  if (role === 'creator') {
+    where.assignedCreatorId = userId;
+  }
+  
+  // Explainer can only see questions assigned to them
+  if (role === 'explainer') {
+    where.assignedExplainerId = userId;
+  }
 
   const questions = await Question.findMany({
     where,
@@ -115,6 +125,8 @@ const getQuestionsByStatus = async (status, userId, role) => {
       createdBy: { select: { name: true, email: true } },
       lastModifiedBy: { select: { name: true, email: true } },
       assignedProcessor: { select: { name: true, fullName: true, email: true } },
+      assignedCreator: { select: { name: true, fullName: true, email: true } },
+      assignedExplainer: { select: { name: true, fullName: true, email: true } },
       approvedBy: { select: { name: true, fullName: true, email: true } }
     }
   });
@@ -209,6 +221,285 @@ const getQuestionsByStatus = async (status, userId, role) => {
   }
 
   return questions;
+};
+
+/**
+ * Get questions by status and filter by submitter role
+ * Used by processor to see submissions from specific roles (creator, explainer, gatherer)
+ */
+const getQuestionsByStatusAndRole = async (status, submittedByRole) => {
+  const { prisma } = require('../../../config/db/prisma');
+  
+  // Build where clause with status and role filtering
+  const where = {
+    status: status
+  };
+  
+  // Get user IDs with the specified role (needed for filtering)
+  let userIdsWithRole = [];
+  if (submittedByRole) {
+    const usersWithRole = await prisma.user.findMany({
+      where: {
+        adminRole: submittedByRole
+      },
+      select: {
+        id: true
+      }
+    });
+    userIdsWithRole = usersWithRole.map(u => u.id);
+  }
+
+  // If filtering by submitter role, we need to check history
+  if (submittedByRole) {
+    // Get question IDs where the specified role has submitted/worked on them
+    // Include 'rejected' action for explainer to catch questions rejected after they submitted
+    // Include 'flagged' action for creator to catch questions flagged by creator
+    const actionsToCheck = submittedByRole === 'explainer' 
+      ? ['created', 'updated', 'submitted', 'approved', 'rejected']
+      : submittedByRole === 'creator'
+      ? ['created', 'updated', 'submitted', 'approved', 'flagged']
+      : ['created', 'updated', 'submitted', 'approved'];
+    
+    const roleHistoryEntries = await prisma.questionHistory.findMany({
+      where: {
+        role: submittedByRole,
+        action: {
+          in: actionsToCheck
+        }
+      },
+      select: {
+        questionId: true
+      }
+    });
+
+    const questionIdsFromHistory = roleHistoryEntries.length > 0
+      ? [...new Set(roleHistoryEntries.map(h => h.questionId))]
+      : [];
+
+    // Build OR condition for role-based filtering
+    const roleConditions = [];
+
+    // Add questions from history
+    if (questionIdsFromHistory.length > 0) {
+      roleConditions.push({
+        id: {
+          in: questionIdsFromHistory
+        }
+      });
+    }
+
+    // For gatherer: also check createdBy OR flagRejectionReason (gatherer rejected a flag)
+    if (submittedByRole === 'gatherer' && userIdsWithRole.length > 0) {
+      roleConditions.push({
+        createdById: {
+          in: userIdsWithRole
+        }
+      });
+      
+      // Include questions where gatherer rejected a flag (has flagRejectionReason)
+      // These are in pending_processor status and need processor review
+      roleConditions.push({
+        AND: [
+          {
+            flagRejectionReason: {
+              not: null
+            }
+          },
+          {
+            status: 'pending_processor'
+          }
+        ]
+      });
+    }
+
+    // For creator: check assignedCreatorId OR lastModifiedBy (creator modifies questions) OR flagged by creator
+    if (submittedByRole === 'creator' && userIdsWithRole.length > 0) {
+      // First priority: questions assigned to specific creators
+      roleConditions.push({
+        assignedCreatorId: {
+          in: userIdsWithRole
+        }
+      });
+      
+      roleConditions.push({
+        lastModifiedById: {
+          in: userIdsWithRole
+        }
+      });
+      
+      // Also include questions flagged by creator (they have status pending_processor but are flagged)
+      roleConditions.push({
+        AND: [
+          {
+            isFlagged: true
+          },
+          {
+            flagType: 'creator'
+          },
+          {
+            OR: [
+              { flagStatus: 'pending' },
+              { flagStatus: null }
+            ]
+          }
+        ]
+      });
+      
+      // Include questions in pending_explainer or completed that have approvedBy
+      // These went through creator workflow, then processor approved and sent to explainer
+      roleConditions.push({
+        AND: [
+          {
+            status: {
+              in: ['pending_explainer', 'completed']
+            }
+          },
+          {
+            approvedById: {
+              not: null
+            }
+          }
+        ]
+      });
+    }
+
+    // For explainer: check assignedExplainerId OR lastModifiedBy and explanation exists OR flagged by explainer
+    // OR status is pending_explainer (assigned to explainer)
+    if (submittedByRole === 'explainer' && userIdsWithRole.length > 0) {
+      // First priority: questions assigned to specific explainers
+      roleConditions.push({
+        assignedExplainerId: {
+          in: userIdsWithRole
+        }
+      });
+      
+      // Include questions with explanation that were modified by explainer (regardless of status)
+      roleConditions.push({
+        AND: [
+          {
+            lastModifiedById: {
+              in: userIdsWithRole
+            }
+          },
+          {
+            explanation: {
+              not: ''
+            }
+          }
+        ]
+      });
+      
+      // Include questions with pending_explainer status (assigned to explainer, may or may not have explanation yet)
+      roleConditions.push({
+        status: 'pending_explainer'
+      });
+      
+      // Also include questions flagged by explainer (they have status pending_processor but are flagged)
+      roleConditions.push({
+        AND: [
+          {
+            isFlagged: true
+          },
+          {
+            flagType: 'explainer'
+          },
+          {
+            OR: [
+              { flagStatus: 'pending' },
+              { flagStatus: null }
+            ]
+          }
+        ]
+      });
+    }
+
+    // If we have role conditions, add them to the where clause
+    if (roleConditions.length > 0) {
+      where.AND = [
+        {
+          OR: roleConditions
+        }
+      ];
+    } else {
+      // If no role conditions found, return empty result
+      return [];
+    }
+  }
+
+  const questions = await Question.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      exam: { select: { name: true } },
+      subject: { select: { name: true } },
+      topic: { select: { name: true } },
+      createdBy: { select: { name: true, email: true } },
+      lastModifiedBy: { select: { name: true, email: true } },
+      assignedProcessor: { select: { name: true, fullName: true, email: true } },
+      assignedCreator: { select: { name: true, fullName: true, email: true } },
+      assignedExplainer: { select: { name: true, fullName: true, email: true } },
+      approvedBy: { select: { name: true, fullName: true, email: true } },
+      history: {
+        include: {
+          performedBy: { select: { id: true, adminRole: true } }
+        },
+        orderBy: { timestamp: 'desc' }
+      }
+    }
+  });
+
+  // Additional filtering: ensure questions actually went through the specified role
+  // Show questions that were: created, approved, or flagged by the role
+  const filteredQuestions = questions.filter(question => {
+    if (!submittedByRole) return true;
+
+    // Check history for the role (created, updated, submitted, approved, flagged)
+    const hasRoleHistory = question.history && Array.isArray(question.history) &&
+      question.history.some(h => h.role === submittedByRole);
+
+    // Check if role approved the question (history with action='approved' and role)
+    const hasRoleApproval = question.history && Array.isArray(question.history) &&
+      question.history.some(h => h.role === submittedByRole && h.action === 'approved');
+
+    // Check if role flagged the question
+    const isFlaggedByRole = question.isFlagged === true && 
+                           question.flagType === submittedByRole &&
+                           (question.flagStatus === 'pending' || question.flagStatus === null || question.flagStatus === undefined);
+
+    // For gatherer: check createdBy (gatherer creates questions)
+    if (submittedByRole === 'gatherer') {
+      const createdByGatherer = question.createdById && userIdsWithRole && userIdsWithRole.includes(question.createdById);
+      const createdByRole = question.createdBy?.adminRole === 'gatherer' || 
+                           (question.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'gatherer');
+      return hasRoleHistory || hasRoleApproval || isFlaggedByRole || createdByGatherer || createdByRole;
+    }
+
+    // For creator: check if question went through creator workflow
+    if (submittedByRole === 'creator') {
+      // Check if creator modified it (lastModifiedBy is creator)
+      const lastModifiedByCreator = question.lastModifiedById && userIdsWithRole && userIdsWithRole.includes(question.lastModifiedById);
+      
+      // Check if went through creator workflow (approved by processor and sent to creator, then to explainer/completed)
+      const wentThroughCreatorWorkflow = question.approvedBy !== null || 
+                                        question.status === 'pending_explainer' ||
+                                        question.status === 'completed';
+      
+      return hasRoleHistory || hasRoleApproval || isFlaggedByRole || lastModifiedByCreator || wentThroughCreatorWorkflow;
+    }
+
+    // For explainer: check if explainer worked on it
+    if (submittedByRole === 'explainer') {
+      // Check if explainer modified it (lastModifiedBy is explainer and has explanation)
+      const lastModifiedByExplainer = question.lastModifiedById && userIdsWithRole && userIdsWithRole.includes(question.lastModifiedById);
+      const hasExplanation = question.explanation && question.explanation.trim() !== '';
+      
+      return hasRoleHistory || hasRoleApproval || isFlaggedByRole || (lastModifiedByExplainer && hasExplanation);
+    }
+
+    return hasRoleHistory || hasRoleApproval || isFlaggedByRole;
+  });
+
+  return filteredQuestions;
 };
 
 /**
@@ -339,6 +630,17 @@ const createQuestionVariant = async (originalQuestionId, variantData, userId) =>
   }
 
   // Create the variant question
+  // Get assignedProcessorId from original question (required field)
+  const assignedProcessorId = originalQuestion.assignedProcessorId || originalQuestion.assignedProcessor?.id || originalQuestion.assignedProcessor;
+  
+  if (!assignedProcessorId) {
+    throw new Error('Original question must have an assigned processor. Cannot create variant without assigned processor.');
+  }
+
+  // Get assignedCreatorId and assignedExplainerId from original question
+  const assignedCreatorId = originalQuestion.assignedCreatorId || originalQuestion.assignedCreator?.id || originalQuestion.assignedCreator;
+  const assignedExplainerId = originalQuestion.assignedExplainerId || originalQuestion.assignedExplainer?.id || originalQuestion.assignedExplainer;
+
   const variantQuestion = await Question.create({
     exam: examId,
     subject: subjectId,
@@ -351,6 +653,9 @@ const createQuestionVariant = async (originalQuestionId, variantData, userId) =>
     originalQuestionId: originalQuestionId,
     isVariant: true,
     createdBy: userId,
+    assignedProcessor: assignedProcessorId, // Required field - inherit from original question
+    assignedCreator: assignedCreatorId, // Copy from original question
+    assignedExplainer: assignedExplainerId, // Copy from original question
     status: 'pending_processor',
     history: [
       {
@@ -401,9 +706,24 @@ const getQuestionById = async (questionId, userId, role) => {
     throw new Error('Question not found');
   }
 
+  // Access control: Check if user has permission to view this question
   // Gatherer can only access their own questions
   if (role === 'gatherer' && question.createdById !== userId) {
     throw new Error('Access denied');
+  }
+  
+  // Creator can only see questions assigned to them
+  if (role === 'creator') {
+    if (question.assignedCreatorId && question.assignedCreatorId !== userId) {
+      throw new Error('Access denied. This question is not assigned to you.');
+    }
+  }
+  
+  // Explainer can only see questions assigned to them
+  if (role === 'explainer') {
+    if (question.assignedExplainerId && question.assignedExplainerId !== userId) {
+      throw new Error('Access denied. This question is not assigned to you.');
+    }
   }
 
   return question;
@@ -728,11 +1048,19 @@ const updateExplanationByExplainer = async (questionId, explanation, userId) => 
     throw new Error('Explanation is required');
   }
 
-  // Update question and add history entry
-  const updatedQuestion = await Question.update(questionId, {
+  // Use Prisma update method instead of Mongoose save
+  // Change status to pending_processor so processor can see and process it
+  return await Question.update(questionId, {
     explanation: explanation.trim(),
     lastModifiedBy: userId,
-    status: 'pending_processor',
+    status: 'pending_processor', // Change status so processor can see it
+    history: [{
+      action: 'updated',
+      performedBy: userId,
+      role: 'explainer',
+      timestamp: new Date(),
+      notes: 'Explanation added/updated by explainer. Sent to processor for review.',
+    }],
   });
 
   // Add history entry separately to ensure it's appended
@@ -749,8 +1077,11 @@ const updateExplanationByExplainer = async (questionId, explanation, userId) => 
 
 /**
  * Approve question by Processor
+ * @param {string} questionId - Question ID
+ * @param {string} userId - Processor user ID
+ * @param {string} assignedUserId - Optional: Creator or Explainer user ID to assign
  */
-const approveQuestion = async (questionId, userId) => {
+const approveQuestion = async (questionId, userId, assignedUserId = null) => {
   const question = await Question.findById(questionId);
 
   if (!question) {
@@ -765,35 +1096,134 @@ const approveQuestion = async (questionId, userId) => {
   const wasUpdatedAfterFlag = question.isFlagged && 
     question.flagStatus === 'approved' && 
     (question.history.some(h => h.role === 'gatherer' && h.action === 'updated') ||
-     question.history.some(h => h.role === 'creator' && h.action === 'updated'));
+     question.history.some(h => h.role === 'creator' && h.action === 'updated') ||
+     question.history.some(h => h.role === 'explainer' && h.action === 'updated'));
 
   // Determine next status based on current workflow
   let nextStatus;
+  // History is ordered by timestamp desc, so the most recent entry is at index 0
   const lastAction = question.history && question.history.length > 0 
-    ? question.history[question.history.length - 1] 
+    ? question.history[0] 
     : null;
   
-  // Check if question has explanation (indicates explainer has submitted)
-  const hasExplanation = question.explanation && question.explanation.trim().length > 0;
-  
-  // Priority: If explainer has submitted (has explanation), mark as completed
-  // Otherwise, check history to determine next step
-  if (hasExplanation && question.status === 'pending_processor') {
-    // Question has explanation and is pending processor review - this means explainer submitted it
-    // After processor approves explainer submission, mark as completed
+  // PRIORITY 1: If question was updated after flag approval, route based on who flagged it
+  // This ensures explainer-flagged questions go back to explainer, not creator
+  if (wasUpdatedAfterFlag && question.flagType) {
+    if (question.flagType === 'creator') {
+      // If creator flagged, send back to creator after update
+      nextStatus = 'pending_creator';
+    } else if (question.flagType === 'explainer') {
+      // If explainer flagged, send back to explainer after update (CRITICAL: don't go to creator)
+      nextStatus = 'pending_explainer';
+    } else {
+      // Default fallback
+      nextStatus = 'pending_creator';
+    }
+  } 
+  // PRIORITY 2: Direct flag approval (processor approves flagged question without update)
+  else if (question.isFlagged && question.flagType && !wasUpdatedAfterFlag) {
+    // Route based on flagType to continue normal workflow
+    if (question.flagType === 'creator') {
+      // Creator flagged - continue to creator
+      nextStatus = 'pending_creator';
+    } else if (question.flagType === 'explainer') {
+      // Explainer flagged - continue to explainer (CRITICAL: don't go to creator)
+      nextStatus = 'pending_explainer';
+    } else {
+      // Default fallback
+      nextStatus = 'pending_creator';
+    }
+  } 
+  // PRIORITY 3: Check if question has flagType even if flag was cleared (for edge cases)
+  else if (question.flagType && !question.isFlagged) {
+    // Question had a flag that was resolved, route based on original flagType
+    if (question.flagType === 'explainer') {
+      // Was explainer flag - send back to explainer (CRITICAL: don't go to creator)
+      nextStatus = 'pending_explainer';
+    } else if (question.flagType === 'creator') {
+      nextStatus = 'pending_creator';
+    } else {
+      // Default fallback
+      nextStatus = 'pending_creator';
+    }
+  }
+  // PRIORITY 4: Normal workflow based on last action role
+  // BUT: Check flagType first to ensure explainer-flagged questions don't go to creator
+  else if (lastAction && lastAction.role === 'gatherer') {
+    // After gatherer submission/update
+    // CRITICAL: If question was flagged by explainer, route to explainer, not creator
+    if (question.flagType === 'explainer') {
+      nextStatus = 'pending_explainer';
+    } else {
+      // Normal flow: move to creator
+      nextStatus = 'pending_creator';
+    }
+  } 
+  // PRIORITY 5: Check if question has explanation (regardless of last action role)
+  // This ensures that if explainer added explanation, question is marked complete when processor approves
+  // This is the FINAL STEP - after explanation is added, approval should mark as completed
+  // This check must come BEFORE creator/explainer role checks to ensure completion takes priority
+  else if (question.explanation && question.explanation.trim() !== '') {
+    // Question has explanation - this is the final step, mark as completed
     nextStatus = 'completed';
-  } else if (lastAction && lastAction.role === 'gatherer') {
-    // After gatherer submission/update, move to creator
-    nextStatus = 'pending_creator';
-  } else if (lastAction && lastAction.role === 'creator') {
-    // After creator submission/update, move to explainer
+  } 
+  // PRIORITY 6: Normal workflow based on last action role (only if no explanation exists)
+  else if (lastAction && lastAction.role === 'creator') {
+    // After creator submission/update, check if it was an accept or flag
+    // If creator accepted (status was set to pending_processor), move to explainer
+    // If creator flagged, it's already handled above in flag approval logic
+    // For normal creator accept flow, move to explainer
     nextStatus = 'pending_explainer';
   } else if (lastAction && lastAction.role === 'explainer') {
-    // After explainer submission, mark as completed
-    nextStatus = 'completed';
+    // After explainer action but no explanation exists yet
+    // Keep in explainer submission
+    nextStatus = 'pending_explainer';
   } else {
     // Default fallback
     nextStatus = 'pending_creator';
+  }
+
+  // Validate and assign creator/explainer if provided
+  // Only assign if not already assigned (assignment happens only once)
+  if (assignedUserId) {
+    const { prisma } = require('../../../config/db/prisma');
+    const assignedUser = await prisma.user.findUnique({
+      where: { id: assignedUserId },
+      select: { id: true, adminRole: true, status: true }
+    });
+    
+    if (!assignedUser) {
+      throw new Error('Assigned user not found');
+    }
+    
+    if (assignedUser.status !== 'active') {
+      throw new Error('Assigned user is not active');
+    }
+    
+    // Assign based on next status
+    if (nextStatus === 'pending_creator') {
+      if (assignedUser.adminRole !== 'creator') {
+        throw new Error('Assigned user must be a creator');
+      }
+      // Only assign if not already assigned
+      if (!question.assignedCreatorId) {
+        // Will be set in updateData below
+      } else {
+        // Already assigned, don't change it
+        assignedUserId = null;
+      }
+    } else if (nextStatus === 'pending_explainer') {
+      if (assignedUser.adminRole !== 'explainer') {
+        throw new Error('Assigned user must be an explainer');
+      }
+      // Only assign if not already assigned
+      if (!question.assignedExplainerId) {
+        // Will be set in updateData below
+      } else {
+        // Already assigned, don't change it
+        assignedUserId = null;
+      }
+    }
   }
 
   // Prepare update data
@@ -803,25 +1233,74 @@ const approveQuestion = async (questionId, userId) => {
     rejectedBy: null,
     rejectionReason: null,
   };
+  
+  // Assign creator or explainer if provided and not already assigned
+  if (assignedUserId) {
+    if (nextStatus === 'pending_creator' && !question.assignedCreatorId) {
+      updateData.assignedCreator = assignedUserId;
+    } else if (nextStatus === 'pending_explainer' && !question.assignedExplainerId) {
+      updateData.assignedExplainer = assignedUserId;
+      
+      // Also update all variants of this question to have the same assignedExplainerId
+      // This ensures variants are visible to the explainer
+      try {
+        const variants = await Question.findMany({
+          where: {
+            originalQuestionId: questionId,
+            isVariant: true
+          }
+        });
+        
+        // Update each variant with the same assignedExplainerId
+        if (variants && variants.length > 0) {
+          await Promise.all(
+            variants.map(variant => 
+              Question.update(variant.id, {
+                assignedExplainer: assignedUserId
+              })
+            )
+          );
+        }
+      } catch (variantError) {
+        console.error('Error updating variants with assignedExplainerId:', variantError);
+        // Don't fail the main update if variant update fails
+      }
+    }
+  }
 
-  // If question was updated after flag approval, remove the flag
-  if (wasUpdatedAfterFlag) {
-    const flagType = question.flagType; // 'creator' or 'explainer'
+  // Always remove flag when processor approves a flagged question
+  // Also clear flag-related fields if question was rejected by gatherer (flagRejectionReason exists)
+  if (question.isFlagged || question.flagRejectionReason) {
+    const flagType = question.flagType || 'unknown'; // 'creator' or 'explainer'
+    const wasRejectedByGatherer = question.flagRejectionReason && !question.isFlagged;
+    
     updateData.isFlagged = false;
     updateData.flagStatus = null;
     updateData.flaggedBy = null;
     updateData.flagReason = null;
     updateData.flagReviewedBy = null;
-    updateData.flagRejectionReason = null;
+    updateData.flagRejectionReason = null; // Clear gatherer's rejection reason when processor approves
   }
 
   // Update question
   const updatedQuestion = await Question.update(questionId, updateData);
 
-  // Add history entry separately
-  const historyNote = wasUpdatedAfterFlag 
-    ? `Question approved after ${question.flagType} flag correction, moved to ${nextStatus}. Flag removed.`
-    : `Question approved, moved to ${nextStatus}`;
+  // Add history entry separately with detailed notes
+  let historyNote;
+  if (question.isFlagged || question.flagRejectionReason) {
+    const flagType = question.flagType || 'unknown';
+    const wasRejectedByGatherer = question.flagRejectionReason && !question.isFlagged;
+    
+    if (wasRejectedByGatherer) {
+      historyNote = `Question approved after gatherer rejected the flag. Gatherer's reason was accepted. Moved to ${nextStatus}. All flag data cleared.`;
+    } else if (wasUpdatedAfterFlag) {
+      historyNote = `Question approved after ${flagType} flag correction, moved to ${nextStatus}. Flag removed.`;
+    } else {
+      historyNote = `Question approved with ${flagType} flag, moved to ${nextStatus}. Flag removed.`;
+    }
+  } else {
+    historyNote = `Question approved, moved to ${nextStatus}`;
+  }
   
   await Question.addHistory(questionId, {
     action: 'approved',
@@ -1585,13 +2064,58 @@ const approveUpdatedFlaggedQuestion = async (questionId, userId) => {
     throw new Error('Question is not in pending_processor status');
   }
 
+  // Check if question was updated after a flag was approved
+  const wasUpdatedAfterFlag = question.isFlagged && 
+    question.flagStatus === 'approved' && 
+    (question.history.some(h => h.role === 'gatherer' && h.action === 'updated') ||
+     question.history.some(h => h.role === 'creator' && h.action === 'updated') ||
+     question.history.some(h => h.role === 'explainer' && h.action === 'updated'));
+
   // Determine next status and remove flag
   let nextStatus;
-  const lastAction = question.history[question.history.length - 1];
+  // History is ordered by timestamp desc, so the most recent entry is at index 0
+  const lastAction = question.history && question.history.length > 0 
+    ? question.history[0] 
+    : null;
   
-  if (lastAction && lastAction.role === 'gatherer') {
-    // After gatherer update (from creator flag), move to creator
-    nextStatus = 'pending_creator';
+  // PRIORITY 1: If question was updated after flag approval, route based on who flagged it
+  // This ensures explainer-flagged questions go back to explainer, not creator
+  if (wasUpdatedAfterFlag && question.flagType) {
+    if (question.flagType === 'creator') {
+      // If creator flagged, send back to creator after update
+      nextStatus = 'pending_creator';
+    } else if (question.flagType === 'explainer') {
+      // If explainer flagged, send back to explainer after update (CRITICAL: don't go to creator)
+      nextStatus = 'pending_explainer';
+    } else {
+      // Default fallback
+      nextStatus = 'pending_creator';
+    }
+  } 
+  // PRIORITY 2: Check flagType even if flag was cleared (for edge cases)
+  else if (question.flagType && !question.isFlagged) {
+    // Question had a flag that was resolved, route based on original flagType
+    if (question.flagType === 'explainer') {
+      // Was explainer flag - send back to explainer (CRITICAL: don't go to creator)
+      nextStatus = 'pending_explainer';
+    } else if (question.flagType === 'creator') {
+      nextStatus = 'pending_creator';
+    } else {
+      // Default fallback
+      nextStatus = 'pending_creator';
+    }
+  }
+  // PRIORITY 3: Normal workflow based on last action role
+  // BUT: Check flagType first to ensure explainer-flagged questions don't go to creator
+  else if (lastAction && lastAction.role === 'gatherer') {
+    // After gatherer update
+    // CRITICAL: If question was flagged by explainer, route to explainer, not creator
+    if (question.flagType === 'explainer') {
+      nextStatus = 'pending_explainer';
+    } else {
+      // Normal flow: move to creator
+      nextStatus = 'pending_creator';
+    }
   } else if (lastAction && lastAction.role === 'creator') {
     // After creator update (from explainer flag), move to explainer
     nextStatus = 'pending_explainer';
@@ -1656,6 +2180,354 @@ const toggleQuestionVisibility = async (questionId, isVisible, userId) => {
   return updatedQuestion;
 };
 
+/**
+ * Update flagged question by Gatherer
+ * When gatherer updates a question that was flagged and sent back to them
+ */
+const updateFlaggedQuestionByGatherer = async (questionId, updateData, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  // Check if question is flagged and in pending_gatherer status
+  if (question.status !== 'pending_gatherer') {
+    throw new Error('Question is not in pending_gatherer status');
+  }
+
+  if (!question.isFlagged || question.flagStatus !== 'approved') {
+    throw new Error('Question was not flagged and approved by processor');
+  }
+
+  // Route to appropriate handler based on who flagged it
+  if (question.flagType === 'creator') {
+    // Creator flagged - use handleGathererUpdateAfterFlag
+    return await handleGathererUpdateAfterFlag(questionId, updateData, userId);
+  } else if (question.flagType === 'explainer') {
+    // Explainer flagged - use handleGathererUpdateAfterExplainerFlag
+    return await handleGathererUpdateAfterExplainerFlag(questionId, updateData, userId);
+  } else {
+    throw new Error('Unknown flag type. Cannot determine update handler.');
+  }
+};
+
+/**
+ * Update flagged variant by Creator
+ * When creator updates a variant that was flagged and sent back to them
+ */
+const updateFlaggedVariantByCreator = async (questionId, updateData, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  // Check if question is a variant and is flagged and in pending_creator status
+  if (!question.isVariant) {
+    throw new Error('This method is for variants only');
+  }
+
+  if (question.status !== 'pending_creator') {
+    throw new Error('Question is not in pending_creator status');
+  }
+
+  if (!question.isFlagged || question.flagStatus !== 'approved') {
+    throw new Error('Question variant was not flagged and approved by processor');
+  }
+
+  // Route to appropriate handler based on who flagged it
+  if (question.flagType === 'explainer') {
+    // Explainer flagged variant - use handleCreatorUpdateVariantAfterFlag
+    return await handleCreatorUpdateVariantAfterFlag(questionId, updateData, userId);
+  } else {
+    throw new Error('Unknown flag type. Cannot determine update handler.');
+  }
+};
+
+/**
+ * Reject flag by Creator
+ * When creator believes the flag is incorrect
+ */
+const rejectFlagByCreator = async (questionId, rejectionReason, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (!question.isFlagged || question.flagStatus !== 'approved') {
+    throw new Error('Question is not flagged or flag has not been approved by processor');
+  }
+
+  if (!rejectionReason || !rejectionReason.trim()) {
+    throw new Error('Rejection reason is required');
+  }
+
+  // Store the original flag information before clearing it
+  const originalFlagType = question.flagType;
+  const originalFlagReason = question.flagReason;
+  const originalFlaggedBy = question.flaggedBy;
+
+  // Update question to remove flag and send back to processor with rejection reason
+  // Keep flagReason and flagType so processor can see original flag info
+  return await Question.update(questionId, {
+    isFlagged: false,
+    flagStatus: null,
+    flaggedBy: null,
+    // Keep flagReason so processor can see original flag reason
+    flagReason: originalFlagReason,
+    flagReviewedBy: null,
+    flagRejectionReason: rejectionReason.trim(),
+    flagType: originalFlagType, // Keep flagType to know who originally flagged it
+    status: 'pending_processor', // Send back to processor for review
+    history: [{
+      action: 'flag_rejected_by_creator',
+      performedBy: userId,
+      role: 'creator',
+      timestamp: new Date(),
+      notes: `Creator rejected the flag. Reason: ${rejectionReason.trim()}. Sent back to processor for review.`,
+    }],
+  });
+};
+
+/**
+ * Reject flag by Gatherer
+ * When gatherer believes the flag is incorrect
+ */
+const rejectFlagByGatherer = async (questionId, rejectionReason, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (!question.isFlagged || question.flagStatus !== 'approved') {
+    throw new Error('Question is not flagged or flag has not been approved by processor');
+  }
+
+  if (!rejectionReason || !rejectionReason.trim()) {
+    throw new Error('Rejection reason is required');
+  }
+
+  // Store the original flag information before clearing it
+  const originalFlagType = question.flagType;
+  const originalFlagReason = question.flagReason;
+  const originalFlaggedBy = question.flaggedBy;
+
+  // Update question to remove flag and send back to processor with rejection reason
+  // Keep flagReason and flagType so processor can see original flag info
+  return await Question.update(questionId, {
+    isFlagged: false,
+    flagStatus: null,
+    flaggedBy: null,
+    // Keep flagReason so processor can see original flag reason
+    flagReason: originalFlagReason,
+    flagReviewedBy: null,
+    flagRejectionReason: rejectionReason.trim(),
+    flagType: originalFlagType, // Keep flagType to know who originally flagged it
+    status: 'pending_processor', // Send back to processor for review
+    history: [{
+      action: 'flag_rejected_by_gatherer',
+      performedBy: userId,
+      role: 'gatherer',
+      timestamp: new Date(),
+      notes: `Gatherer rejected the flag. Reason: ${rejectionReason.trim()}. Sent back to processor for review.`,
+    }],
+  });
+};
+
+/**
+ * Reject gatherer's flag rejection by Processor
+ * When processor disagrees with gatherer's rejection and wants to restore the flag
+ */
+const rejectGathererFlagRejection = async (questionId, rejectionReason, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (!question.flagRejectionReason || question.flagRejectionReason.trim() === '') {
+    throw new Error('Question does not have a gatherer flag rejection');
+  }
+
+  if (question.status !== 'pending_processor') {
+    throw new Error('Question is not in pending_processor status');
+  }
+
+  if (!rejectionReason || !rejectionReason.trim()) {
+    throw new Error('Rejection reason is required');
+  }
+
+  // Get original flag information from history
+  // Find the most recent flag action before gatherer's rejection
+  const flagHistoryEntry = question.history && Array.isArray(question.history) 
+    ? question.history.find(h => h.action === 'flagged' && (h.role === 'creator' || h.role === 'explainer'))
+    : null;
+
+  // Get the original flagger from history or use flagType to determine
+  const originalFlagType = question.flagType || (flagHistoryEntry?.role === 'explainer' ? 'explainer' : 'creator');
+  
+  // Try to get original flag reason from history notes
+  let originalFlagReason = null;
+  if (flagHistoryEntry && flagHistoryEntry.notes) {
+    // Extract flag reason from notes (format: "Question flagged by creator: <reason>")
+    const match = flagHistoryEntry.notes.match(/flagged by (?:creator|explainer):\s*(.+)/i);
+    if (match && match[1]) {
+      originalFlagReason = match[1].trim();
+    }
+  }
+
+  // Get original flaggedBy from history
+  const originalFlaggedBy = flagHistoryEntry?.performedById || question.history?.find(h => h.action === 'flag_approved')?.performedById;
+
+  // Restore the flag and send back to gatherer
+  return await Question.update(questionId, {
+    isFlagged: true,
+    flagStatus: 'approved', // Flag is approved again
+    flagType: originalFlagType,
+    flagReason: originalFlagReason || 'Flag restored by processor', // Restore original reason or use default
+    flaggedById: originalFlaggedBy || question.history?.find(h => h.action === 'flagged')?.performedById,
+    flagRejectionReason: null, // Clear gatherer's rejection reason
+    flagReviewedBy: userId, // Processor reviewed the rejection
+    status: 'pending_gatherer', // Send back to gatherer
+    history: [{
+      action: 'gatherer_flag_rejection_rejected',
+      performedBy: userId,
+      role: 'processor',
+      timestamp: new Date(),
+      notes: `Processor rejected gatherer's flag rejection. Reason: ${rejectionReason.trim()}. Flag restored and sent back to gatherer.`,
+    }],
+  });
+};
+
+/**
+ * Get completed explanations by explainer ID
+ * Returns all questions where the explainer has added an explanation, regardless of status
+ */
+const getCompletedExplanationsByExplainer = async (explainerId) => {
+  const { prisma } = require('../../../config/db/prisma');
+
+  // First, get all question IDs where this explainer has added explanation (from history)
+  // This includes all actions where explainer worked on the question
+  const explainerHistoryEntries = await prisma.questionHistory.findMany({
+    where: {
+      performedById: explainerId,
+      role: 'explainer',
+      action: {
+        in: ['updated', 'submitted', 'created']
+      }
+    },
+    select: {
+      questionId: true
+    }
+  });
+
+  const questionIdsFromHistory = explainerHistoryEntries.length > 0 
+    ? [...new Set(explainerHistoryEntries.map(h => h.questionId))]
+    : [];
+
+  console.log(`[getCompletedExplanationsByExplainer] Found ${questionIdsFromHistory.length} question IDs from history for explainer ${explainerId}`);
+
+  // Build where clause - get ALL questions where:
+  // 1. Explanation is not empty
+  // 2. AND (question ID is in explainer history OR lastModifiedById is explainer)
+  // NO STATUS FILTERING - include all statuses (completed, pending_processor, rejected, etc.)
+  const whereClause = {
+    explanation: {
+      not: '',
+    },
+    OR: []
+  };
+
+  // Add question IDs from history
+  if (questionIdsFromHistory.length > 0) {
+    whereClause.OR.push({
+      id: {
+        in: questionIdsFromHistory
+      }
+    });
+  }
+
+  // Also check lastModifiedBy
+  whereClause.OR.push({
+    lastModifiedById: explainerId
+  });
+
+  // If no OR conditions, remove OR clause and just check lastModifiedBy
+  if (whereClause.OR.length === 0) {
+    delete whereClause.OR;
+    whereClause.lastModifiedById = explainerId;
+  }
+
+  console.log(`[getCompletedExplanationsByExplainer] Query where clause:`, JSON.stringify(whereClause, null, 2));
+
+  // Get questions where explanation is not empty and explainer worked on them
+  // NO STATUS FILTER - get all questions regardless of status
+  const questions = await Question.findMany({
+    where: whereClause,
+    include: {
+      exam: { select: { id: true, name: true } },
+      subject: { select: { id: true, name: true } },
+      topic: { select: { id: true, name: true } },
+      assignedProcessor: { select: { id: true, name: true, fullName: true, email: true } },
+      approvedBy: { select: { id: true, name: true, fullName: true, email: true } },
+      lastModifiedBy: { select: { id: true, name: true, fullName: true, email: true } },
+      history: {
+        where: {
+          performedById: explainerId,
+          role: 'explainer'
+        },
+        orderBy: {
+          timestamp: 'desc'
+        },
+        take: 5
+      }
+    },
+    orderBy: {
+      updatedAt: 'desc'
+    }
+  });
+
+  console.log(`[getCompletedExplanationsByExplainer] Found ${questions.length} questions with explanations`);
+
+  // Filter to only include questions where this explainer actually added the explanation
+  // Check if explainer is in history or if lastModifiedBy is the explainer
+  const filteredQuestions = questions.filter(question => {
+    // Must have explanation
+    const hasExplanation = question.explanation && question.explanation.trim() !== '';
+    
+    if (!hasExplanation) {
+      return false;
+    }
+    
+    // Check if explainer is in history
+    const hasExplainerHistory = question.history && Array.isArray(question.history) && question.history.length > 0;
+    
+    // Check if lastModifiedBy is the explainer
+    const isLastModifiedByExplainer = question.lastModifiedById === explainerId;
+    
+    const shouldInclude = hasExplainerHistory || isLastModifiedByExplainer;
+    
+    if (shouldInclude) {
+      console.log(`[getCompletedExplanationsByExplainer] Including question ${question.id} with status ${question.status}`);
+    }
+    
+    return shouldInclude;
+  });
+
+  console.log(`[getCompletedExplanationsByExplainer] Returning ${filteredQuestions.length} questions out of ${questions.length} total`);
+  console.log(`[getCompletedExplanationsByExplainer] Status breakdown:`, 
+    filteredQuestions.reduce((acc, q) => {
+      acc[q.status] = (acc[q.status] || 0) + 1;
+      return acc;
+    }, {})
+  );
+  
+  return filteredQuestions;
+};
+
 module.exports = {
   createQuestion,
   getQuestionsByStatus,
@@ -1677,6 +2549,10 @@ module.exports = {
   addCommentToQuestion,
   getGathererQuestionStats,
   getGathererQuestions,
+  updateFlaggedQuestionByGatherer,
+  rejectFlagByGatherer,
+  updateFlaggedVariantByCreator,
+  rejectFlagByCreator,
   flagQuestionByCreator,
   reviewCreatorFlag,
   flagQuestionByExplainer,
@@ -1686,5 +2562,8 @@ module.exports = {
   handleCreatorUpdateVariantAfterFlag,
   approveUpdatedFlaggedQuestion,
   toggleQuestionVisibility,
+  getCompletedExplanationsByExplainer,
+  getQuestionsByStatusAndRole,
+  rejectGathererFlagRejection,
 };
 

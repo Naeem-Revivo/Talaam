@@ -83,6 +83,52 @@ const questionsAPI = {
     }
   },
 
+  // Update flagged question (Gatherer)
+  updateGathererFlaggedQuestion: async (questionId, questionData) => {
+    try {
+      const apiData = {};
+
+      if (questionData.exam !== undefined) apiData.exam = questionData.exam;
+      if (questionData.subject !== undefined) apiData.subject = questionData.subject;
+      if (questionData.topic !== undefined) apiData.topic = questionData.topic;
+      if (questionData.questionText !== undefined) apiData.questionText = questionData.questionText?.trim();
+      if (questionData.questionType !== undefined) apiData.questionType = questionData.questionType;
+
+      if (questionData.options !== undefined) {
+        apiData.options = {
+          A: questionData.options.A?.trim(),
+          B: questionData.options.B?.trim(),
+          C: questionData.options.C?.trim(),
+          D: questionData.options.D?.trim(),
+        };
+      }
+
+      if (questionData.correctAnswer !== undefined) apiData.correctAnswer = questionData.correctAnswer;
+      if (questionData.explanation !== undefined) apiData.explanation = questionData.explanation?.trim();
+
+      const response = await axiosClient.put(`/admin/questions/gatherer/${questionId}`, apiData);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to update question' };
+    }
+  },
+
+  // Reject flag (Gatherer)
+  rejectFlagByGatherer: async (questionId, rejectionReason) => {
+    try {
+      const apiData = {
+        rejectionReason: rejectionReason?.trim(),
+      };
+
+      const response = await axiosClient.post(`/admin/questions/gatherer/${questionId}/reject-flag`, apiData);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to reject flag' };
+    }
+  },
+
   // Create question (Gatherer)
   createQuestion: async (questionData) => {
     try {
@@ -127,9 +173,10 @@ const questionsAPI = {
   // Get questions (Processor view)
   getProcessorQuestions: async (params = {}) => {
     try {
-      const { status } = params;
+      const { status, submittedBy } = params;
       const queryParams = new URLSearchParams();
       if (status) queryParams.append('status', status);
+      if (submittedBy) queryParams.append('submittedBy', submittedBy);
 
       const url = queryParams.toString()
         ? `/admin/questions/processor?${queryParams.toString()}`
@@ -160,6 +207,11 @@ const questionsAPI = {
       const apiData = {
         status: body.status || 'approve',
       };
+      
+      // Include assignedUserId if provided (for creator or explainer assignment)
+      if (body.assignedUserId) {
+        apiData.assignedUserId = body.assignedUserId;
+      }
 
       const response = await axiosClient.post(`/admin/questions/processor/${questionId}/approve`, apiData);
       return response.data;
@@ -302,6 +354,49 @@ const questionsAPI = {
     }
   },
 
+  // Update flagged variant (Creator)
+  updateFlaggedVariant: async (questionId, questionData) => {
+    try {
+      const apiData = {};
+
+      if (questionData.questionText !== undefined) apiData.questionText = questionData.questionText?.trim();
+      if (questionData.questionType !== undefined) apiData.questionType = questionData.questionType;
+
+      if (questionData.options !== undefined) {
+        apiData.options = {
+          A: questionData.options.A?.trim(),
+          B: questionData.options.B?.trim(),
+          C: questionData.options.C?.trim(),
+          D: questionData.options.D?.trim(),
+        };
+      }
+
+      if (questionData.correctAnswer !== undefined) apiData.correctAnswer = questionData.correctAnswer;
+      if (questionData.explanation !== undefined) apiData.explanation = questionData.explanation?.trim();
+
+      const response = await axiosClient.put(`/admin/questions/creator/${questionId}/update-flagged-variant`, apiData);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to update flagged variant' };
+    }
+  },
+
+  // Reject flag (Creator)
+  rejectFlagByCreator: async (questionId, rejectionReason) => {
+    try {
+      const apiData = {
+        rejectionReason: rejectionReason?.trim(),
+      };
+
+      const response = await axiosClient.post(`/admin/questions/creator/${questionId}/reject-flag`, apiData);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to reject flag' };
+    }
+  },
+
   // Create question variant (Creator)
   createQuestionVariant: async (questionId, variantData) => {
     try {
@@ -413,44 +508,32 @@ const questionsAPI = {
     }
   },
 
-  // ============================================
-  // SUPERADMIN ENDPOINTS
-  // ============================================
-
-  // Get approved questions for superadmin
-  getApprovedQuestions: async (params = {}) => {
+  // Get completed explanations by explainer
+  getCompletedExplanations: async () => {
     try {
-      const { page = 1, limit = 10, search, exam, subject, topic } = params;
-      const queryParams = new URLSearchParams();
-      if (page) queryParams.append('page', page);
-      if (limit) queryParams.append('limit', limit);
-      if (search) queryParams.append('search', search);
-      if (exam) queryParams.append('exam', exam);
-      if (subject) queryParams.append('subject', subject);
-      if (topic) queryParams.append('topic', topic);
-
-      const url = queryParams.toString()
-        ? `/admin/questions/approved?${queryParams.toString()}`
-        : '/admin/questions/approved';
-
-      const response = await axiosClient.get(url);
+      const response = await axiosClient.get('/admin/questions/explainer/completed-explanations');
       return response.data;
     } catch (error) {
       const apiError = error.response?.data;
-      throw apiError || { message: 'Failed to fetch approved questions' };
+      throw apiError || { message: 'Failed to fetch completed explanations' };
     }
   },
 
-  // Toggle question visibility
-  toggleQuestionVisibility: async (questionId, isVisible) => {
+  // Reject gatherer's flag rejection by processor
+  rejectGathererFlagRejection: async (questionId, rejectionReason) => {
     try {
-      const response = await axiosClient.put(`/admin/questions/${questionId}/visibility`, {
-        isVisible,
-      });
+      const apiData = {
+        rejectionReason: rejectionReason?.trim(),
+      };
+
+      const response = await axiosClient.post(
+        `/admin/questions/processor/${questionId}/reject-gatherer-flag-rejection`,
+        apiData
+      );
       return response.data;
     } catch (error) {
       const apiError = error.response?.data;
-      throw apiError || { message: 'Failed to toggle question visibility' };
+      throw apiError || { message: 'Failed to reject gatherer flag rejection' };
     }
   },
 };

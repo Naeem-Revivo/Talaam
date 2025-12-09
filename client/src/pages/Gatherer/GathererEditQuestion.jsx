@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import questionsAPI from "../../api/questions";
 import examsAPI from "../../api/exams";
@@ -77,10 +77,12 @@ const Dropdown = ({ label, value, options, onChange }) => {
   );
 };
 
-
-const GathererAddNewQuestionPage = () => {
+const GathererEditQuestionPage = () => {
   const navigate = useNavigate();
+  const { questionId } = useParams();
+  const location = useLocation();
   const { t } = useLanguage();
+  
   const [questionText, setQuestionText] = useState("");
   const [questionType, setQuestionType] = useState("Multiple Choice (MCQ)");
   const [options, setOptions] = useState({ A: "", B: "", C: "", D: "" });
@@ -112,10 +114,107 @@ const GathererAddNewQuestionPage = () => {
   const [loadingSubjects, setLoadingSubjects] = useState(false);
   const [loadingTopics, setLoadingTopics] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingQuestion, setLoadingQuestion] = useState(true);
+
+  // Flag rejection modal
+  const [showRejectFlagModal, setShowRejectFlagModal] = useState(false);
+  const [flagRejectionReason, setFlagRejectionReason] = useState("");
+  const [rejectingFlag, setRejectingFlag] = useState(false);
+
+  // Flag info
+  const [flagReason, setFlagReason] = useState("");
+  const [isFlagged, setIsFlagged] = useState(false);
+  const [questionStatus, setQuestionStatus] = useState("");
 
   const handleOptionChange = (option, value) => {
     setOptions((prev) => ({ ...prev, [option]: value }));
   };
+
+  // Fetch question data on mount
+  useEffect(() => {
+    const fetchQuestion = async () => {
+      try {
+        setLoadingQuestion(true);
+        const response = await questionsAPI.getGathererQuestionById(questionId);
+        
+        if (response.success && response.data?.question) {
+          const question = response.data.question;
+          
+          // Set question fields
+          setQuestionText(question.questionText || "");
+          setExplanation(question.explanation || "");
+          
+          // Map question type
+          const questionTypeMap = {
+            "MCQ": "Multiple Choice (MCQ)",
+            "TRUE_FALSE": "True/False",
+            "SHORT_ANSWER": "Short Answer",
+            "ESSAY": "Essay",
+          };
+          setQuestionType(questionTypeMap[question.questionType] || "Multiple Choice (MCQ)");
+          
+          // Set options and correct answer
+          if (question.options) {
+            setOptions({
+              A: question.options.A || "",
+              B: question.options.B || "",
+              C: question.options.C || "",
+              D: question.options.D || "",
+            });
+          }
+          if (question.correctAnswer) {
+            setCorrectAnswer(`Option ${question.correctAnswer}`);
+          }
+          
+          // Set classification
+          if (question.exam) {
+            setExamId(question.exam.id || question.exam);
+            setExamName(question.exam.name || "");
+          }
+          if (question.subject) {
+            setSubjectId(question.subject.id || question.subject);
+            setSubjectName(question.subject.name || "");
+          }
+          if (question.topic) {
+            setTopicId(question.topic.id || question.topic);
+            setTopicName(question.topic.name || "");
+          }
+          
+          // Set processor
+          if (question.assignedProcessor) {
+            setProcessorId(question.assignedProcessor.id || question.assignedProcessor);
+            const procName = question.assignedProcessor.name || 
+                           question.assignedProcessor.fullName || 
+                           question.assignedProcessor.username || "";
+            setProcessorName(procName);
+          }
+          
+          // Set flag info
+          setIsFlagged(question.isFlagged || false);
+          setFlagReason(question.flagReason || "");
+          setQuestionStatus(question.status || "");
+        }
+      } catch (error) {
+        showErrorToast(
+          error.response?.data?.message || "Failed to load question",
+          { title: "Error" }
+        );
+        navigate("/gatherer/question-bank");
+      } finally {
+        setLoadingQuestion(false);
+      }
+    };
+
+    if (questionId) {
+      fetchQuestion();
+    } else if (location.state?.questionData) {
+      // Use data from navigation state if available
+      const question = location.state.questionData;
+      setQuestionText(question.questionText || "");
+      setExplanation(question.explanation || "");
+      // ... set other fields similarly
+    }
+  }, [questionId, location.state, navigate]);
 
   // Fetch exams on component mount
   useEffect(() => {
@@ -155,7 +254,6 @@ const GathererAddNewQuestionPage = () => {
       try {
         const response = await subjectsAPI.getAllSubjects();
         if (response.success && response.data?.subjects) {
-          // Filter subjects by exam if needed, or use all subjects
           setSubjects(response.data.subjects);
         }
       } catch (error) {
@@ -211,12 +309,9 @@ const GathererAddNewQuestionPage = () => {
         if (response.success && response.data?.users) {
           const loadedProcessors = response.data.users;
           setProcessors(loadedProcessors);
-          console.log('Processors loaded:', loadedProcessors);
         } else if (response.success && response.data?.admins) {
-          // Fallback to admins if users is not available
           const loadedProcessors = response.data.admins;
           setProcessors(loadedProcessors);
-          console.log('Processors loaded (from admins):', loadedProcessors);
         }
       } catch (error) {
         showErrorToast(
@@ -232,11 +327,9 @@ const GathererAddNewQuestionPage = () => {
 
   // Handle exam selection
   const handleExamChange = (selectedExamName) => {
-    // If "Select exam" is selected, clear the selection
     if (selectedExamName === "Select exam") {
       setExamId("");
       setExamName("");
-      // Reset subject and topic
       setSubjectId("");
       setSubjectName("");
       setTopicId("");
@@ -252,7 +345,6 @@ const GathererAddNewQuestionPage = () => {
       setExamId("");
       setExamName("");
     }
-    // Reset subject and topic
     setSubjectId("");
     setSubjectName("");
     setTopicId("");
@@ -269,7 +361,6 @@ const GathererAddNewQuestionPage = () => {
       setSubjectId("");
       setSubjectName(selectedSubjectName);
     }
-    // Reset topic
     setTopicId("");
     setTopicName("");
   };
@@ -288,14 +379,12 @@ const GathererAddNewQuestionPage = () => {
 
   // Handle processor selection
   const handleProcessorChange = (selectedProcessorName) => {
-    // If "Select processor" is selected, clear the selection
     if (selectedProcessorName === "Select processor") {
       setProcessorId("");
       setProcessorName("");
       return;
     }
     
-    // Find processor by matching name, fullName, or username
     const selectedProcessor = processors.find((p) => {
       const pName = p.name || p.fullName || p.username || "";
       const normalizedSelected = selectedProcessorName.trim();
@@ -306,30 +395,13 @@ const GathererAddNewQuestionPage = () => {
     if (selectedProcessor && selectedProcessor.id) {
       setProcessorId(selectedProcessor.id);
       setProcessorName(selectedProcessorName);
-      console.log('Processor selected:', { 
-        id: selectedProcessor.id, 
-        name: selectedProcessorName,
-        processor: selectedProcessor 
-      });
     } else {
-      console.warn('Processor not found for:', selectedProcessorName);
-      console.warn('Available processors:', processors.map(p => ({
-        id: p.id,
-        name: p.name,
-        fullName: p.fullName,
-        username: p.username
-      })));
       setProcessorId("");
       setProcessorName("");
     }
   };
 
-  const _handleSaveDraft = () => {
-    // TODO: Implement save draft functionality
-    console.log("Save draft");
-  };
-
-  const handleSubmit = async () => {
+  const handleUpdate = async () => {
     // Validation
     if (!questionText.trim()) {
       showErrorToast("Question text is required", { title: "Validation Error" });
@@ -407,15 +479,7 @@ const GathererAddNewQuestionPage = () => {
         explanation: explanation?.trim() || "",
       };
 
-      // Add processor assignment (required)
-      console.log('Before submission - processorId:', processorId, 'processorName:', processorName);
-      if (!processorId || processorId.trim() === "") {
-        showErrorToast("Please select a processor", { title: "Validation Error" });
-        setSubmitting(false);
-        return;
-      }
       questionData.assignedProcessor = processorId;
-      console.log('Question data with processor:', questionData);
 
       // Add MCQ-specific fields
       if (apiQuestionType === "MCQ") {
@@ -428,21 +492,31 @@ const GathererAddNewQuestionPage = () => {
         questionData.correctAnswer = correctAnswerLetter;
       }
 
-      // Call the API
-      const response = await questionsAPI.createQuestion(questionData);
+      // Call the API to update question
+      // Use gatherer update endpoint if flagged, otherwise use regular update
+      let response;
+      if (isFlagged && questionStatus === 'pending_gatherer') {
+        // Use special endpoint for updating flagged questions
+        response = await questionsAPI.updateGathererFlaggedQuestion(questionId, questionData);
+      } else {
+        // For now, we'll need to create a general gatherer update endpoint
+        // Using updateQuestion as fallback - this might need adjustment
+        showErrorToast("Update endpoint for gatherer not yet implemented. Please contact support.", { title: "Error" });
+        setSubmitting(false);
+        return;
+      }
 
       if (response.success) {
         showSuccessToast(
-          response.message || "Question created successfully",
+          response.message || "Question updated successfully",
           { title: "Success" }
         );
-        // Navigate to question bank after successful creation
         setTimeout(() => {
           navigate("/gatherer/question-bank");
         }, 1500);
       } else {
         showErrorToast(
-          response.message || "Failed to create question",
+          response.message || "Failed to update question",
           { title: "Error" }
         );
       }
@@ -450,10 +524,39 @@ const GathererAddNewQuestionPage = () => {
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
-        "Failed to create question";
+        "Failed to update question";
       showErrorToast(errorMessage, { title: "Error" });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleRejectFlag = async () => {
+    if (!flagRejectionReason.trim()) {
+      showErrorToast("Please provide a reason for rejecting the flag", { title: "Validation Error" });
+      return;
+    }
+
+    setRejectingFlag(true);
+    try {
+      const response = await questionsAPI.rejectFlagByGatherer(questionId, flagRejectionReason);
+      
+      if (response.success) {
+        showSuccessToast("Flag rejected successfully", { title: "Success" });
+        setTimeout(() => {
+          navigate("/gatherer/question-bank");
+        }, 1500);
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to reject flag";
+      showErrorToast(errorMessage, { title: "Error" });
+    } finally {
+      setRejectingFlag(false);
+      setShowRejectFlagModal(false);
+      setFlagRejectionReason("");
     }
   };
 
@@ -461,12 +564,13 @@ const GathererAddNewQuestionPage = () => {
     navigate("/gatherer/question-bank");
   };
 
-  const _handleSaveQuestion = () => {
-    // TODO: Implement save question functionality
-    console.log("Save question");
-    // Navigate to question details page after saving
-    navigate("/admin/question-details");
-  };
+  if (loadingQuestion) {
+    return (
+      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 lg:px-8 flex items-center justify-center">
+        <p className="text-[16px] text-gray-600">Loading question...</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -540,9 +644,18 @@ const GathererAddNewQuestionPage = () => {
           {/* Header */}
           <header className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center mb-10">
             <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
-              {t('gatherer.addNewQuestion.title')}
+              {t('gatherer.addNewQuestion.title')} - {t('gatherer.addNewQuestion.update') || 'Edit'}
             </h1>
             <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
+              {isFlagged && (
+                <button
+                  type="button"
+                  onClick={() => setShowRejectFlagModal(true)}
+                  className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#E5E7EB] bg-white px-3 md:px-5 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
+                >
+                  {t('gatherer.addNewQuestion.rejectFlag.button')}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleCancel}
@@ -552,16 +665,31 @@ const GathererAddNewQuestionPage = () => {
               </button>
               <button
                 type="button"
-                onClick={handleSubmit}
+                onClick={handleUpdate}
                 disabled={submitting}
                 className={`flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 md:px-6 text-[14px] md:text-[16px] font-archivo font-medium leading-[16px] text-white transition hover:bg-[#d43a1f] ${
                   submitting ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >
-                {submitting ? "Submitting..." : t('gatherer.addNewQuestion.submit')}
+                {submitting ? t('gatherer.addNewQuestion.updating') : t('gatherer.addNewQuestion.update')}
               </button>
             </div>
           </header>
+
+          {/* Flag Info Banner */}
+          {isFlagged && flagReason && (
+            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-yellow-600 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <h3 className="text-sm font-semibold text-yellow-800 mb-1">Question Flagged</h3>
+                  <p className="text-sm text-yellow-700">Flag Reason: {flagReason}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Main Content - Two Columns */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
@@ -693,8 +821,7 @@ const GathererAddNewQuestionPage = () => {
               </h2>
 
               <div className="space-y-6">
-                {/* Subject */}
-
+                {/* Exam */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                     {t('gatherer.addNewQuestion.classification.exam')}
@@ -715,6 +842,7 @@ const GathererAddNewQuestionPage = () => {
                   />
                 </div>
 
+                {/* Subject */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                     {t('gatherer.addNewQuestion.classification.subject')}
@@ -796,8 +924,53 @@ const GathererAddNewQuestionPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Reject Flag Modal */}
+      {showRejectFlagModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold text-oxford-blue mb-4">
+              {t('gatherer.addNewQuestion.rejectFlag.title')}
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              {t('gatherer.addNewQuestion.rejectFlag.description')}
+            </p>
+            <textarea
+              value={flagRejectionReason}
+              onChange={(e) => setFlagRejectionReason(e.target.value)}
+              placeholder={t('gatherer.addNewQuestion.rejectFlag.placeholder')}
+              className="w-full h-32 p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowRejectFlagModal(false);
+                  setFlagRejectionReason("");
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+              >
+                {t('gatherer.addNewQuestion.rejectFlag.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handleRejectFlag}
+                disabled={rejectingFlag || !flagRejectionReason.trim()}
+                className={`px-4 py-2 text-white rounded-lg transition ${
+                  rejectingFlag || !flagRejectionReason.trim()
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#ED4122] hover:bg-[#d43a1f]"
+                }`}
+              >
+                {rejectingFlag ? t('gatherer.addNewQuestion.rejectFlag.submitting') : t('gatherer.addNewQuestion.rejectFlag.submit')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
 
-export default GathererAddNewQuestionPage;
+export default GathererEditQuestionPage;
+

@@ -121,9 +121,9 @@ const GathererSubmission = () => {
         
         const statusesToFetch = statusFilterMap[subtopic] || [subtopic.toLowerCase()];
         
-        // Fetch questions for each status
+        // Fetch questions for each status, filtered by gatherer role
         const promises = statusesToFetch.map(status => 
-          questionsAPI.getProcessorQuestions({ status })
+          questionsAPI.getProcessorQuestions({ status, submittedBy: 'gatherer' })
         );
         
         const responses = await Promise.all(promises);
@@ -161,7 +161,7 @@ const GathererSubmission = () => {
         ];
         
         const promises = allStatuses.map(status => 
-          questionsAPI.getProcessorQuestions({ status })
+          questionsAPI.getProcessorQuestions({ status, submittedBy: 'gatherer' })
         );
         
         const responses = await Promise.all(promises);
@@ -273,7 +273,7 @@ const GathererSubmission = () => {
   // Handler for view action
   const handleView = (item) => {
     if (item.originalData?.id) {
-      navigate(`/processor/Processed-ViewQuestion?questionId=${item.originalData.id}`);
+      navigate(`/processor/Processed-ViewQuestion?questionId=${item.originalData.id}&source=gatherer-submission`);
     }
   };
 

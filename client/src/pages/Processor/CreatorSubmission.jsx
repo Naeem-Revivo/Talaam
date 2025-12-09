@@ -114,21 +114,21 @@ const CreaterSubmission = () => {
         setLoading(true);
         
         // Fetch questions with multiple statuses to get all creator submissions
-        // This includes: pending_processor (submitted by creator), rejected, flagged, 
+        // This includes: pending_processor (submitted by creator, including flagged), rejected, 
         // pending_explainer (approved and sent to explainer), completed, etc.
+        // Note: 'flagged' is not a status - flagged questions have status 'pending_processor' with isFlagged=true
         const statusesToFetch = [
-          'pending_processor', 
+          'pending_processor', // Includes questions submitted by creator AND flagged questions
           'rejected',
-          'flagged',
           'pending_explainer', // Questions approved and sent to explainer
           'completed'
         ];
 
         let allQuestions = [];
 
-        // Fetch questions for each status
+        // Fetch questions for each status, filtered by creator role
         const promises = statusesToFetch.map(status => 
-          questionsAPI.getProcessorQuestions({ status })
+          questionsAPI.getProcessorQuestions({ status, submittedBy: 'creator' })
         );
         
         const responses = await Promise.all(promises);
@@ -163,12 +163,12 @@ const CreaterSubmission = () => {
                   ...detailedQuestion, // Merge detailed question data
                   rejectionReason: detailedQuestion?.rejectionReason || question.rejectionReason || null,
                   flagReason: detailedQuestion?.flagReason || question.flagReason || null,
-                  // Only mark as flagged if explicitly set to true or status indicates flagged
+                  flagStatus: detailedQuestion?.flagStatus || question.flagStatus || null,
+                  // Only mark as flagged if explicitly set to true AND flagStatus is pending
                   // Don't use flagReason alone as it might be from history
-                  isFlagged: detailedQuestion?.isFlagged === true || 
-                            detailedQuestion?.isFlagged === 'true' ||
-                            detailedQuestion?.status?.toLowerCase() === 'flagged' ||
-                            detailedQuestion?.status?.toLowerCase() === 'flag',
+                  isFlagged: (detailedQuestion?.isFlagged === true || detailedQuestion?.isFlagged === 'true') &&
+                            (detailedQuestion?.flagStatus === 'pending' || detailedQuestion?.flagStatus === null || detailedQuestion?.flagStatus === undefined) &&
+                            (detailedQuestion?.status?.toLowerCase() !== 'pending_explainer' && detailedQuestion?.status?.toLowerCase() !== 'completed'),
                   variants: detailedQuestion?.variants || question.variants || [],
                   history: detailedQuestion?.history || question.history || [],
                   approvedBy: detailedQuestion?.approvedBy || question.approvedBy || null,
@@ -183,8 +183,24 @@ const CreaterSubmission = () => {
             })
           );
 
+        // Backend now filters by role, so we don't need complex frontend filtering
+        // Just filter out rejected questions that were rejected after gatherer submission (never went through creator)
+        const filteredQuestions = questionsWithDetails.filter((question) => {
+          // If rejected, only include if it went through creator workflow first
+          if (question.status === 'rejected') {
+            const hasCreatorHistory = question.history && Array.isArray(question.history) &&
+              question.history.some(h => h.role === 'creator');
+            const hasApprovedBy = question.approvedBy || question.originalData?.approvedBy;
+            // Exclude if rejected after gatherer submission (never went through creator)
+            return hasCreatorHistory || hasApprovedBy;
+          }
+          
+          // Include all other questions (backend already filtered by creator role)
+          return true;
+        });
+
         // Transform API data to match table structure
-        const transformedData = questionsWithDetails.map((question) => {
+        const transformedData = filteredQuestions.map((question) => {
           // Get creator name (lastModifiedBy would be the creator who submitted)
           const creatorName = question.lastModifiedBy?.name || 
                              question.lastModifiedBy?.username || 
@@ -213,23 +229,15 @@ const CreaterSubmission = () => {
                                       question.history.some(h => h.status === 'pending_creator' || h.action === 'approved');
           
           // Check if question is currently flagged
-          // A question is flagged if:
+          // A question is flagged ONLY if:
           // 1. isFlagged property is explicitly true
-          // 2. status is 'flagged' or 'flag'
-          // 3. has flagReason AND status is 'pending_processor' AND doesn't have approvedBy (flagged, not approved submission)
-          // 4. Check history for recent flag action (creator flagged it)
-          const hasRecentFlagAction = question.history && Array.isArray(question.history) &&
-                                     question.history.some(h => 
-                                       (h.action === 'flag' || h.action === 'flagged') &&
-                                       // Check if flag action is recent (within last workflow cycle)
-                                       (h.status === 'pending_processor' || !h.status || h.status.includes('processor'))
-                                     );
-          
-          const isFlagged = question.isFlagged === true || 
-                           question.status?.toLowerCase() === 'flagged' ||
-                           question.status?.toLowerCase() === 'flag' ||
-                           (hasFlagReason && question.status === 'pending_processor' && !hasApprovedBy) ||
-                           hasRecentFlagAction;
+          // 2. flagStatus is 'pending' (or null/undefined for backward compatibility)
+          // 3. Status is not 'pending_explainer' or 'completed' (flag has been resolved if moved forward)
+          // Note: Don't check history or flagReason alone, as these persist even after flag is cleared
+          const isFlagged = (question.isFlagged === true || question.isFlagged === 'true') &&
+                           (question.flagStatus === 'pending' || question.flagStatus === null || question.flagStatus === undefined) &&
+                           question.status?.toLowerCase() !== 'pending_explainer' &&
+                           question.status?.toLowerCase() !== 'completed';
           
           const isSubmittedByCreator = question.status === 'pending_processor' && 
                                        !isFlagged && 

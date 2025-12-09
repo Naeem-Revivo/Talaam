@@ -507,14 +507,16 @@ const createQuestion = async (req, res, next) => {
 
 /**
  * Get questions by status
- * GET /admin/questions?status=pending_processor
+ * GET /admin/questions?status=pending_processor&submittedBy=creator
+ * For processor: can filter by submittedBy role (creator, explainer, gatherer)
  */
 const getQuestions = async (req, res, next) => {
   try {
-    const { status } = req.query;
+    const { status, submittedBy } = req.query;
 
     console.log('[QUESTION] GET /admin/questions → requested', {
       status,
+      submittedBy,
       requestedBy: req.user.id,
       requesterRole: req.user.adminRole,
     });
@@ -541,11 +543,20 @@ const getQuestions = async (req, res, next) => {
       }
     }
 
-    const questions = await questionService.getQuestionsByStatus(
-      queryStatus,
-      req.user.id,
-      req.user.adminRole
-    );
+    // If processor is requesting and submittedBy is specified, use role-based filtering
+    let questions;
+    if (req.user.adminRole === 'processor' && submittedBy) {
+      questions = await questionService.getQuestionsByStatusAndRole(
+        queryStatus,
+        submittedBy
+      );
+    } else {
+      questions = await questionService.getQuestionsByStatus(
+        queryStatus,
+        req.user.id,
+        req.user.adminRole
+      );
+    }
 
     const response = {
       success: true,
@@ -678,6 +689,7 @@ const getQuestionById = async (req, res, next) => {
           flagType: question.flagType || null,
           flagStatus: question.flagStatus || null,
           flaggedBy: question.flaggedBy || null,
+          flagRejectionReason: question.flagRejectionReason || null,
           history: question.history,
           createdAt: question.createdAt,
           updatedAt: question.updatedAt,
@@ -1069,7 +1081,7 @@ const updateExplanation = async (req, res, next) => {
 const approveQuestion = async (req, res, next) => {
   try {
     const { questionId } = req.params;
-    const { status, rejectionReason } = req.body;
+    const { status, rejectionReason, assignedUserId } = req.body;
 
     // Validate status
     if (!status || (status !== 'approve' && status !== 'reject')) {
@@ -1090,13 +1102,14 @@ const approveQuestion = async (req, res, next) => {
     console.log('[QUESTION] POST /admin/questions/processor/:questionId/approve → requested', {
       questionId,
       status,
+      assignedUserId,
       requestedBy: req.user.id,
       requesterRole: req.user.adminRole,
     });
 
     let question;
     if (status === 'approve') {
-      question = await questionService.approveQuestion(questionId, req.user.id);
+      question = await questionService.approveQuestion(questionId, req.user.id, assignedUserId);
     } else {
       question = await questionService.rejectQuestion(
         questionId,
@@ -1787,6 +1800,119 @@ const getApprovedQuestions = async (req, res, next) => {
     res.status(200).json(response);
   } catch (error) {
     console.error('[QUESTION] GET /admin/questions/approved → error', error);
+const updateFlaggedQuestionByGatherer = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const {
+      exam,
+      subject,
+      topic,
+      questionText,
+      questionType,
+      options,
+      correctAnswer,
+      explanation,
+    } = req.body;
+
+    console.log('[QUESTION] PUT /admin/questions/gatherer/:questionId → requested', {
+      questionId,
+      requestedBy: req.user.id,
+      requesterRole: req.user.adminRole,
+    });
+
+    // Validation
+    const errors = [];
+    if (questionType === 'MCQ') {
+      if (options && (!options.A || !options.B || !options.C || !options.D)) {
+        errors.push({
+          field: 'options',
+          message: 'All four options (A, B, C, D) are required for MCQ questions',
+        });
+      }
+      if (correctAnswer && !['A', 'B', 'C', 'D'].includes(correctAnswer)) {
+        errors.push({
+          field: 'correctAnswer',
+          message: 'Correct answer must be A, B, C, or D for MCQ questions',
+        });
+      }
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors,
+      });
+    }
+
+    // Prepare update data
+    const updateData = {};
+    if (exam !== undefined) updateData.exam = exam;
+    if (subject !== undefined) updateData.subject = subject;
+    if (topic !== undefined) updateData.topic = topic;
+    if (questionText !== undefined) updateData.questionText = questionText.trim();
+    if (questionType !== undefined) updateData.questionType = questionType;
+    if (options !== undefined) {
+      updateData.options = {
+        A: options.A.trim(),
+        B: options.B.trim(),
+        C: options.C.trim(),
+        D: options.D.trim(),
+      };
+    }
+    if (correctAnswer !== undefined) updateData.correctAnswer = correctAnswer;
+    if (explanation !== undefined) updateData.explanation = explanation.trim();
+
+    const question = await questionService.updateFlaggedQuestionByGatherer(
+      questionId,
+      updateData,
+      req.user.id
+    );
+
+    const response = {
+      success: true,
+      message: 'Question updated successfully and sent for processor review',
+      data: {
+        question: {
+          id: question._id || question.id,
+          exam: question.exam,
+          subject: question.subject,
+          topic: question.topic,
+          questionText: question.questionText,
+          questionType: question.questionType,
+          options: question.options,
+          correctAnswer: question.correctAnswer,
+          explanation: question.explanation,
+          status: question.status,
+          updatedAt: question.updatedAt,
+        },
+      },
+    };
+
+    console.log('[QUESTION] PUT /admin/questions/gatherer/:questionId → 200 (updated)', {
+      questionId: question._id || question.id,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] PUT /admin/questions/gatherer/:questionId → error', error);
+    if (
+      error.message === 'Question not found' ||
+      error.message === 'Question is not in pending_gatherer status' ||
+      error.message === 'Question was not flagged and approved by processor'
+    ) {
+      return res.status(
+        error.message === 'Question not found' ? 404 : 400
+      ).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid question ID',
+      });
+    }
     next(error);
   }
 };
@@ -1839,6 +1965,424 @@ const toggleQuestionVisibility = async (req, res, next) => {
   }
 };
 
+const rejectFlagByGatherer = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const { rejectionReason } = req.body;
+
+    console.log('[QUESTION] POST /admin/questions/gatherer/:questionId/reject-flag → requested', {
+      questionId,
+      requestedBy: req.user.id,
+      requesterRole: req.user.adminRole,
+    });
+
+    if (!rejectionReason || !rejectionReason.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'rejectionReason',
+            message: 'Rejection reason is required',
+          },
+        ],
+      });
+    }
+
+    const question = await questionService.rejectFlagByGatherer(
+      questionId,
+      rejectionReason,
+      req.user.id
+    );
+
+    const response = {
+      success: true,
+      message: 'Flag rejected successfully. Question sent back to processor for review.',
+      data: {
+        question: {
+          id: question._id || question.id,
+          isFlagged: question.isFlagged,
+          flagStatus: question.flagStatus,
+          flagRejectionReason: question.flagRejectionReason,
+          status: question.status,
+          updatedAt: question.updatedAt,
+        },
+      },
+    };
+
+    console.log('[QUESTION] POST /admin/questions/gatherer/:questionId/reject-flag → 200 (rejected)', {
+      questionId: question._id || question.id,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] POST /admin/questions/gatherer/:questionId/reject-flag → error', error);
+    if (
+      error.message === 'Question not found' ||
+      error.message === 'Question is not flagged or flag has not been approved by processor' ||
+      error.message === 'Rejection reason is required'
+    ) {
+      return res.status(
+        error.message === 'Question not found' ? 404 : 400
+      ).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid question ID',
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * Update flagged variant by Creator
+ * PUT /admin/questions/creator/:questionId/update-flagged-variant
+ */
+const updateFlaggedVariantByCreator = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const {
+      questionText,
+      questionType,
+      options,
+      correctAnswer,
+      explanation,
+    } = req.body;
+
+    console.log('[QUESTION] PUT /admin/questions/creator/:questionId/update-flagged-variant → requested', {
+      questionId,
+      requestedBy: req.user.id,
+      requesterRole: req.user.adminRole,
+    });
+
+    // Validation
+    const errors = [];
+    if (questionType === 'MCQ') {
+      if (options && (!options.A || !options.B || !options.C || !options.D)) {
+        errors.push({
+          field: 'options',
+          message: 'All four options (A, B, C, D) are required for MCQ questions',
+        });
+      }
+      if (correctAnswer && !['A', 'B', 'C', 'D'].includes(correctAnswer)) {
+        errors.push({
+          field: 'correctAnswer',
+          message: 'Correct answer must be A, B, C, or D for MCQ questions',
+        });
+      }
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors,
+      });
+    }
+
+    // Prepare update data
+    const updateData = {};
+    if (questionText !== undefined) updateData.questionText = questionText.trim();
+    if (questionType !== undefined) updateData.questionType = questionType;
+    if (options !== undefined) {
+      updateData.options = {
+        A: options.A.trim(),
+        B: options.B.trim(),
+        C: options.C.trim(),
+        D: options.D.trim(),
+      };
+    }
+    if (correctAnswer !== undefined) updateData.correctAnswer = correctAnswer;
+    if (explanation !== undefined) updateData.explanation = explanation.trim();
+
+    const question = await questionService.updateFlaggedVariantByCreator(
+      questionId,
+      updateData,
+      req.user.id
+    );
+
+    const response = {
+      success: true,
+      message: 'Variant updated successfully and sent for processor review',
+      data: {
+        question: {
+          id: question._id || question.id,
+          questionText: question.questionText,
+          questionType: question.questionType,
+          options: question.options,
+          correctAnswer: question.correctAnswer,
+          explanation: question.explanation,
+          status: question.status,
+          updatedAt: question.updatedAt,
+        },
+      },
+    };
+
+    console.log('[QUESTION] PUT /admin/questions/creator/:questionId/update-flagged-variant → 200 (updated)', {
+      questionId: question._id || question.id,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] PUT /admin/questions/creator/:questionId/update-flagged-variant → error', error);
+    if (
+      error.message === 'Question not found' ||
+      error.message === 'Question is not in pending_creator status' ||
+      error.message === 'Question variant was not flagged and approved by processor' ||
+      error.message === 'This method is for variants only'
+    ) {
+      return res.status(
+        error.message === 'Question not found' ? 404 : 400
+      ).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid question ID',
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * Reject flag by Creator
+ * POST /admin/questions/creator/:questionId/reject-flag
+ */
+const rejectFlagByCreator = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const { rejectionReason } = req.body;
+
+    console.log('[QUESTION] POST /admin/questions/creator/:questionId/reject-flag → requested', {
+      questionId,
+      requestedBy: req.user.id,
+      requesterRole: req.user.adminRole,
+    });
+
+    if (!rejectionReason || !rejectionReason.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'rejectionReason',
+            message: 'Rejection reason is required',
+          },
+        ],
+      });
+    }
+
+    const question = await questionService.rejectFlagByCreator(
+      questionId,
+      rejectionReason,
+      req.user.id
+    );
+
+    const response = {
+      success: true,
+      message: 'Flag rejected successfully. Question sent back to processor for review.',
+      data: {
+        question: {
+          id: question._id || question.id,
+          isFlagged: question.isFlagged,
+          flagStatus: question.flagStatus,
+          flagRejectionReason: question.flagRejectionReason,
+          status: question.status,
+          updatedAt: question.updatedAt,
+        },
+      },
+    };
+
+    console.log('[QUESTION] POST /admin/questions/creator/:questionId/reject-flag → 200 (rejected)', {
+      questionId: question._id || question.id,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] POST /admin/questions/creator/:questionId/reject-flag → error', error);
+    if (
+      error.message === 'Question not found' ||
+      error.message === 'Question is not flagged or flag has not been approved by processor' ||
+      error.message === 'Rejection reason is required'
+    ) {
+      return res.status(
+        error.message === 'Question not found' ? 404 : 400
+      ).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid question ID',
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * Reject gatherer's flag rejection by Processor
+ * POST /admin/questions/processor/:questionId/reject-gatherer-flag-rejection
+ */
+const rejectGathererFlagRejection = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const { rejectionReason } = req.body;
+
+    console.log('[QUESTION] POST /admin/questions/processor/:questionId/reject-gatherer-flag-rejection → requested', {
+      questionId,
+      requestedBy: req.user.id,
+      requesterRole: req.user.adminRole,
+    });
+
+    if (!rejectionReason || !rejectionReason.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'rejectionReason',
+            message: 'Rejection reason is required',
+          },
+        ],
+      });
+    }
+
+    const question = await questionService.rejectGathererFlagRejection(
+      questionId,
+      rejectionReason,
+      req.user.id
+    );
+
+    const response = {
+      success: true,
+      message: "Gatherer's flag rejection rejected. Flag restored and sent back to gatherer.",
+      data: {
+        question: {
+          id: question._id || question.id,
+          isFlagged: question.isFlagged,
+          flagStatus: question.flagStatus,
+          flagRejectionReason: question.flagRejectionReason,
+          status: question.status,
+          updatedAt: question.updatedAt,
+        },
+      },
+    };
+
+    console.log('[QUESTION] POST /admin/questions/processor/:questionId/reject-gatherer-flag-rejection → 200 (rejected)', {
+      questionId: question._id || question.id,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] POST /admin/questions/processor/:questionId/reject-gatherer-flag-rejection → error', error);
+    if (
+      error.message === 'Question not found' ||
+      error.message === 'Question does not have a gatherer flag rejection' ||
+      error.message === 'Question is not in pending_processor status' ||
+      error.message === 'Rejection reason is required'
+    ) {
+      return res.status(
+        error.message === 'Question not found' ? 404 : 400
+      ).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid question ID',
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * Get completed explanations by explainer
+ * GET /admin/questions/explainer/completed-explanations
+ */
+const getCompletedExplanations = async (req, res, next) => {
+  try {
+    const explainerId = req.user.id;
+
+    console.log('[QUESTION] GET /admin/questions/explainer/completed-explanations → requested', {
+      requestedBy: explainerId,
+      requesterRole: req.user.adminRole,
+    });
+
+    const questions = await questionService.getCompletedExplanationsByExplainer(explainerId);
+
+    console.log(`[getCompletedExplanations] Service returned ${questions.length} questions`);
+    if (questions.length > 0) {
+      console.log(`[getCompletedExplanations] First question sample:`, {
+        id: questions[0].id,
+        hasQuestionText: !!questions[0].questionText,
+        hasExplanation: !!questions[0].explanation,
+        explanationLength: questions[0].explanation?.length || 0,
+        hasSubject: !!questions[0].subject,
+        hasExam: !!questions[0].exam
+      });
+    }
+
+    const response = {
+      success: true,
+      data: {
+        questions: questions.map((q) => {
+          const mapped = {
+            id: q.id || q._id, // Prisma returns 'id', not '_id'
+            exam: q.exam,
+            subject: q.subject,
+            topic: q.topic,
+            questionText: q.questionText,
+            questionType: q.questionType,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation,
+            status: q.status,
+            createdBy: q.createdBy,
+            lastModifiedBy: q.lastModifiedBy,
+            assignedProcessor: q.assignedProcessor,
+            approvedBy: q.approvedBy,
+            isFlagged: q.isFlagged || false,
+            flagReason: q.flagReason || null,
+            flagType: q.flagType || null,
+            flaggedBy: q.flaggedBy || null,
+            flagStatus: q.flagStatus || null,
+            isVariant: q.isVariant || false,
+            originalQuestionId: q.originalQuestionId || null,
+            createdAt: q.createdAt,
+            updatedAt: q.updatedAt,
+            history: q.history || [],
+          };
+          
+          if (!mapped.id) {
+            console.error(`[getCompletedExplanations] Question missing ID:`, q);
+          }
+          
+          return mapped;
+        }),
+      },
+    };
+
+    console.log('[QUESTION] GET /admin/questions/explainer/completed-explanations → 200 (ok)', { 
+      count: questions.length 
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] GET /admin/questions/explainer/completed-explanations → error', error);
+    next(error);
+  }
+};
+
 module.exports = {
   getAllQuestionsForSuperadmin,
   getQuestionDetailForSuperadmin,
@@ -1860,5 +2404,10 @@ module.exports = {
   reviewExplainerFlag,
   getApprovedQuestions,
   toggleQuestionVisibility,
+  updateFlaggedQuestionByGatherer,
+  rejectFlagByGatherer,
+  updateFlaggedVariantByCreator,
+  rejectFlagByCreator,
+  getCompletedExplanations,
+  rejectGathererFlagRejection,
 };
-

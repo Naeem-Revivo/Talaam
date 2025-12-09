@@ -2847,7 +2847,18 @@
         "noProcessorsAvailable": "No processors available",
         "selectExamFirst": "Select exam first",
         "selectSubjectFirst": "Select subject first"
-      }
+      },
+      "rejectFlag": {
+        "button": "Reject Flag",
+        "title": "Reject Flag",
+        "description": "Please provide a reason why you believe this flag is incorrect:",
+        "placeholder": "Enter your reason for rejecting the flag...",
+        "cancel": "Cancel",
+        "submit": "Submit",
+        "submitting": "Submitting..."
+      },
+      "update": "Update",
+      "updating": "Updating..."
     },
     "questionDetail": {
       "title": "Question Details",
@@ -3272,10 +3283,15 @@
       "table": {
         "question": "QUESTION",
         "gatherer": "GATHERER",
+        "submittedBy": "SUBMITTED BY",
+        "source": "SOURCE",
         "dateSubmitted": "DATE SUBMITTED",
         "subject": "SUBJECT",
+        "status": "STATUS",
         "actions": "ACTIONS"
       },
+      "allSubmissions": "All Submissions",
+      "loading": "Loading...",
       "workflowProgress": "Workflow Progress",
       "recentActivity": "Recent Activity",
       "searchPlaceholder": "Search draft explanations...",
@@ -3298,6 +3314,7 @@
     "gathererSubmission": {
       "title": "Gatherer Submissions",
       "back": "Back",
+      "loading": "Loading...",
       "table": {
         "question": "QUESTION",
         "subject": "SUBJECT",
@@ -3339,7 +3356,8 @@
       "close": "Close",
       "reject": "Reject",
       "acceptAndSend": "Accept & Sent to Creator",
-      "acceptAndSendToExplainer": "Accept and sent to explainer",
+      "acceptAndSendToCreator": "Accept and send to creator",
+      "acceptAndSendToExplainer": "Accept and send to explainer",
       "approveQuestion": "Approve Question",
       "questionInfo": "Question Info",
       "options": "Options:",
@@ -3366,10 +3384,17 @@
       "rejectReasonButton": "Reject Reason",
       "flagReason": "Flag Reason",
       "flagReasonDescription": "The creator has flagged this question with the following reason:",
+      "flagReasonDescriptionExplainer": "The explainer has flagged this question with the following reason:",
       "rejectFlagReason": "Reject Flag Reason",
       "rejectFlagReasonDescription": "Please provide a reason for rejecting the creator's flag. The question will be sent back to the creator.",
+      "rejectFlagReasonDescriptionExplainer": "Please provide a reason for rejecting the explainer's flag. The question will be sent back to the explainer.",
       "rejectFlagReasonPlaceholder": "Enter reason for rejecting the flag...",
-      "confirmRejectFlag": "Reject Flag Reason"
+      "confirmRejectFlag": "Reject Flag Reason",
+      "gathererFlagRejection": "Gatherer's Flag Rejection",
+      "gathererFlagRejectionDescription": "The gatherer has rejected the flag with the following reason:",
+      "acceptGathererRejection": "Accept Gatherer's Rejection",
+      "rejectGathererRejection": "Reject Gatherer's Rejection",
+      "rejectGathererRejectionDescription": "Please provide a reason for rejecting the gatherer's flag rejection. The flag will be restored and the question will be sent back to the gatherer."
     },
     "profile": {
       "title": "Account Settings",
