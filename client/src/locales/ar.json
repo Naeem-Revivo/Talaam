@@ -689,7 +689,9 @@
         "title": "مجموعة الأسئلة",
         "allQuestions": "جميع الأسئلة",
         "domains": "المجالات",
+        "subjects": "المواضيع",
         "subtopics": "المواضيع الفرعية",
+        "topic": "الموضوع",
         "noQuestionsMatch": "لا توجد أسئلة تطابق المرشحات الخاصة بك. امسح المرشحات للمتابعة.",
         "domainsOptions": {
           "quantitative": "الكمّي",
@@ -955,6 +957,8 @@
     "questionSession": {
       "item": "عنصر {{current}} من {{total}}",
       "questionId": "معرف السؤال:",
+      "timeStart": "وقت البدء",
+      "timeRunning": "الوقت المنقضي",
       "formulaSheet": "ورقة الصيغ",
       "timeRemaining": "الوقت المتبقي",
       "mark": "علامة",

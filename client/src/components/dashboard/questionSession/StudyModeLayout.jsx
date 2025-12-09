@@ -13,6 +13,7 @@ const StudyModeLayout = ({
   showQuestionNav,
   showExplanation,
   showExplanationPanel,
+  sessionStartTime,
   onToggleQuestionNav,
   onCloseQuestionNav,
   onGoToIndex,
@@ -39,6 +40,7 @@ const StudyModeLayout = ({
         currentIndex={currentIndex}
         totalQuestions={totalQuestions}
         currentQuestion={currentQuestion}
+        sessionStartTime={sessionStartTime}
         onToggleQuestionNav={onToggleQuestionNav}
         onNavigate={onNavigate}
       />
@@ -70,6 +72,7 @@ const StudyModeLayout = ({
           />
         </div>
 
+        {showReview && (
         <StudyExplanationSidebar
           showExplanation={showExplanation}
           showReview={showReview}
@@ -80,6 +83,7 @@ const StudyModeLayout = ({
           onToggleExplanation={onToggleExplanation}
           onToggleHint={onToggleHint}
         />
+        )}
       </div>
 
       <StudyModeFooter

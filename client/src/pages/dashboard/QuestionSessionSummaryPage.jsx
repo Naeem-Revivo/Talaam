@@ -1,32 +1,41 @@
 import React, { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { flag, setting } from '../../assets/svg/dashboard';
 import { useLanguage } from '../../context/LanguageContext';
 
 const QuestionSessionSummaryPage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get session data from navigation state or use defaults
+  const sessionData = location.state?.sessionData;
 
   const summary = useMemo(
     () => ({
-      questionsAnswered: 20,
-      averagePace: '1m 37s',
-      accuracyPercent: 70,
-      correctCount: 14,
-      incorrectCount: 6,
-      timeTaken: '32m 18s',
-      testMode: true,
+      questionsAnswered: sessionData?.questionsAnswered || 0,
+      averagePace: sessionData?.averagePace || '0m 0s',
+      accuracyPercent: sessionData?.accuracyPercent || 0,
+      correctCount: sessionData?.correctCount || 0,
+      incorrectCount: sessionData?.incorrectCount || 0,
+      timeTaken: sessionData?.timeTaken || '0m 0s',
+      testMode: sessionData?.mode === 'test',
     }),
-    []
+    [sessionData]
   );
 
   const questions = useMemo(
-    () =>
-      Array.from({ length: summary.questionsAnswered }, (_, index) => ({
+    () => {
+      if (sessionData?.questions) {
+        return sessionData.questions;
+      }
+      // Fallback to generated questions if no data
+      return Array.from({ length: summary.questionsAnswered }, (_, index) => ({
         id: index + 1,
         status: index < summary.correctCount ? 'correct' : 'incorrect',
-      })),
-    [summary.correctCount, summary.questionsAnswered]
+      }));
+    },
+    [sessionData?.questions, summary.correctCount, summary.questionsAnswered]
   );
 
   const accuracyCircumference = 2 * Math.PI * 50;

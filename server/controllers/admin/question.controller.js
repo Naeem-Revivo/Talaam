@@ -1743,6 +1743,68 @@ const addCommentToQuestion = async (req, res, next) => {
 };
 
 /**
+ * Get approved questions for superadmin (status = 'completed')
+ * GET /admin/questions/approved?search=...&exam=...&subject=...&topic=...&page=1&limit=10
+ */
+const getApprovedQuestions = async (req, res, next) => {
+  try {
+    const { 
+      search, 
+      exam, 
+      subject, 
+      topic, 
+      page = 1, 
+      limit = 10 
+    } = req.query;
+
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only superadmin can view approved questions',
+      });
+    }
+
+    // Build filters - only approved questions (status = 'completed')
+    const filters = { tab: 'approved', status: 'completed' };
+    if (exam) filters.exam = exam;
+    if (subject) filters.subject = subject;
+    if (topic) filters.topic = topic;
+
+    // Pagination
+    const pagination = {
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 10,
+    };
+
+    // Get questions with pagination
+    const result = await questionService.getAllQuestionsForSuperadmin(filters, search || '', pagination);
+
+    const response = {
+      success: true,
+      message: 'Approved questions retrieved successfully',
+      data: {
+        questions: result.questions.map((q) => ({
+          id: q.id || q._id,
+          question: q.questionText || q.question?.text || '—',
+          subject: q.subject ? (q.subject.name || q.subject) : '—',
+          exam: q.exam ? (q.exam.name || q.exam) : '—',
+          topic: q.topic ? (q.topic.name || q.topic) : '—',
+          status: (q.isVisible !== false && q.isVisible !== null) ? 'Visible' : 'Hidden',
+          visibility: q.isVisible !== false && q.isVisible !== null,
+          actionType: 'toggle',
+        })),
+        pagination: result.pagination,
+      },
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] GET /admin/questions/approved → error', error);
+    next(error);
+  }
+};
+
+/**
  * Update flagged question by Gatherer
  * PUT /admin/questions/gatherer/:questionId
  */
@@ -1864,9 +1926,53 @@ const updateFlaggedQuestionByGatherer = async (req, res, next) => {
 };
 
 /**
- * Reject flag by Gatherer
- * POST /admin/questions/gatherer/:questionId/reject-flag
+ * Toggle question visibility
+ * PUT /admin/questions/:questionId/visibility
  */
+const toggleQuestionVisibility = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const { isVisible } = req.body;
+
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only superadmin can toggle question visibility',
+      });
+    }
+
+    if (typeof isVisible !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        message: 'isVisible must be a boolean value',
+      });
+    }
+
+    const question = await questionService.toggleQuestionVisibility(questionId, isVisible, req.user.id);
+
+    res.status(200).json({
+      success: true,
+      message: `Question visibility ${isVisible ? 'enabled' : 'disabled'} successfully`,
+      data: {
+        question: {
+          id: question.id,
+          isVisible: question.isVisible,
+          status: question.isVisible ? 'Visible' : 'Hidden',
+        },
+      },
+    });
+  } catch (error) {
+    console.error('[QUESTION] PUT /admin/questions/:questionId/visibility → error', error);
+    if (error.message === 'Question not found') {
+      return res.status(404).json({
+        success: false,
+        message: 'Question not found',
+      });
+    }
+    next(error);
+  }
+};
+
 const rejectFlagByGatherer = async (req, res, next) => {
   try {
     const { questionId } = req.params;
@@ -2304,6 +2410,8 @@ module.exports = {
   reviewCreatorFlag,
   flagQuestionByExplainer,
   reviewExplainerFlag,
+  getApprovedQuestions,
+  toggleQuestionVisibility,
   updateFlaggedQuestionByGatherer,
   rejectFlagByGatherer,
   updateFlaggedVariantByCreator,
@@ -2311,4 +2419,3 @@ module.exports = {
   getCompletedExplanations,
   rejectGathererFlagRejection,
 };
-

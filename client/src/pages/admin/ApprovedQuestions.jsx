@@ -1,18 +1,36 @@
 import { useLanguage } from "../../context/LanguageContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
 import SearchFilter from "../../components/common/SearchFilter";
+import questionsAPI from "../../api/questions";
+import subjectsAPI from "../../api/subjects";
+import examsAPI from "../../api/exams";
+import topicsAPI from "../../api/topics";
+import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 
 const ApprovedQuestions = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState(""); // For the input field
   const [subject, setSubject] = useState("");
   const [exam, setExam] = useState("");
   const [topic, setTopic] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const navigate = useNavigate();
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [subjectOptions, setSubjectOptions] = useState([
+    { label: t("admin.approvedQuestion.filter.subject"), value: "" }
+  ]);
+  const [examOptions, setExamOptions] = useState([
+    { label: t("admin.approvedQuestion.filter.exam"), value: "" }
+  ]);
+  const [topicOptions, setTopicOptions] = useState([
+    { label: t("admin.approvedQuestion.filter.topic"), value: "" }
+  ]);
 
   // Updated columns to match the image but with actions column
  const processedColumns = [
@@ -24,88 +42,172 @@ const ApprovedQuestions = () => {
     { key: 'actions', label: t("admin.approvedQuestion.table.actions") }
   ];
 
-  // Sample data matching the image exactly with actionType as 'toggle'
-  const processedData = [
-    {
-      id: 1,
-      question: 'What is the Capital of France?',
-      subject: 'Geography',
-      exam: 'World Capitals Quiz',
-      topic: 'European Capitals',
-      status: 'Visible',
-      actionType: 'toggle',
-      visibility: true // true for visible, false for hidden
-    },
-    {
-      id: 2,
-      question: 'Solve for x: 2x + 5 = 15',
-      subject: 'Mathematics',
-      exam: 'Algebra',
-      topic: 'Linear Equations',
-      status: 'Hidden',
-      actionType: 'toggle',
-      visibility: false
-    },
-    {
-      id: 3,
-      question: 'Who wrote "To Kill a Mockingbird"?',
-      subject: 'Literature',
-      exam: 'American Literature',
-      topic: '20th Century Novels',
-      status: 'Visible',
-      actionType: 'toggle',
-      visibility: true
-    },
-    {
-      id: 4,
-      question: 'What is the powerhouse of the cell?',
-      subject: 'Biology',
-      exam: 'Cellular Biology',
-      topic: 'Organelles',
-      status: 'Hidden',
-      actionType: 'toggle',
-      visibility: false
+  // Fetch approved questions
+  const fetchApprovedQuestions = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page: currentPage,
+        limit: 10,
+      };
+      
+      if (search) params.search = search;
+      if (subject && subject !== "") params.subject = subject;
+      if (exam && exam !== "") params.exam = exam;
+      if (topic && topic !== "") params.topic = topic;
+
+      const response = await questionsAPI.getApprovedQuestions(params);
+      
+      if (response.success) {
+        setQuestions(response.data.questions || []);
+        setTotal(response.data.pagination?.totalItems || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching approved questions:", error);
+      showErrorToast(error.message || "Failed to fetch approved questions");
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const subjectOptions = [
-    { label: t("admin.approvedQuestion.filter.subject"), value: 'All' },
-    { label: 'Geography', value: 'Geography' },
-    { label: 'Mathematics', value: 'Mathematics' },
-    { label: 'Literature', value: 'Literature' },
-    { label: 'Biology', value: 'Biology' }
-  ];
+  // Fetch filter options (subjects, exams, topics)
+  const fetchFilterOptions = async () => {
+    try {
+      // Fetch subjects
+      const subjectsResponse = await subjectsAPI.getAllSubjects();
+      if (subjectsResponse.success && subjectsResponse.data) {
+        const subjects = Array.isArray(subjectsResponse.data) 
+          ? subjectsResponse.data 
+          : subjectsResponse.data.subjects || [];
+        setSubjectOptions([
+          { label: t("admin.approvedQuestion.filter.subject"), value: "" },
+          ...subjects.map((s) => ({
+            label: s.name,
+            value: s.id,
+          }))
+        ]);
+      }
 
-  const examOptions = [
-    { label: t("admin.approvedQuestion.filter.exam"), value: 'All' },
-    { label: 'Algebra', value: 'Algebra' },
-    { label: 'American Literature', value: 'American Literature' },
-    { label: 'Cellular Biology', value: 'Cellular Biology' }
-  ];
+      // Fetch exams
+      const examsResponse = await examsAPI.getAllExams({ status: 'active' });
+      if (examsResponse.success && examsResponse.data) {
+        const exams = Array.isArray(examsResponse.data)
+          ? examsResponse.data
+          : examsResponse.data.exams || [];
+        setExamOptions([
+          { label: t("admin.approvedQuestion.filter.exam"), value: "" },
+          ...exams.map((e) => ({
+            label: e.name,
+            value: e.id,
+          }))
+        ]);
+      }
+    } catch (error) {
+      console.error("Error fetching filter options:", error);
+    }
+  };
 
-  const topicOptions = [
-    { label: t("admin.approvedQuestion.filter.topic"), value: 'All' },
-    { label: 'Linear Equations', value: 'Linear Equations' },
-    { label: '20th Century Novels', value: '20th Century Novels' },
-    { label: 'Organelles', value: 'Organelles' }
-  ];
+  // Fetch topics when subject changes
+  const fetchTopicsBySubject = async (subjectId) => {
+    if (!subjectId) {
+      setTopicOptions([
+        { label: t("admin.approvedQuestion.filter.topic"), value: "" }
+      ]);
+      return;
+    }
+
+    try {
+      // Use topics API with parentSubject parameter
+      const response = await topicsAPI.getAllTopics({ parentSubject: subjectId });
+      if (response.success && response.data) {
+        const topics = Array.isArray(response.data)
+          ? response.data
+          : response.data.topics || [];
+        setTopicOptions([
+          { label: t("admin.approvedQuestion.filter.topic"), value: "" },
+          ...topics.map((t) => ({
+            label: t.name,
+            value: t.id,
+          }))
+        ]);
+      }
+    } catch (error) {
+      console.error("Error fetching topics:", error);
+      setTopicOptions([
+        { label: t("admin.approvedQuestion.filter.topic"), value: "" }
+      ]);
+    }
+  };
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  useEffect(() => {
+    fetchApprovedQuestions();
+  }, [currentPage, search, subject, exam, topic]);
+
+  useEffect(() => {
+    fetchFilterOptions();
+  }, []);
+
+  // Fetch topics when subject changes
+  useEffect(() => {
+    if (subject) {
+      fetchTopicsBySubject(subject);
+      // Reset topic when subject changes
+      setTopic("");
+    } else {
+      setTopicOptions([
+        { label: t("admin.approvedQuestion.filter.topic"), value: "" }
+      ]);
+      setTopic("");
+    }
+  }, [subject]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, subject, exam, topic]);
 
   // Handler for visibility toggle
-  const handleToggle = (item) => {
-    console.log('Toggle visibility for item:', item.id, 'current:', item.visibility);
-    // Toggle the visibility
-    // Example: setProcessedData(prev => prev.map(i => 
-    //   i.id === item.id ? {...i, visibility: !i.visibility, status: !i.visibility ? 'Visible' : 'Hidden'} : i
-    // ));
+  const handleToggle = async (item) => {
+    try {
+      const newVisibility = !item.visibility;
+      
+      await questionsAPI.toggleQuestionVisibility(item.id, newVisibility);
+      
+      // Update local state optimistically
+      setQuestions(prevQuestions =>
+        prevQuestions.map(q =>
+          q.id === item.id
+            ? {
+                ...q,
+                visibility: newVisibility,
+                status: newVisibility ? 'Visible' : 'Hidden',
+              }
+            : q
+        )
+      );
+      
+      showSuccessToast(
+        `Question ${newVisibility ? 'shown' : 'hidden'} successfully`
+      );
+    } catch (error) {
+      console.error("Error toggling visibility:", error);
+      showErrorToast(error.message || "Failed to toggle question visibility");
+    }
   };
 
   // Handler for view action
   const handleView = (item) => {
     console.log('View item:', item);
-  };
-
-  const handleCancel = () => {
-    navigate("/processor/question-bank");
+    // Navigate to question detail page if needed
   };
 
   return (
@@ -120,11 +222,11 @@ const ApprovedQuestions = () => {
         </header>
 
         <SearchFilter
-          searchValue={search}
+          searchValue={searchInput}
           subjectValue={subject}
           topicValue={exam}  // Note: We're using 'exam' state for topicValue prop
           subtopicValue={topic} // Note: We're using 'topic' state for subtopicValue prop
-          onSearchChange={setSearch}
+          onSearchChange={setSearchInput}
           onSubjectChange={setSubject}
           onTopicChange={setExam}  // This sets the exam state
           onSubtopicChange={setTopic} // This sets the topic state
@@ -137,17 +239,23 @@ const ApprovedQuestions = () => {
           subtopicOptions={topicOptions} // Passing topic options as subtopicOptions
         />
 
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-oxford-blue">Loading...</div>
+        </div>
+      ) : (
       <Table
-        items={processedData}
+          items={questions}
         columns={processedColumns}
         page={currentPage}
         pageSize={10}
-        total={25}
+          total={total}
         onPageChange={setCurrentPage}
         onView={handleView}
         onCustomAction={handleToggle}
         emptyMessage={t("processor.allProcessedQuestions.emptyMessage")}
       />
+      )}
       </div>
     </div>
   );

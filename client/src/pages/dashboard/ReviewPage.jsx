@@ -1,28 +1,129 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
+import studentQuestionsAPI from '../../api/studentQuestions';
+import { showErrorToast } from '../../utils/toastConfig';
 
 const ReviewPage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeFilter, setActiveFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    totalItems: 0,
+    page: 1,
+    limit: 3,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  });
   const itemsPerPage = 3;
-  const totalItems = 25;
 
-  // Sample session data matching the image
-  const sessions = [
-    { id: 'S001', date: 'Des 15,2024', mode: 'Test', questions: 25, correct: 84, avgTime: '45s' },
-    { id: 'S002', date: 'Des 14,2024', mode: 'Study', questions: 30, correct: 68, avgTime: '25s' },
-    { id: 'S003', date: 'Des 13,2024', mode: 'Test', questions: 20, correct: 92, avgTime: '60s' },
-    { id: 'S004', date: 'Des 12,2024', mode: 'Study', questions: 15, correct: 52, avgTime: '50s' },
-    { id: 'S005', date: 'Des 11,2024', mode: 'Test', questions: 35, correct: 78, avgTime: '15s' },
-  ];
+  // Fetch sessions from API
+  const fetchSessions = useCallback(async () => {
+      try {
+        setLoading(true);
+        const response = await studentQuestionsAPI.getSessionHistory({
+          mode: activeFilter,
+          page: currentPage,
+          limit: itemsPerPage,
+        });
 
-  // Filter sessions based on active filter
-  const filteredSessions = activeFilter === 'all' 
-    ? sessions 
-    : sessions.filter(s => s.mode.toLowerCase() === activeFilter.toLowerCase());
+        if (response.success && response.data) {
+          const formattedSessions = response.data.sessions.map((session) => {
+            // Format date
+            const date = new Date(session.attemptDate);
+            const formattedDate = date.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            });
+
+            // Format average time
+            const avgTimeSeconds = session.averageTimeSeconds || 0;
+            const avgTime = avgTimeSeconds > 0 
+              ? `${Math.floor(avgTimeSeconds)}s` 
+              : 'N/A';
+
+            return {
+              id: session.id,
+              sessionCode: session.sessionCode || `S${session.id.slice(0, 8)}`,
+              date: formattedDate,
+              mode: session.mode === 'test' ? 'Test' : 'Study',
+              questions: session.totalQuestions || 0,
+              correct: Math.round(session.percentCorrect || 0),
+              avgTime,
+            };
+          });
+
+          setSessions(formattedSessions);
+          // Use pagination data from backend
+          if (response.data.pagination) {
+            setPagination({
+              totalItems: response.data.pagination.totalItems || 0,
+              page: response.data.pagination.page || currentPage,
+              limit: response.data.pagination.limit || itemsPerPage,
+              totalPages: response.data.pagination.totalPages || 0,
+              hasNextPage: response.data.pagination.hasNextPage || false,
+              hasPreviousPage: response.data.pagination.hasPreviousPage || false,
+            });
+          } else {
+            // Fallback if pagination data is missing
+            const totalItems = response.data.sessions?.length || 0;
+            setPagination({
+              totalItems,
+              page: currentPage,
+              limit: itemsPerPage,
+              totalPages: Math.ceil(totalItems / itemsPerPage),
+              hasNextPage: false,
+              hasPreviousPage: currentPage > 1,
+            });
+          }
+        } else {
+          console.error('Invalid response:', response);
+          setSessions([]);
+          setPagination({
+            totalItems: 0,
+            page: 1,
+            limit: itemsPerPage,
+            totalPages: 0,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching sessions:', error);
+        showErrorToast(error.message || 'Failed to load sessions');
+        setSessions([]);
+      } finally {
+        setLoading(false);
+      }
+    }, [activeFilter, currentPage, itemsPerPage]);
+
+  // Fetch sessions when filter or page changes
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
+
+  // Refresh data when page is focused (user returns to this page)
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchSessions();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [fetchSessions]);
+
+  // Refresh when location changes (user navigates back to this page)
+  useEffect(() => {
+    if (location.pathname === '/dashboard/review') {
+      fetchSessions();
+    }
+  }, [location.pathname, fetchSessions]);
 
   // Handle filter change and reset page
   const handleFilterChange = (filter) => {
@@ -30,18 +131,16 @@ const ReviewPage = () => {
     setCurrentPage(1);
   };
 
-  // Calculate pagination
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-  const currentSessions = filteredSessions.slice(startIndex, endIndex);
+  // Use pagination data from backend
+  const { totalPages, hasNextPage, hasPreviousPage, totalItems } = pagination;
+  const currentSessions = sessions;
 
   const getCorrectColor = (percentage) => {
     return percentage >= 80 ? 'text-[#EF4444]' : 'text-oxford-blue';
   };
 
   const handleLoadMore = () => {
-    if (currentPage < totalPages) {
+    if (hasNextPage) {
       setCurrentPage(prev => prev + 1);
     }
   };
@@ -94,8 +193,14 @@ const ReviewPage = () => {
       </div>
 
       {/* Mobile/Tablet Card Layout */}
-      <div className="lg:hidden space-y-4 mb-4 ">
-        {currentSessions.map((session) => (
+      {!loading && (
+        <div className="lg:hidden space-y-4 mb-4 ">
+          {currentSessions.length === 0 ? (
+            <div className="p-8 text-center text-oxford-blue">
+              {t('dashboard.review.noSessions') || 'No sessions found'}
+            </div>
+          ) : (
+            currentSessions.map((session) => (
           <div
             key={session.id}
             className="bg-white  rounded-lg border border-[#E5E7EB] shadow-dashboard p-7 h-[143px] flex flex-col justify-between"
@@ -103,7 +208,7 @@ const ReviewPage = () => {
             {/* Top Row: Session ID, Mode, Date */}
             <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
               <div className="text-[14px] font-normal text-oxford-blue font-roboto leading-[100%] tracking-[0%]">
-                {session.id}
+                {session.sessionCode || session.id}
               </div>
               <div className="flex-1 flex justify-center">
                 <span
@@ -150,27 +255,42 @@ const ReviewPage = () => {
               </button>
             </div>
           </div>
-        ))}
-      </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-oxford-blue text-lg">Loading sessions...</div>
+        </div>
+      )}
 
       {/* Desktop Table Layout */}
-      <div className="hidden lg:block bg-white rounded-lg overflow-hidden border border-[#E5E7EB] shadow-dashboard w-full max-w-[1120px]">
-        {/* Table Header */}
-        <div className="bg-oxford-blue text-white w-full">
-          <div className="grid grid-cols-[repeat(6,1fr)_2fr] gap-4 px-4 md:px-6 py-3 md:py-4 items-center">
-            <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">{t('dashboard.review.table.columns.number')}</div>
-            <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">{t('dashboard.review.table.columns.date')}</div>
-            <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">{t('dashboard.review.table.columns.mode')}</div>
-            <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">{t('dashboard.review.table.columns.questions')}</div>
-            <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">{t('dashboard.review.table.columns.correct')}</div>
-            <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">{t('dashboard.review.table.columns.avgTime')}</div>
-            <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">{t('dashboard.review.table.columns.actions')}</div>
+      {!loading && (
+        <div className="hidden lg:block bg-white rounded-lg overflow-hidden border border-[#E5E7EB] shadow-dashboard w-full max-w-[1120px]">
+          {/* Table Header */}
+          <div className="bg-oxford-blue text-white w-full">
+            <div className="grid grid-cols-[repeat(6,1fr)_2fr] gap-4 px-4 md:px-6 py-3 md:py-4 items-center">
+              <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">{t('dashboard.review.table.columns.number')}</div>
+              <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">{t('dashboard.review.table.columns.date')}</div>
+              <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">{t('dashboard.review.table.columns.mode')}</div>
+              <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">{t('dashboard.review.table.columns.questions')}</div>
+              <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">{t('dashboard.review.table.columns.correct')}</div>
+              <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">{t('dashboard.review.table.columns.avgTime')}</div>
+              <div className="text-[16px] font-medium font-archivo text-white leading-[16px] tracking-[0%] flex items-center justify-center">{t('dashboard.review.table.columns.actions')}</div>
+            </div>
           </div>
-        </div>
 
-        {/* Table Body */}
-        <div className="bg-white w-full">
-          {currentSessions.map((session, index) => (
+          {/* Table Body */}
+          <div className="bg-white w-full">
+            {currentSessions.length === 0 ? (
+              <div className="p-8 text-center text-oxford-blue">
+                {t('dashboard.review.noSessions') || 'No sessions found'}
+              </div>
+            ) : (
+              currentSessions.map((session, index) => (
             <div
               key={session.id}
               className={`grid grid-cols-[repeat(6,1fr)_2fr] gap-4 px-4 md:px-6 py-3 md:py-4 border-b border-[#E5E7EB] last:border-b-0 items-center ${
@@ -179,7 +299,7 @@ const ReviewPage = () => {
             >
               {/* Session ID */}
               <div className="text-[14px] font-normal text-oxford-blue font-roboto leading-[100%] tracking-[0%] flex items-center justify-center">
-                {session.id}
+                {session.sessionCode || session.id}
               </div>
 
               {/* Date */}
@@ -231,12 +351,14 @@ const ReviewPage = () => {
                 </button>
               </div>
             </div>
-          ))}
+              ))
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Load More Button (Mobile/Tablet) */}
-      {currentPage < totalPages && (
+      {hasNextPage && (
         <div className="lg:hidden mb-4">
           <button
             onClick={handleLoadMore}
@@ -248,48 +370,76 @@ const ReviewPage = () => {
       )}
 
       {/* Pagination (Desktop) */}
-      <div className="hidden lg:flex bg-oxford-blue text-white rounded-lg px-4 md:px-6  items-center justify-between gap-4 w-full max-w-[1120px] min-h-[46.8px]">
-        <div className="text-[12px] font-medium font-roboto text-white leading-[18px] tracking-[3%] whitespace-nowrap">
-          {t('dashboard.review.pagination.showing').replace('{{from}}', (startIndex + 1).toString()).replace('{{to}}', Math.min(endIndex, totalItems).toString()).replace('{{total}}', totalItems.toString())}
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-            className={`w-[78px] h-[27.16px] rounded text-[14px] font-medium font-roboto leading-[16px] tracking-[0%] transition-colors border flex items-center justify-center ${
-              currentPage === 1
-                ? 'bg-white/20 text-white/70 cursor-not-allowed border-transparent'
-                : 'bg-white text-oxford-blue border-[#032746] hover:opacity-90'
-            }`}
-          >
-            {t('dashboard.review.pagination.previous')}
-          </button>
-          {[1, 2, 3].map((page) => (
+      {!loading && totalPages > 0 && (
+        <div className="hidden lg:flex bg-oxford-blue text-white rounded-lg px-4 md:px-6  items-center justify-between gap-4 w-full max-w-[1120px] min-h-[46.8px]">
+          <div className="text-[12px] font-medium font-roboto text-white leading-[18px] tracking-[3%] whitespace-nowrap">
+            {t('dashboard.review.pagination.showing').replace('{{from}}', ((currentPage - 1) * pagination.limit + 1).toString()).replace('{{to}}', Math.min(currentPage * pagination.limit, totalItems).toString()).replace('{{total}}', totalItems.toString())}
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
             <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`w-[32px] h-[32px] rounded text-[14px] font-medium font-roboto leading-[16px] tracking-[0%] transition-colors border flex items-center justify-center ${
-                currentPage === page
-                  ? 'bg-[#EF4444] text-white border-[#EF4444]'
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={!hasPreviousPage}
+              className={`w-[78px] h-[27.16px] rounded text-[14px] font-medium font-roboto leading-[16px] tracking-[0%] transition-colors border flex items-center justify-center ${
+                !hasPreviousPage
+                  ? 'bg-white/20 text-white/70 cursor-not-allowed border-transparent'
                   : 'bg-white text-oxford-blue border-[#032746] hover:opacity-90'
               }`}
             >
-              {page}
+              {t('dashboard.review.pagination.previous')}
             </button>
-          ))}
-          <button
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-            className={`w-[78px] h-[27.16px] rounded text-[14px] font-medium font-roboto leading-[16px] tracking-[0%] transition-colors border flex items-center justify-center ${
-              currentPage === totalPages
-                ? 'bg-white/20 text-white/70 cursor-not-allowed border-transparent'
-                : 'bg-white text-oxford-blue border-[#032746] hover:opacity-90'
-            }`}
-          >
-            {t('dashboard.review.pagination.next')}
-          </button>
+            {(() => {
+              // Calculate which page numbers to show based on backend pagination
+              const pagesToShow = [];
+              const maxPagesToShow = 5;
+              
+              if (totalPages <= maxPagesToShow) {
+                // Show all pages if total is less than max
+                for (let i = 1; i <= totalPages; i++) {
+                  pagesToShow.push(i);
+                }
+              } else {
+                // Show pages around current page
+                let startPage = Math.max(1, currentPage - 2);
+                let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+                
+                // Adjust start if we're near the end
+                if (endPage - startPage < maxPagesToShow - 1) {
+                  startPage = Math.max(1, endPage - maxPagesToShow + 1);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                  pagesToShow.push(i);
+                }
+              }
+              
+              return pagesToShow.map((pageNum) => (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`w-[32px] h-[32px] rounded text-[14px] font-medium font-roboto leading-[16px] tracking-[0%] transition-colors border flex items-center justify-center ${
+                    currentPage === pageNum
+                      ? 'bg-[#EF4444] text-white border-[#EF4444]'
+                      : 'bg-white text-oxford-blue border-[#032746] hover:opacity-90'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              ));
+            })()}
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={!hasNextPage}
+              className={`w-[78px] h-[27.16px] rounded text-[14px] font-medium font-roboto leading-[16px] tracking-[0%] transition-colors border flex items-center justify-center ${
+                !hasNextPage
+                  ? 'bg-white/20 text-white/70 cursor-not-allowed border-transparent'
+                  : 'bg-white text-oxford-blue border-[#032746] hover:opacity-90'
+              }`}
+            >
+              {t('dashboard.review.pagination.next')}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
       </div>
     </div>
   );

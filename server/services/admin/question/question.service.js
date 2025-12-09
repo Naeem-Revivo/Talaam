@@ -1062,6 +1062,17 @@ const updateExplanationByExplainer = async (questionId, explanation, userId) => 
       notes: 'Explanation added/updated by explainer. Sent to processor for review.',
     }],
   });
+
+  // Add history entry separately to ensure it's appended
+  await Question.addHistory(questionId, {
+    action: 'updated',
+    performedById: userId,
+    role: 'explainer',
+    timestamp: new Date(),
+    notes: 'Explanation added/updated by explainer',
+  });
+
+  return updatedQuestion;
 };
 
 /**
@@ -1269,9 +1280,17 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
     updateData.flagReason = null;
     updateData.flagReviewedBy = null;
     updateData.flagRejectionReason = null; // Clear gatherer's rejection reason when processor approves
+  }
+
+  // Update question
+  const updatedQuestion = await Question.update(questionId, updateData);
+
+  // Add history entry separately with detailed notes
+  let historyNote;
+  if (question.isFlagged || question.flagRejectionReason) {
+    const flagType = question.flagType || 'unknown';
+    const wasRejectedByGatherer = question.flagRejectionReason && !question.isFlagged;
     
-    // Add history entry with flag type info
-    let historyNote;
     if (wasRejectedByGatherer) {
       historyNote = `Question approved after gatherer rejected the flag. Gatherer's reason was accepted. Moved to ${nextStatus}. All flag data cleared.`;
     } else if (wasUpdatedAfterFlag) {
@@ -1279,27 +1298,19 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
     } else {
       historyNote = `Question approved with ${flagType} flag, moved to ${nextStatus}. Flag removed.`;
     }
-    
-    updateData.history = [{
-      action: 'approved',
-      performedBy: userId,
-      role: 'processor',
-      timestamp: new Date(),
-      notes: historyNote,
-    }];
   } else {
-    // Add history entry for non-flagged questions
-    updateData.history = [{
-      action: 'approved',
-      performedBy: userId,
-      role: 'processor',
-      timestamp: new Date(),
-      notes: `Question approved, moved to ${nextStatus}`,
-    }];
+    historyNote = `Question approved, moved to ${nextStatus}`;
   }
+  
+  await Question.addHistory(questionId, {
+    action: 'approved',
+    performedById: userId,
+    role: 'processor',
+    timestamp: new Date(),
+    notes: historyNote,
+  });
 
-  // Use Prisma update instead of save
-  return await Question.update(questionId, updateData);
+  return updatedQuestion;
 };
 
 /**
@@ -1513,6 +1524,7 @@ const getQuestionsCountByStatus = async (status, userId = null, role = null) => 
  * Get all questions for superadmin with optional search and pagination
  */
 const getAllQuestionsForSuperadmin = async (filters = {}, searchTerm = '', pagination = { page: 1, limit: 5 }) => {
+  const { prisma } = require('../../../config/db/prisma');
   const baseFilters = { ...filters };
 
   // Handle tab filters - only apply if status is not explicitly provided
@@ -1543,17 +1555,21 @@ const getAllQuestionsForSuperadmin = async (filters = {}, searchTerm = '', pagin
   const skip = (page - 1) * limit;
 
   // Get total count for pagination
-  const allQuestions = await Question.findMany({
+  const totalItems = await prisma.question.count({
     where: query
   });
-  const totalItems = allQuestions.length;
 
-  // Get paginated questions
+  // Get paginated questions with relations
   const questions = await Question.findMany({
     where: query,
     orderBy: { createdAt: 'desc' },
     skip: skip,
-    take: limit
+    take: limit,
+    include: {
+      exam: true,
+      subject: true,
+      topic: true,
+    },
   });
 
   const totalPages = Math.ceil(totalItems / limit);
@@ -2132,6 +2148,39 @@ const approveUpdatedFlaggedQuestion = async (questionId, userId) => {
 };
 
 /**
+ * Toggle question visibility
+ */
+const toggleQuestionVisibility = async (questionId, isVisible, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  // Only allow toggling visibility for completed (approved) questions
+  if (question.status !== 'completed') {
+    throw new Error('Only approved questions can have their visibility toggled');
+  }
+
+  // Update visibility
+  const updatedQuestion = await Question.update(questionId, {
+    isVisible: isVisible,
+    lastModifiedById: userId,
+  });
+
+  // Add history entry
+  await Question.addHistory(questionId, {
+    action: isVisible ? 'visibility_enabled' : 'visibility_disabled',
+    performedById: userId,
+    role: 'superadmin',
+    notes: `Question visibility ${isVisible ? 'enabled' : 'disabled'} by superadmin`,
+    timestamp: new Date(),
+  });
+
+  return updatedQuestion;
+};
+
+/**
  * Update flagged question by Gatherer
  * When gatherer updates a question that was flagged and sent back to them
  */
@@ -2512,6 +2561,7 @@ module.exports = {
   handleGathererUpdateAfterExplainerFlag,
   handleCreatorUpdateVariantAfterFlag,
   approveUpdatedFlaggedQuestion,
+  toggleQuestionVisibility,
   getCompletedExplanationsByExplainer,
   getQuestionsByStatusAndRole,
   rejectGathererFlagRejection,

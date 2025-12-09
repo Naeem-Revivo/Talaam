@@ -10,12 +10,24 @@ const topicsAPI = {
       
       if (parentSubject) queryParams.append('parentSubject', parentSubject);
       
-      const url = queryParams.toString() 
-        ? `/admin/topics?${queryParams.toString()}`
-        : '/admin/topics';
+      const queryString = queryParams.toString();
       
+      // Try student endpoint first, fallback to admin endpoint
+      let url;
+      try {
+        url = queryString 
+          ? `/student/topics?${queryString}`
+          : '/student/topics';
+        const response = await axiosClient.get(url);
+        return response.data;
+      } catch (studentError) {
+        // Fallback to admin endpoint if student endpoint fails
+        url = queryString 
+          ? `/admin/topics?${queryString}`
+        : '/admin/topics';
       const response = await axiosClient.get(url);
       return response.data;
+      }
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Failed to fetch topics' };

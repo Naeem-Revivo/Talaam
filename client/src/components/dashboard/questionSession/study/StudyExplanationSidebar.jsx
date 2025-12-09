@@ -37,7 +37,7 @@ const StudyExplanationSidebar = ({
                 {t('dashboard.questionSession.explanation.explanationLabel')}
               </h5>
               <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
-                {correctOption?.explanation || 'This answer choice aligns with the underlying concept tested in the question.'}
+                {currentState?.explanation || currentQuestion?.explanation || (correctOption && correctOption.explanation) || 'This answer choice aligns with the underlying concept tested in the question.'}
               </p>
             </div>
 
@@ -92,5 +92,3 @@ const StudyExplanationSidebar = ({
 };
 
 export default StudyExplanationSidebar;
-
-

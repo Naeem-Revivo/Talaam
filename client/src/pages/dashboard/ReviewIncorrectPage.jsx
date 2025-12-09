@@ -1,44 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { tick, cross, analytics, watch, setting, flag } from '../../assets/svg/dashboard';
 import { useLanguage } from '../../context/LanguageContext';
+import studentQuestionsAPI from '../../api/studentQuestions';
+import { showErrorToast } from '../../utils/toastConfig';
 
 const ReviewIncorrectPage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const _sessionId = searchParams.get('sessionId') || 'S001';
+  const sessionId = searchParams.get('sessionId');
   
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(2); // 0-based, showing question 3
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showExplanation, setShowExplanation] = useState(true);
-  const [visitedQuestions, setVisitedQuestions] = useState(new Set([2])); // Track visited questions
-  const [showQuestionNav, setShowQuestionNav] = useState(false); // Mobile question navigation
-  const [showExplanationPanel, setShowExplanationPanel] = useState(false); // Mobile explanation panel
+  const [visitedQuestions, setVisitedQuestions] = useState(new Set([0]));
+  const [showQuestionNav, setShowQuestionNav] = useState(false);
+  const [showExplanationPanel, setShowExplanationPanel] = useState(false);
 
-  // Sample question data
-  const questions = [
-    {
-      id: 1,
-      question: "A 25-year-old woman presents with sudden onset fever, chills, and painful urination. Urinalysis shows positive leukocyte esterase and nitrites. A urine culture grows gram-negative rods.",
-      options: [
-        { id: 'A', text: "Inhibits DNA gyrase and topoisomerase IV" },
-        { id: 'B', text: "Inhibits protein synthesis by binding to 30S ribosomal subunit" },
-        { id: 'C', text: "Inhibits cell wall synthesis by binding to D-alanyl-D-alanine" },
-        { id: 'D', text: "Inhibits folate synthesis by blocking dihydropteroate synthase", correct: true },
-        { id: 'E', text: "Inhibits peptidoglycan cross-linking by binding PBPs", userSelected: true }
-      ],
-      userAnswer: 'E',
-      correctAnswer: 'D',
-      timeSpent: '0:01',
-      percentageCorrect: 77,
-      correctExplanation: "Answer: D. Inhibits folate synthesis by blocking dihydropteroate synthase. This patient presents with symptoms and laboratory findings consistent with a urinary tract infection (UTI). The most common cause of UTIs is Escherichia coli, a gram-negative rod. For uncomplicated cystitis, first-line antibiotic therapy includes trimethoprim-sulfamethoxazole (TMP-SMX). Sulfonamides and trimethoprim work by inhibiting different steps in the folate synthesis pathway, which is essential for bacterial DNA synthesis. This mechanism is selective for bacteria because humans obtain folate from their diet rather than synthesizing it.",
-      wrongExplanation: "Answer: E. Inhibits peptidoglycan cross-linking by binding PBPs. This mechanism describes the action of beta-lactam antibiotics (e.g., penicillins, cephalosporins). While some beta-lactams can be used for UTIs, fluoroquinolones (which inhibit DNA gyrase) are sometimes used for complicated UTIs or pyelonephritis but are not preferred for simple cystitis due to resistance concerns and potential side effects."
-    },
-    // Add more sample questions as needed
-  ];
+  // Fetch incorrect questions
+  useEffect(() => {
+    const fetchIncorrectQuestions = async () => {
+      if (!sessionId) {
+        showErrorToast('Session ID is required');
+        navigate('/dashboard/review');
+        return;
+      }
 
-  const totalQuestions = 20;
-  const currentQuestion = questions[0]; // For now, using the same question
+      try {
+        setLoading(true);
+        const response = await studentQuestionsAPI.getSessionIncorrect(sessionId);
+
+        if (response.success && response.data) {
+          const sessionData = response.data;
+          let formattedQuestions = [];
+
+          if (sessionData.incorrect && Array.isArray(sessionData.incorrect)) {
+            formattedQuestions = sessionData.incorrect.map((item, index) => {
+              const optionsObj = item.options || {};
+              const options = ['A', 'B', 'C', 'D', 'E'].map((key) => ({
+                id: key,
+                text: optionsObj[key] || '',
+                correct: key === item.correctAnswer,
+                userSelected: key === item.selectedAnswer,
+              })).filter(opt => opt.text);
+
+              return {
+                id: item.questionId || index + 1,
+                question: item.questionText || '',
+                options,
+                correctAnswer: item.correctAnswer,
+                selectedAnswer: item.selectedAnswer,
+                explanation: item.explanation || '',
+              };
+            });
+          }
+
+          setQuestions(formattedQuestions);
+          if (formattedQuestions.length > 0) {
+            setCurrentQuestionIndex(0);
+            setVisitedQuestions(new Set([0]));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching incorrect questions:', error);
+        showErrorToast(error.message || 'Failed to load incorrect questions');
+        navigate('/dashboard/review');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIncorrectQuestions();
+  }, [sessionId, navigate]);
+
+  const totalQuestions = questions.length;
+  const currentQuestion = questions[currentQuestionIndex] || null;
 
   const handleQuestionClick = (index) => {
     setCurrentQuestionIndex(index);
@@ -61,6 +99,28 @@ const ReviewIncorrectPage = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-oxford-blue text-lg">Loading incorrect questions...</div>
+      </div>
+    );
+  }
+
+  if (!currentQuestion || questions.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <div className="text-oxford-blue text-lg">No incorrect questions found in this session</div>
+        <button
+          onClick={() => navigate('/dashboard/review')}
+          className="px-4 py-2 bg-cinnebar-red text-white rounded-lg"
+        >
+          Back to Review
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Top Header Bar */}
@@ -72,7 +132,7 @@ const ReviewIncorrectPage = () => {
               {t('dashboard.reviewIncorrect.item').replace('{{current}}', (currentQuestionIndex + 1).toString()).replace('{{total}}', totalQuestions.toString())}
             </div>
             <div className="hidden lg:block text-[14px] md:text-[16px] font-normal text-dark-gray font-roboto">
-              {t('dashboard.reviewIncorrect.questionId')} {currentQuestion.id}
+              {t('dashboard.reviewIncorrect.questionId')} {currentQuestion.id || currentQuestionIndex + 1}
             </div>
             <button className="hidden lg:block text-oxford-blue hover:opacity-70">
               <img src={flag} alt="Flag" className="" />
@@ -243,7 +303,7 @@ const ReviewIncorrectPage = () => {
                   <div
                     key={option.id}
                     className={`w-full min-h-[50px] rounded-lg border-2 flex items-center px-3 md:px-4 py-2 ${
-                      option.id === currentQuestion.userAnswer
+                      option.id === currentQuestion.selectedAnswer
                         ? 'border-[#ED4122] bg-white'
                         : 'border-[#E5E7EB] bg-white'
                     }`}
@@ -253,7 +313,7 @@ const ReviewIncorrectPage = () => {
                         type="radio"
                         name="answer"
                         value={option.id}
-                        checked={option.id === currentQuestion.userAnswer}
+                        checked={option.id === currentQuestion.selectedAnswer}
                         readOnly
                         className="w-4 h-4 md:w-5 md:h-5 text-[#EF4444] border-[#EF4444] focus:ring-[#EF4444] flex-shrink-0"
                       />
@@ -282,32 +342,6 @@ const ReviewIncorrectPage = () => {
                   {t('dashboard.reviewIncorrect.feedback.correctAnswer')} {currentQuestion.correctAnswer}
                 </div>
               </div>
-
-              {/* Middle Section - Correctness Percentage */}
-              <div className="flex-1 flex flex-col justify-center items-start md:items-center mb-4 md:mb-0">
-                <div className="flex items-center gap-2">
-                  <img src={analytics} alt="Analytics" className="w-4 h-4 md:w-5 md:h-5" />
-                  <div className="text-[14px] md:text-[16px] font-bold text-oxford-blue font-roboto">
-                    {currentQuestion.percentageCorrect}%
-                  </div>
-                </div>
-                <div className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto">
-                  {t('dashboard.reviewIncorrect.feedback.answeredCorrectly')}
-                </div>
-              </div>
-
-              {/* Right Section - Time Spent */}
-              <div className="flex-1 flex flex-col justify-center items-start md:items-center">
-                <div className="flex items-center gap-2">
-                  <img src={watch} alt="Time" className="w-4 h-4 md:w-5 md:h-5" />
-                  <div className="text-[14px] md:text-[16px] font-bold text-oxford-blue font-roboto">
-                    {currentQuestion.timeSpent}
-                  </div>
-                </div>
-                <div className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto">
-                  {t('dashboard.reviewIncorrect.feedback.timeSpent')}
-                </div>
-              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4 md:mb-6">
@@ -333,8 +367,8 @@ const ReviewIncorrectPage = () => {
             <div className="mb-4 md:mb-6">
               <div className="space-y-3 mb-4 w-full min-h-[300px] md:min-h-[400px] flex flex-col items-start justify-center p-4 md:pl-8 bg-white shadow-content rounded-lg">
                 {currentQuestion.options.map((option) => {
-                  const isCorrect = option.correct;
-                  const isUserAnswer = option.id === currentQuestion.userAnswer;
+                  const isCorrect = option.id === currentQuestion.correctAnswer;
+                  const isUserAnswer = option.id === currentQuestion.selectedAnswer;
                   
                   return (
                     <div
@@ -409,23 +443,7 @@ const ReviewIncorrectPage = () => {
                       {t('dashboard.reviewIncorrect.explanation.explanationLabel')}
                     </h5>
                     <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
-                      {currentQuestion.correctExplanation}
-                    </p>
-                  </div>
-
-                  {/* Wrong Answer Explanation */}
-                  <div>
-                    <h4 className="text-[14px] md:text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-3">
-                      {t('dashboard.reviewIncorrect.explanation.wrongAnswerExplanation')}
-                    </h4>
-                    <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%] mb-2">
-                      {t('dashboard.reviewIncorrect.explanation.answer')} {currentQuestion.userAnswer}. {currentQuestion.options.find(o => o.id === currentQuestion.userAnswer)?.text}
-                    </p>
-                    <h5 className="text-[14px] md:text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-2">
-                      {t('dashboard.reviewIncorrect.explanation.explanationLabel')}
-                    </h5>
-                    <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
-                      {currentQuestion.wrongExplanation}
+                      {currentQuestion.explanation}
                     </p>
                   </div>
                 </div>
@@ -463,23 +481,7 @@ const ReviewIncorrectPage = () => {
                     {t('dashboard.reviewIncorrect.explanation.explanationLabel')}
                   </h5>
                   <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
-                    {currentQuestion.correctExplanation}
-                  </p>
-                </div>
-
-                {/* Wrong Answer Explanation */}
-                <div>
-                  <h4 className="text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-3">
-                    {t('dashboard.reviewIncorrect.explanation.wrongAnswerExplanation')}
-                  </h4>
-                  <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%] mb-2">
-                    {t('dashboard.reviewIncorrect.explanation.answer')} {currentQuestion.userAnswer}. {currentQuestion.options.find(o => o.id === currentQuestion.userAnswer)?.text}
-                  </p>
-                  <h5 className="text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-2">
-                    {t('dashboard.reviewIncorrect.explanation.explanationLabel')}
-                  </h5>
-                  <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
-                    {currentQuestion.wrongExplanation}
+                    {currentQuestion.explanation}
                   </p>
                 </div>
               </div>
@@ -521,9 +523,14 @@ const ReviewIncorrectPage = () => {
           <button className="w-full sm:w-auto px-4 py-2 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity">
             {t('dashboard.reviewIncorrect.actions.studyMode')}
           </button>
-          <button className="w-full sm:w-auto px-4 py-2 bg-[#EF4444] text-white rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity">
-            {t('dashboard.reviewIncorrect.actions.reviewAll')}
-          </button>
+          {sessionId && (
+            <button 
+              onClick={() => navigate(`/dashboard/review-all?sessionId=${sessionId}`)}
+              className="w-full sm:w-auto px-4 py-2 bg-[#EF4444] text-white rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity"
+            >
+              {t('dashboard.reviewIncorrect.actions.reviewAll')}
+            </button>
+          )}
           <button
             onClick={() => navigate('/dashboard/review')}
             className="w-full sm:w-auto px-4 py-2 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity"

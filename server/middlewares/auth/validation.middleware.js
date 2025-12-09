@@ -1,8 +1,17 @@
 const { body } = require('express-validator');
 
+// Email sanitizer that normalizes to lowercase and trims, but preserves + aliases
+// This is important because normalizeEmail() strips + aliases from Gmail addresses
+const normalizeEmailPreserveAliases = (value) => {
+  return value ? value.trim().toLowerCase() : value;
+};
+
 // Validation middleware for signup
 const validateSignup = [
-  body('email').isEmail().withMessage('Please provide a valid email').normalizeEmail(),
+  body('email')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .customSanitizer(normalizeEmailPreserveAliases),
   body('password')
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long'),
@@ -14,13 +23,19 @@ const validateSignup = [
 
 // Validation middleware for login
 const validateLogin = [
-  body('email').isEmail().withMessage('Please provide a valid email').normalizeEmail(),
+  body('email')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .customSanitizer(normalizeEmailPreserveAliases),
   body('password').notEmpty().withMessage('Password is required'),
 ];
 
 // Validation middleware for OTP verification
 const validateOTP = [
-  body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
+  body('email')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .customSanitizer(normalizeEmailPreserveAliases),
   body('otp')
     .isLength({ min: 6, max: 6 })
     .isNumeric()
@@ -29,12 +44,18 @@ const validateOTP = [
 
 // Validation middleware for resend OTP
 const validateResendOTP = [
-  body('email').isEmail().withMessage('Please provide a valid email').normalizeEmail(),
+  body('email')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .customSanitizer(normalizeEmailPreserveAliases),
 ];
 
 // Validation middleware for forgot password
 const validateForgotPassword = [
-  body('email').isEmail().withMessage('Please provide a valid email').normalizeEmail(),
+  body('email')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .customSanitizer(normalizeEmailPreserveAliases),
 ];
 
 // Validation middleware for reset password

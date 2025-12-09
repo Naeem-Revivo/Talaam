@@ -41,6 +41,22 @@ router.post(
   questionController.addCommentToQuestion
 );
 
+// Approved questions route (for superadmin dashboard)
+router.get(
+  '/approved',
+  authMiddleware,
+  superadminMiddleware,
+  questionController.getApprovedQuestions
+);
+
+// Toggle question visibility
+router.put(
+  '/:questionId/visibility',
+  authMiddleware,
+  superadminMiddleware,
+  questionController.toggleQuestionVisibility
+);
+
 // Gatherer routes
 router.get(
   '/gatherer/stats',

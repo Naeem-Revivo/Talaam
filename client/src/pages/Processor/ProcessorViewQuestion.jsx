@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
@@ -391,9 +391,6 @@ const ProcessorViewQuestion = () => {
   // 1. Accepting from gatherer (first time) - need to select creator (if not already assigned)
   // 2. Accepting from creator (first time sending to explainer) - need to select explainer (if not already assigned)
   // After that, the same users remain assigned
-  // We check if question has been approved before by looking at history
-  const hasBeenApprovedBefore = question && question.history && 
-    question.history.some(h => h.role === 'processor' && h.action === 'approved');
   
   // Check if question already has assigned users
   const hasAssignedCreator = question && (question.assignedCreatorId || question.assignedCreator?.id);

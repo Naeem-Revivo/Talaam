@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
+import subjectsAPI from '../../api/subjects';
+import topicsAPI from '../../api/topics';
+import studentQuestionsAPI from '../../api/studentQuestions';
 
 const PracticePage = () => {
   const { t } = useLanguage();
@@ -13,14 +16,14 @@ const PracticePage = () => {
     correct: false,
   });
   const [selectedAllQuestions, setSelectedAllQuestions] = useState(false);
-  const [expandedDomains, setExpandedDomains] = useState({
-    quantitative: true,
-    language: false,
-    logical: false,
-    general: false,
-  });
+  const [expandedDomains, setExpandedDomains] = useState({});
   const [selectedSubtopics, setSelectedSubtopics] = useState({});
   const [sessionSize, setSessionSize] = useState('20');
+  const [subjects, setSubjects] = useState([]);
+  const [topics, setTopics] = useState([]);
+  const [loadingSubjects, setLoadingSubjects] = useState(false);
+  const [loadingTopics, setLoadingTopics] = useState(false);
+  const [selectedSubjectId, setSelectedSubjectId] = useState(null);
 
   const selectedSubtopicCount = Object.values(selectedSubtopics).filter(Boolean).length;
   const parsedSessionSize = Number(sessionSize);
@@ -32,36 +35,118 @@ const PracticePage = () => {
   const handleStartSession = () => {
     if (!canStartSession) return;
     const mode = sessionMode === 'test' ? 'test' : 'study';
-    navigate(`/dashboard/session?mode=${mode}`);
+    
+    // Get selected topic IDs
+    const selectedTopicIds = Object.keys(selectedSubtopics).filter(
+      (topicId) => selectedSubtopics[topicId]
+    );
+    
+    // Build filters object to pass via navigation state
+    const filters = {};
+    
+    // Add selected topics (array of topic IDs)
+    if (selectedTopicIds.length > 0) {
+      filters.topics = selectedTopicIds;
+    }
+    
+    // Add selected subject if available
+    if (selectedSubjectId) {
+      filters.subject = selectedSubjectId;
+    }
+    
+    // Add session size for test mode
+    if (sessionMode === 'test' && sessionSize) {
+      filters.size = sessionSize;
+    }
+    
+    // Navigate with filters in state instead of URL params
+    navigate(`/dashboard/session?mode=${mode}`, { 
+      state: { filters } 
+    });
   };
 
 
-  const domains = [
-  { id: 'quantitative', name: t('dashboard.practice.questionPool.domainsOptions.quantitative') },
-    { id: 'language', name: t('dashboard.practice.questionPool.domainsOptions.language') },
-    { id: 'logical', name: t('dashboard.practice.questionPool.domainsOptions.logical') },
-    { id: 'general', name: t('dashboard.practice.questionPool.domainsOptions.general') },
-  ];
+  // Fetch subjects on component mount
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        setLoadingSubjects(true);
+        const response = await subjectsAPI.getAllSubjects();
+        if (response.success && response.data) {
+          setSubjects(response.data.subjects || response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching subjects:', error);
+      } finally {
+        setLoadingSubjects(false);
+      }
+    };
+    fetchSubjects();
+  }, []);
 
-  const subtopics = [
-    { id: 'algebra', name: t('dashboard.practice.questionPool.subtopicsOptions.algebra'), count: 150 },
-    { id: 'geometry', name: t('dashboard.practice.questionPool.subtopicsOptions.geometry'), count: 120 },
-    { id: 'arithmetic', name: t('dashboard.practice.questionPool.subtopicsOptions.arithmetic'), count: 180 },
-    { id: 'statistics', name: t('dashboard.practice.questionPool.subtopicsOptions.statistics'), count: 90 },
-    { id: 'verbal', name: t('dashboard.practice.questionPool.subtopicsOptions.verbal'), count: 200 },
-  ];
+  // Fetch topics when a subject is expanded
+  useEffect(() => {
+    if (selectedSubjectId) {
+      const fetchTopics = async () => {
+        try {
+          setLoadingTopics(true);
+          const response = await topicsAPI.getAllTopics({ parentSubject: selectedSubjectId });
+          if (response.success && response.data) {
+            const topicsList = response.data.topics || response.data;
+            // Fetch question counts for each topic
+            const topicsWithCounts = await Promise.all(
+              topicsList.map(async (topic) => {
+                try {
+                  // Get question count for this topic
+                  const questionsResponse = await studentQuestionsAPI.getAvailableQuestions({ 
+                    topic: topic.id || topic._id 
+                  });
+                  const count = questionsResponse.success && questionsResponse.data?.questions 
+                    ? questionsResponse.data.questions.length 
+                    : 0;
+                  return {
+                    ...topic,
+                    count: count,
+                  };
+                } catch (error) {
+                  console.error(`Error fetching count for topic ${topic.id}:`, error);
+                  return { ...topic, count: 0 };
+                }
+              })
+            );
+            setTopics(topicsWithCounts);
+          }
+        } catch (error) {
+          console.error('Error fetching topics:', error);
+        } finally {
+          setLoadingTopics(false);
+        }
+      };
+      fetchTopics();
+    } else {
+      setTopics([]);
+    }
+  }, [selectedSubjectId]);
 
-  const toggleDomain = (domainId) => {
+  const toggleSubject = (subjectId) => {
+    if (expandedDomains[subjectId]) {
+      // Collapsing - clear topics
+      setSelectedSubjectId(null);
+      setTopics([]);
+    } else {
+      // Expanding - fetch topics for this subject
+      setSelectedSubjectId(subjectId);
+    }
     setExpandedDomains(prev => ({
       ...prev,
-      [domainId]: !prev[domainId],
+      [subjectId]: !prev[subjectId],
     }));
   };
 
-  const toggleSubtopic = (subtopicId) => {
+  const toggleTopic = (topicId) => {
     setSelectedSubtopics(prev => ({
       ...prev,
-      [subtopicId]: !prev[subtopicId],
+      [topicId]: !prev[topicId],
     }));
   };
 
@@ -255,24 +340,29 @@ const PracticePage = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Domains */}
+          {/* Subjects (previously Domains) */}
           <div>
             <h3 className="font-archivo font-semibold text-[16px] leading-[24px] tracking-[0%] text-oxford-blue mb-3">
-              {t('dashboard.practice.questionPool.domains')}
+              {t('dashboard.practice.questionPool.subjects')}
             </h3>
             <div className="space-y-2">
-              {domains.map((domain) => (
+              {loadingSubjects ? (
+                <div className="text-center py-4 text-oxford-blue">Loading subjects...</div>
+              ) : subjects.length === 0 ? (
+                <div className="text-center py-4 text-oxford-blue">No subjects available</div>
+              ) : (
+                subjects.map((subject) => (
                 <button
-                  key={domain.id}
-                  onClick={() => toggleDomain(domain.id)}
+                    key={subject.id || subject._id}
+                    onClick={() => toggleSubject(subject.id || subject._id)}
                   className="w-full flex items-center justify-between rounded-lg transition-colors h-[44px] px-4 py-3 bg-white border border-[#E5E7EB]"
                 >
                   <span className="font-archivo font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
-                    {domain.name}
+                      {subject.name}
                   </span>
                   <svg
                     className={`w-5 h-5 text-oxford-blue transition-transform ${
-                      expandedDomains[domain.id] ? 'rotate-90' : ''
+                        expandedDomains[subject.id || subject._id] ? 'rotate-90' : ''
                     }`}
                     fill="none"
                     stroke="currentColor"
@@ -281,35 +371,44 @@ const PracticePage = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
-          {/* Subtopics */}
+          {/* Topics (previously Subtopics) */}
           <div>
             <h3 className="font-archivo font-semibold text-[16px] leading-[24px] tracking-[0%] text-oxford-blue mb-3">
-              {t('dashboard.practice.questionPool.subtopics')}
+              {t('dashboard.practice.questionPool.topic')}
             </h3>
             <div className="space-y-2">
-              {subtopics.map((subtopic) => (
+              {loadingTopics ? (
+                <div className="text-center py-4 text-oxford-blue">Loading topics...</div>
+              ) : topics.length === 0 ? (
+                <div className="text-center py-4 text-oxford-blue">
+                  {selectedSubjectId ? 'No topics available for this subject' : 'Select a subject to view topics'}
+                </div>
+              ) : (
+                topics.map((topic) => (
                 <label 
-                  key={subtopic.id} 
+                    key={topic.id || topic._id} 
                   className="w-full flex items-center gap-3 cursor-pointer rounded-lg transition-colors h-[44px] px-4 py-3 bg-white border border-[#E5E7EB]"
                 >
                   <input
                     type="checkbox"
-                    checked={selectedSubtopics[subtopic.id] || false}
-                    onChange={() => toggleSubtopic(subtopic.id)}
+                      checked={selectedSubtopics[topic.id || topic._id] || false}
+                      onChange={() => toggleTopic(topic.id || topic._id)}
                     className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red"
                   />
                   <span className="font-archivo font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
-                    {subtopic.name}
+                      {topic.name}
                   </span>
                   <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
-                    {subtopic.count}
+                      {topic.count || 0}
                   </span>
                 </label>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>

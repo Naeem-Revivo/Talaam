@@ -10,6 +10,8 @@ const TestModeLayout = ({
   currentState,
   visitedIndices,
   showQuestionNav,
+  sessionStartTime,
+  timeRemaining,
   onToggleQuestionNav,
   onCloseQuestionNav,
   onGoToIndex,
@@ -28,6 +30,8 @@ const TestModeLayout = ({
         currentIndex={currentIndex}
         totalQuestions={totalQuestions}
         currentQuestion={currentQuestion}
+        sessionStartTime={sessionStartTime}
+        timeRemaining={timeRemaining}
         onToggleQuestionNav={onToggleQuestionNav}
         onNavigate={onNavigate}
       />

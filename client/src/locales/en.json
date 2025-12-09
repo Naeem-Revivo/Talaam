@@ -679,7 +679,9 @@
         "title": "Question Pool",
         "allQuestions": "All Questions",
         "domains": "Domains",
+        "subjects": "Subjects",
         "subtopics": "Subtopics",
+        "topic": "Topic",
         "noQuestionsMatch": "No questions match your filters. Clear filters to continue.",
         "domainsOptions": {
           "quantitative": "Quantitative",
@@ -945,6 +947,8 @@
     "questionSession": {
       "item": "Item {{current}} of {{total}}",
       "questionId": "Question Id:",
+      "timeStart": "Time Start",
+      "timeRunning": "Time Running",
       "formulaSheet": "Formula Sheet",
       "timeRemaining": "Time Remaining",
       "mark": "Mark",
