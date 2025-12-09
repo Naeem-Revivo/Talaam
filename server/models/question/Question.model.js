@@ -7,7 +7,7 @@ const Question = {
   // Create a new question
   async create(data) {
     // Handle history and comments if provided
-    const { history, comments, exam, subject, topic, createdBy, assignedProcessor, ...questionData } = data;
+    const { history, comments, exam, subject, topic, createdBy, assignedProcessor, assignedCreator, assignedExplainer, ...questionData } = data;
     
     // Map relation fields to Prisma format (exam -> examId, etc.)
     const createData = {
@@ -17,6 +17,8 @@ const Question = {
       ...(topic && { topicId: topic }),
       ...(createdBy && { createdById: createdBy }),
       ...(assignedProcessor && { assignedProcessorId: assignedProcessor }),
+      ...(assignedCreator && { assignedCreatorId: assignedCreator }),
+      ...(assignedExplainer && { assignedExplainerId: assignedExplainer }),
       ...(history && history.length > 0 && {
         history: {
           create: history.map(h => {
@@ -39,7 +41,10 @@ const Question = {
           })
         }
       })
-    };
+    };//#endregion
+
+    console.log('createData', createData);
+    console.log('history', createData.history);
 
     return await prisma.question.create({
       data: createData,
@@ -66,6 +71,8 @@ const Question = {
         approvedBy: true,
         rejectedBy: true,
         assignedProcessor: true,
+        assignedCreator: true,
+        assignedExplainer: true,
         flaggedBy: true,
         flagReviewedBy: true,
         originalQuestion: true,
@@ -135,7 +142,7 @@ const Question = {
 
   // Update question
   async update(id, data) {
-    const { history, comments, exam, subject, topic, createdBy, lastModifiedBy, approvedBy, rejectedBy, flaggedBy, flagReviewedBy, ...updateData } = data;
+    const { history, comments, exam, subject, topic, createdBy, lastModifiedBy, approvedBy, rejectedBy, assignedProcessor, assignedCreator, assignedExplainer, flaggedBy, flagReviewedBy, ...updateData } = data;
     
     // Map relation fields to Prisma format
     const update = {
@@ -147,6 +154,9 @@ const Question = {
       ...(lastModifiedBy !== undefined && { lastModifiedById: lastModifiedBy }),
       ...(approvedBy !== undefined && { approvedById: approvedBy }),
       ...(rejectedBy !== undefined && { rejectedById: rejectedBy }),
+      ...(assignedProcessor !== undefined && { assignedProcessorId: assignedProcessor }),
+      ...(assignedCreator !== undefined && { assignedCreatorId: assignedCreator }),
+      ...(assignedExplainer !== undefined && { assignedExplainerId: assignedExplainer }),
       ...(flaggedBy !== undefined && { flaggedById: flaggedBy }),
       ...(flagReviewedBy !== undefined && { flagReviewedById: flagReviewedBy }),
       ...(history && history.length > 0 && {

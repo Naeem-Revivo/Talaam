@@ -963,18 +963,17 @@ const GathererQuestionDetailsPage = () => {
 
               {/* Activity Log Card */}
               <div
-                className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full h-auto lg:h-[351px]"
-                style={{}}
+                className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full h-auto"
               >
                 <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
                   {t("admin.questionDetails.sections.activityLog")}
                 </h2>
-                <div className="space-y-4">
+                <div className="space-y-4 overflow-y-auto">
                   {question.history && question.history.length > 0 ? (
                     question.history.map((activity, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-[672px] h-auto"
+                        className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-full h-auto"
                         dir="ltr"
                       >
                         <div className="flex-shrink-0">

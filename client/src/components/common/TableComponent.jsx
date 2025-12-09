@@ -236,6 +236,28 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
               </svg>
             </button>
           )}
+          {item.actionType === "editicon" && (
+            <button
+              type="button"
+              onClick={() => onEdit?.(item)}
+              className="text-orange-dark text-[14px] font-normal leading-[16px] font-roboto hover:underline transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                className="h-5 w-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                />
+              </svg>
+            </button>
+          )}
           {item.actionType === "update" && (
             <button
               type="button"
@@ -525,6 +547,28 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
             </svg>
           </button>
         )}
+        {item.actionType === "editicon" && (
+          <button
+            type="button"
+            onClick={() => onEdit?.(item)}
+            className="text-orange-dark text-[14px] font-normal leading-[16px] font-roboto hover:underline transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              className="h-5 w-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+              />
+            </svg>
+          </button>
+        )}
         {item.actionType === "update" && (
           <button
             type="button"
@@ -686,13 +730,13 @@ export const Table = ({
   const dir = language === "ar" ? "rtl" : "ltr";
   return (
     <section
-      className={`w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard  ${
-        showPagination ? "md:min-h-[348px]" : "md:min-h-auto"
+      className={`w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard ${
+        items.length > 0 ? "min-h-auto" : "min-h-[300px]"
       }`}
       dir={dir}
     >
-      <div className="hidden overflow-x-auto md:block">
-        <table className="min-w-full border-collapse">
+      <div className={`hidden overflow-x-auto md:block ${items.length > 0 ? "" : "flex items-center justify-center min-h-[300px]"}`}>
+        <table className={`min-w-full border-collapse ${items.length > 0 ? "" : "h-full"}`}>
           <TableHeader columns={columns} />
           <tbody>
             {items.length ? (
@@ -711,16 +755,18 @@ export const Table = ({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-6 py-10 text-center text-sm text-dark-gray"
+                  className="px-6 py-10 text-center text-sm text-dark-gray h-full"
                 >
-                  {emptyMessage}
+                  <div className="flex items-center justify-center min-h-[200px]">
+                    {emptyMessage}
+                  </div>
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-      <div className="flex flex-col gap-4 p-2 md:hidden">
+      <div className={`flex flex-col gap-4 p-2 md:hidden ${items.length > 0 ? "" : "min-h-[300px] flex items-center justify-center"}`}>
         {items.length ? (
           items.map((item) => (
             <MobileCard
@@ -734,7 +780,7 @@ export const Table = ({
             />
           ))
         ) : (
-          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-dark-gray shadow-empty">
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-dark-gray shadow-empty min-h-[200px] flex items-center justify-center">
             {emptyMessage}
           </div>
         )}

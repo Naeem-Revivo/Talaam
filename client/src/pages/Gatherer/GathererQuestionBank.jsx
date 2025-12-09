@@ -113,7 +113,8 @@ const GathererQuestionBank = () => {
               processor: processorName,
               lastUpdate: formatDate(question.updatedAt || question.createdAt),
               status: formatStatus(question.status, question.isFlagged),
-              actionType: "viewicon",
+              actionType: question.isFlagged ? "editicon" : "viewicon",
+              originalData: question, // Store full question data for edit page
             };
           });
 
@@ -169,8 +170,13 @@ const GathererQuestionBank = () => {
   }, [navigate]);
 
   const handleEdit = useCallback((item) => {
-    console.log("Edit item:", item);
-  }, []);
+    if (item?.id) {
+      // Navigate to edit page with question ID and pass the question data via state
+      navigate(`/gatherer/question-bank/Gatherer-editQuestion/${item.id}`, {
+        state: { questionData: item.originalData }
+      });
+    }
+  }, [navigate]);
 
   const handleCustomAction = useCallback((item) => {
     console.log("Custom action for item:", item);
@@ -198,6 +204,7 @@ const GathererQuestionBank = () => {
 
   const statusFilterOptions = useMemo(() => [
     { value: "", label: "All Statuses" },
+    { value: "pending_gatherer", label: "Pending My Action" },
     { value: "pending_processor", label: "Pending Review" },
     { value: "pending_creator", label: "Pending Creator" },
     { value: "pending_explainer", label: "Pending Explainer" },

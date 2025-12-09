@@ -104,12 +104,14 @@ const AssignedQuestionPage = () => {
                                    !isFlagged && 
                                    (question.approvedBy || question.originalData?.approvedBy); // Has approvedBy means it was assigned to creator before
       
-      // Get status - priority: Flag > Approved (if submitted by creator) > Original status
+      // Get status - priority: Flag > Approved (if submitted by creator) > In Review (pending_explainer) > Original status
       let status;
       if (isFlagged) {
         status = 'Flag';
       } else if (isSubmittedByCreator) {
         status = 'Approved';
+      } else if (question.status === 'pending_explainer') {
+        status = 'In Review'; // Show as "In Review" when with explainer
       } else {
         status = formatStatus(question.status);
       }
@@ -146,8 +148,10 @@ const AssignedQuestionPage = () => {
     try {
       setError(null);
       // Fetch questions with multiple statuses to get all questions assigned to creator
-      // This includes: pending_creator, pending_processor (flagged), completed, rejected, etc.
-      const statusesToFetch = ['pending_creator', 'pending_processor', 'completed', 'rejected'];
+      // Exclude completed questions - they should appear in completed page
+      // Include pending_explainer so questions remain visible after processor sends to explainer
+      // This includes: pending_creator, pending_processor (flagged), pending_explainer, rejected, etc.
+      const statusesToFetch = ['pending_creator', 'pending_processor', 'pending_explainer', 'rejected'];
       const allQuestions = [];
       
       // Fetch questions for each status
