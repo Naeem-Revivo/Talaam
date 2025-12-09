@@ -1800,6 +1800,14 @@ const getApprovedQuestions = async (req, res, next) => {
     res.status(200).json(response);
   } catch (error) {
     console.error('[QUESTION] GET /admin/questions/approved → error', error);
+    next(error);
+  }
+};
+
+/**
+ * Update flagged question by Gatherer
+ * PUT /admin/questions/gatherer/:questionId
+ */
 const updateFlaggedQuestionByGatherer = async (req, res, next) => {
   try {
     const { questionId } = req.params;
