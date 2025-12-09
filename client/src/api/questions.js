@@ -412,6 +412,47 @@ const questionsAPI = {
       throw apiError || { message: 'Failed to flag question' };
     }
   },
+
+  // ============================================
+  // SUPERADMIN ENDPOINTS
+  // ============================================
+
+  // Get approved questions for superadmin
+  getApprovedQuestions: async (params = {}) => {
+    try {
+      const { page = 1, limit = 10, search, exam, subject, topic } = params;
+      const queryParams = new URLSearchParams();
+      if (page) queryParams.append('page', page);
+      if (limit) queryParams.append('limit', limit);
+      if (search) queryParams.append('search', search);
+      if (exam) queryParams.append('exam', exam);
+      if (subject) queryParams.append('subject', subject);
+      if (topic) queryParams.append('topic', topic);
+
+      const url = queryParams.toString()
+        ? `/admin/questions/approved?${queryParams.toString()}`
+        : '/admin/questions/approved';
+
+      const response = await axiosClient.get(url);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to fetch approved questions' };
+    }
+  },
+
+  // Toggle question visibility
+  toggleQuestionVisibility: async (questionId, isVisible) => {
+    try {
+      const response = await axiosClient.put(`/admin/questions/${questionId}/visibility`, {
+        isVisible,
+      });
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to toggle question visibility' };
+    }
+  },
 };
 
 export default questionsAPI;

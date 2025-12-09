@@ -320,22 +320,22 @@ const ProcessorViewQuestion = () => {
               </>
             ) : (
               <>
-                <OutlineButton
-                  text={t("processor.viewQuestion.reject")}
-                  onClick={() => setShowRejectModal(true)}
-                  className="py-[10px] px-[14px]"
-                  disabled={processing}
-                />
-                <PrimaryButton
-                  text={isFromExplainerSubmission
-                    ? (t("processor.viewQuestion.approveQuestion") || "Approve Question")
-                    : isFromCreatorSubmission 
-                    ? (t("processor.viewQuestion.acceptAndSendToExplainer") || "Accept and sent to explainer")
-                    : t("processor.viewQuestion.acceptAndSend")}
-                  className="py-[10px] px-5"
-                  onClick={handleAccept}
-                  disabled={processing}
-                />
+            <OutlineButton
+              text={t("processor.viewQuestion.reject")}
+              onClick={() => setShowRejectModal(true)}
+              className="py-[10px] px-[14px]"
+              disabled={processing}
+            />
+            <PrimaryButton
+              text={isFromExplainerSubmission
+                ? (t("processor.viewQuestion.approveQuestion") || "Approve Question")
+                : isFromCreatorSubmission 
+                ? (t("processor.viewQuestion.acceptAndSendToExplainer") || "Accept and sent to explainer")
+                : t("processor.viewQuestion.acceptAndSend")}
+              className="py-[10px] px-5"
+              onClick={handleAccept}
+              disabled={processing}
+            />
               </>
             )}
           </div>

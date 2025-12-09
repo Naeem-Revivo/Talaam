@@ -1,30 +1,89 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { accuracy, time, target } from "../../assets/svg/dashboard";
 import { useLanguage } from "../../context/LanguageContext";
+import studentQuestionsAPI from "../../api/studentQuestions";
 
 const AnalyticsPage = () => {
   const { t } = useLanguage();
   const [selectedRange, setSelectedRange] = useState("all");
-  const [selectedTopicTab, setSelectedTopicTab] = useState("quantitative");
+  const [testSummary, setTestSummary] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [accuracyTrendData, setAccuracyTrendData] = useState([]);
+  const [trendLoading, setTrendLoading] = useState(true);
 
-  // Chart data for accuracy trend - matching the exact pattern from the image
-  const accuracyData = [
-    { date: "Jan 15", accuracy: 68 },
-    { date: "Jan 17", accuracy: 75 },
-    { date: "Jan 19", accuracy: 82 },
-    { date: "Jan 21", accuracy: 88 },
-    { date: "Jan 23", accuracy: 85 },
-  ];
+  useEffect(() => {
+    const fetchTestSummary = async () => {
+      try {
+        setLoading(true);
+        const response = await studentQuestionsAPI.getTestSummary();
+        if (response.success) {
+          setTestSummary(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching test summary:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Topics data
-  const quantitativeTopics = [
-    { name: "Algebra", accuracy: 85 },
-    { name: "Geometry", accuracy: 78 },
-    { name: "Arithmetic", accuracy: 92 },
-    { name: "Statistics", accuracy: 71 },
-    { name: "Probability", accuracy: 66 },
-  ];
+    fetchTestSummary();
+  }, []);
+
+  // Fetch accuracy trend data based on selected range
+  useEffect(() => {
+    const fetchAccuracyTrend = async () => {
+      try {
+        setTrendLoading(true);
+        let days = 30; // Default to 30 days
+        
+        if (selectedRange === "7") {
+          days = 7;
+        } else if (selectedRange === "30") {
+          days = 30;
+        } else {
+          // For "all", get last 90 days to show more data
+          days = 90;
+        }
+        
+        const response = await studentQuestionsAPI.getTestModeAccuracyTrend(days);
+        if (response.success && response.data) {
+          setAccuracyTrendData(response.data);
+        } else {
+          setAccuracyTrendData([]);
+        }
+      } catch (error) {
+        console.error("Error fetching accuracy trend:", error);
+        setAccuracyTrendData([]);
+      } finally {
+        setTrendLoading(false);
+      }
+    };
+
+    fetchAccuracyTrend();
+  }, [selectedRange]);
+
+  // Use real data if available, otherwise show empty state
+  const accuracyData = accuracyTrendData.length > 0 
+    ? accuracyTrendData 
+    : [];
+
+  // Calculate percentile percentage same as dashboard progress chart
+  const getPercentilePercentage = () => {
+    if (!testSummary) {
+      return 0;
+    }
+    // Same calculation as dashboard: (Total correct answers) / (Total questions attempted) * 100
+    const completed = testSummary.totalCorrectAnswers || 0;
+    const total = testSummary.totalQuestionsAttempted || 0;
+    const percentage = total > 0 ? (completed / total) * 100 : 0;
+    return Math.min(percentage, 100); // Cap at 100%
+  };
+
+  const percentilePercentage = getPercentilePercentage();
+
+  // Get subject accuracy data from test summary
+  const subjectAccuracyData = testSummary?.subjectAccuracy || [];
 
   // Focus areas data
   const focusAreas = [
@@ -65,7 +124,7 @@ const AnalyticsPage = () => {
             {t("dashboard.analytics.metrics.overallAccuracy")}
           </p>
           <p className="text-[24px] md:text-[30px] font-bold text-oxford-blue font-archivo leading-[20px] md:leading-[36px] pt-2 md:pt-0 tracking-[0%]">
-            78%
+            {loading ? "..." : testSummary?.accuracy ? `${testSummary.accuracy.toFixed(0)}%` : "0%"}
           </p>
         </div>
 
@@ -81,7 +140,7 @@ const AnalyticsPage = () => {
             {t("dashboard.analytics.metrics.avgTimePerQuestion")}
           </p>
           <p className="text-[24px] md:text-[30px] font-bold text-oxford-blue font-archivo leading-[20px] md:leading-[36px] tracking-[0%] pt-2 md:pt-0">
-            52s
+            {loading ? "..." : testSummary?.averageTimePerQuestion ? `${testSummary.averageTimePerQuestion}s` : "0s"}
           </p>
           <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[18px] md:leading-[20px] tracking-[0%] pt-2 md:pt-0">
             {t("dashboard.analytics.metrics.perQuestion")}
@@ -100,12 +159,18 @@ const AnalyticsPage = () => {
             {t("dashboard.analytics.metrics.questionsCompleted")}
           </p>
           <p className="text-[24px] md:text-[30px] font-bold text-oxford-blue font-archivo leading-[20px] md:leading-[36px] tracking-[0%] py-2 md:py-0 mb-2">
-            325/1000
+            {loading ? "..." : testSummary 
+              ? `${testSummary.totalCorrectAnswers || 0}/${testSummary.totalQuestionsAttempted || 0}`
+              : "0/0"}
           </p>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className="bg-[#6CA6C1] h-2 rounded-full"
-              style={{ width: "32.5%" }}
+              style={{ 
+                width: loading || !testSummary || !testSummary.totalQuestionsAttempted
+                  ? "0%"
+                  : `${Math.min((testSummary.totalCorrectAnswers || 0) / (testSummary.totalQuestionsAttempted || 1) * 100, 100)}%`
+              }}
             ></div>
           </div>
         </div>
@@ -171,65 +236,79 @@ const AnalyticsPage = () => {
           </div>
         </div>
         <div className="h-[250px] md:h-[280px] w-full max-w-[650px] mx-auto overflow-x-auto">
-          <LineChart
-            width={undefined}
-            height={250}
-            series={[
-              {
-                data: accuracyData.map((d) => d.accuracy),
-                color: "#6CA6C1",
-                curve: "natural",
-                showMarkers: true,
-              },
-            ]}
-            xAxis={[
-              {
-                data: accuracyData.map((_, i) => i),
-                scaleType: "point",
-                valueFormatter: (value) => accuracyData[value]?.date || "",
-              },
-            ]}
-            yAxis={[
-              {
-                min: 60,
-                max: 100,
-                label: "Accuracy (%)",
-                labelStyle: {
+          {trendLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-dark-gray font-roboto">Loading...</p>
+            </div>
+          ) : accuracyData.length > 0 ? (
+            <LineChart
+              width={undefined}
+              height={250}
+              series={[
+                {
+                  data: accuracyData.map((d) => d.accuracy),
+                  color: "#6CA6C1",
+                  curve: "natural",
+                  showMarkers: true,
+                },
+              ]}
+              xAxis={[
+                {
+                  data: accuracyData.map((_, i) => i),
+                  scaleType: "point",
+                  valueFormatter: (value) => accuracyData[value]?.date || "",
+                },
+              ]}
+              yAxis={[
+                {
+                  min: accuracyData.length > 0 
+                    ? Math.max(0, Math.min(...accuracyData.map(d => d.accuracy)) - 10)
+                    : 60,
+                  max: accuracyData.length > 0
+                    ? Math.min(100, Math.max(...accuracyData.map(d => d.accuracy)) + 10)
+                    : 100,
+                  label: "Accuracy (%)",
+                  labelStyle: {
+                    fontSize: "14px",
+                    fontFamily: "Roboto",
+                    fontWeight: 400,
+                    fill: "#4B5563",
+                  },
+                },
+              ]}
+              grid={{ horizontal: true, vertical: false }}
+              sx={{
+                width: "100%",
+                "& .MuiChartsAxis-tickLabel": {
+                  fontSize: "12px",
+                  fill: "#6B7280",
+                },
+                "& .MuiChartsAxis-label": {
                   fontSize: "14px",
                   fontFamily: "Roboto",
                   fontWeight: 400,
                   fill: "#4B5563",
                 },
-              },
-            ]}
-            grid={{ horizontal: true, vertical: false }}
-            sx={{
-              width: "100%",
-              "& .MuiChartsAxis-tickLabel": {
-                fontSize: "12px",
-                fill: "#6B7280",
-              },
-              "& .MuiChartsAxis-label": {
-                fontSize: "14px",
-                fontFamily: "Roboto",
-                fontWeight: 400,
-                fill: "#4B5563",
-              },
-              '& .MuiChartsGrid-line[data-direction="horizontal"]': {
-                stroke: "#E5E7EB",
-                strokeWidth: 1,
-              },
-              '& .MuiChartsGrid-line[data-direction="vertical"]': {
-                display: "none",
-              },
-              "& .MuiMarkElement-root": {
-                fill: "#6CA6C1",
-                stroke: "#6CA6C1",
-                strokeWidth: 2,
-                r: 4,
-              },
-            }}
-          />
+                '& .MuiChartsGrid-line[data-direction="horizontal"]': {
+                  stroke: "#E5E7EB",
+                  strokeWidth: 1,
+                },
+                '& .MuiChartsGrid-line[data-direction="vertical"]': {
+                  display: "none",
+                },
+                "& .MuiMarkElement-root": {
+                  fill: "#6CA6C1",
+                  stroke: "#6CA6C1",
+                  strokeWidth: 2,
+                  r: 4,
+                },
+              }}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-dark-gray font-roboto">No test mode data available for the selected period</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -244,71 +323,91 @@ const AnalyticsPage = () => {
             {t("dashboard.analytics.yourPercentile.title")}
           </h2>
 
-          {/* Semi-circular gauge */}
-          <div className="flex flex-col items-center justify-center">
-            <div className="relative flex items-center justify-center w-full overflow-x-auto">
-              <svg
-                width="280"
-                height="160"
-                viewBox="0 0 280 160"
-                className="overflow-visible max-w-full"
-                style={{ minWidth: "240px", width: "100%", maxWidth: "280px" }}
-              >
-                {/* Background arc (full 100%) */}
-                <path
-                  d="M 40 140 A 100 100 0 0 1 240 140"
-                  fill="none"
-                  stroke="#E5E7EB"
-                  strokeWidth="12"
-                />
-                {/* Progress arc (82% filled with moonstone blue) */}
-                <path
-                  d="M 40 140 A 100 100 0 0 1 240 140"
-                  fill="none"
-                  stroke="#6CA6C1"
-                  strokeWidth="12"
-                  strokeDasharray="257.48 56.52"
-                  strokeDashoffset="0"
-                  strokeLinecap="round"
-                />
-                {/* Red dot at 82% position (147.6 degrees from start) */}
-                <circle
-                  cx={40 + 100 * (1 - Math.cos((147.6 * Math.PI) / 180))}
-                  cy={140 - 100 * Math.sin((147.6 * Math.PI) / 180)}
-                  r="8"
-                  fill="#ED4122"
-                />
-                {/* Label with pointer */}
-                <g
-                  transform={`translate(${
-                    40 + 100 * (1 - Math.cos((147.6 * Math.PI) / 180))
-                  }, ${140 - 100 * Math.sin((147.6 * Math.PI) / 180) - 30})`}
-                >
-                  <rect
-                    x="-56.205"
-                    y="-12"
-                    width="116.41"
-                    height="30"
-                    rx="4"
-                    fill="#ED4122"
-                  />
-                  <text
-                    x="0"
-                    y="5"
-                    textAnchor="middle"
-                    fill="white"
-                    fontSize="18"
-                    fontWeight="700"
-                    fontFamily="Archivo"
-                    dominantBaseline="middle"
-                  >
-                    82nd %ile
-                  </text>
-                  {/* Triangular pointer pointing down */}
-                  <polygon points="-5,22 0,28 5,22" fill="#ED4122" />
-                </g>
-              </svg>
-            </div>
+           {/* Semi-circular gauge */}
+           <div className="flex flex-col items-center justify-center">
+             <div className="relative flex items-center justify-center w-full overflow-x-auto">
+               {loading ? (
+                 <div className="text-gray-400 font-roboto">Loading...</div>
+               ) : (
+                 <svg
+                   width="280"
+                   height="160"
+                   viewBox="0 0 280 160"
+                   className="overflow-visible max-w-full"
+                   style={{ minWidth: "240px", width: "100%", maxWidth: "280px" }}
+                 >
+                   {/* Background arc (full 100%) */}
+                   <path
+                     d="M 40 140 A 100 100 0 0 1 240 140"
+                     fill="none"
+                     stroke="#E5E7EB"
+                     strokeWidth="12"
+                   />
+                   {/* Progress arc - dynamic based on percentile percentage */}
+                   {/* Arc circumference: π * radius = π * 100 ≈ 314.16 */}
+                   {percentilePercentage > 0 && (
+                     <path
+                       d="M 40 140 A 100 100 0 0 1 240 140"
+                       fill="none"
+                       stroke="#6CA6C1"
+                       strokeWidth="12"
+                       strokeDasharray={`${(percentilePercentage / 100) * 314.16} ${314.16}`}
+                       strokeDashoffset="0"
+                       strokeLinecap="round"
+                     />
+                   )}
+                   {/* Red dot at percentile position */}
+                   {percentilePercentage > 0 && (
+                     <>
+                       {/* Calculate angle: percentage of 180 degrees */}
+                       {(() => {
+                         const angle = (percentilePercentage / 100) * 180; // Convert percentage to degrees (0-180)
+                         const angleRad = (angle * Math.PI) / 180;
+                         const dotX = 40 + 100 * (1 - Math.cos(angleRad));
+                         const dotY = 140 - 100 * Math.sin(angleRad);
+                         return (
+                           <>
+                             <circle
+                               cx={dotX}
+                               cy={dotY}
+                               r="8"
+                               fill="#ED4122"
+                             />
+                             {/* Label with pointer */}
+                             <g
+                               transform={`translate(${dotX}, ${dotY - 30})`}
+                             >
+                               <rect
+                                 x="-56.205"
+                                 y="-12"
+                                 width="116.41"
+                                 height="30"
+                                 rx="4"
+                                 fill="#ED4122"
+                               />
+                               <text
+                                 x="0"
+                                 y="5"
+                                 textAnchor="middle"
+                                 fill="white"
+                                 fontSize="18"
+                                 fontWeight="700"
+                                 fontFamily="Archivo"
+                                 dominantBaseline="middle"
+                               >
+                                 {Math.round(percentilePercentage)}th %ile
+                               </text>
+                               {/* Triangular pointer pointing down */}
+                               <polygon points="-5,22 0,28 5,22" fill="#ED4122" />
+                             </g>
+                           </>
+                         );
+                       })()}
+                     </>
+                   )}
+                 </svg>
+               )}
+             </div>
 
             {/* Descriptive Text with Icon */}
             <div className="flex items-center justify-center gap-2 mt-2 md:mt-4">
@@ -346,60 +445,48 @@ const AnalyticsPage = () => {
           </div>
         </div>
 
-        {/* Accuracy by Topic Section */}
+        {/* Accuracy by Subject Section */}
         <div
           className="bg-white border border-[#E5E7EB] rounded-[8px] p-4 md:p-6 w-full max-w-[1120px] min-h-[400px] md:min-h-[527px]"
           style={{ borderWidth: "1px" }}
         >
           <h2 className="text-[18px] md:text-[20px] font-bold text-oxford-blue mb-4 md:mb-6 font-archivo leading-[26px] md:leading-[32px] tracking-[0%]">
-            {t("dashboard.analytics.accuracyByTopic.title")}
+            Accuracy by Subject
           </h2>
-          <div className="flex gap-2 mb-6 md:mb-9">
-            <button
-              onClick={() => setSelectedTopicTab("quantitative")}
-              className={`px-4 py-2 rounded-full text-[14px] md:text-[16px] font-bold transition-colors font-archivo leading-[24px] tracking-[0%] text-center ${
-                selectedTopicTab === "quantitative"
-                  ? "bg-orange-dark text-white"
-                  : "bg-white border border-gray-200 text-gray-600"
-              }`}
-            >
-              {t("dashboard.analytics.accuracyByTopic.quantitative")}
-            </button>
-            <button
-              onClick={() => setSelectedTopicTab("language")}
-              className={`px-4 py-2 rounded-full text-[14px] md:text-[16px] font-bold transition-colors font-archivo leading-[24px] tracking-[0%] text-center ${
-                selectedTopicTab === "language"
-                  ? "bg-orange-dark text-white"
-                  : "bg-white border border-gray-200 text-gray-600"
-              }`}
-            >
-              {t("dashboard.analytics.accuracyByTopic.language")}
-            </button>
-          </div>
-          <div className="space-y-4">
-            {quantitativeTopics.map((topic, index) => (
-              <div
-                key={index}
-                className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 md:gap-3 border border-[#E5E7EB] rounded-[8px] p-3 md:p-4"
-                style={{ borderWidth: "1px" }}
-              >
-                <span className="text-[14px] md:text-[16px] font-medium text-oxford-blue font-archivo leading-[20px] md:leading-[24px] tracking-[0%]">
-                  {topic.name}
-                </span>
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <div className="flex-1 sm:w-[200px] bg-[#FDF0D5] rounded-full h-2">
-                    <div
-                      className="bg-[#6CA6C1] h-2 rounded-full"
-                      style={{ width: `${topic.accuracy}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-[14px] md:text-[16px] font-bold text-oxford-blue font-archivo leading-[20px] md:leading-[24px] tracking-[0%] text-right min-w-[40px]">
-                    {topic.accuracy}%
+          {loading ? (
+            <div className="flex items-center justify-center h-[200px]">
+              <p className="text-dark-gray font-roboto">Loading...</p>
+            </div>
+          ) : subjectAccuracyData.length > 0 ? (
+            <div className="space-y-4">
+              {subjectAccuracyData.map((subject, index) => (
+                <div
+                  key={subject.subjectId || index}
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 md:gap-3 border border-[#E5E7EB] rounded-[8px] p-3 md:p-4"
+                  style={{ borderWidth: "1px" }}
+                >
+                  <span className="text-[14px] md:text-[16px] font-medium text-oxford-blue font-archivo leading-[20px] md:leading-[24px] tracking-[0%]">
+                    {subject.subjectName || `Subject ${index + 1}`}
                   </span>
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="flex-1 sm:w-[200px] bg-[#FDF0D5] rounded-full h-2">
+                      <div
+                        className="bg-[#6CA6C1] h-2 rounded-full"
+                        style={{ width: `${Math.min(subject.accuracy || 0, 100)}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-[14px] md:text-[16px] font-bold text-oxford-blue font-archivo leading-[20px] md:leading-[24px] tracking-[0%] text-right min-w-[40px]">
+                      {Math.round(subject.accuracy || 0)}%
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-[200px]">
+              <p className="text-dark-gray font-roboto">No subject data available</p>
+            </div>
+          )}
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { flag, setting } from '../icons';
 import { useLanguage } from '../../../../context/LanguageContext';
 
@@ -8,8 +8,38 @@ const TestModeHeader = ({
   currentQuestion,
   onToggleQuestionNav,
   onNavigate,
+  sessionStartTime,
+  timeRemaining,
 }) => {
   const { t } = useLanguage();
+  const [timeDisplay, setTimeDisplay] = useState('00:00:00');
+
+  // Format time as HH:MM:SS
+  const formatTime = (milliseconds) => {
+    if (milliseconds === null || milliseconds === undefined) return '00:00:00';
+    const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
+
+  // Update time display
+  useEffect(() => {
+    if (timeRemaining !== null && timeRemaining !== undefined) {
+      // Show countdown timer (time remaining)
+      setTimeDisplay(formatTime(timeRemaining));
+    } else if (sessionStartTime) {
+      // Fallback to elapsed time if timer not available
+      const updateTime = () => {
+        const elapsed = Date.now() - sessionStartTime;
+        setTimeDisplay(formatTime(elapsed));
+      };
+      updateTime();
+      const interval = setInterval(updateTime, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [timeRemaining, sessionStartTime]);
 
   return (
     <header className="bg-white border-b border-[#E5E7EB] px-4 md:px-6 py-3 md:py-4">
@@ -39,8 +69,15 @@ const TestModeHeader = ({
             {t('dashboard.questionSession.formulaSheet')}
           </button> */}
           <div className="flex items-center gap-2">
-            <span className="text-[14px] font-normal text-oxford-blue font-roboto">
-              {t('dashboard.questionSession.timeRemaining')} <span className="font-bold">{currentQuestion.timeRemaining || '--:--'}</span>
+            <span className={`text-[14px] font-normal font-roboto ${
+              timeRemaining !== null && timeRemaining !== undefined && timeRemaining < 60000 
+                ? 'text-[#EF4444]' 
+                : 'text-oxford-blue'
+            }`}>
+              {timeRemaining !== null && timeRemaining !== undefined 
+                ? t('dashboard.questionSession.timeRemaining') || 'Time Remaining'
+                : t('dashboard.questionSession.timeRunning')
+              }: <span className="font-bold">{timeDisplay}</span>
             </span>
           </div>
         </div>
@@ -74,9 +111,18 @@ const TestModeHeader = ({
             <span className="sm:hidden">{t('dashboard.questionSession.formulaSheet')}</span>
           </button> */}
           <div className="hidden lg:flex items-center gap-2">
-            <span className="text-[12px] md:text-[14px] font-normal text-oxford-blue font-roboto">
-              <span className="hidden sm:inline">{t('dashboard.questionSession.timeRemaining')} </span>
-              {currentQuestion.timeRemaining || '--:--'}
+            <span className={`text-[12px] md:text-[14px] leading-[24px] font-normal font-archivo border py-2 px-4 border-[#E5E7EB] rounded-lg flex flex-col ${
+              timeRemaining !== null && timeRemaining !== undefined && timeRemaining < 60000 
+                ? 'text-[#EF4444] border-[#EF4444]' 
+                : 'text-black'
+            }`}>
+              <span className="hidden sm:inline text-[10px] leading-[16px] font-roboto font-normal text-[#4B5563]">
+                {timeRemaining !== null && timeRemaining !== undefined 
+                  ? t('dashboard.questionSession.timeRemaining') || 'Time Remaining'
+                  : t('dashboard.questionSession.timeRunning')
+                }
+              </span>
+              <span className="text-[12px] font-bold">{timeDisplay}</span>
             </span>
             <button className="text-oxford-blue hover:opacity-70">
               <img src={setting} alt="Settings" className="w-4 h-4 md:w-5 md:h-5" />

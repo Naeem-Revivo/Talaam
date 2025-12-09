@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { flag, setting, listcheck } from '../icons';
 import { useLanguage } from '../../../../context/LanguageContext';
 
@@ -8,8 +8,35 @@ const StudyModeHeader = ({
   currentQuestion,
   onToggleQuestionNav,
   onNavigate,
+  sessionStartTime,
 }) => {
   const { t } = useLanguage();
+  const [timeRunning, setTimeRunning] = useState('00:00:00');
+
+  // Format time as HH:MM:SS
+  const formatTime = (milliseconds) => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
+
+  // Update time running every second
+  useEffect(() => {
+    if (!sessionStartTime) return;
+
+    // Update running time immediately
+    const updateTime = () => {
+      const elapsed = Date.now() - sessionStartTime;
+      setTimeRunning(formatTime(elapsed));
+    };
+
+    updateTime(); // Initial update
+    const interval = setInterval(updateTime, 1000);
+
+    return () => clearInterval(interval);
+  }, [sessionStartTime]);
   return (
     <header className="bg-white border-b border-[#E5E7EB] px-4 md:px-6 py-3 md:py-4">
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
@@ -41,7 +68,7 @@ const StudyModeHeader = ({
           </button> */}
           <div className="flex items-center gap-2">
             <span className="text-[14px] font-normal text-oxford-blue font-roboto">
-              {t('dashboard.questionSession.timeRemaining')} <span className="font-bold">{currentQuestion.timeRemaining || '--:--'}</span>
+              {t('dashboard.questionSession.timeRunning')}: <span className="font-bold">{timeRunning}</span>
             </span>
           </div>
         </div>
@@ -75,8 +102,8 @@ const StudyModeHeader = ({
           </button> */}
           <div className="hidden lg:flex items-center gap-2">
             <span className="text-[12px] md:text-[14px] leading-[24px] font-normal text-black font-archivo border py-2 px-4 border-[#E5E7EB] rounded-lg flex flex-col">
-              <span className="hidden sm:inline text-[12px] leading-[20px] font-roboto font-normal text-[#4B5563]">{t('dashboard.questionSession.timeRemaining')} </span>
-              {currentQuestion.timeRemaining || '--:--'}
+              <span className="hidden sm:inline text-[10px] leading-[16px] font-roboto font-normal text-[#4B5563]">{t('dashboard.questionSession.timeRunning')} </span>
+              <span className="text-[12px] font-bold">{timeRunning}</span>
             </span>
             <button className="text-oxford-blue hover:opacity-70">
               <img src={setting} alt="Settings" className="w-4 h-4" />

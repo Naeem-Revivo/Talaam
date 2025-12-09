@@ -3,11 +3,15 @@ import { useLanguage } from "../../context/LanguageContext";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { vedio, timer } from "../../assets/svg/dashboard";
 import { useNavigate } from "react-router-dom";
+import studentQuestionsAPI from "../../api/studentQuestions";
 
 const DashboardPage = () => {
   const { t } = useLanguage();
   const [chartWidth, setChartWidth] = useState(1070);
   const navigate = useNavigate();
+  const [testSummary, setTestSummary] = useState(null);
+  const [performanceData, setPerformanceData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const updateChartWidth = () => {
@@ -23,57 +27,82 @@ const DashboardPage = () => {
     return () => window.removeEventListener("resize", updateChartWidth);
   }, []);
 
-  const sectionData = [
-  {
-    name: t("dashboard.overview.sectionNames.quantitative"),
-    progress: 65,
-    color: "bg-moonstone-blue",
-  },
-  {
-    name: t("dashboard.overview.sectionNames.language"),
-    progress: 80,
-    color: "bg-[#C6D8D3]",
-  },
-  {
-    name: t("dashboard.overview.sectionNames.logical"),
-    progress: 72,
-    color: "bg-cinnebar-red",
-  },
-  {
-    name: t("dashboard.overview.sectionNames.general"),
-    progress: 58,
-    color: "bg-papaya-whip",
-  },
-  {
-    name: t("dashboard.overview.sectionNames.current"),
-    progress: 45,
-    color: "bg-oxford-blue",
-  },
-];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [summaryResponse, performanceResponse] = await Promise.all([
+          studentQuestionsAPI.getTestSummary(),
+          studentQuestionsAPI.getPerformanceData(),
+        ]);
 
+        if (summaryResponse.success) {
+          setTestSummary(summaryResponse.data);
+        }
 
-  const performanceData = [
-    { session: "S1", accuracy: 65, state: "normal" },
-    { session: "S2", accuracy: 72, state: "normal" },
-    { session: "S3", accuracy: 68, state: "selected" },
-    { session: "S4", accuracy: 75, state: "normal" },
-    { session: "S5", accuracy: 82, state: "hovered" },
-    { session: "S6", accuracy: 78, state: "normal" },
-    { session: "S7", accuracy: 85, state: "normal" },
-    { session: "S8", accuracy: 79, state: "normal" },
-    { session: "S9", accuracy: 88, state: "normal" },
-    { session: "S10", accuracy: 92, state: "normal" },
-  ];
+        if (performanceResponse.success) {
+          setPerformanceData(performanceResponse.data);
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const getBarColor = (state) => {
-    switch (state) {
-      case "selected":
-        return "#ED4122"; // cinnebar-red
-      case "hovered":
-        return "#032746"; // oxford-blue
-      default:
-        return "#6CA6C1"; // moonstone-blue
+    fetchDashboardData();
+  }, []);
+
+  // Calculate progress percentage based on test mode data
+  const getProgressData = () => {
+    if (!testSummary) {
+      return { percentage: 0, completed: 0, total: 0 };
     }
+
+    // Progress = (Total correct answers) / (Total questions attempted across all test sessions) * 100
+    // In test mode, total includes all attempts (e.g., 3 tests × 10 questions = 30 total)
+    const completed = testSummary.totalCorrectAnswers || 0;
+    const total = testSummary.totalQuestionsAttempted || 0; // Total questions attempted across all test sessions
+    const percentage = total > 0 ? (completed / total) * 100 : 0;
+
+    return {
+      percentage: Math.min(percentage, 100), // Cap at 100%
+      completed,
+      total,
+    };
+  };
+
+  // Get accuracy for test mode
+  const getAccuracy = () => {
+    if (!testSummary) {
+      return 0;
+    }
+    return testSummary.accuracy || 0;
+  };
+
+  // Get bar color based on mode (orange for test, teal for study)
+  const getBarColor = (mode) => {
+    if (mode === "test") {
+      return "#FF6B35"; // Orange color for test mode
+    } else if (mode === "study") {
+      return "#20B2AA"; // Milestone/teal color for study mode
+    }
+    return "#6CA6C1"; // Default fallback
+  };
+
+  // Prepare performance data for chart (ensure we have 10 items)
+  const chartPerformanceData = () => {
+    const data = performanceData || [];
+    // If we have less than 10 sessions, pad with empty data
+    const paddedData = [...data];
+    while (paddedData.length < 10) {
+      paddedData.push({
+        session: `S${paddedData.length + 1}`,
+        accuracy: 0,
+        mode: null,
+      });
+    }
+    return paddedData.slice(0, 10); // Ensure exactly 10 items
   };
 
   const startNewSession = () => {
@@ -102,44 +131,50 @@ const DashboardPage = () => {
               {t("dashboard.overview.progress")}
             </h3>
             <div className="flex items-center justify-center">
-              <div className="relative w-[90px] h-[90px] md:w-[115px] md:h-[115px]">
-                <svg
-                  className="transform -rotate-90 w-full h-full"
-                  viewBox="0 0 192 192"
-                >
-                  <circle
-                    cx="96"
-                    cy="96"
-                    r="84"
-                    stroke="currentColor"
-                    strokeWidth="16"
-                    fill="none"
-                    className="text-gray-200"
-                  />
-                  <circle
-                    cx="96"
-                    cy="96"
-                    r="84"
-                    stroke="currentColor"
-                    strokeWidth="16"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 84 * 0.325} ${
-                      2 * Math.PI * 84
-                    }`}
-                    className="text-moonstone-blue"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <p className="font-archivo font-bold text-[24px] leading-[32px] text-oxford-blue">
-                      32.5%
-                    </p>
+              {loading ? (
+                <div className="text-gray-400">Loading...</div>
+              ) : (
+                <div className="relative w-[90px] h-[90px] md:w-[115px] md:h-[115px]">
+                  <svg
+                    className="transform -rotate-90 w-full h-full"
+                    viewBox="0 0 192 192"
+                  >
+                    <circle
+                      cx="96"
+                      cy="96"
+                      r="84"
+                      stroke="currentColor"
+                      strokeWidth="16"
+                      fill="none"
+                      className="text-gray-200"
+                    />
+                    <circle
+                      cx="96"
+                      cy="96"
+                      r="84"
+                      stroke="currentColor"
+                      strokeWidth="16"
+                      fill="none"
+                      strokeDasharray={`${2 * Math.PI * 84 * (getProgressData().percentage / 100)} ${
+                        2 * Math.PI * 84
+                      }`}
+                      className="text-moonstone-blue"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="font-archivo font-bold text-[24px] leading-[32px] text-oxford-blue">
+                        {getProgressData().percentage.toFixed(1)}%
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
             <p className="text-center font-roboto font-normal text-sm md:text-[16px] leading-5 md:leading-6 text-gray-500 mt-3 md:mt-4">
-              325/1000 {t("dashboard.overview.questionsCompleted")}
+              {loading
+                ? "Loading..."
+                : `${getProgressData().completed}/${getProgressData().total} ${t("dashboard.overview.questionsCompleted")}`}
             </p>
           </div>
 
@@ -150,12 +185,20 @@ const DashboardPage = () => {
             </h3>
             <div className="flex items-start justify-center h-full">
               <div className="text-center">
-                <p className="font-archivo font-bold text-[36px] leading-[40px] text-cinnebar-red">
-                  78%
-                </p>
-                <p className="font-roboto font-normal text-sm md:text-base leading-5 md:leading-6 tracking-normal text-center align-middle text-gray-500">
-                  {t("dashboard.overview.overall")}
-                </p>
+                {loading ? (
+                  <p className="font-roboto font-normal text-sm md:text-base text-gray-400">
+                    Loading...
+                  </p>
+                ) : (
+                  <>
+                    <p className="font-archivo font-bold text-[36px] leading-[40px] text-cinnebar-red">
+                      {getAccuracy().toFixed(0)}%
+                    </p>
+                    <p className="font-roboto font-normal text-sm md:text-base leading-5 md:leading-6 tracking-normal text-center align-middle text-gray-500">
+                      {t("dashboard.overview.overall")}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -169,41 +212,46 @@ const DashboardPage = () => {
         </h2>
         <div className="rounded-xl flex flex-col items-center justify-center p-3 md:p-6 overflow-x-auto md:overflow-x-visible scroll-smooth">
           <div className="min-w-[650px] md:min-w-0 w-full md:w-[1070px] h-[320px]">
-            <BarChart
-              width={chartWidth}
-              height={320}
-              margin={{ left: 70, right: 30, top: 30, bottom: 80 }}
-              series={[
-                {
-                  data: performanceData.map((data) => data.accuracy),
-                  borderRadius: 4,
-                },
-              ]}
-              xAxis={[
-                {
-                  id: "sessions",
-                  data: performanceData.map((data) => data.session),
-                  scaleType: "band",
-                  label: "Sessions",
-                  labelStyle: {
-                    fontFamily: "Roboto",
-                    fontSize: 12,
-                    fill: "#6B7280",
+            {loading ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-gray-400">Loading performance data...</p>
+              </div>
+            ) : (
+              <BarChart
+                width={chartWidth}
+                height={320}
+                margin={{ left: 70, right: 30, top: 30, bottom: 80 }}
+                series={[
+                  {
+                    data: chartPerformanceData().map((data) => data.accuracy),
+                    borderRadius: 4,
                   },
-                  tickLabelStyle: {
-                    fontFamily: "Roboto",
-                    fontSize: 12,
-                    fill: "#6B7280",
+                ]}
+                xAxis={[
+                  {
+                    id: "sessions",
+                    data: chartPerformanceData().map((data) => data.session),
+                    scaleType: "band",
+                    label: "Sessions",
+                    labelStyle: {
+                      fontFamily: "Roboto",
+                      fontSize: 12,
+                      fill: "#6B7280",
+                    },
+                    tickLabelStyle: {
+                      fontFamily: "Roboto",
+                      fontSize: 12,
+                      fill: "#6B7280",
+                    },
+                    colorMap: {
+                      type: "ordinal",
+                      values: chartPerformanceData().map((data) => data.session),
+                      colors: chartPerformanceData().map((data) =>
+                        getBarColor(data.mode)
+                      ),
+                    },
                   },
-                  colorMap: {
-                    type: "ordinal",
-                    values: performanceData.map((data) => data.session),
-                    colors: performanceData.map((data) =>
-                      getBarColor(data.state)
-                    ),
-                  },
-                },
-              ]}
+                ]}
               yAxis={[
                 {
                   id: "accuracy",
@@ -274,7 +322,8 @@ const DashboardPage = () => {
                   width: 35,
                 },
               }}
-            />
+              />
+            )}
           </div>
 
           {/* Footer with legend */}
@@ -283,28 +332,19 @@ const DashboardPage = () => {
               <div className="flex items-center gap-2">
                 <div
                   className="w-4 h-4 rounded"
-                  style={{ backgroundColor: "#6CA6C1" }}
+                  style={{ backgroundColor: "#FF6B35" }}
                 />
                 <span className="font-roboto text-[14px] leading-[20px] font-normal text-[#6B7280]">
-                  {t("dashboard.overview.legend.normal")}
+                  Test Mode
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <div
                   className="w-4 h-4 rounded"
-                  style={{ backgroundColor: "#032746" }}
+                  style={{ backgroundColor: "#20B2AA" }}
                 />
                 <span className="font-roboto text-[14px] leading-[20px] font-normal text-[#6B7280]">
-                  {t("dashboard.overview.legend.hovered")}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-4 h-4 rounded"
-                  style={{ backgroundColor: "#ED4122" }}
-                />
-                <span className="font-roboto text-[14px] leading-[20px] font-normal text-[#6B7280]">
-                  {t("dashboard.overview.legend.selected")}
+                  Study Mode
                 </span>
               </div>
             </div>

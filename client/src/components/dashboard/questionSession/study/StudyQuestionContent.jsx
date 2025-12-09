@@ -31,9 +31,10 @@ const OptionCard = ({ option, groupName, isSelected, disabled, onOptionChange, h
     </div>
   );
 };
-const ReviewOptionCard = ({ option, groupName, isCorrect, isUserAnswer }) => {
+const ReviewOptionCard = ({ option, groupName, isCorrect, isUserAnswer, userAnswerIsCorrect }) => {
   const isChecked = isCorrect; // ONLY correct answer gets full checked look
-  const isWrong = isUserAnswer && !isCorrect;
+  // Only show incorrect styling if user selected this option AND their overall answer was incorrect
+  const isWrong = isUserAnswer && !isCorrect && !userAnswerIsCorrect;
 
   // Card background + border
   const cardClass = isCorrect
@@ -164,11 +165,20 @@ const StudyQuestionContent = ({
         </div>
       )}
 
-      {showReview && (
+      {showReview && isCorrect && (
+        <div className="w-full md:w-[316px] mb-6 md:mb-10 h-[50px] md:h-[60px] rounded-[8px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] flex items-center justify-center text-center transition-colors shadow-button">
+          <span className="w-full h-full flex items-center justify-center gap-2 rounded-[8px] bg-[#10B981] text-white">
+            <img src={tick} alt="Correct" className="h-4 w-4" />
+            {t('dashboard.questionSession.correctAnswer')}
+          </span>
+        </div>
+      )}
+
+      {showReview && !isCorrect && (
         <>
           <div className="w-full md:w-[316px] mb-6 md:mb-10 h-[50px] md:h-[60px] rounded-[8px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] flex items-center justify-center text-center transition-colors shadow-button">
             <span className={`w-full h-full flex items-center justify-center gap-2 rounded-[8px] ${statusButtonClass}`}>
-              <img src={isCorrect ? tick : cross} alt={isCorrect ? 'Correct' : 'Incorrect'} className="h-4 w-4" />
+              <img src={cross} alt="Incorrect" className="h-4 w-4" />
               {statusButtonLabel}
             </span>
           </div>
@@ -214,6 +224,7 @@ const StudyQuestionContent = ({
                   groupName={reviewGroupName}
                   isCorrect={option.id === currentQuestion.correctAnswer}
                   isUserAnswer={option.id === selectedOption?.id}
+                  userAnswerIsCorrect={isCorrect}
                 />
               ))}
             </div>
@@ -223,6 +234,8 @@ const StudyQuestionContent = ({
         </>
       )}
 
+      {showReview && (
+        <>
       <button
         onClick={onToggleExplanationPanel}
         className="lg:hidden w-full mb-4 px-4 py-3 bg-[#F3F4F6] text-oxford-blue rounded-lg text-[14px] font-normal font-roboto hover:opacity-90 transition-opacity flex items-center justify-between"
@@ -235,7 +248,6 @@ const StudyQuestionContent = ({
 
       {showExplanationPanel && (
         <div className="lg:hidden mb-4 p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB]">
-          {showReview ? (
             <div className="space-y-6">
               <div>
                 <h4 className="text-[14px] md:text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-3">
@@ -248,7 +260,7 @@ const StudyQuestionContent = ({
                   {t('dashboard.questionSession.explanation.explanationLabel')}
                 </h5>
                 <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
-                  {correctOption?.explanation || 'This answer choice aligns with the underlying concept tested in the question.'}
+                  {currentState?.explanation || currentQuestion?.explanation || (correctOption && correctOption.explanation) || 'This answer choice aligns with the underlying concept tested in the question.'}
                 </p>
               </div>
 
@@ -293,12 +305,9 @@ const StudyQuestionContent = ({
                 )}
               </div>
             </div>
-          ) : (
-            <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
-              {t('dashboard.questionSession.submitToView')}
-            </p>
-          )}
         </div>
+          )}
+        </>
       )}
     </div>
   );
