@@ -728,19 +728,23 @@ const updateExplanationByExplainer = async (questionId, explanation, userId) => 
     throw new Error('Explanation is required');
   }
 
-  // Use Prisma update method instead of Mongoose save
-  return await Question.update(questionId, {
+  // Update question and add history entry
+  const updatedQuestion = await Question.update(questionId, {
     explanation: explanation.trim(),
     lastModifiedBy: userId,
     status: 'pending_processor',
-    history: [{
-      action: 'updated',
-      performedBy: userId,
-      role: 'explainer',
-      timestamp: new Date(),
-      notes: 'Explanation added/updated by explainer',
-    }],
   });
+
+  // Add history entry separately to ensure it's appended
+  await Question.addHistory(questionId, {
+    action: 'updated',
+    performedById: userId,
+    role: 'explainer',
+    timestamp: new Date(),
+    notes: 'Explanation added/updated by explainer',
+  });
+
+  return updatedQuestion;
 };
 
 /**
@@ -769,7 +773,16 @@ const approveQuestion = async (questionId, userId) => {
     ? question.history[question.history.length - 1] 
     : null;
   
-  if (lastAction && lastAction.role === 'gatherer') {
+  // Check if question has explanation (indicates explainer has submitted)
+  const hasExplanation = question.explanation && question.explanation.trim().length > 0;
+  
+  // Priority: If explainer has submitted (has explanation), mark as completed
+  // Otherwise, check history to determine next step
+  if (hasExplanation && question.status === 'pending_processor') {
+    // Question has explanation and is pending processor review - this means explainer submitted it
+    // After processor approves explainer submission, mark as completed
+    nextStatus = 'completed';
+  } else if (lastAction && lastAction.role === 'gatherer') {
     // After gatherer submission/update, move to creator
     nextStatus = 'pending_creator';
   } else if (lastAction && lastAction.role === 'creator') {
@@ -800,29 +813,25 @@ const approveQuestion = async (questionId, userId) => {
     updateData.flagReason = null;
     updateData.flagReviewedBy = null;
     updateData.flagRejectionReason = null;
-    
-    // Add history entry with flag type info
-    const historyNote = `Question approved after ${flagType} flag correction, moved to ${nextStatus}. Flag removed.`;
-    updateData.history = [{
-      action: 'approved',
-      performedBy: userId,
-      role: 'processor',
-      timestamp: new Date(),
-      notes: historyNote,
-    }];
-  } else {
-    // Add history entry
-    updateData.history = [{
-      action: 'approved',
-      performedBy: userId,
-      role: 'processor',
-      timestamp: new Date(),
-      notes: `Question approved, moved to ${nextStatus}`,
-    }];
   }
 
-  // Use Prisma update instead of save
-  return await Question.update(questionId, updateData);
+  // Update question
+  const updatedQuestion = await Question.update(questionId, updateData);
+
+  // Add history entry separately
+  const historyNote = wasUpdatedAfterFlag 
+    ? `Question approved after ${question.flagType} flag correction, moved to ${nextStatus}. Flag removed.`
+    : `Question approved, moved to ${nextStatus}`;
+  
+  await Question.addHistory(questionId, {
+    action: 'approved',
+    performedById: userId,
+    role: 'processor',
+    timestamp: new Date(),
+    notes: historyNote,
+  });
+
+  return updatedQuestion;
 };
 
 /**
@@ -1036,6 +1045,7 @@ const getQuestionsCountByStatus = async (status, userId = null, role = null) => 
  * Get all questions for superadmin with optional search and pagination
  */
 const getAllQuestionsForSuperadmin = async (filters = {}, searchTerm = '', pagination = { page: 1, limit: 5 }) => {
+  const { prisma } = require('../../../config/db/prisma');
   const baseFilters = { ...filters };
 
   // Handle tab filters - only apply if status is not explicitly provided
@@ -1066,17 +1076,21 @@ const getAllQuestionsForSuperadmin = async (filters = {}, searchTerm = '', pagin
   const skip = (page - 1) * limit;
 
   // Get total count for pagination
-  const allQuestions = await Question.findMany({
+  const totalItems = await prisma.question.count({
     where: query
   });
-  const totalItems = allQuestions.length;
 
-  // Get paginated questions
+  // Get paginated questions with relations
   const questions = await Question.findMany({
     where: query,
     orderBy: { createdAt: 'desc' },
     skip: skip,
-    take: limit
+    take: limit,
+    include: {
+      exam: true,
+      subject: true,
+      topic: true,
+    },
   });
 
   const totalPages = Math.ceil(totalItems / limit);
@@ -1609,6 +1623,39 @@ const approveUpdatedFlaggedQuestion = async (questionId, userId) => {
   });
 };
 
+/**
+ * Toggle question visibility
+ */
+const toggleQuestionVisibility = async (questionId, isVisible, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  // Only allow toggling visibility for completed (approved) questions
+  if (question.status !== 'completed') {
+    throw new Error('Only approved questions can have their visibility toggled');
+  }
+
+  // Update visibility
+  const updatedQuestion = await Question.update(questionId, {
+    isVisible: isVisible,
+    lastModifiedById: userId,
+  });
+
+  // Add history entry
+  await Question.addHistory(questionId, {
+    action: isVisible ? 'visibility_enabled' : 'visibility_disabled',
+    performedById: userId,
+    role: 'superadmin',
+    notes: `Question visibility ${isVisible ? 'enabled' : 'disabled'} by superadmin`,
+    timestamp: new Date(),
+  });
+
+  return updatedQuestion;
+};
+
 module.exports = {
   createQuestion,
   getQuestionsByStatus,
@@ -1638,5 +1685,6 @@ module.exports = {
   handleGathererUpdateAfterExplainerFlag,
   handleCreatorUpdateVariantAfterFlag,
   approveUpdatedFlaggedQuestion,
+  toggleQuestionVisibility,
 };
 

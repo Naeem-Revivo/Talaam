@@ -13,6 +13,9 @@ router.get('/', questionController.getAvailableQuestions);
 // Study Mode: Submit answer and get immediate feedback
 router.post('/study', questionController.submitStudyAnswer);
 
+// Study Mode: Save complete session results
+router.post('/study/session', questionController.saveStudySessionResults);
+
 // Study Mode: Get study history
 router.get('/study/history', questionController.getStudyHistory);
 
@@ -32,6 +35,12 @@ router.get('/test/history', questionController.getTestHistory);
 
 // Test Mode: Get overall summary
 router.get('/test/summary', questionController.getTestSummary);
+
+// Test Mode: Get day-wise accuracy trend
+router.get('/test/accuracy-trend', questionController.getTestModeAccuracyTrend);
+
+// Dashboard: Get performance data (last 10 sessions)
+router.get('/performance', questionController.getPerformanceData);
 
 // Plan: Get subjects, topics, and questions for an exam/plan
 router.get('/plan/structure', questionController.getPlanStructure);

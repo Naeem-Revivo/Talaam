@@ -5,8 +5,11 @@ const { generateToken } = require('../../config/jwt');
  * Signup a new user
  */
 const signup = async (email, password, otp, otpExpiry, role = 'student') => {
+  // Normalize email to lowercase and trim (preserve + aliases)
+  const normalizedEmail = email ? email.trim().toLowerCase() : email;
+
   // Check if user already exists
-  const existingUser = await findUserByEmail(email);
+  const existingUser = await findUserByEmail(normalizedEmail);
   if (existingUser) {
     throw new Error('User already exists with this email');
   }
@@ -18,7 +21,7 @@ const signup = async (email, password, otp, otpExpiry, role = 'student') => {
 
   // Create user data
   const userData = {
-    email,
+    email: normalizedEmail,
     password,
     otp,
     otpExpiry,

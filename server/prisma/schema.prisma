@@ -191,6 +191,7 @@ model Question {
   flagStatus        String?  @map("flag_status") // pending, approved, rejected
   flagReviewedById  String?  @map("flag_reviewed_by_id")
   flagRejectionReason String? @map("flag_rejection_reason")
+  isVisible         Boolean  @default(true) @map("is_visible")
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -260,7 +261,7 @@ model StudentAnswer {
   subjectId       String?  @map("subject_id")
   topicId         String?  @map("topic_id")
   questionId      String?  @map("question_id") // For study mode
-  selectedAnswer  String
+  selectedAnswer  String   @map("selected_answer")
   isCorrect       Boolean  @default(false) @map("is_correct")
   // For test mode
   totalQuestions  Int      @default(0) @map("total_questions")
@@ -268,6 +269,7 @@ model StudentAnswer {
   incorrectAnswers Int     @default(0) @map("incorrect_answers")
   score           Float    @default(0)
   percentage      Float    @default(0)
+  timeTaken       Int?     @map("time_taken") // Time taken in milliseconds
   status          String   @default("completed") // in_progress, completed
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz

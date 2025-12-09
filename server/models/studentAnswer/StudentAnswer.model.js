@@ -26,6 +26,11 @@ const StudentAnswer = {
       status: data.status || 'completed',
     };
 
+    // Only include timeTaken if it's provided (not undefined)
+    if (data.timeTaken !== undefined && data.timeTaken !== null) {
+      prismaData.timeTaken = data.timeTaken;
+    }
+
     // Remove undefined values
     Object.keys(prismaData).forEach(key => {
       if (prismaData[key] === undefined) {
@@ -50,16 +55,21 @@ const StudentAnswer = {
     // If answers array is provided, create related StudentAnswerQuestion records
     if (answers && Array.isArray(answers) && answers.length > 0) {
       await Promise.all(
-        answers.map(answer =>
-          prisma.studentAnswerQuestion.create({
+        answers.map(answer => {
+          const questionId = answer.question || answer.questionId;
+          if (!questionId) {
+            console.warn('Skipping answer with missing questionId:', answer);
+            return null;
+          }
+          return prisma.studentAnswerQuestion.create({
             data: {
               studentAnswerId: result.id,
-              questionId: answer.question || answer.questionId,
-              selectedAnswer: answer.selectedAnswer,
+              questionId: questionId,
+              selectedAnswer: answer.selectedAnswer || '', // Empty string for unanswered (not null)
               isCorrect: answer.isCorrect || false,
             }
-          })
-        )
+          });
+        }).filter(Boolean) // Remove any null values
       );
       
       // Reload with answers

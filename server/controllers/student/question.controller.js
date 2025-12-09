@@ -6,12 +6,16 @@ const questionService = require('../../services/student').questionService;
  */
 const getAvailableQuestions = async (req, res, next) => {
   try {
-    const { exam, subject, topic } = req.query;
+    const { exam, subject, topic, topics } = req.query;
 
     const filters = {};
     if (exam) filters.exam = exam;
     if (subject) filters.subject = subject;
     if (topic) filters.topic = topic;
+    // Support multiple topics (comma-separated string or array)
+    if (topics) {
+      filters.topics = topics;
+    }
 
     const questions = await questionService.getAvailableQuestions(filters);
 
@@ -92,18 +96,17 @@ const submitStudyAnswer = async (req, res, next) => {
  */
 const startTest = async (req, res, next) => {
   try {
-    const { exam, subject, topic } = req.query;
+    const { exam, subject, topic, topics } = req.query;
 
-    if (!exam) {
-      return res.status(400).json({
-        success: false,
-        message: 'Exam ID is required',
-      });
-    }
-
-    const filters = { exam };
+    const filters = {};
+    // Exam is optional - can be derived from questions if not provided
+    if (exam) filters.exam = exam;
     if (subject) filters.subject = subject;
     if (topic) filters.topic = topic;
+    // Support multiple topics (comma-separated string or array)
+    if (topics) {
+      filters.topics = topics;
+    }
 
     const questions = await questionService.startTest(filters);
 
@@ -146,21 +149,25 @@ const submitTestAnswers = async (req, res, next) => {
 
     // Validate answers format
     for (const answer of answers) {
-      if (!answer.questionId || !answer.selectedAnswer) {
+      if (!answer.questionId) {
         return res.status(400).json({
           success: false,
-          message: 'Each answer must have questionId and selectedAnswer',
+          message: 'Each answer must have questionId',
         });
       }
-      if (!['A', 'B', 'C', 'D'].includes(answer.selectedAnswer)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Selected answer must be A, B, C, or D',
-        });
+      // Allow null/empty selectedAnswer for unanswered questions
+      if (answer.selectedAnswer !== null && answer.selectedAnswer !== undefined && answer.selectedAnswer !== '') {
+        if (!['A', 'B', 'C', 'D'].includes(answer.selectedAnswer)) {
+          return res.status(400).json({
+            success: false,
+            message: 'Selected answer must be A, B, C, or D',
+          });
+        }
       }
     }
 
-    const result = await questionService.submitTestAnswers(studentId, examId, answers);
+    const { timeTaken } = req.body; // Time in milliseconds
+    const result = await questionService.submitTestAnswers(studentId, examId, answers, timeTaken);
 
     res.status(200).json({
       success: true,
@@ -238,6 +245,44 @@ const getTestSummary = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: summary,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get performance data (last 10 sessions) for dashboard
+ * GET /api/student/questions/performance
+ */
+const getPerformanceData = async (req, res, next) => {
+  try {
+    const studentId = req.user.id;
+    const performanceData = await questionService.getPerformanceData(studentId);
+
+    res.status(200).json({
+      success: true,
+      data: performanceData,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get day-wise test mode accuracy trend
+ * GET /api/student/questions/test/accuracy-trend?days=30
+ */
+const getTestModeAccuracyTrend = async (req, res, next) => {
+  try {
+    const studentId = req.user.id;
+    const days = parseInt(req.query.days) || 30; // Default to 30 days
+    
+    const trendData = await questionService.getTestModeAccuracyTrend(studentId, days);
+
+    res.status(200).json({
+      success: true,
+      data: trendData,
     });
   } catch (error) {
     next(error);
@@ -382,15 +427,76 @@ const getStudyHistory = async (req, res, next) => {
   }
 };
 
+/**
+ * Save complete study mode session results
+ * POST /api/student/questions/study/session
+ * Body: { examId, subjectId?, topicId?, questions: [{ questionId, selectedAnswer, isCorrect }], timeTaken }
+ */
+const saveStudySessionResults = async (req, res, next) => {
+  try {
+    const { examId, subjectId, topicId, questions, timeTaken } = req.body;
+    const studentId = req.user.id;
+
+    if (!examId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Exam ID is required',
+      });
+    }
+
+    if (!questions || !Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Questions array is required and must not be empty',
+      });
+    }
+
+    // Validate questions format
+    for (const question of questions) {
+      if (!question.questionId || !question.selectedAnswer) {
+        return res.status(400).json({
+          success: false,
+          message: 'Each question must have questionId and selectedAnswer',
+        });
+      }
+      if (!['A', 'B', 'C', 'D'].includes(question.selectedAnswer)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Selected answer must be A, B, C, or D',
+        });
+      }
+    }
+
+    const result = await questionService.saveStudySessionResults(studentId, {
+      examId,
+      subjectId,
+      topicId,
+      questions,
+      timeTaken: timeTaken || null,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: result,
+      message: `Study session completed! Score: ${result.summary.correctAnswers}/${result.summary.totalQuestions} (${result.summary.percentage}%)`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAvailableQuestions,
   getQuestionById,
   submitStudyAnswer,
   startTest,
   submitTestAnswers,
+  saveStudySessionResults,
   getTestHistory,
   getTestResultById,
   getTestSummary,
+  getPerformanceData,
+  getTestModeAccuracyTrend,
   getSessionHistory,
   getSessionDetail,
   getSessionIncorrect,

@@ -1,4 +1,4 @@
-const authService = require('../../services/auth');
+Quantitativervice = require('../../services/auth');
 const { sendOTPEmail } = require('../../config/nodemailer');
 const passport = require('passport');
 const { generateToken } = require('../../config/jwt');
