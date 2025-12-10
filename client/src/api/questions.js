@@ -317,6 +317,25 @@ const questionsAPI = {
     }
   },
 
+  // Review Student flag (Processor)
+  reviewStudentFlag: async (questionId, decision, rejectionReason = null) => {
+    try {
+      const apiData = {
+        decision: decision, // 'approve' or 'reject'
+      };
+
+      if (decision === 'reject' && rejectionReason) {
+        apiData.rejectionReason = rejectionReason.trim();
+      }
+
+      const response = await axiosClient.post(`/admin/questions/processor/${questionId}/student-flag/review`, apiData);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to review student flag' };
+    }
+  },
+
   // ============================================
   // CREATOR ENDPOINTS
   // ============================================

@@ -493,10 +493,11 @@ const GathererEditQuestionPage = () => {
       }
 
       // Call the API to update question
-      // Use gatherer update endpoint if flagged, otherwise use regular update
+      // Use gatherer update endpoint for flagged questions or rejected questions
       let response;
-      if (isFlagged && questionStatus === 'pending_gatherer') {
-        // Use special endpoint for updating flagged questions
+      const isRejected = questionStatus === 'rejected';
+      if ((isFlagged && questionStatus === 'pending_gatherer') || isRejected) {
+        // Use special endpoint for updating flagged questions or rejected questions
         response = await questionsAPI.updateGathererFlaggedQuestion(questionId, questionData);
       } else {
         // For now, we'll need to create a general gatherer update endpoint

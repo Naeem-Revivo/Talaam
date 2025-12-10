@@ -112,13 +112,22 @@ const ProcessorViewQuestion = () => {
   // ONLY use source parameter - don't infer from question properties
   const isFromExplainerSubmission = source === "explainer-submission";
   
+  // Determine if this is from admin submission
+  const isFromAdminSubmission = source === "admin-submission";
+  
+  // Determine if this is from all processed questions
+  const isFromAllProcessedQuestions = source === "all-processed-questions";
+  
   // Determine if this is from gatherer submission (default if no source specified)
   const isFromGathererSubmission = !source || source === "gatherer-submission";
 
   // Determine if question is flagged (pending review) - for any flag type
+  // For admin submission, show all student-flagged questions regardless of flagStatus
   const isFlagged = question && 
                     question.isFlagged === true && 
-                    (question.flagStatus === 'pending' || !question.flagStatus);
+                    (isFromAdminSubmission && question.flagType === 'student'
+                      ? true // Show all student flags in admin submission
+                      : (question.flagStatus === 'pending' || !question.flagStatus));
   
   // Check if gatherer rejected a flag (has flagRejectionReason AND was rejected by gatherer)
   // This should only be true when a gatherer rejected a flag, not when creator/explainer flags were rejected
@@ -142,9 +151,11 @@ const ProcessorViewQuestion = () => {
   // OR if flagged and flagStatus is not 'pending' (flag already reviewed)
   // OR if from gatherer submission but question has already been approved (moved to next stage)
   // Show buttons if gatherer rejected a flag (has flagRejectionReason) - ALWAYS show buttons for gatherer rejections
+  // For student flags from admin submission, show buttons even if flagStatus is 'approved' (processor can still review)
+  const isStudentFlagFromAdmin = isFromAdminSubmission && flagType === 'student' && question.isFlagged;
   const canProcessQuestion = question && 
                              question.status === 'pending_processor' &&
-                             ((!isFlagged || (isFlagged && question.flagStatus === 'pending')) || gathererRejectedFlag) &&
+                             ((!isFlagged || (isFlagged && (question.flagStatus === 'pending' || (isStudentFlagFromAdmin && question.flagStatus !== 'rejected'))) || gathererRejectedFlag)) &&
                              // If gatherer rejected flag, always show buttons (needs processor review)
                              // Otherwise, if from gatherer submission, only show buttons if question hasn't been approved yet
                              (gathererRejectedFlag || !isFromGathererSubmission || !question.approvedBy);
@@ -189,6 +200,21 @@ const ProcessorViewQuestion = () => {
   };
 
   const nextDestination = question ? getNextDestination() : 'creator';
+
+  // Helper function to get navigation path based on source
+  const getNavigationPath = () => {
+    if (isFromAllProcessedQuestions) {
+      return "/processor/question-bank/all-processed-questions";
+    } else if (isFromAdminSubmission) {
+      return "/processor/question-bank/admin-submission";
+    } else if (isFromExplainerSubmission) {
+      return "/processor/question-bank/explainer-submission";
+    } else if (isFromCreatorSubmission) {
+      return "/processor/question-bank/creator-submission";
+    } else {
+      return "/processor/question-bank/gatherer-submission";
+    }
+  };
 
   // Fetch creators and explainers
   useEffect(() => {
@@ -236,7 +262,7 @@ const ProcessorViewQuestion = () => {
     const fetchQuestion = async () => {
       if (!questionId) {
         showErrorToast("Question ID is missing");
-        navigate("/processor/question-bank/gatherer-submission");
+        navigate(getNavigationPath());
         return;
       }
 
@@ -273,12 +299,12 @@ const ProcessorViewQuestion = () => {
           }
         } else {
           showErrorToast("Failed to load question");
-          navigate("/processor/question-bank/gatherer-submission");
+          navigate(getNavigationPath());
         }
       } catch (error) {
         console.error("Error fetching question:", error);
         showErrorToast("Failed to load question");
-        navigate("/processor/question-bank/gatherer-submission");
+        navigate(getNavigationPath());
       } finally {
         setLoading(false);
       }
@@ -288,13 +314,7 @@ const ProcessorViewQuestion = () => {
   }, [questionId, navigate, searchParams]);
 
   const handleClose = () => {
-    if (isFromExplainerSubmission) {
-      navigate("/processor/question-bank/explainer-submission");
-    } else if (isFromCreatorSubmission) {
-      navigate("/processor/question-bank/creator-submission");
-    } else {
-      navigate("/processor/question-bank/gatherer-submission");
-    }
+    navigate(getNavigationPath());
   };
 
   const handleReject = async () => {
@@ -309,13 +329,7 @@ const ProcessorViewQuestion = () => {
         showSuccessToast("Question rejected successfully");
         // Add a small delay to ensure backend has processed the update
         setTimeout(() => {
-          if (isFromExplainerSubmission) {
-            navigate("/processor/question-bank/explainer-submission");
-          } else if (isFromCreatorSubmission) {
-            navigate("/processor/question-bank/creator-submission");
-          } else {
-            navigate("/processor/question-bank/gatherer-submission");
-          }
+          navigate(getNavigationPath());
         }, 500);
     } catch (error) {
       console.error("Error rejecting question:", error);
@@ -333,7 +347,29 @@ const ProcessorViewQuestion = () => {
       setProcessing(true);
       
       // Use appropriate API based on flag type
-      if (flagType === 'explainer') {
+      if (flagType === 'student') {
+        // For student flags, approve the flag
+        // Backend will route to gatherer (original) or creator (variant)
+        await questionsAPI.reviewStudentFlag(questionId, 'approve');
+        
+        // Determine navigation based on whether it's a variant or original question
+        const isVariant = question.isVariant === true || question.isVariant === 'true' || question.originalQuestionId;
+        if (isVariant) {
+          showSuccessToast("Student flag approved. Question sent to creator for correction.");
+        } else {
+          showSuccessToast("Student flag approved. Question sent to gatherer for correction.");
+        }
+        
+        setTimeout(() => {
+          // Navigate based on variant status
+          if (isVariant) {
+            navigate("/processor/question-bank/creator-submission");
+          } else {
+            navigate("/processor/question-bank/gatherer-submission");
+          }
+        }, 500);
+        return; // Early return to avoid the navigation logic below
+      } else if (flagType === 'explainer') {
         await questionsAPI.reviewExplainerFlag(questionId, 'approve');
         showSuccessToast("Flag reason approved. Question sent back for correction.");
       } else {
@@ -343,8 +379,10 @@ const ProcessorViewQuestion = () => {
       }
       
       setTimeout(() => {
-        // Navigate based on flag type
-        if (flagType === 'explainer') {
+        // Navigate based on flag type and source
+        if (isFromAdminSubmission || isFromAllProcessedQuestions) {
+          navigate(getNavigationPath());
+        } else if (flagType === 'explainer') {
           navigate("/processor/question-bank/explainer-submission");
         } else {
           navigate("/processor/question-bank/creator-submission");
@@ -375,22 +413,47 @@ const ProcessorViewQuestion = () => {
         await questionsAPI.rejectGathererFlagRejection(questionId, flagRejectionReason);
         showSuccessToast("Gatherer's rejection rejected. Question sent back to gatherer.");
         setTimeout(() => {
-          navigate("/processor/question-bank/gatherer-submission");
+          // If from all processed questions, stay there; otherwise go to gatherer submission
+          if (isFromAllProcessedQuestions) {
+            navigate(getNavigationPath());
+          } else {
+            navigate("/processor/question-bank/gatherer-submission");
+          }
         }, 500);
       } else {
         // Use appropriate API based on flag type
-        if (flagType === 'explainer') {
+        if (flagType === 'student') {
+          // For student flags, reject the flag (question marked as completed)
+          await questionsAPI.reviewStudentFlag(questionId, 'reject', flagRejectionReason);
+          showSuccessToast("Student flag rejected. Question marked as completed.");
+          setTimeout(() => {
+            // Navigate back to the source page
+            if (isFromAllProcessedQuestions) {
+              navigate(getNavigationPath());
+            } else {
+              navigate("/processor/question-bank/admin-submission");
+            }
+          }, 500);
+        } else if (flagType === 'explainer') {
           await questionsAPI.reviewExplainerFlag(questionId, 'reject', flagRejectionReason);
           showSuccessToast("Flag reason rejected. Question sent back to explainer.");
           setTimeout(() => {
-            navigate("/processor/question-bank/explainer-submission");
+            if (isFromAllProcessedQuestions) {
+              navigate(getNavigationPath());
+            } else {
+              navigate("/processor/question-bank/explainer-submission");
+            }
           }, 500);
         } else {
           // Default to creator flag review
           await questionsAPI.reviewCreatorFlag(questionId, 'reject', flagRejectionReason);
           showSuccessToast("Flag reason rejected. Question sent back to creator.");
           setTimeout(() => {
-            navigate("/processor/question-bank/creator-submission");
+            if (isFromAllProcessedQuestions) {
+              navigate(getNavigationPath());
+            } else {
+              navigate("/processor/question-bank/creator-submission");
+            }
           }, 500);
         }
       }
@@ -413,7 +476,12 @@ const ProcessorViewQuestion = () => {
       showSuccessToast("Gatherer's rejection accepted. Question approved.");
       
       setTimeout(() => {
-        navigate("/processor/question-bank/gatherer-submission");
+        // If from all processed questions, stay there; otherwise go to gatherer submission
+        if (isFromAllProcessedQuestions) {
+          navigate(getNavigationPath());
+        } else {
+          navigate("/processor/question-bank/gatherer-submission");
+        }
       }, 500);
     } catch (error) {
       console.error("Error accepting gatherer's rejection:", error);
@@ -502,7 +570,10 @@ const ProcessorViewQuestion = () => {
       
       // Add a small delay to ensure backend has processed the update
       setTimeout(() => {
-        if (nextDest.type === 'explainer') {
+        // If from all processed questions, stay there; otherwise navigate based on next destination
+        if (isFromAllProcessedQuestions) {
+          navigate(getNavigationPath());
+        } else if (nextDest.type === 'explainer') {
           navigate("/processor/question-bank/explainer-submission");
         } else if (nextDest.type === 'creator') {
           navigate("/processor/question-bank/creator-submission");
@@ -857,14 +928,17 @@ const ProcessorViewQuestion = () => {
             </div>
 
             {/* Original Flag Reason Section - Show when there's an original flag (even if gatherer rejected it) */}
-            {question.flagReason && (isFlagged || gathererRejectedFlag) && (
+            {/* For student flags from admin submission, show flag reason even if approved */}
+            {question.flagReason && (isFlagged || gathererRejectedFlag || (isFromAdminSubmission && flagType === 'student' && question.isFlagged)) && (
               <div className="rounded-[12px] border-2 border-orange-dark bg-orange-50 pt-[20px] px-[30px] pb-[30px] w-full">
                 <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[32px] text-orange-dark">
                   {t("processor.viewQuestion.flagReason") || "Original Flag Reason"}
                 </h2>
                 <div className="mb-2">
                   <p className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280] mb-2">
-                    {flagType === 'explainer' 
+                    {flagType === 'student'
+                      ? (t("processor.viewQuestion.flagReasonDescriptionStudent") || "The student has flagged this question with the following reason:")
+                      : flagType === 'explainer' 
                       ? (t("processor.viewQuestion.flagReasonDescriptionExplainer") || "The explainer has flagged this question with the following reason:")
                       : (t("processor.viewQuestion.flagReasonDescription") || "The creator has flagged this question with the following reason:")}
                   </p>
@@ -965,10 +1039,14 @@ const ProcessorViewQuestion = () => {
                           return "Updated by gatherer (flagged by creator)";
                         } else if (question.flagType === 'explainer') {
                           return "Updated by gatherer (flagged by explainer)";
+                        } else if (question.flagType === 'student') {
+                          return "Updated by gatherer (flagged by student)";
                         }
                       }
                       if (isFlagged) {
-                        if (flagType === 'explainer') {
+                        if (flagType === 'student') {
+                          return "Flagged by student";
+                        } else if (flagType === 'explainer') {
                           return "Flagged by explainer";
                         } else {
                           return "Flagged by creator";
@@ -1052,6 +1130,8 @@ const ProcessorViewQuestion = () => {
             <p className="text-dark-gray mb-4">
               {gathererRejectedFlag
                 ? (t("processor.viewQuestion.rejectGathererRejectionDescription") || "Please provide a reason for rejecting the gatherer's flag rejection. The flag will be restored and the question will be sent back to the gatherer.")
+                : flagType === 'student'
+                ? (t("processor.viewQuestion.rejectFlagReasonDescriptionStudent") || "Please provide a reason for rejecting the student's flag. The flag will be cleared.")
                 : flagType === 'explainer'
                 ? (t("processor.viewQuestion.rejectFlagReasonDescriptionExplainer") || "Please provide a reason for rejecting the explainer's flag. The question will be sent back to the explainer.")
                 : (t("processor.viewQuestion.rejectFlagReasonDescription") || "Please provide a reason for rejecting the creator's flag. The question will be sent back to the creator.")}

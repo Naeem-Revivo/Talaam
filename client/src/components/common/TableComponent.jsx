@@ -89,7 +89,7 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
         }
 
         // Special rendering for status and creatorStatus columns
-        if (column.key === "status" || column.key === "creatorStatus" || column.key === "processorStatus" || column.key === "explainerStatus") {
+        if (column.key === "status" || column.key === "creatorStatus" || column.key === "processorStatus" || column.key === "explainerStatus" || column.key === "adminStatus") {
           // Check if value contains "- Variant" (for variant questions)
           const isVariantStatus = typeof value === 'string' && value.includes(' - Variant');
           const baseValue = isVariantStatus ? value.replace(' - Variant', '').trim() : value;
@@ -98,7 +98,7 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
           const isPending = baseValue.toLowerCase() === "pending" || baseValue.toLowerCase() === "pending review";
           const isSentBack = baseValue.toLowerCase() === "sent back";
           const isReject = baseValue.toLowerCase() === "reject" || baseValue.toLowerCase() === "rejected";
-          const isFlag = baseValue.toLowerCase() === "flag";
+          const isFlag = baseValue.toLowerCase() === "flag" || baseValue.toLowerCase() === "flagged";
           const isaccept = baseValue.toLowerCase() === "accepted";
           const isfixrequest = baseValue.toLowerCase() === "fix request";
           const isRevision = baseValue.toLowerCase() === "revision";
@@ -109,8 +109,8 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
           const isHidden = baseValue.toLowerCase() === "hidden";
           const isVariantCreated = baseValue.toLowerCase() === "variant created";
           const isFlagged = item.indicators?.flag === true;
-          // Show reason button for creatorStatus or explainerStatus column when flagged
-          const showReasonButton = (column.key === "creatorStatus" || column.key === "explainerStatus") && isFlagged && onShowFlagReason;
+          // Show reason button for status, creatorStatus, explainerStatus, or adminStatus column when flagged
+          const showReasonButton = (column.key === "status" || column.key === "creatorStatus" || column.key === "explainerStatus" || column.key === "adminStatus") && isFlagged && onShowFlagReason && item.flagReason;
           
           return (
             <td key={column.key} className="px-6 py-8 text-center">
@@ -433,7 +433,7 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
           }
 
           // Special rendering for status, creatorStatus, and processorStatus columns
-          if (column.key === "status" || column.key === "creatorStatus" || column.key === "processorStatus" || column.key === "explainerStatus") {
+          if (column.key === "status" || column.key === "creatorStatus" || column.key === "processorStatus" || column.key === "explainerStatus" || column.key === "adminStatus") {
             // Check if value contains "- Variant" (for variant questions)
             const isVariantStatus = typeof value === 'string' && value.includes(' - Variant');
             const baseValue = isVariantStatus ? value.replace(' - Variant', '').trim() : value;
@@ -442,7 +442,7 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
             const isPending = baseValue.toLowerCase() === "pending" || baseValue.toLowerCase() === "pending review";
             const isSentBack = baseValue.toLowerCase() === "sent back";
             const isReject = baseValue.toLowerCase() === "reject" || baseValue.toLowerCase() === "rejected";
-            const isFlag = baseValue.toLowerCase() === "flag";
+            const isFlag = baseValue.toLowerCase() === "flag" || baseValue.toLowerCase() === "flagged";
             const isaccept = baseValue.toLowerCase() === "accepted";
             const isfixrequest = baseValue.toLowerCase() === "fix request";
             const isRevision = baseValue.toLowerCase() === "revision";
@@ -451,8 +451,8 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
             const isHidden = baseValue.toLowerCase() === "hidden";
             const isVariantCreated = baseValue.toLowerCase() === "variant created";
             const isFlagged = item.indicators?.flag === true;
-            // Show reason button for creatorStatus or explainerStatus column when flagged
-            const showReasonButton = (column.key === "creatorStatus" || column.key === "explainerStatus") && isFlagged && onShowFlagReason;
+            // Show reason button for status, creatorStatus, explainerStatus, or adminStatus column when flagged
+            const showReasonButton = (column.key === "status" || column.key === "creatorStatus" || column.key === "explainerStatus" || column.key === "adminStatus") && isFlagged && onShowFlagReason && item.flagReason;
             return (
               <div key={column.key} className="flex items-center gap-2">
                 <span className="text-[14px] font-normal text-oxford-blue">

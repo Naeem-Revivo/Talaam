@@ -2844,6 +2844,20 @@
         "indicators": "المؤشرات",
         "actions": "الإجراءات"
       },
+      "rejectionReasonModal": {
+        "title": "سبب الرفض",
+        "subtitle": "تم رفض السؤال للأسباب التالية:",
+        "reasonLabel": "سبب الرفض",
+        "noReason": "لم يتم تقديم سبب",
+        "close": "إغلاق"
+      },
+      "flagReasonModal": {
+        "title": "سبب الإبلاغ",
+        "subtitle": "تم الإبلاغ عن السؤال للأسباب التالية:",
+        "reasonLabel": "سبب الإبلاغ",
+        "noReason": "لم يتم تقديم سبب",
+        "close": "إغلاق"
+      },
       "emptyMessage": "لم يتم العثور على أسئلة"
     },
     "addNewQuestion": {

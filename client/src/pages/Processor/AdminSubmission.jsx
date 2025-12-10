@@ -155,9 +155,10 @@ const AdminSubmission = () => {
                   flagReason: detailedQuestion?.flagReason || question.flagReason || null,
                   flagStatus: detailedQuestion?.flagStatus || question.flagStatus || null,
                   flagType: detailedQuestion?.flagType || question.flagType || null,
+                  // For admin submission page, show ALL student-flagged questions regardless of flagStatus
+                  // This allows viewing all student flags (pending, approved, rejected)
                   isFlagged: (detailedQuestion?.isFlagged === true || detailedQuestion?.isFlagged === 'true') &&
-                            (detailedQuestion?.flagStatus === 'pending' || detailedQuestion?.flagStatus === null || detailedQuestion?.flagStatus === undefined) &&
-                            (detailedQuestion?.status?.toLowerCase() !== 'completed' && detailedQuestion?.status?.toLowerCase() !== 'pending_creator'),
+                            (detailedQuestion?.flagType === 'student'),
                   history: detailedQuestion?.history || question.history || []
                 };
               }
@@ -179,24 +180,22 @@ const AdminSubmission = () => {
           // Get student name (flaggedBy would be the student who flagged)
           const studentName = question.flaggedBy?.name || 
                              question.flaggedBy?.fullName ||
-                             question.flaggedBy?.username ||
                              question.lastModifiedBy?.name || 
                              question.lastModifiedBy?.fullName ||
-                             question.lastModifiedBy?.username || 
                              'Unknown';
 
-          // Check if question is currently flagged by student
+          // Check if question is flagged by student
+          // For admin submission page, show ALL student-flagged questions regardless of flagStatus
+          // This allows viewing all student flags (pending, approved, rejected)
           const isFlagged = (question.isFlagged === true || question.isFlagged === 'true') &&
-                           (question.flagType === 'student') &&
-                           (question.flagStatus === 'pending' || question.flagStatus === null || question.flagStatus === undefined) &&
-                           question.status?.toLowerCase() !== 'completed' &&
-                           question.status?.toLowerCase() !== 'pending_creator';
+                           (question.flagType === 'student');
 
           // Get processor status
           const processorStatus = mapProcessorStatus(question.status);
 
           // Get admin status with proper mapping
-          const adminStatus = mapAdminStatus(question.status, isFlagged);
+          // For admin submission page, always show "Flagged" for student-flagged questions
+          const adminStatus = isFlagged ? 'Flagged' : mapAdminStatus(question.status, false);
 
           // Get flag reason
           const flagReason = question.flagReason || null;

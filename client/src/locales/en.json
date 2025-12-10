@@ -2834,6 +2834,20 @@
         "indicators": "INDICATORS",
         "actions": "ACTIONS"
       },
+      "rejectionReasonModal": {
+        "title": "Rejection Reason",
+        "subtitle": "The question was rejected with the following reason:",
+        "reasonLabel": "Reason for Rejection",
+        "noReason": "No reason provided",
+        "close": "Close"
+      },
+      "flagReasonModal": {
+        "title": "Flag Reason",
+        "subtitle": "The question was flagged with the following reason:",
+        "reasonLabel": "Reason for Flagging",
+        "noReason": "No reason provided",
+        "close": "Close"
+      },
       "emptyMessage": "No questions found"
     },
     "addNewQuestion": {
