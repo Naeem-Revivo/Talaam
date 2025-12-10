@@ -214,10 +214,11 @@ const questionsAPI = {
   // Get questions (Processor view)
   getProcessorQuestions: async (params = {}) => {
     try {
-      const { status, submittedBy } = params;
+      const { status, submittedBy, flagType } = params;
       const queryParams = new URLSearchParams();
       if (status) queryParams.append('status', status);
       if (submittedBy) queryParams.append('submittedBy', submittedBy);
+      if (flagType) queryParams.append('flagType', flagType);
 
       const url = queryParams.toString()
         ? `/admin/questions/processor?${queryParams.toString()}`
@@ -313,6 +314,25 @@ const questionsAPI = {
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Failed to review explainer flag' };
+    }
+  },
+
+  // Review Student flag (Processor)
+  reviewStudentFlag: async (questionId, decision, rejectionReason = null) => {
+    try {
+      const apiData = {
+        decision: decision, // 'approve' or 'reject'
+      };
+
+      if (decision === 'reject' && rejectionReason) {
+        apiData.rejectionReason = rejectionReason.trim();
+      }
+
+      const response = await axiosClient.post(`/admin/questions/processor/${questionId}/student-flag/review`, apiData);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to review student flag' };
     }
   },
 

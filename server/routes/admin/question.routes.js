@@ -231,6 +231,13 @@ router.post(
 );
 
 router.post(
+  '/processor/:questionId/student-flag/review',
+  authMiddleware,
+  processorMiddleware,
+  questionController.reviewStudentFlag
+);
+
+router.post(
   '/processor/:questionId/reject-gatherer-flag-rejection',
   authMiddleware,
   processorMiddleware,

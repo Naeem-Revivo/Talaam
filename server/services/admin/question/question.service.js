@@ -97,7 +97,7 @@ const createQuestion = async (questionData, userId) => {
 /**
  * Get questions by status and role
  */
-const getQuestionsByStatus = async (status, userId, role) => {
+const getQuestionsByStatus = async (status, userId, role, flagType = null) => {
   const where = { status };
 
   // Gatherer can only see their own questions
@@ -120,6 +120,35 @@ const getQuestionsByStatus = async (status, userId, role) => {
     where.assignedExplainerId = userId;
   }
 
+  // Handle flagType parameter
+  // If flagType='student' is specified, only fetch student-flagged questions
+  // Otherwise, exclude student-flagged questions that are NOT accepted/approved
+  // Student-flagged questions should only appear in other pages after flag is accepted
+  if (flagType === 'student') {
+    where.flagType = 'student';
+  } else {
+    // Exclude questions with flagType='student' that are NOT approved
+    // Only show student-flagged questions in other pages if flagStatus='approved'
+    // Include: questions with no flagType (null), questions with flagType != 'student', 
+    // and student-flagged questions that are approved
+    where.OR = [
+      {
+        flagType: null // Questions with no flag
+      },
+      {
+        flagType: {
+          not: 'student' // Questions flagged by creator, explainer, etc.
+        }
+      },
+      {
+        AND: [
+          { flagType: 'student' },
+          { flagStatus: 'approved' }
+        ]
+      }
+    ];
+  }
+
   const questions = await Question.findMany({
     where,
     orderBy: { createdAt: 'desc' },
@@ -132,7 +161,8 @@ const getQuestionsByStatus = async (status, userId, role) => {
       assignedProcessor: { select: { name: true, fullName: true, email: true } },
       assignedCreator: { select: { name: true, fullName: true, email: true } },
       assignedExplainer: { select: { name: true, fullName: true, email: true } },
-      approvedBy: { select: { name: true, fullName: true, email: true } }
+      approvedBy: { select: { name: true, fullName: true, email: true } },
+      flaggedBy: { select: { name: true, fullName: true, email: true } }
     }
   });
 
@@ -235,7 +265,7 @@ const getQuestionsByStatus = async (status, userId, role) => {
  * @param {string} submittedByRole - Role that submitted the question (gatherer, creator, explainer)
  * @param {string} processorId - ID of the processor (to filter by assignedProcessorId)
  */
-const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId = null) => {
+const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId = null, flagType = null) => {
   const { prisma } = require('../../../config/db/prisma');
   
   // Build where clause with status and role filtering
@@ -437,6 +467,36 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
     }
   }
 
+  // Handle flagType parameter
+  // If flagType='student' is specified, only fetch student-flagged questions
+  // Otherwise, exclude student-flagged questions that are NOT accepted/approved
+  // Student-flagged questions should only appear in other pages after flag is accepted
+  if (!where.AND) {
+    where.AND = [];
+  }
+  
+  if (flagType === 'student') {
+    // Only fetch student-flagged questions (all statuses for admin submission page)
+    where.AND.push({
+      flagType: 'student'
+    });
+  } else {
+    // Exclude questions with flagType='student' that are NOT approved
+    // Only show student-flagged questions in other pages if flagStatus='approved'
+    where.AND.push({
+      OR: [
+        { flagType: { not: 'student' } },
+        { flagType: null },
+        {
+          AND: [
+            { flagType: 'student' },
+            { flagStatus: 'approved' }
+          ]
+        }
+      ]
+    });
+  }
+
   const questions = await Question.findMany({
     where,
     orderBy: { createdAt: 'desc' },
@@ -450,6 +510,7 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
       assignedCreator: { select: { name: true, fullName: true, email: true } },
       assignedExplainer: { select: { name: true, fullName: true, email: true } },
       approvedBy: { select: { name: true, fullName: true, email: true } },
+      flaggedBy: { select: { name: true, fullName: true, email: true } },
       history: {
         include: {
           performedBy: { select: { id: true, adminRole: true } }
@@ -844,6 +905,10 @@ const getGathererQuestions = async (gathererId, { page = 1, limit = 20, status }
       topic: q.topic ? { id: q.topic.id, name: q.topic.name } : null,
       status: q.status,
       isFlagged: q.isFlagged || false,
+      flagStatus: q.flagStatus || null,
+      flagReason: q.flagReason || null,
+      flagType: q.flagType || null,
+      rejectionReason: q.rejectionReason || null,
       updatedAt: q.updatedAt,
       createdAt: q.createdAt,
       assignedProcessor: processorUser
@@ -1139,18 +1204,11 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
   
   // PRIORITY 1: If question was updated after flag approval, route based on who flagged it
   // This ensures explainer-flagged questions go back to explainer, not creator
+  // Student-flagged questions follow the same flow as creator-flagged questions after gatherer updates
   if (wasUpdatedAfterFlag && question.flagType) {
-    if (question.flagType === 'student') {
-      // Student flagged - route based on whether it's a variant or original question
-      if (question.isVariant || question.originalQuestionId) {
-        // Variant: send to creator
-        nextStatus = 'pending_creator';
-      } else {
-        // Original question: send to gatherer
-        nextStatus = 'pending_gatherer';
-      }
-    } else if (question.flagType === 'creator') {
-      // If creator flagged, send back to creator after update
+    if (question.flagType === 'student' || question.flagType === 'creator') {
+      // Student or creator flagged - after gatherer updates, send to creator
+      // Student flags follow the same flow as creator flags after gatherer updates
       nextStatus = 'pending_creator';
     } else if (question.flagType === 'explainer') {
       // If explainer flagged, send back to explainer after update (CRITICAL: don't go to creator)
@@ -1207,13 +1265,15 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
   }
   // PRIORITY 4: Normal workflow based on last action role
   // BUT: Check flagType first to ensure explainer-flagged questions don't go to creator
+  // Student-flagged questions follow the same flow as creator-flagged questions
   else if (lastAction && lastAction.role === 'gatherer') {
     // After gatherer submission/update
     // CRITICAL: If question was flagged by explainer, route to explainer, not creator
+    // Student flags follow creator flow (go to creator)
     if (question.flagType === 'explainer') {
       nextStatus = 'pending_explainer';
     } else {
-      // Normal flow: move to creator
+      // Normal flow: move to creator (applies to creator, student, and unflagged questions)
       nextStatus = 'pending_creator';
     }
   } 
@@ -1243,7 +1303,8 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
 
   // Validate and assign creator/explainer/gatherer if provided
   // Only assign if not already assigned (assignment happens only once)
-  if (assignedUserId) {
+  // Skip validation if nextStatus is 'completed' (no assignment needed)
+  if (assignedUserId && nextStatus !== 'completed') {
     const { prisma } = require('../../../config/db/prisma');
     const assignedUser = await prisma.user.findUnique({
       where: { id: assignedUserId },
@@ -1261,31 +1322,42 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
     // Assign based on next status
     if (nextStatus === 'pending_creator') {
       if (assignedUser.adminRole !== 'creator') {
-        throw new Error('Assigned user must be a creator');
-      }
-      // Only assign if not already assigned
-      if (!question.assignedCreatorId) {
-        // Will be set in updateData below
-      } else {
-        // Already assigned, don't change it
+        // If assigned user is not a creator, ignore the assignment rather than throwing error
+        // This handles cases where frontend might pass wrong user ID
+        console.warn(`Assigned user ${assignedUserId} is not a creator (role: ${assignedUser.adminRole}), ignoring assignment for nextStatus: ${nextStatus}`);
         assignedUserId = null;
+      } else {
+        // Only assign if not already assigned
+        if (!question.assignedCreatorId) {
+          // Will be set in updateData below
+        } else {
+          // Already assigned, don't change it
+          assignedUserId = null;
+        }
       }
     } else if (nextStatus === 'pending_explainer') {
       if (assignedUser.adminRole !== 'explainer') {
-        throw new Error('Assigned user must be an explainer');
-      }
-      // Only assign if not already assigned
-      if (!question.assignedExplainerId) {
-        // Will be set in updateData below
-      } else {
-        // Already assigned, don't change it
+        // If assigned user is not an explainer, ignore the assignment rather than throwing error
+        // This handles cases where frontend might pass wrong user ID
+        console.warn(`Assigned user ${assignedUserId} is not an explainer (role: ${assignedUser.adminRole}), ignoring assignment for nextStatus: ${nextStatus}`);
         assignedUserId = null;
+      } else {
+        // Only assign if not already assigned
+        if (!question.assignedExplainerId) {
+          // Will be set in updateData below
+        } else {
+          // Already assigned, don't change it
+          assignedUserId = null;
+        }
       }
     } else if (nextStatus === 'pending_gatherer') {
       // Note: Gatherer assignment is typically not done here as gatherers work on all questions
       // But if needed, we can add gatherer assignment logic here
       assignedUserId = null; // Don't assign gatherer for now
     }
+  } else if (assignedUserId && nextStatus === 'completed') {
+    // If nextStatus is completed, ignore assignedUserId (no assignment needed)
+    assignedUserId = null;
   }
 
   // Prepare update data
@@ -1869,6 +1941,83 @@ const flagQuestionByExplainer = async (questionId, flagReason, userId) => {
 };
 
 /**
+ * Review Student's flag by Processor
+ * When processor reviews a student flag, they can approve or reject it
+ */
+const reviewStudentFlag = async (questionId, decision, rejectionReason, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  // CRITICAL: Ensure the processor is the assigned processor
+  if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+    throw new Error('Access denied. This question is not assigned to you.');
+  }
+
+  if (!question.isFlagged || question.flagType !== 'student') {
+    throw new Error('Question is not flagged by student');
+  }
+
+  if (decision !== 'approve' && decision !== 'reject') {
+    throw new Error('Decision must be either "approve" or "reject"');
+  }
+
+  if (decision === 'reject' && (!rejectionReason || !rejectionReason.trim())) {
+    throw new Error('Rejection reason is required when rejecting a flag');
+  }
+
+  if (decision === 'approve') {
+    // Processor approves the student flag
+    // Determine where to send based on whether it's a variant or regular question
+    let nextStatus;
+    let notes;
+    
+    if (question.isVariant || question.originalQuestionId) {
+      // Variant: send back to Creator for correction
+      nextStatus = 'pending_creator';
+      notes = `Student flag approved for variant. Reason: ${question.flagReason}. Sent back to creator for correction.`;
+    } else {
+      // Regular question: send back to Gatherer for correction
+      nextStatus = 'pending_gatherer';
+      notes = `Student flag approved. Reason: ${question.flagReason}. Sent back to gatherer for correction.`;
+    }
+    
+    return await Question.update(questionId, {
+      flagStatus: 'approved',
+      flagReviewedById: userId,
+      status: nextStatus,
+      history: [{
+        action: 'flag_approved',
+        performedById: userId,
+        role: 'processor',
+        timestamp: new Date(),
+        notes: notes,
+      }],
+    });
+  } else {
+    // Processor rejects the student flag - mark as completed
+    return await Question.update(questionId, {
+      flagStatus: 'rejected',
+      flagReviewedById: userId,
+      flagRejectionReason: rejectionReason.trim(),
+      isFlagged: false, // Remove flag
+      flaggedById: null,
+      flagReason: null,
+      status: 'completed', // Mark as completed when flag is rejected
+      history: [{
+        action: 'flag_rejected',
+        performedById: userId,
+        role: 'processor',
+        timestamp: new Date(),
+        notes: `Student flag rejected by processor. Processor reason: ${rejectionReason.trim()}. Question marked as completed.`,
+      }],
+    });
+  }
+};
+
+/**
  * Review Explainer's flag by Processor
  * Handles both regular questions (goes to Gatherer) and variants (goes to Creator)
  */
@@ -1961,12 +2110,30 @@ const handleGathererUpdateAfterFlag = async (questionId, updateData, userId) => 
     throw new Error('Question not found');
   }
 
-  if (question.status !== 'pending_gatherer') {
-    throw new Error('Question is not in pending_gatherer status');
+  // Allow updating rejected questions (to resubmit) or flagged questions in pending_gatherer status
+  const isRejected = question.status === 'rejected';
+  const isFlaggedPendingGatherer = question.status === 'pending_gatherer' && 
+                                    question.isFlagged && 
+                                    question.flagStatus === 'approved';
+
+  if (!isRejected && !isFlaggedPendingGatherer) {
+    throw new Error('Question is not in a state that allows editing (must be rejected or flagged and pending gatherer action)');
   }
 
-  if (!question.isFlagged || question.flagStatus !== 'approved' || question.flagType !== 'creator') {
-    throw new Error('Question was not flagged by creator and approved by processor');
+  // For flagged questions, validate flag type
+  // Accept creator, explainer, and student flags (student flags should follow same flow as creator flags)
+  if (isFlaggedPendingGatherer && question.flagType !== 'creator' && question.flagType !== 'explainer' && question.flagType !== 'student') {
+    throw new Error('Question was not flagged by creator, explainer, or student and approved by processor');
+  }
+
+  // Build history note based on flag type
+  let historyNote;
+  if (question.flagType === 'student') {
+    historyNote = 'Question updated by gatherer after student flag approval. Flag resolved and sent to processor for review.';
+  } else if (question.flagType === 'explainer') {
+    historyNote = 'Question updated by gatherer after explainer flag approval. Flag resolved and sent to processor for review.';
+  } else {
+    historyNote = 'Question updated by gatherer after creator flag approval. Flag resolved and sent to processor for review.';
   }
 
   // Build update data object for Prisma
@@ -1984,7 +2151,7 @@ const handleGathererUpdateAfterFlag = async (questionId, updateData, userId) => 
       performedBy: userId,
       role: 'gatherer',
       timestamp: new Date(),
-      notes: 'Question updated by gatherer after creator flag approval. Flag resolved and sent to processor for review.',
+      notes: historyNote,
     }],
   };
 
@@ -2186,9 +2353,11 @@ const approveUpdatedFlaggedQuestion = async (questionId, userId) => {
   
   // PRIORITY 1: If question was updated after flag approval, route based on who flagged it
   // This ensures explainer-flagged questions go back to explainer, not creator
+  // Student-flagged questions follow the same flow as creator-flagged questions
   if (wasUpdatedAfterFlag && question.flagType) {
-    if (question.flagType === 'creator') {
-      // If creator flagged, send back to creator after update
+    if (question.flagType === 'creator' || question.flagType === 'student') {
+      // If creator or student flagged, send back to creator after update
+      // Student flags follow the same flow as creator flags
       nextStatus = 'pending_creator';
     } else if (question.flagType === 'explainer') {
       // If explainer flagged, send back to explainer after update (CRITICAL: don't go to creator)
@@ -2204,7 +2373,8 @@ const approveUpdatedFlaggedQuestion = async (questionId, userId) => {
     if (question.flagType === 'explainer') {
       // Was explainer flag - send back to explainer (CRITICAL: don't go to creator)
       nextStatus = 'pending_explainer';
-    } else if (question.flagType === 'creator') {
+    } else if (question.flagType === 'creator' || question.flagType === 'student') {
+      // Creator or student flag - send to creator (student follows creator flow)
       nextStatus = 'pending_creator';
     } else {
       // Default fallback
@@ -2216,10 +2386,11 @@ const approveUpdatedFlaggedQuestion = async (questionId, userId) => {
   else if (lastAction && lastAction.role === 'gatherer') {
     // After gatherer update
     // CRITICAL: If question was flagged by explainer, route to explainer, not creator
+    // Student flags follow creator flow (go to creator)
     if (question.flagType === 'explainer') {
       nextStatus = 'pending_explainer';
     } else {
-      // Normal flow: move to creator
+      // Normal flow: move to creator (applies to creator, student, and unflagged questions)
       nextStatus = 'pending_creator';
     }
   } else if (lastAction && lastAction.role === 'creator') {
@@ -2297,18 +2468,77 @@ const updateFlaggedQuestionByGatherer = async (questionId, updateData, userId) =
     throw new Error('Question not found');
   }
 
-  // Check if question is flagged and in pending_gatherer status
-  if (question.status !== 'pending_gatherer') {
-    throw new Error('Question is not in pending_gatherer status');
+  // Allow updating rejected questions (to resubmit) or flagged questions in pending_gatherer status
+  const isRejected = question.status === 'rejected';
+  const isFlaggedPendingGatherer = question.status === 'pending_gatherer' && 
+                                    question.isFlagged && 
+                                    question.flagStatus === 'approved';
+
+  if (!isRejected && !isFlaggedPendingGatherer) {
+    throw new Error('Question is not in a state that allows editing (must be rejected or flagged and pending gatherer action)');
   }
 
-  if (!question.isFlagged || question.flagStatus !== 'approved') {
-    throw new Error('Question was not flagged and approved by processor');
+  // Handle rejected questions - update and resubmit to processor
+  if (isRejected) {
+    // Build update data object for Prisma
+    const prismaUpdateData = {
+      lastModifiedById: userId,
+      status: 'pending_processor', // Resubmit to processor
+      rejectionReason: null, // Clear rejection reason
+      rejectedById: null, // Clear rejected by
+      history: [{
+        action: 'updated',
+        performedById: userId,
+        role: 'gatherer',
+        timestamp: new Date(),
+        notes: 'Question updated by gatherer after rejection. Resubmitted to processor for review.',
+      }],
+    };
+
+    // Update question fields
+    if (updateData.questionText !== undefined) {
+      prismaUpdateData.questionText = updateData.questionText.trim();
+    }
+    if (updateData.questionType !== undefined) {
+      prismaUpdateData.questionType = updateData.questionType;
+    }
+    if (updateData.options !== undefined) {
+      prismaUpdateData.options = {
+        A: updateData.options.A.trim(),
+        B: updateData.options.B.trim(),
+        C: updateData.options.C.trim(),
+        D: updateData.options.D.trim(),
+      };
+    }
+    if (updateData.correctAnswer !== undefined) {
+      prismaUpdateData.correctAnswer = updateData.correctAnswer;
+    }
+    if (updateData.exam !== undefined) {
+      prismaUpdateData.exam = updateData.exam;
+    }
+    if (updateData.subject !== undefined) {
+      prismaUpdateData.subject = updateData.subject;
+    }
+    if (updateData.topic !== undefined) {
+      prismaUpdateData.topic = updateData.topic;
+    }
+    if (updateData.explanation !== undefined) {
+      prismaUpdateData.explanation = updateData.explanation.trim();
+    }
+    if (updateData.assignedProcessor !== undefined) {
+      prismaUpdateData.assignedProcessorId = updateData.assignedProcessor;
+    }
+
+    return await Question.update(questionId, prismaUpdateData);
   }
 
-  // Route to appropriate handler based on who flagged it
+  // Handle flagged questions - route to appropriate handler based on who flagged it
   if (question.flagType === 'creator') {
     // Creator flagged - use handleGathererUpdateAfterFlag
+    return await handleGathererUpdateAfterFlag(questionId, updateData, userId);
+  } else if (question.flagType === 'student') {
+    // Student flagged (original question) - use same handler as creator flags
+    // This ensures student-flagged questions follow the same flow as creator-flagged questions
     return await handleGathererUpdateAfterFlag(questionId, updateData, userId);
   } else if (question.flagType === 'explainer') {
     // Explainer flagged - use handleGathererUpdateAfterExplainerFlag
@@ -2828,6 +3058,7 @@ module.exports = {
   reviewCreatorFlag,
   flagQuestionByExplainer,
   reviewExplainerFlag,
+  reviewStudentFlag,
   handleGathererUpdateAfterFlag,
   handleGathererUpdateAfterExplainerFlag,
   handleCreatorUpdateVariantAfterFlag,

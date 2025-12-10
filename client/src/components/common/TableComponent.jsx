@@ -42,9 +42,21 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
                   </span>
                 )}
                 {indicators.flag && (
+                  <div className="flex items-center gap-2">
                   <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-red-100 text-red-700">
                     {t("creator.assignedQuestionPage.indicators.flag") || "Flag"}
                   </span>
+                    {item.flagReason && onShowFlagReason && (
+                      <button
+                        type="button"
+                        onClick={() => onShowFlagReason(item.flagReason)}
+                        className="text-orange-dark text-[10px] font-normal leading-[16px] font-roboto hover:underline transition px-1 py-0"
+                        title={t("creator.assignedQuestionPage.flagReasonButton") || "View Flag Reason"}
+                      >
+                        {t("creator.assignedQuestionPage.reasonButton") || "Reason"}
+                      </button>
+                    )}
+                  </div>
                 )}
                 {indicators.reject && (
                   <div className="flex items-center gap-2">
@@ -77,28 +89,32 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
         }
 
         // Special rendering for status and creatorStatus columns
-        if (column.key === "status" || column.key === "creatorStatus" || column.key === "processorStatus" || column.key === "explainerStatus") {
-          const isApproved = value.toLowerCase() === "approved";
-          const isPending = value.toLowerCase() === "pending" || value.toLowerCase() === "pending review";
-          const isSentBack = value.toLowerCase() === "sent back";
-          const isReject = value.toLowerCase() === "reject" || value.toLowerCase() === "rejected";
-          const isFlag = value.toLowerCase() === "flag";
-          const isaccept = value.toLowerCase() === "accepted";
-          const isfixrequest = value.toLowerCase() === "fix request";
-          const isRevision = value.toLowerCase() === "revision";
-          const isDraft = value.toLowerCase() === "draft";
-          const isPaid = value.toLowerCase() === "paid";
-          const isFailed = value.toLowerCase() === "failed";
-          const isVisible = value.toLowerCase() === "visible";
-          const isHidden = value.toLowerCase() === "hidden";
-          const isVariantCreated = value.toLowerCase() === "variant created";
+        if (column.key === "status" || column.key === "creatorStatus" || column.key === "processorStatus" || column.key === "explainerStatus" || column.key === "adminStatus") {
+          // Check if value contains "- Variant" (for variant questions)
+          const isVariantStatus = typeof value === 'string' && value.includes(' - Variant');
+          const baseValue = isVariantStatus ? value.replace(' - Variant', '').trim() : value;
+          
+          const isApproved = baseValue.toLowerCase() === "approved";
+          const isPending = baseValue.toLowerCase() === "pending" || baseValue.toLowerCase() === "pending review";
+          const isSentBack = baseValue.toLowerCase() === "sent back";
+          const isReject = baseValue.toLowerCase() === "reject" || baseValue.toLowerCase() === "rejected";
+          const isFlag = baseValue.toLowerCase() === "flag" || baseValue.toLowerCase() === "flagged";
+          const isaccept = baseValue.toLowerCase() === "accepted";
+          const isfixrequest = baseValue.toLowerCase() === "fix request";
+          const isRevision = baseValue.toLowerCase() === "revision";
+          const isDraft = baseValue.toLowerCase() === "draft";
+          const isPaid = baseValue.toLowerCase() === "paid";
+          const isFailed = baseValue.toLowerCase() === "failed";
+          const isVisible = baseValue.toLowerCase() === "visible";
+          const isHidden = baseValue.toLowerCase() === "hidden";
+          const isVariantCreated = baseValue.toLowerCase() === "variant created";
           const isFlagged = item.indicators?.flag === true;
-          // Show reason button for creatorStatus or explainerStatus column when flagged
-          const showReasonButton = (column.key === "creatorStatus" || column.key === "explainerStatus") && isFlagged && onShowFlagReason;
+          // Show reason button for status, creatorStatus, explainerStatus, or adminStatus column when flagged
+          const showReasonButton = (column.key === "status" || column.key === "creatorStatus" || column.key === "explainerStatus" || column.key === "adminStatus") && isFlagged && onShowFlagReason && item.flagReason;
           
           return (
             <td key={column.key} className="px-6 py-8 text-center">
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-2 flex-wrap">
                 <span
                   className={`inline-block px-[12px] py-[5px] rounded-md text-[12px] leading-[100%] font-normal ${
                     isFlag
@@ -132,8 +148,13 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
                       : "bg-gray-200 text-gray-700"
                   }`}
                 >
-                  {value}
+                  {baseValue}
                 </span>
+                {isVariantStatus && (
+                  <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-blue-100 text-blue-700">
+                    {t("creator.assignedQuestionPage.indicators.variant") || "Variant"}
+                  </span>
+                )}
                 {showReasonButton && (
                   <button
                     type="button"
@@ -365,9 +386,21 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
                     </span>
                   )}
                   {indicators.flag && (
+                    <div className="flex items-center gap-2">
                     <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-red-100 text-red-700">
                       {t("creator.assignedQuestionPage.indicators.flag") || "Flag"}
                     </span>
+                      {item.flagReason && onShowFlagReason && (
+                        <button
+                          type="button"
+                          onClick={() => onShowFlagReason(item.flagReason)}
+                          className="text-orange-dark text-[10px] font-normal leading-[16px] font-roboto hover:underline transition px-1 py-0"
+                          title={t("creator.assignedQuestionPage.flagReasonButton") || "View Flag Reason"}
+                        >
+                          {t("creator.assignedQuestionPage.reasonButton") || "Reason"}
+                        </button>
+                      )}
+                    </div>
                   )}
                   {indicators.reject && (
                     <div className="flex items-center gap-2">
@@ -400,22 +433,26 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
           }
 
           // Special rendering for status, creatorStatus, and processorStatus columns
-          if (column.key === "status" || column.key === "creatorStatus" || column.key === "processorStatus" || column.key === "explainerStatus") {
-            const isApproved = value.toLowerCase() === "approved";
-            const isPending = value.toLowerCase() === "pending" || value.toLowerCase() === "pending review";
-            const isSentBack = value.toLowerCase() === "sent back";
-            const isReject = value.toLowerCase() === "reject" || value.toLowerCase() === "rejected";
-            const isFlag = value.toLowerCase() === "flag";
-            const isaccept = value.toLowerCase() === "accepted";
-            const isfixrequest = value.toLowerCase() === "fix request";
-            const isRevision = value.toLowerCase() === "revision";
-            const isDraft = value.toLowerCase() === "draft";
-            const isVisible = value.toLowerCase() === "visible";
-            const isHidden = value.toLowerCase() === "hidden";
-            const isVariantCreated = value.toLowerCase() === "variant created";
+          if (column.key === "status" || column.key === "creatorStatus" || column.key === "processorStatus" || column.key === "explainerStatus" || column.key === "adminStatus") {
+            // Check if value contains "- Variant" (for variant questions)
+            const isVariantStatus = typeof value === 'string' && value.includes(' - Variant');
+            const baseValue = isVariantStatus ? value.replace(' - Variant', '').trim() : value;
+            
+            const isApproved = baseValue.toLowerCase() === "approved";
+            const isPending = baseValue.toLowerCase() === "pending" || baseValue.toLowerCase() === "pending review";
+            const isSentBack = baseValue.toLowerCase() === "sent back";
+            const isReject = baseValue.toLowerCase() === "reject" || baseValue.toLowerCase() === "rejected";
+            const isFlag = baseValue.toLowerCase() === "flag" || baseValue.toLowerCase() === "flagged";
+            const isaccept = baseValue.toLowerCase() === "accepted";
+            const isfixrequest = baseValue.toLowerCase() === "fix request";
+            const isRevision = baseValue.toLowerCase() === "revision";
+            const isDraft = baseValue.toLowerCase() === "draft";
+            const isVisible = baseValue.toLowerCase() === "visible";
+            const isHidden = baseValue.toLowerCase() === "hidden";
+            const isVariantCreated = baseValue.toLowerCase() === "variant created";
             const isFlagged = item.indicators?.flag === true;
-            // Show reason button for creatorStatus or explainerStatus column when flagged
-            const showReasonButton = (column.key === "creatorStatus" || column.key === "explainerStatus") && isFlagged && onShowFlagReason;
+            // Show reason button for status, creatorStatus, explainerStatus, or adminStatus column when flagged
+            const showReasonButton = (column.key === "status" || column.key === "creatorStatus" || column.key === "explainerStatus" || column.key === "adminStatus") && isFlagged && onShowFlagReason && item.flagReason;
             return (
               <div key={column.key} className="flex items-center gap-2">
                 <span className="text-[14px] font-normal text-oxford-blue">
@@ -451,8 +488,13 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
                         : "bg-gray-200 text-gray-700"
                     }`}
                   >
-                    {value}
+                    {baseValue}
                   </span>
+                  {isVariantStatus && (
+                    <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-blue-100 text-blue-700">
+                      {t("creator.assignedQuestionPage.indicators.variant") || "Variant"}
+                    </span>
+                  )}
                   {showReasonButton && (
                     <button
                       type="button"

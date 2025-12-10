@@ -23,6 +23,8 @@ const GathererQuestionBank = () => {
   const [statusFilter, setStatusFilter] = useState(""); // Empty string means "all"
   const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
   const [selectedRejectionReason, setSelectedRejectionReason] = useState("");
+  const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
+  const [selectedFlagReason, setSelectedFlagReason] = useState("");
   const [stats, setStats] = useState([
     { label: t("gatherer.questionBank.stats.questionAdded"), value: 0, color: "blue" },
     { label: t("gatherer.questionBank.stats.pendingReview"), value: 0, color: "red" },
@@ -63,10 +65,15 @@ const GathererQuestionBank = () => {
   };
 
   // Format status for display
-  const formatStatus = (status, isFlagged) => {
-    // If question is flagged, show "Flagged" status
-    if (isFlagged) {
+  // Priority: Flagged > Rejected > Other statuses
+  const formatStatus = (status, isFlagged, flagStatus) => {
+    // Show "Flagged" status if flag has been approved by processor
+    if (isFlagged && flagStatus === 'approved') {
       return "Flagged";
+    }
+    // Show "Rejected" for rejected questions
+    if (status === 'rejected') {
+      return "Rejected";
     }
     if (!status) return "—";
     const statusMap = {
@@ -74,7 +81,6 @@ const GathererQuestionBank = () => {
       pending_creator: "Pending Creator",
       pending_explainer: "Pending Explainer",
       approved: "Approved",
-      rejected: "Rejected",
       completed: "Completed",
       sent_back: "Sent Back",
     };
@@ -91,17 +97,25 @@ const GathererQuestionBank = () => {
           limit: 10,
         };
         
-        // Add status filter if selected
-        if (statusFilter) {
-          params.status = statusFilter;
-        }
-
+        // Fetch all questions created by gatherer (no status filter to get all questions)
+        // Then filter client-side for only flagged and rejected questions
         const response = await questionsAPI.getGathererQuestions(params);
 
         if (response.success && response.data?.questions) {
-          const questions = response.data.questions;
-          console.log('Questions from API:', questions);
-          console.log('First question assignedProcessor:', questions[0]?.assignedProcessor);
+          let questions = response.data.questions;
+          console.log('All questions from API:', questions.length);
+          
+          // Apply status filter if selected
+          if (statusFilter === 'rejected') {
+            questions = questions.filter(q => q.status === 'rejected');
+          } else if (statusFilter === 'flagged') {
+            questions = questions.filter(q => {
+              const flagStatus = q.flagStatus;
+              return q.isFlagged === true && flagStatus === 'approved';
+            });
+          }
+          
+          console.log('Questions after filter:', questions.length);
           
           // Map API response to table format
           const mappedData = questions.map((question) => {
@@ -111,59 +125,68 @@ const GathererQuestionBank = () => {
                                   "—";
             console.log('Question ID:', question.id, 'Processor:', processorName, 'assignedProcessor object:', question.assignedProcessor);
             const isRejected = question.status === 'rejected';
-            const isFlagged = question.isFlagged === true;
+            
+            // Only consider question as flagged if flag has been approved by processor
+            // Don't show flagged status if flag is pending processor review (flagStatus === 'pending' or null)
+            const flagStatus = question.flagStatus;
+            const isFlagged = question.isFlagged === true && flagStatus === 'approved';
+            
+            // Determine action type: 
+            // - edit icon for rejected questions (gatherer can update and resubmit)
+            // - edit icon for flagged questions (gatherer can edit and resubmit)
+            // - view icon for all other cases
+            const actionType = (isRejected || isFlagged) ? "editicon" : "viewicon";
+            
             return {
               id: question.id,
               questionTitle: question.questionText?.substring(0, 50) + (question.questionText?.length > 50 ? "..." : "") || "—",
               processor: processorName,
               lastUpdate: formatDate(question.updatedAt || question.createdAt),
-              status: formatStatus(question.status, question.isFlagged),
+              status: formatStatus(question.status, isFlagged, flagStatus),
               indicators: {
                 reject: isRejected,
-                flag: isFlagged,
+                flag: isFlagged, // Only show flag indicator if flag is approved
               },
               rejectionReason: question.rejectionReason || null,
               flagReason: question.flagReason || null,
-              actionType: question.isFlagged ? "editicon" : "viewicon",
+              actionType: actionType,
               originalData: question, // Store full question data for edit page
             };
           });
 
           setGathererData(mappedData);
           
-          // Use pagination totalItems if available, otherwise use questions length
-          const total = response.data?.pagination?.totalItems || questions.length;
-          setTotalQuestions(total);
+          // Use questions length for total (since we're filtering client-side from multiple API calls)
+          setTotalQuestions(questions.length);
 
-          // Calculate stats from summary if available, otherwise calculate from current questions
-          if (response.data?.summary) {
-            const summary = response.data.summary;
-            setStats([
-              { label: t("gatherer.questionBank.stats.questionAdded"), value: summary.totalSubmitted || 0, color: "blue" },
-              { label: t("gatherer.questionBank.stats.pendingReview"), value: summary.totalPending || 0, color: "red" },
-              { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: summary.totalApproved || 0, color: "red" },
-              { label: t("gatherer.questionBank.stats.rejected"), value: summary.totalRejected || 0, color: "red" },
-            ]);
-          } else {
-            // Fallback: calculate from current questions
-            const questionAdded = questions.length;
-            const pendingReview = questions.filter(q => q.status === "pending_processor").length;
-            const acceptedByProcessor = questions.filter(q => 
-              q.status === "pending_creator" || q.status === "pending_explainer" || q.status === "completed"
-            ).length;
-            const rejected = questions.filter(q => q.status === "rejected").length;
+          // Calculate stats from current questions
+          const pendingReview = questions.filter(q => q.status === "pending_processor").length;
+          const acceptedByProcessor = questions.filter(q => 
+            q.status === "pending_creator" || q.status === "pending_explainer" || q.status === "completed"
+          ).length;
+          const rejected = questions.filter(q => q.status === "rejected").length;
 
-            setStats([
-              { label: t("gatherer.questionBank.stats.questionAdded"), value: questionAdded, color: "blue" },
-              { label: t("gatherer.questionBank.stats.pendingReview"), value: pendingReview, color: "red" },
-              { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: acceptedByProcessor, color: "red" },
-              { label: t("gatherer.questionBank.stats.rejected"), value: rejected, color: "red" },
-            ]);
-          }
+          setStats([
+            { label: t("gatherer.questionBank.stats.questionAdded"), value: questions.length, color: "blue" },
+            { label: t("gatherer.questionBank.stats.pendingReview"), value: pendingReview, color: "red" },
+            { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: acceptedByProcessor, color: "red" },
+            { label: t("gatherer.questionBank.stats.rejected"), value: rejected, color: "red" },
+          ]);
+        } else {
+          // No questions found
+          setGathererData([]);
+          setTotalQuestions(0);
+          setStats([
+            { label: t("gatherer.questionBank.stats.questionAdded"), value: 0, color: "blue" },
+            { label: t("gatherer.questionBank.stats.pendingReview"), value: 0, color: "red" },
+            { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: 0, color: "red" },
+            { label: t("gatherer.questionBank.stats.rejected"), value: 0, color: "red" },
+          ]);
         }
       } catch (error) {
         console.error("Error fetching questions:", error);
         setGathererData([]);
+        setTotalQuestions(0);
       } finally {
         setLoading(false);
       }
@@ -182,6 +205,19 @@ const GathererQuestionBank = () => {
 
   const handleEdit = useCallback((item) => {
     if (item?.id) {
+      const questionStatus = item.originalData?.status || item.status;
+      const flagStatus = item.originalData?.flagStatus;
+      const isFlagged = item.originalData?.isFlagged === true && flagStatus === 'approved';
+      
+      // Allow editing if:
+      // 1. Question is rejected (gatherer can update and resubmit)
+      // 2. Question is flagged with approved flag status (gatherer can edit and resubmit)
+      // Prevent editing other questions with pending_processor status
+      if (questionStatus === 'pending_processor' && !isFlagged && questionStatus !== 'rejected') {
+        console.warn('Cannot edit question with pending_processor status');
+        return;
+      }
+      
       // Navigate to edit page with question ID and pass the question data via state
       navigate(`/gatherer/question-bank/Gatherer-editQuestion/${item.id}`, {
         state: { questionData: item.originalData }
@@ -201,6 +237,16 @@ const GathererQuestionBank = () => {
   const handleCloseRejectionModal = useCallback(() => {
     setIsRejectionModalOpen(false);
     setSelectedRejectionReason("");
+  }, []);
+
+  const handleShowFlagReason = useCallback((flagReason) => {
+    setSelectedFlagReason(flagReason || "");
+    setIsFlagModalOpen(true);
+  }, []);
+
+  const handleCloseFlagModal = useCallback(() => {
+    setIsFlagModalOpen(false);
+    setSelectedFlagReason("");
   }, []);
 
   const feedbackData = useMemo(() => ({}), []);
@@ -225,7 +271,6 @@ const GathererQuestionBank = () => {
 
   const statusFilterOptions = useMemo(() => [
     { value: "", label: "All Statuses" },
-    { value: "pending_gatherer", label: "Pending My Action" },
     { value: "pending_processor", label: "Pending Review" },
     { value: "pending_creator", label: "Pending Creator" },
     { value: "pending_explainer", label: "Pending Explainer" },
@@ -305,6 +350,7 @@ const GathererQuestionBank = () => {
               onCustomAction={handleCustomAction}
               emptyMessage={t("gatherer.questionBank.emptyMessage")}
               onShowRejectionReason={handleShowRejectionReason}
+              onShowFlagReason={handleShowFlagReason}
             />
           {/* )} */}
         </div>
@@ -394,6 +440,36 @@ const GathererQuestionBank = () => {
                 className="flex-1 font-roboto px-4 py-3 border-[0.5px] text-base font-normal border-[#032746] rounded-lg text-blue-dark hover:bg-gray-50 transition-colors"
               >
                 {t("gatherer.questionBank.rejectionReasonModal.close") || "Close"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Flag Reason Modal */}
+      {isFlagModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white rounded-lg shadow-xl max-w-[600px] w-full p-8">
+            <h2 className="text-[24px] leading-[100%] font-bold text-oxford-blue mb-2">
+              {t("gatherer.questionBank.flagReasonModal.title") || "Flag Reason"}
+            </h2>
+            <p className="text-[16px] leading-[100%] font-normal text-dark-gray mb-6">
+              {t("gatherer.questionBank.flagReasonModal.subtitle") || "The question was flagged with the following reason:"}
+            </p>
+            <div className="mb-6">
+              <label className="block text-[16px] leading-[100%] font-roboto font-normal text-oxford-blue mb-2">
+                {t("gatherer.questionBank.flagReasonModal.reasonLabel") || "Reason"}
+              </label>
+              <div className="w-full min-h-[120px] rounded-[8px] border border-[#03274633] bg-white px-4 py-3 font-roboto text-[16px] leading-[20px] text-oxford-blue">
+                {selectedFlagReason || t("gatherer.questionBank.flagReasonModal.noReason") || "No reason provided"}
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={handleCloseFlagModal}
+                className="flex-1 font-roboto px-4 py-3 border-[0.5px] text-base font-normal border-[#032746] rounded-lg text-blue-dark hover:bg-gray-50 transition-colors"
+              >
+                {t("gatherer.questionBank.flagReasonModal.close") || "Close"}
               </button>
             </div>
           </div>

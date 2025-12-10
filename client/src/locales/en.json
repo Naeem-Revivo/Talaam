@@ -19,6 +19,7 @@
         "gathererSubmission": "Gatherer Submission",
         "creatorSubmission": "Creator Submission",
         "explainerSubmission": "Explainer Submission",
+        "adminSubmission": "Admin Submission",
         "profile": "Profile",
         "default": "Processor Dashboard"
       },
@@ -2845,6 +2846,20 @@
         "indicators": "INDICATORS",
         "actions": "ACTIONS"
       },
+      "rejectionReasonModal": {
+        "title": "Rejection Reason",
+        "subtitle": "The question was rejected with the following reason:",
+        "reasonLabel": "Reason for Rejection",
+        "noReason": "No reason provided",
+        "close": "Close"
+      },
+      "flagReasonModal": {
+        "title": "Flag Reason",
+        "subtitle": "The question was flagged with the following reason:",
+        "reasonLabel": "Reason for Flagging",
+        "noReason": "No reason provided",
+        "close": "Close"
+      },
       "emptyMessage": "No questions found"
     },
     "addNewQuestion": {
@@ -3295,6 +3310,7 @@
       "gathererSubmission": "Gatherer Submission",
       "creatorSubmission": "Creator Submission",
       "explainerSubmission": "Explainer Submission",
+      "adminSubmission": "Admin Submission",
       "profile": "Profile"
     },
     "dashboard": {
@@ -3387,6 +3403,26 @@
         "actions": "ACTIONS"
       },
       "emptyMessage": "No questions found"
+    },
+    "adminSubmission": {
+      "title": "Admin Submission",
+      "back": "Back",
+      "table": {
+        "question": "QUESTION",
+        "student": "STUDENT",
+        "processorStatus": "PROCESSOR STATUS",
+        "adminStatus": "ADMIN STATUS",
+        "submittedOn": "SUBMITTED ON",
+        "actions": "ACTIONS"
+      },
+      "emptyMessage": "No questions found",
+      "flagReasonModal": {
+        "title": "Flag Reason",
+        "subtitle": "The reason why this question was flagged by the student.",
+        "reasonLabel": "Reason for Flagging",
+        "noReason": "No reason provided",
+        "close": "Close"
+      }
     },
     "allProcessedQuestions": {
       "title": "All Processed Questions",

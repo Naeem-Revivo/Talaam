@@ -19,6 +19,7 @@
         "gathererSubmission": "تقديم المجمع",
         "creatorSubmission": "تقديم المنشئ",
         "explainerSubmission": "تقديم المشرح",
+        "adminSubmission": "تقديم الإدارة",
         "profile": "الملف الشخصي",
         "default": "لوحة تحكم المعالج"
       },
@@ -2855,6 +2856,20 @@
         "indicators": "المؤشرات",
         "actions": "الإجراءات"
       },
+      "rejectionReasonModal": {
+        "title": "سبب الرفض",
+        "subtitle": "تم رفض السؤال للأسباب التالية:",
+        "reasonLabel": "سبب الرفض",
+        "noReason": "لم يتم تقديم سبب",
+        "close": "إغلاق"
+      },
+      "flagReasonModal": {
+        "title": "سبب الإبلاغ",
+        "subtitle": "تم الإبلاغ عن السؤال للأسباب التالية:",
+        "reasonLabel": "سبب الإبلاغ",
+        "noReason": "لم يتم تقديم سبب",
+        "close": "إغلاق"
+      },
       "emptyMessage": "لم يتم العثور على أسئلة"
     },
     "addNewQuestion": {
@@ -3297,6 +3312,7 @@
       "gathererSubmission": "تقديم المجمع",
       "creatorSubmission": "تقديم المنشئ",
       "explainerSubmission": "تقديم المشرح",
+      "adminSubmission": "تقديم الإدارة",
       "profile": "الملف الشخصي"
     },
     "dashboard": {
@@ -3389,6 +3405,26 @@
         "actions": "الإجراءات"
       },
       "emptyMessage": "لم يتم العثور على أسئلة"
+    },
+    "adminSubmission": {
+      "title": "تقديم الإدارة",
+      "back": "رجوع",
+      "table": {
+        "question": "السؤال",
+        "student": "الطالب",
+        "processorStatus": "حالة المعالج",
+        "adminStatus": "حالة الإدارة",
+        "submittedOn": "تم الإرسال في",
+        "actions": "الإجراءات"
+      },
+      "emptyMessage": "لم يتم العثور على أسئلة",
+      "flagReasonModal": {
+        "title": "سبب الإبلاغ",
+        "subtitle": "السبب الذي جعل الطالب يبلغ عن هذا السؤال.",
+        "reasonLabel": "سبب الإبلاغ",
+        "noReason": "لم يتم تقديم سبب",
+        "close": "إغلاق"
+      }
     },
     "allProcessedQuestions": {
       "title": "جميع الأسئلة المعالجة",

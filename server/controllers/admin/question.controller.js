@@ -512,11 +512,12 @@ const createQuestion = async (req, res, next) => {
  */
 const getQuestions = async (req, res, next) => {
   try {
-    const { status, submittedBy } = req.query;
+    const { status, submittedBy, flagType } = req.query;
 
     console.log('[QUESTION] GET /admin/questions → requested', {
       status,
       submittedBy,
+      flagType,
       requestedBy: req.user.id,
       requesterRole: req.user.adminRole,
     });
@@ -549,13 +550,15 @@ const getQuestions = async (req, res, next) => {
       questions = await questionService.getQuestionsByStatusAndRole(
         queryStatus,
         submittedBy,
-        req.user.id // Pass processor ID to filter by assignedProcessorId
+        req.user.id, // Pass processor ID to filter by assignedProcessorId
+        flagType // Pass flagType to allow fetching student-flagged questions
       );
     } else {
       questions = await questionService.getQuestionsByStatus(
         queryStatus,
         req.user.id,
-        req.user.adminRole
+        req.user.adminRole,
+        flagType // Pass flagType to allow fetching student-flagged questions
       );
     }
 
@@ -1646,6 +1649,104 @@ const reviewExplainerFlag = async (req, res, next) => {
 };
 
 /**
+ * Review Student's flag by Processor
+ * POST /admin/questions/processor/:questionId/student-flag/review
+ */
+const reviewStudentFlag = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const { decision, rejectionReason } = req.body;
+
+    console.log('[QUESTION] POST /admin/questions/processor/:questionId/student-flag/review → requested', {
+      questionId,
+      decision,
+      requestedBy: req.user.id,
+      requesterRole: req.user.adminRole,
+    });
+
+    if (!decision || (decision !== 'approve' && decision !== 'reject')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'decision',
+            message: 'Decision is required and must be either "approve" or "reject"',
+          },
+        ],
+      });
+    }
+
+    if (decision === 'reject' && (!rejectionReason || !rejectionReason.trim())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'rejectionReason',
+            message: 'Rejection reason is required when rejecting a flag',
+          },
+        ],
+      });
+    }
+
+    const question = await questionService.reviewStudentFlag(
+      questionId,
+      decision,
+      rejectionReason,
+      req.user.id
+    );
+
+    const response = {
+      success: true,
+      message: decision === 'approve' 
+        ? 'Student flag approved. Flag marked as approved.'
+        : 'Student flag rejected. Flag cleared.',
+      data: {
+        question: {
+          id: question._id || question.id,
+          isFlagged: question.isFlagged,
+          flagStatus: question.flagStatus,
+          flagRejectionReason: question.flagRejectionReason,
+          status: question.status,
+          updatedAt: question.updatedAt,
+        },
+      },
+    };
+
+    console.log(`[QUESTION] POST /admin/questions/processor/:questionId/student-flag/review → 200`, {
+      questionId: question._id || question.id,
+      decision,
+    });
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] POST /admin/questions/processor/:questionId/student-flag/review → error', error);
+    if (
+      error.message === 'Question not found' ||
+      error.message === 'Question is not flagged by student' ||
+      error.message === 'Access denied. This question is not assigned to you.' ||
+      error.message === 'Decision must be either "approve" or "reject"' ||
+      error.message === 'Rejection reason is required when rejecting a flag'
+    ) {
+      return res.status(
+        error.message === 'Question not found' || error.message === 'Access denied. This question is not assigned to you.' ? 404 : 400
+      ).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid question ID',
+      });
+    }
+    next(error);
+  }
+};
+
+/**
  * Add comment to question
  * POST /admin/questions/all/:questionId/comment
  */
@@ -2486,6 +2587,7 @@ module.exports = {
   reviewCreatorFlag,
   flagQuestionByExplainer,
   reviewExplainerFlag,
+  reviewStudentFlag,
   getApprovedQuestions,
   toggleQuestionVisibility,
   updateFlaggedQuestionByGatherer,
