@@ -17,6 +17,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'http://192.168.1.80:5173',
+  'http://192.168.1.136:5173',
   'http://127.0.0.1:5173'
 ].filter(Boolean); // Remove undefined values
 
@@ -43,7 +44,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning', 'Ngrok-Skip-Browser-Warning']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -54,6 +55,23 @@ app.use(session(sessionConfig));
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session()); // Enable session support for OAuth flows
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Request logging middleware (for debugging - only log API requests)
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api') || req.path === '/health') {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.headers.origin || 'none'}`);
+  }
+  next();
+});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

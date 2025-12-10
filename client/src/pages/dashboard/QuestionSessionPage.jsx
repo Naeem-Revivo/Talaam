@@ -4,6 +4,7 @@ import StudyModeLayout from '../../components/dashboard/questionSession/StudyMod
 import TestModeLayout from '../../components/dashboard/questionSession/TestModeLayout';
 import SessionCompletionModal from '../../components/dashboard/questionSession/SessionCompletionModal';
 import studentQuestionsAPI from '../../api/studentQuestions';
+import subscriptionAPI from '../../api/subscription';
 import { showErrorToast } from '../../utils/toastConfig';
 import {
   generateSessionId,
@@ -35,6 +36,8 @@ const QuestionSessionPage = () => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [checkingSubscription, setCheckingSubscription] = useState(true);
   const sessionInfoRef = useRef({ examId: null, subjectId: null, topicId: null });
 
   // Transform API question format to component format
@@ -64,8 +67,55 @@ const QuestionSessionPage = () => {
     clearExpiredSessions();
   }, []);
 
+  // Check subscription status on component mount
+  useEffect(() => {
+    const checkSubscription = async () => {
+      try {
+        setCheckingSubscription(true);
+        const response = await subscriptionAPI.getMySubscription();
+        if (response.success && response.data?.subscription) {
+          const subscription = response.data.subscription;
+          // Check if subscription is active and not expired
+          const isActive = subscription.isActive === true && 
+                          subscription.paymentStatus === 'Paid' &&
+                          new Date(subscription.expiryDate) > new Date();
+          setHasActiveSubscription(isActive);
+          
+          // If no active subscription, redirect to practice page
+          if (!isActive) {
+            showErrorToast('Please subscribe to access study mode and test mode');
+            setTimeout(() => {
+              navigate('/dashboard/practice');
+            }, 1500);
+          }
+        } else {
+          setHasActiveSubscription(false);
+          showErrorToast('Please subscribe to access study mode and test mode');
+          setTimeout(() => {
+            navigate('/dashboard/practice');
+          }, 1500);
+        }
+      } catch (error) {
+        console.error('Error checking subscription:', error);
+        setHasActiveSubscription(false);
+        showErrorToast('Please subscribe to access study mode and test mode');
+        setTimeout(() => {
+          navigate('/dashboard/practice');
+        }, 1500);
+      } finally {
+        setCheckingSubscription(false);
+      }
+    };
+    checkSubscription();
+  }, [navigate]);
+
   // Fetch questions based on mode
   useEffect(() => {
+    // Don't fetch questions if subscription check is still in progress or user doesn't have subscription
+    if (checkingSubscription || !hasActiveSubscription) {
+      return;
+    }
+
     const fetchQuestions = async () => {
       try {
         setLoading(true);
@@ -267,7 +317,7 @@ const QuestionSessionPage = () => {
     };
 
     fetchQuestions();
-  }, [mode, searchParams, navigate, location.state]);
+  }, [mode, searchParams, navigate, location.state, checkingSubscription, hasActiveSubscription]);
 
   const [questionState, setQuestionState] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -526,11 +576,35 @@ const QuestionSessionPage = () => {
   const totalQuestions = questions.length;
   const isLastQuestion = currentIndex === totalQuestions - 1;
 
+  // Show loading state while checking subscription
+  if (checkingSubscription) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-oxford-blue text-lg">Checking subscription...</div>
+      </div>
+    );
+  }
+
   // Show loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-oxford-blue text-lg">Loading questions...</div>
+      </div>
+    );
+  }
+
+  // If no active subscription, show message (will redirect)
+  if (!hasActiveSubscription) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <div className="text-oxford-blue text-lg">Subscription required to access study mode and test mode</div>
+        <button
+          onClick={() => navigate('/dashboard/subscription-billings')}
+          className="px-4 py-2 bg-cinnebar-red text-white rounded-lg"
+        >
+          Go to Subscription
+        </button>
       </div>
     );
   }

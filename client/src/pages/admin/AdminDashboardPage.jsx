@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   headcard1,
   headcard2,
@@ -11,88 +11,131 @@ import {
 } from "../../assets/svg/dashboard/admin";
 import AdminMetricCard from "../../components/admin/AdminMetricCard";
 import { useLanguage } from "../../context/LanguageContext";
+import adminAPI from "../../api/admin";
 
-const growthMonths = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-const growthValues = [
-  1, 1.4, 2.1, 3.8, 4.6, 6.1, 7.3, 8.8, 10.6, 11.9, 13.1, 14.3,
-];
 const growthYAxis = [0, 2.5, 5, 7.5, 10, 12.5, 15];
+
+// Avatar colors for user avatars
+const avatarColors = [
+  "bg-[#FDE68A]",
+  "bg-[#BFDBFE]",
+  "bg-[#C4B5FD]",
+  "bg-[#FECACA]",
+  "bg-[#D1FAE5]",
+  "bg-[#FEF3C7]",
+];
 
 const AdminDashboardPage = () => {
   const { t, language } = useLanguage();
-  const dir = language === 'ar' ? 'rtl' : 'ltr'
+  const dir = language === 'ar' ? 'rtl' : 'ltr';
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
 
-  const stats = [
-    {
-      title: t('admin.dashboard.stats.totalUsers'),
-      value: "12,800",
-      delta: t('admin.dashboard.stats.fromLastMonth'),
-      deltaColor: "text-[#ED4122]",
-      icon: headcard1,
-    },
-    {
-      title: t('admin.dashboard.stats.verifiedUsers'),
-      value: "9,234",
-      delta: t('admin.dashboard.stats.verificationRate'),
-      deltaColor: "text-dark-gray",
-      icon: headcard2,
-    },
-    {
-      title: t('admin.dashboard.stats.activeSubscriptions'),
-      value: "3,456",
-      delta: t('admin.dashboard.stats.thisWeek'),
-      deltaColor: "text-dark-gray",
-      icon: headcard3,
-    },
-    {
-      title: t('admin.dashboard.stats.revenue'),
-      value: "$89,432",
-      delta: t('admin.dashboard.stats.thisMonth'),
-      deltaColor: "text-dark-gray",
-      icon: headcard4,
-    },
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await adminAPI.getDashboardStatistics();
+        if (response.success) {
+          setDashboardData(response.data);
+        } else {
+          setError(response.message || 'Failed to load dashboard data');
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError(err.message || 'Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const subscriptionSegments = useMemo(() => [
-    { label: t('admin.dashboard.charts.planLabels.free'), value: 70.8, color: "#E5E7EB", isBase: true },
-    { label: t('admin.dashboard.charts.planLabels.premium'), value: 21.1, color: "#ED4122" },
-    { label: t('admin.dashboard.charts.planLabels.organization'), value: 5.1, color: "#6CA6C1" },
-  ], [t]);
+    fetchDashboardData();
+  }, []);
 
-  const latestSignups = [
-    {
-      name: "Sarah Ahmad",
-      email: "sarah.ahmad@gmail.com",
-      time: t('admin.dashboard.time.minAgo').replace('{{count}}', '2'),
-      avatarColor: "bg-[#FDE68A]",
-    },
-    {
-      name: "Emily Davis",
-      email: "emilydavis@gmail.com",
-      time: t('admin.dashboard.time.minAgo').replace('{{count}}', '15'),
-      avatarColor: "bg-[#BFDBFE]",
-    },
-    {
-      name: "Emily Davis",
-      email: "emilydavis@gmail.com",
-      time: t('admin.dashboard.time.minAgo').replace('{{count}}', '30'),
-      avatarColor: "bg-[#C4B5FD]",
-    },
-  ];
+  // Format number with commas
+  const formatNumber = (num) => {
+    return num?.toLocaleString() || '0';
+  };
 
+  // Format currency
+  const formatCurrency = (amount) => {
+    return `$${amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}`;
+  };
+
+  // Calculate percentage change (placeholder - you may want to add this to the API)
+  const calculatePercentageChange = (current, previous) => {
+    if (!previous || previous === 0) return null;
+    const change = ((current - previous) / previous) * 100;
+    return change > 0 ? `+${change.toFixed(0)}%` : `${change.toFixed(0)}%`;
+  };
+
+  // Prepare stats from API data
+  const stats = useMemo(() => {
+    if (!dashboardData?.statistics) return [];
+    
+    const { totalStudents, verifiedEmailStudents, activeSubscriptions, totalRevenue } = dashboardData.statistics;
+    const verificationRate = totalStudents > 0 ? ((verifiedEmailStudents / totalStudents) * 100).toFixed(0) : 0;
+    
+    return [
+      {
+        title: t('admin.dashboard.stats.totalUsers'),
+        value: formatNumber(totalStudents),
+        delta: t('admin.dashboard.stats.fromLastMonth'),
+        deltaColor: "text-[#ED4122]",
+        icon: headcard1,
+      },
+      {
+        title: t('admin.dashboard.stats.verifiedUsers'),
+        value: formatNumber(verifiedEmailStudents),
+        delta: `${verificationRate}% ${t('admin.dashboard.stats.verificationRate')}`,
+        deltaColor: "text-dark-gray",
+        icon: headcard2,
+      },
+      {
+        title: t('admin.dashboard.stats.activeSubscriptions'),
+        value: formatNumber(activeSubscriptions),
+        delta: t('admin.dashboard.stats.thisWeek'),
+        deltaColor: "text-dark-gray",
+        icon: headcard3,
+      },
+      {
+        title: t('admin.dashboard.stats.revenue'),
+        value: formatCurrency(totalRevenue),
+        delta: t('admin.dashboard.stats.thisMonth'),
+        deltaColor: "text-dark-gray",
+        icon: headcard4,
+      },
+    ];
+  }, [dashboardData, t]);
+
+  // Prepare subscription segments from API data
+  const subscriptionSegments = useMemo(() => {
+    if (!dashboardData?.subscriptionPlanBreakdown) return [];
+    
+    return dashboardData.subscriptionPlanBreakdown.map((segment) => ({
+      label: t(`admin.dashboard.charts.planLabels.${segment.label.toLowerCase()}`),
+      value: segment.value,
+      color: segment.color,
+      isBase: segment.isBase || false,
+    }));
+  }, [dashboardData, t]);
+
+  // Prepare latest signups from API data
+  const latestSignups = useMemo(() => {
+    if (!dashboardData?.latestSignups) return [];
+    
+    return dashboardData.latestSignups.map((user, index) => ({
+      name: user.name,
+      email: user.email,
+      time: user.timeAgo,
+      avatarColor: avatarColors[index % avatarColors.length],
+    }));
+  }, [dashboardData]);
+
+  // Static notifications (can be made dynamic later)
   const notifications = [
     {
       title: t('admin.dashboard.notifications.highServerLoad.title'),
@@ -140,7 +183,12 @@ const AdminDashboardPage = () => {
       timeClass: "text-[8px] leading-[14px]",
     },
   ];
-  const { linePath, points } = useMemo(() => {
+  // Prepare growth chart data from API
+  const { linePath, points, growthMonths, growthValues } = useMemo(() => {
+    if (!dashboardData?.userGrowthData || dashboardData.userGrowthData.length === 0) {
+      return { linePath: '', points: [], growthMonths: [], growthValues: [] };
+    }
+
     const chartWidth = 460;
     const chartHeight = 240;
     const leftPadding = 50;
@@ -150,9 +198,15 @@ const AdminDashboardPage = () => {
     const usableWidth = chartWidth - leftPadding - rightPadding;
     const usableHeight = chartHeight - topPadding - bottomPadding;
 
-    const maxValue = 15;
-    const pointCoords = growthValues.map((value, index) => {
-      const x = leftPadding + (usableWidth / (growthValues.length - 1)) * index;
+    // Extract months and cumulative counts from API data
+    const months = dashboardData.userGrowthData.map(item => item.month);
+    const values = dashboardData.userGrowthData.map(item => item.cumulativeCount / 1000); // Convert to thousands
+    
+    // Find max value for scaling
+    const maxValue = Math.max(...values, 15); // At least 15k for proper scaling
+
+    const pointCoords = values.map((value, index) => {
+      const x = leftPadding + (usableWidth / (values.length - 1)) * index;
       const y = topPadding + usableHeight - (value / maxValue) * usableHeight;
       return { x, y, value };
     });
@@ -166,8 +220,8 @@ const AdminDashboardPage = () => {
       )
       .join(" ");
 
-    return { linePath: d, points: pointCoords };
-  }, []);
+    return { linePath: d, points: pointCoords, growthMonths: months, growthValues: values };
+  }, [dashboardData]);
 
   const donutData = useMemo(() => {
     const radius = 90;
@@ -207,6 +261,35 @@ const AdminDashboardPage = () => {
       highlighted,
     };
   }, [subscriptionSegments]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-8 2xl:px-16 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-oxford-blue"></div>
+          <p className="mt-4 text-oxford-blue font-roboto">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-8 2xl:px-16 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-[#EF4444] font-roboto text-lg">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-oxford-blue text-white rounded-lg hover:bg-opacity-90 transition"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-8 2xl:px-16">
@@ -311,40 +394,44 @@ const AdminDashboardPage = () => {
                   })}
 
                   {/* Area */}
-                  <path
-                    d={`M${points[0].x} ${points[0].y} ${points
-                      .map((point) => `L${point.x} ${point.y}`)
-                      .join(" ")} L${points[points.length - 1].x} 230 L${
-                      points[0].x
-                    } 230 Z`}
-                    fill="url(#growthGradient)"
-                  />
-                  {/* Line */}
-                  <path
-                    d={linePath}
-                    fill="none"
-                    stroke="#60A5FA"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  {/* Points */}
-                  {points.map((point, index) => (
-                    <circle
-                      key={index}
-                      cx={point.x}
-                      cy={point.y}
-                      r="4.5"
-                      fill="#60A5FA"
-                      stroke="#FFFFFF"
-                      strokeWidth="2"
-                    />
-                  ))}
+                  {points.length > 0 && (
+                    <>
+                      <path
+                        d={`M${points[0].x} ${points[0].y} ${points
+                          .map((point) => `L${point.x} ${point.y}`)
+                          .join(" ")} L${points[points.length - 1].x} 230 L${
+                          points[0].x
+                        } 230 Z`}
+                        fill="url(#growthGradient)"
+                      />
+                      {/* Line */}
+                      <path
+                        d={linePath}
+                        fill="none"
+                        stroke="#60A5FA"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      {/* Points */}
+                      {points.map((point, index) => (
+                        <circle
+                          key={index}
+                          cx={point.x}
+                          cy={point.y}
+                          r="4.5"
+                          fill="#60A5FA"
+                          stroke="#FFFFFF"
+                          strokeWidth="2"
+                        />
+                      ))}
+                    </>
+                  )}
                   {/* Month Labels */}
-                  {growthMonths.map((label, idx) => (
+                  {growthMonths && growthMonths.length > 0 && points.length > 0 && growthMonths.map((label, idx) => (
                     <text
-                      key={label}
-                      x={points[idx].x}
+                      key={`${label}-${idx}`}
+                      x={points[idx]?.x || 0}
                       y={230}
                       textAnchor="middle"
                       fill="#9CA3AF"

@@ -1,0 +1,271 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
+import paymentAPI from '../api/payment';
+import subscriptionAPI from '../api/subscription';
+import plansAPI from '../api/plans';
+import { showSuccessToast, showErrorToast } from '../utils/toastConfig';
+
+const MoyassarPaymentPage = () => {
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [loading, setLoading] = useState(false);
+  const [plan, setPlan] = useState(null);
+  const [subscription, setSubscription] = useState(null);
+  const [paymentUrl, setPaymentUrl] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const hasProcessedRef = useRef(false);
+
+  useEffect(() => {
+    // Prevent duplicate processing
+    if (hasProcessedRef.current) {
+      return;
+    }
+
+    // Check if user is logged in
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      localStorage.setItem('redirectAfterLogin', '/moyassar-payment');
+      navigate('/login');
+      return;
+    }
+
+    // Check if returning from payment (has subscriptionId in URL)
+    const subscriptionId = searchParams.get('subscriptionId');
+    const paymentStatus = searchParams.get('payment');
+    
+    if (subscriptionId) {
+      // User returned from Moyassar payment page
+      hasProcessedRef.current = true;
+      handlePaymentReturn(subscriptionId, paymentStatus);
+      return;
+    }
+
+    // Prevent duplicate processing
+    if (isProcessing) {
+      return;
+    }
+
+    // Mark as processing
+    hasProcessedRef.current = true;
+
+    // Get plan ID from URL or find Taalam plan
+    const planId = searchParams.get('planId');
+    if (planId) {
+      loadPlanAndCreateSubscription(planId);
+    } else {
+      // Find Taalam plan
+      findTaalamPlan();
+    }
+  }, [searchParams]);
+
+  const handlePaymentReturn = async (subscriptionId, paymentStatus) => {
+    try {
+      setLoading(true);
+      
+      // Sync payment status from Moyassar
+      const syncResponse = await paymentAPI.syncPaymentStatus(subscriptionId);
+      
+      if (syncResponse.success) {
+        if (syncResponse.data?.subscription?.paymentStatus === 'Paid') {
+          showSuccessToast('Payment successful! Your subscription is now active.');
+          navigate('/dashboard/subscription-billings');
+        } else {
+          showErrorToast(`Payment status: ${syncResponse.data?.subscription?.paymentStatus || 'Pending'}`);
+          navigate('/dashboard/subscription-billings');
+        }
+      } else {
+        showErrorToast('Failed to verify payment status. Please check your subscription.');
+        navigate('/dashboard/subscription-billings');
+      }
+    } catch (error) {
+      console.error('Error handling payment return:', error);
+      showErrorToast('Failed to verify payment. Please check your subscription.');
+      navigate('/dashboard/subscription-billings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const findTaalamPlan = async () => {
+    if (isProcessing) return;
+    
+    try {
+      setIsProcessing(true);
+      setLoading(true);
+      console.log('Finding Taalam plan...');
+      const response = await plansAPI.getAllPlans();
+      console.log('Plans response:', response);
+      if (response.success && response.data?.plans) {
+        // Find plan with name containing "Taalam" or "Moyassar"
+        const taalamPlan = response.data.plans.find(
+          (p) => p.name.toLowerCase().includes('taalam') || 
+                 p.name.toLowerCase().includes('moyassar')
+        );
+        console.log('Found Taalam plan:', taalamPlan);
+        if (taalamPlan) {
+          await loadPlanAndCreateSubscription(taalamPlan.id);
+        } else {
+          console.error('Taalam plan not found in plans:', response.data.plans);
+          showErrorToast('Taalam plan not found. Please contact support.');
+        }
+      } else {
+        console.error('Failed to get plans:', response);
+        showErrorToast('Failed to load plans. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error finding plan:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to load plan';
+      showErrorToast(errorMessage);
+      // Reset processing flag on error so user can retry
+      setIsProcessing(false);
+      hasProcessedRef.current = false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadPlanAndCreateSubscription = async (planId) => {
+    if (isProcessing) return;
+    
+    try {
+      setIsProcessing(true);
+      setLoading(true);
+      
+      // First, check if user has an existing pending subscription
+      const existingSubscription = await subscriptionAPI.getMySubscription();
+      
+      // Handle case where subscription exists
+      if (existingSubscription.success && existingSubscription.data?.subscription) {
+        const sub = existingSubscription.data.subscription;
+        // If there's a pending subscription, use it instead of creating a new one
+        if (sub.paymentStatus === 'Pending' && sub.planId === planId) {
+          console.log('Using existing pending subscription:', sub.id);
+          setSubscription(sub);
+          
+          // Check if it already has a payment URL
+          if (sub.moyassarPaymentId && sub.paymentUrl) {
+            // Use existing payment URL
+            setPaymentUrl(sub.paymentUrl);
+            window.location.href = sub.paymentUrl;
+            return;
+          } else if (sub.moyassarPaymentId) {
+            // Has payment ID but no URL, try to initiate payment
+            try {
+              const paymentResponse = await paymentAPI.initiateMoyassarPayment(sub.id);
+              if (paymentResponse.success && paymentResponse.data.paymentUrl) {
+                setPaymentUrl(paymentResponse.data.paymentUrl);
+                window.location.href = paymentResponse.data.paymentUrl;
+                return;
+              }
+            } catch (error) {
+              console.error('Error initiating payment for existing subscription:', error);
+              // Continue to create new subscription if payment initiation fails
+            }
+          }
+        } else if (sub.paymentStatus === 'Paid' && sub.isActive) {
+          // User already has an active paid subscription
+          showSuccessToast('You already have an active subscription!');
+          navigate('/dashboard/subscription-billings');
+          return;
+        }
+      }
+      // If no subscription found (404) or subscription doesn't match, continue to create new one
+      // This is normal behavior, no error needed
+      
+      // Get plan details
+      const planResponse = await plansAPI.getPlanById(planId);
+      if (planResponse.success) {
+        setPlan(planResponse.data.plan);
+      }
+
+      // Create subscription
+      console.log('Creating subscription for plan:', planId);
+      const subscriptionResponse = await subscriptionAPI.subscribeToPlan(planId);
+      console.log('Subscription response:', subscriptionResponse);
+      if (subscriptionResponse.success) {
+        setSubscription(subscriptionResponse.data.subscription);
+        
+        // Initiate payment
+        console.log('Initiating Moyassar payment for subscription:', subscriptionResponse.data.subscription.id);
+        const paymentResponse = await paymentAPI.initiateMoyassarPayment(
+          subscriptionResponse.data.subscription.id
+        );
+        console.log('Payment response:', paymentResponse);
+        
+        if (paymentResponse.success && paymentResponse.data?.paymentUrl) {
+          const url = paymentResponse.data.paymentUrl;
+          setPaymentUrl(url);
+          console.log('✅ Payment URL received, redirecting to Moyassar payment page:', url);
+          // Redirect to Moyassar payment page
+          window.location.href = url;
+        } else {
+          console.error('❌ Failed to initiate payment - Response:', paymentResponse);
+          console.error('❌ Payment URL missing:', {
+            success: paymentResponse.success,
+            hasData: !!paymentResponse.data,
+            paymentUrl: paymentResponse.data?.paymentUrl,
+            fullResponse: paymentResponse
+          });
+          showErrorToast(paymentResponse.message || paymentResponse.data?.message || 'Failed to initiate payment. Payment URL not received.');
+        }
+      } else {
+        console.error('Failed to create subscription:', subscriptionResponse);
+        showErrorToast(subscriptionResponse.message || 'Failed to create subscription');
+      }
+    } catch (error) {
+      console.error('Error creating subscription:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create subscription';
+      showErrorToast(errorMessage);
+      // Reset processing flag on error so user can retry
+      setIsProcessing(false);
+      hasProcessedRef.current = false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F5F7FB] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ED4122] mx-auto mb-4"></div>
+          <p className="text-oxford-blue font-roboto text-[16px]">
+            {t('payment.loading') || 'Processing your subscription...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#F5F7FB] flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+        <h1 className="text-2xl font-bold text-oxford-blue mb-4">
+          {t('payment.title') || 'Moyassar Payment'}
+        </h1>
+        {paymentUrl ? (
+          <div className="text-center">
+            <p className="text-oxford-blue mb-4">
+              {t('payment.redirecting') || 'Redirecting to payment page...'}
+            </p>
+            <a
+              href={paymentUrl}
+              className="inline-block bg-[#ED4122] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#d43a1f] transition"
+            >
+              {t('payment.continue') || 'Continue to Payment'}
+            </a>
+          </div>
+        ) : (
+          <p className="text-oxford-blue">
+            {t('payment.settingUp') || 'Setting up your payment...'}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default MoyassarPaymentPage;
+

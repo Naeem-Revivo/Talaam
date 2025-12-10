@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { showErrorToast, showLogoutToast } from '../utils/toastConfig';
 
-const API_URL ='http://192.168.1.136:5000/api';
+const API_URL ='https://many-flannelly-shatteringly.ngrok-free.dev/api';
 // const API_URL ='http://192.168.1.80:5000/api';
 
 // Create an Axios instance
@@ -10,6 +10,7 @@ const axiosClient = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true', // Bypass ngrok warning page
   },
 });
 
@@ -20,6 +21,8 @@ axiosClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Always include ngrok bypass header
+    config.headers['ngrok-skip-browser-warning'] = 'true';
     return config;
   },
   (error) => Promise.reject(error)

@@ -37,6 +37,29 @@ const subscribeToPlan = async (userId, planId) => {
     throw new Error('User not found');
   }
 
+  // Check if user already has a pending subscription for this plan
+  // (created within the last 5 minutes to prevent duplicates from rapid clicks)
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+  const existingPendingSubscriptions = await prisma.subscription.findMany({
+    where: {
+      userId: userId,
+      planId: plan.id,
+      paymentStatus: 'Pending',
+      createdAt: {
+        gte: fiveMinutesAgo
+      }
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  });
+
+  // If there's a recent pending subscription, return it instead of creating a new one
+  if (existingPendingSubscriptions.length > 0) {
+    console.log(`⚠️  Found existing pending subscription for user ${userId} and plan ${planId}, returning existing subscription`);
+    return existingPendingSubscriptions[0];
+  }
+
   // Get user name (prefer fullName, fallback to name, then email)
   const userName = user.fullName || user.name || user.email;
 
@@ -92,17 +115,28 @@ const confirmPayment = async (userId, subscriptionId, transactionId) => {
  * Get my subscription
  */
 const getMySubscription = async (userId) => {
-  // Get the latest subscription (most recent first)
-  const subscriptions = await Subscription.findByUserId(userId, {
-    orderBy: { createdAt: 'desc' },
-    take: 1
-  });
+  try {
+    console.log('🔍 Getting subscription for user:', userId);
+    
+    // Get the latest subscription (most recent first)
+    const subscriptions = await Subscription.findByUserId(userId, {
+      orderBy: { createdAt: 'desc' },
+      take: 1
+    });
 
-  if (!subscriptions || subscriptions.length === 0) {
-    throw new Error('No subscription found');
+    console.log('📋 Found subscriptions:', subscriptions?.length || 0);
+
+    if (!subscriptions || subscriptions.length === 0) {
+      console.log('⚠️  No subscription found for user:', userId);
+      throw new Error('No subscription found');
+    }
+
+    console.log('✅ Returning subscription:', subscriptions[0].id);
+    return subscriptions[0];
+  } catch (error) {
+    console.error('❌ Error in getMySubscription:', error);
+    throw error;
   }
-
-  return subscriptions[0];
 };
 
 /**
@@ -160,11 +194,59 @@ const getExpiredSubscriptionsCount = async () => {
   }
 };
 
+/**
+ * Get user billing history (all subscriptions)
+ */
+const getMyBillingHistory = async (userId) => {
+  // Get all subscriptions for the user, ordered by creation date (newest first)
+  const subscriptions = await Subscription.findByUserId(userId, {
+    orderBy: { createdAt: 'desc' }
+  });
+
+  // Transform subscriptions into billing history format
+  const billingHistory = subscriptions.map((sub) => {
+    // Generate invoice number (e.g., #NV-0091)
+    const invoiceNumber = `#NV-${String(sub.id).slice(-4).padStart(4, '0')}`;
+    
+    // Get plan price - try to get from plan relation if available
+    let amount = 'N/A';
+    if (sub.plan && sub.plan.price) {
+      amount = `${sub.plan.price} ${sub.plan.currency || 'SAR'}`;
+    } else {
+      // Fallback: use default price based on plan name or use 99 SAR for Qudurat
+      amount = '99 SAR';
+    }
+
+    // Format date
+    const date = new Date(sub.createdAt);
+    const formattedDate = date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+
+    return {
+      id: sub.id,
+      invoice: invoiceNumber,
+      amount: amount,
+      date: formattedDate,
+      status: sub.paymentStatus || 'Pending',
+      transactionId: sub.transactionId || sub.moyassarPaymentId || null,
+      planName: sub.planName || 'N/A',
+      createdAt: sub.createdAt,
+      updatedAt: sub.updatedAt,
+    };
+  });
+
+  return billingHistory;
+};
+
 module.exports = {
   subscribeToPlan,
   confirmPayment,
   getMySubscription,
   updateExpiredSubscriptions,
   getExpiredSubscriptionsCount,
+  getMyBillingHistory,
 };
 
