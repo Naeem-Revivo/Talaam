@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import Dropdown from "../../components/shared/Dropdown";
+import questionsAPI from "../../api/questions";
+import { toast } from "react-toastify";
 
 const ContentModerationPage = () => {
   const navigate = useNavigate();
@@ -10,9 +12,33 @@ const ContentModerationPage = () => {
   const [status, setStatus] = useState("");
   const [contentType, setContentType] = useState("");
   const [dateRange, setDateRange] = useState("");
+  const [flaggedContent, setFlaggedContent] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Mock data for flagged content
-  const flaggedContent = [
+  // Fetch flagged questions
+  useEffect(() => {
+    fetchFlaggedQuestions();
+  }, [status]);
+
+  const fetchFlaggedQuestions = async () => {
+    setLoading(true);
+    try {
+      const response = await questionsAPI.getFlaggedQuestionsForModeration({ status: status || undefined });
+      setFlaggedContent(response.data.questions || []);
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch flagged questions");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Mock data for flagged content (fallback)
+  const mockFlaggedContent = [
     {
       id: "0001",
       contentType: "Question",
@@ -114,16 +140,60 @@ const ContentModerationPage = () => {
   ];
 
   const handleView = (id) => {
-    const content = flaggedContent.find((item) => item.id === id);
-    navigate("/admin/moderation/details", { state: { content } });
+    navigate(`/admin/moderation/details/${id}`);
   };
 
-  const handleApprove = (id) => {
-    console.log("Approve content:", id);
+  const handleApprove = async (id) => {
+    if (!window.confirm("Are you sure you want to approve this flag? The question will be sent to processor.")) {
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      await questionsAPI.approveStudentFlag(id);
+      toast.success("Flag approved. Question sent to processor.");
+      fetchFlaggedQuestions();
+    } catch (error) {
+      toast.error(error.message || "Failed to approve flag");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleReject = (id) => {
-    console.log("Reject content:", id);
+    const content = flaggedContent.find((item) => item.id === id);
+    if (content) {
+      setSelectedQuestion(content);
+      setRejectReason("");
+      setShowRejectModal(true);
+    }
+  };
+
+  const handleRejectSubmit = async () => {
+    if (!rejectReason.trim()) {
+      toast.error("Please provide a rejection reason");
+      return;
+    }
+    if (!selectedQuestion) return;
+
+    setIsProcessing(true);
+    try {
+      await questionsAPI.rejectStudentFlag(selectedQuestion.id, rejectReason);
+      toast.success("Flag rejected. Student will be notified.");
+      setShowRejectModal(false);
+      setRejectReason("");
+      setSelectedQuestion(null);
+      fetchFlaggedQuestions();
+    } catch (error) {
+      toast.error(error.message || "Failed to reject flag");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" });
   };
 
   return (
@@ -143,7 +213,9 @@ const ContentModerationPage = () => {
             <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
               <button
                 type="button"
-                className="flex flex-1 sm:flex-initial h-[36px] items-center justify-center gap-2 rounded-[8px] border border-[#03274633] bg-white px-3 md:px-5 text-[12px] sm:text-[14px] md:text-[16px] font-roboto font-semibold leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
+                onClick={fetchFlaggedQuestions}
+                disabled={loading}
+                className="flex flex-1 sm:flex-initial h-[36px] items-center justify-center gap-2 rounded-[8px] border border-[#03274633] bg-white px-3 md:px-5 text-[12px] sm:text-[14px] md:text-[16px] font-roboto font-semibold leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB] disabled:opacity-50"
               >
                 <svg
                   width="14"
@@ -318,7 +390,20 @@ const ContentModerationPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {flaggedContent.map((item) => (
+                {loading ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-4 text-center text-oxford-blue">
+                      Loading...
+                    </td>
+                  </tr>
+                ) : flaggedContent.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-4 text-center text-oxford-blue">
+                      No flagged questions found
+                    </td>
+                  </tr>
+                ) : (
+                  flaggedContent.map((item) => (
                   <tr
                     key={item.id}
                     className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition"
@@ -336,13 +421,19 @@ const ContentModerationPage = () => {
                       {item.flagReason}
                     </td>
                     <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue">
-                      {item.dateReported}
+                      {formatDate(item.dateReported || item.createdAt)}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
-                        className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] text-center w-[70px] h-5 rounded-[6px] border-[0.5px] border-[#ED4122] bg-[#FEF2F2] text-[10px] text-[#ED4122]"
+                        className={`inline-flex items-center justify-center font-roboto font-normal leading-[100%] text-center w-[70px] h-5 rounded-[6px] border-[0.5px] text-[10px] ${
+                          item.status === "approved"
+                            ? "border-[#10B981] bg-[#ECFDF5] text-[#047857]"
+                            : item.status === "rejected"
+                            ? "border-[#6B7280] bg-[#F3F4F6] text-[#6B7280]"
+                            : "border-[#ED4122] bg-[#FEF2F2] text-[#ED4122]"
+                        }`}
                       >
-                        {item.status}
+                        {item.status === "pending" ? "Flagged" : item.status}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -354,24 +445,31 @@ const ContentModerationPage = () => {
                         >
                           {t('admin.contentModeration.table.actions.view')}
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleApprove(item.id)}
-                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition py-1 px-[10px] bg-[#FDF0D5] text-[#ED4122] h-[22px]"
-                        >
-                          {t('admin.contentModeration.table.actions.approve')}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleReject(item.id)}
-                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition py-1 px-[10px] bg-[#ED4122] text-white h-[22px]"
-                        >
-                          {t('admin.contentModeration.table.actions.reject')}
-                        </button>
+                        {item.status === "pending" && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleApprove(item.id)}
+                              disabled={isProcessing}
+                              className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition py-1 px-[10px] bg-[#FDF0D5] text-[#ED4122] h-[22px] disabled:opacity-50"
+                            >
+                              {t('admin.contentModeration.table.actions.approve')}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleReject(item.id)}
+                              disabled={isProcessing}
+                              className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition py-1 px-[10px] bg-[#ED4122] text-white h-[22px] disabled:opacity-50"
+                            >
+                              {t('admin.contentModeration.table.actions.reject')}
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -379,7 +477,12 @@ const ContentModerationPage = () => {
 
         {/* Content Cards - Mobile/Tablet View */}
         <div className="lg:hidden space-y-4">
-          {flaggedContent.map((item) => (
+          {loading ? (
+            <div className="text-center py-8 text-oxford-blue">Loading...</div>
+          ) : flaggedContent.length === 0 ? (
+            <div className="text-center py-8 text-oxford-blue">No flagged questions found</div>
+          ) : (
+            flaggedContent.map((item) => (
             <div
               key={item.id}
               className="rounded-[12px] border border-[#03274633] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] p-4"
@@ -394,9 +497,15 @@ const ContentModerationPage = () => {
                   </p>
                 </div>
                 <span
-                  className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] text-center w-[70px] h-5 rounded-[6px] border-[0.5px] border-[#ED4122] bg-[#FEF2F2] text-[10px] text-[#ED4122]"
+                  className={`inline-flex items-center justify-center font-roboto font-normal leading-[100%] text-center w-[70px] h-5 rounded-[6px] border-[0.5px] text-[10px] ${
+                    item.status === "approved"
+                      ? "border-[#10B981] bg-[#ECFDF5] text-[#047857]"
+                      : item.status === "rejected"
+                      ? "border-[#6B7280] bg-[#F3F4F6] text-[#6B7280]"
+                      : "border-[#ED4122] bg-[#FEF2F2] text-[#ED4122]"
+                  }`}
                 >
-                  {item.status}
+                  {item.status === "pending" ? "Flagged" : item.status}
                 </span>
               </div>
               
@@ -422,7 +531,7 @@ const ContentModerationPage = () => {
                     {t('admin.contentModeration.mobile.dateReported')}
                   </p>
                   <p className="font-roboto text-[12px] font-normal leading-[16px] text-oxford-blue flex-1">
-                    {item.dateReported}
+                    {formatDate(item.dateReported || item.createdAt)}
                   </p>
                 </div>
               </div>
@@ -435,23 +544,30 @@ const ContentModerationPage = () => {
                 >
                   {t('admin.contentModeration.table.actions.view')}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => handleApprove(item.id)}
-                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2 bg-[#FDF0D5] text-[#ED4122] min-h-[32px]"
-                >
-                  {t('admin.contentModeration.table.actions.approve')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleReject(item.id)}
-                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2 bg-[#ED4122] text-white min-h-[32px]"
-                >
-                  {t('admin.contentModeration.table.actions.reject')}
-                </button>
+                {item.status === "pending" && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleApprove(item.id)}
+                      disabled={isProcessing}
+                      className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2 bg-[#FDF0D5] text-[#ED4122] min-h-[32px] disabled:opacity-50"
+                    >
+                      {t('admin.contentModeration.table.actions.approve')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleReject(item.id)}
+                      disabled={isProcessing}
+                      className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2 bg-[#ED4122] text-white min-h-[32px] disabled:opacity-50"
+                    >
+                      {t('admin.contentModeration.table.actions.reject')}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Pagination */}
@@ -495,6 +611,103 @@ const ContentModerationPage = () => {
           </div>
         </div>
       </div>
+
+      {/* View Question Modal */}
+      {showViewModal && selectedQuestion && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-[20px] font-archivo font-bold text-oxford-blue">
+                Question Details
+              </h3>
+              <button
+                onClick={() => {
+                  setShowViewModal(false);
+                  setSelectedQuestion(null);
+                }}
+                className="text-oxford-blue hover:text-[#ED4122] text-[24px]"
+              >
+                ×
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <p className="text-[14px] font-roboto font-medium text-dark-gray mb-1">Question:</p>
+                <p className="text-[16px] font-roboto text-oxford-blue">{selectedQuestion.question}</p>
+              </div>
+              {selectedQuestion.options && (
+                <div>
+                  <p className="text-[14px] font-roboto font-medium text-dark-gray mb-2">Options:</p>
+                  <div className="space-y-2">
+                    {Object.entries(selectedQuestion.options).map(([key, value]) => (
+                      <div key={key} className="flex items-center gap-2">
+                        <span className="font-medium text-oxford-blue w-6">{key}:</span>
+                        <span className="text-[14px] font-roboto text-oxford-blue">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {selectedQuestion.explanation && (
+                <div>
+                  <p className="text-[14px] font-roboto font-medium text-dark-gray mb-1">Explanation:</p>
+                  <p className="text-[14px] font-roboto text-oxford-blue">{selectedQuestion.explanation}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-[14px] font-roboto font-medium text-dark-gray mb-1">Flag Reason:</p>
+                <p className="text-[14px] font-roboto text-[#ED4122]">{selectedQuestion.flagReason}</p>
+              </div>
+              <div>
+                <p className="text-[14px] font-roboto font-medium text-dark-gray mb-1">Flagged By:</p>
+                <p className="text-[14px] font-roboto text-oxford-blue">
+                  {selectedQuestion.submittedBy || selectedQuestion.flaggedBy?.name || "Unknown"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {showRejectModal && selectedQuestion && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-[18px] font-archivo font-bold text-oxford-blue mb-4">
+              Reject Flag
+            </h3>
+            <p className="text-[14px] font-roboto text-dark-gray mb-4">
+              Please provide a reason for rejecting this flag. This reason will be shown to the student.
+            </p>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Enter rejection reason..."
+              className="w-full h-32 p-3 border border-[#E5E7EB] rounded-lg text-[14px] font-roboto text-oxford-blue mb-4 resize-none"
+            />
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectReason("");
+                  setSelectedQuestion(null);
+                }}
+                className="px-4 py-2 text-[14px] font-roboto text-oxford-blue border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] transition"
+                disabled={isProcessing}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRejectSubmit}
+                disabled={isProcessing || !rejectReason.trim()}
+                className="px-4 py-2 text-[14px] font-roboto text-white bg-[#ED4122] rounded-lg hover:bg-[#d43a1f] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isProcessing ? "Rejecting..." : "Reject Flag"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

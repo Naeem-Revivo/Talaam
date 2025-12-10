@@ -38,8 +38,9 @@ const getAvailableQuestions = async (req, res, next) => {
 const getQuestionById = async (req, res, next) => {
   try {
     const { questionId } = req.params;
+    const studentId = req.user.id;
 
-    const question = await questionService.getQuestionById(questionId);
+    const question = await questionService.getQuestionById(questionId, studentId);
 
     res.status(200).json({
       success: true,
@@ -485,6 +486,61 @@ const saveStudySessionResults = async (req, res, next) => {
   }
 };
 
+/**
+ * Flag question by Student
+ * POST /api/student/questions/:questionId/flag
+ * Body: { flagReason }
+ */
+const flagQuestion = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const { flagReason } = req.body;
+    const studentId = req.user.id;
+
+    if (!flagReason || !flagReason.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Flag reason is required',
+      });
+    }
+
+    const question = await questionService.flagQuestionByStudent(
+      questionId,
+      flagReason,
+      studentId
+    );
+
+    res.status(200).json({
+      success: true,
+      data: question,
+      message: 'Question flagged successfully. It will be reviewed by an administrator.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get student's flagged questions
+ * GET /api/student/questions/flagged
+ */
+const getStudentFlaggedQuestions = async (req, res, next) => {
+  try {
+    const studentId = req.user.id;
+    const questions = await questionService.getStudentFlaggedQuestions(studentId);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        questions,
+        count: questions.length,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAvailableQuestions,
   getQuestionById,
@@ -502,6 +558,8 @@ module.exports = {
   getSessionIncorrect,
   getPlanStructure,
   getStudyHistory,
+  flagQuestion,
+  getStudentFlaggedQuestions,
 };
 
 

@@ -986,7 +986,26 @@
         "correctAnswerExplanation": "Correct Answer Explanation",
         "answer": "Answer:",
         "explanationLabel": "Explanation:"
-      }
+      },
+      "flagQuestion": "Flag Question",
+      "flagReasonLabel": "Please provide a reason for flagging this question:",
+      "flagReasonPlaceholder": "Enter reason...",
+      "flagReasonRequired": "Please provide a reason",
+      "flagSuccess": "Question flagged successfully. It will be reviewed by an administrator.",
+      "flagError": "Failed to flag question",
+      "flagging": "Flagging...",
+      "submitFlag": "Submit",
+      "cancel": "Cancel",
+      "flagRejected": "Your flag was rejected",
+      "adminReason": "Admin reason:",
+      "flagPending": "Flag pending review",
+      "flagApproved": "Flag approved - Question under review",
+      "reason": "Reason",
+      "flagReason": "Flag Reason",
+      "yourReason": "Your reason:",
+      "noReasonProvided": "No reason provided",
+      "noReasonAvailable": "No reason available",
+      "close": "Close"
     },
     "sessionCompletion": {
       "title": "Session Complete",

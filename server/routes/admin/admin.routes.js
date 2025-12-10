@@ -108,5 +108,11 @@ router.get('/analytics/subscription/trend', authMiddleware, superadminMiddleware
 router.get('/analytics/subscription/revenue-trend', authMiddleware, superadminMiddleware, adminController.getRevenueTrendChart);
 router.get('/analytics/subscription/plan-breakdown', authMiddleware, superadminMiddleware, adminController.getPlanWiseBreakdown);
 
+// Content Moderation Routes (all require superadmin access)
+const questionController = require('../../controllers/admin/question.controller');
+router.get('/moderation/flagged', authMiddleware, superadminMiddleware, questionController.getFlaggedQuestionsForModeration);
+router.post('/moderation/:questionId/approve', authMiddleware, superadminMiddleware, questionController.approveStudentFlag);
+router.post('/moderation/:questionId/reject', authMiddleware, superadminMiddleware, questionController.rejectStudentFlag);
+
 module.exports = router;
 

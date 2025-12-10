@@ -183,7 +183,7 @@ export const AppRoutes = () => {
           <Route path="reports/subscription-trends" element={<SubscriptionTrendsPage />} />
           <Route path="reports/export" element={<ExportReportsPage />} />
           <Route path="moderation" element={<ContentModerationPage />} />
-          <Route path="moderation/details" element={<ContentDetailsPage />} />
+          <Route path="moderation/details/:questionId" element={<ContentDetailsPage />} />
           <Route path="settings" element={<SystemSettingPlan />} />
           <Route path="settings/language-management" element={<LanguageManagement />} />
           <Route path="settings/roles-permissions" element={<AdminRolePermissions />} />

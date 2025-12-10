@@ -1196,7 +1196,16 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
   // PRIORITY 1: If question was updated after flag approval, route based on who flagged it
   // This ensures explainer-flagged questions go back to explainer, not creator
   if (wasUpdatedAfterFlag && question.flagType) {
-    if (question.flagType === 'creator') {
+    if (question.flagType === 'student') {
+      // Student flagged - route based on whether it's a variant or original question
+      if (question.isVariant || question.originalQuestionId) {
+        // Variant: send to creator
+        nextStatus = 'pending_creator';
+      } else {
+        // Original question: send to gatherer
+        nextStatus = 'pending_gatherer';
+      }
+    } else if (question.flagType === 'creator') {
       // If creator flagged, send back to creator after update
       nextStatus = 'pending_creator';
     } else if (question.flagType === 'explainer') {
@@ -1210,7 +1219,16 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
   // PRIORITY 2: Direct flag approval (processor approves flagged question without update)
   else if (question.isFlagged && question.flagType && !wasUpdatedAfterFlag) {
     // Route based on flagType to continue normal workflow
-    if (question.flagType === 'creator') {
+    if (question.flagType === 'student') {
+      // Student flagged - route based on whether it's a variant or original question
+      if (question.isVariant || question.originalQuestionId) {
+        // Variant: send to creator
+        nextStatus = 'pending_creator';
+      } else {
+        // Original question: send to gatherer
+        nextStatus = 'pending_gatherer';
+      }
+    } else if (question.flagType === 'creator') {
       // Creator flagged - continue to creator
       nextStatus = 'pending_creator';
     } else if (question.flagType === 'explainer') {
@@ -1224,7 +1242,16 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
   // PRIORITY 3: Check if question has flagType even if flag was cleared (for edge cases)
   else if (question.flagType && !question.isFlagged) {
     // Question had a flag that was resolved, route based on original flagType
-    if (question.flagType === 'explainer') {
+    if (question.flagType === 'student') {
+      // Student flagged - route based on whether it's a variant or original question
+      if (question.isVariant || question.originalQuestionId) {
+        // Variant: send to creator
+        nextStatus = 'pending_creator';
+      } else {
+        // Original question: send to gatherer
+        nextStatus = 'pending_gatherer';
+      }
+    } else if (question.flagType === 'explainer') {
       // Was explainer flag - send back to explainer (CRITICAL: don't go to creator)
       nextStatus = 'pending_explainer';
     } else if (question.flagType === 'creator') {
@@ -1270,7 +1297,7 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
     nextStatus = 'pending_creator';
   }
 
-  // Validate and assign creator/explainer if provided
+  // Validate and assign creator/explainer/gatherer if provided
   // Only assign if not already assigned (assignment happens only once)
   // Skip validation if nextStatus is 'completed' (no assignment needed)
   if (assignedUserId && nextStatus !== 'completed') {
@@ -1319,10 +1346,10 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
           assignedUserId = null;
         }
       }
-    } else {
-      // If nextStatus is something else (shouldn't happen, but handle gracefully)
-      // Don't assign user if status doesn't require assignment
-      assignedUserId = null;
+    } else if (nextStatus === 'pending_gatherer') {
+      // Note: Gatherer assignment is typically not done here as gatherers work on all questions
+      // But if needed, we can add gatherer assignment logic here
+      assignedUserId = null; // Don't assign gatherer for now
     }
   } else if (assignedUserId && nextStatus === 'completed') {
     // If nextStatus is completed, ignore assignedUserId (no assignment needed)
@@ -1374,7 +1401,7 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
   // Always remove flag when processor approves a flagged question
   // Also clear flag-related fields if question was rejected by gatherer (flagRejectionReason exists)
   if (question.isFlagged || question.flagRejectionReason) {
-    const flagType = question.flagType || 'unknown'; // 'creator' or 'explainer'
+    const flagType = question.flagType || 'unknown'; // 'student', 'creator', or 'explainer'
     const wasRejectedByGatherer = question.flagRejectionReason && !question.isFlagged;
     
     updateData.isFlagged = false;
@@ -1397,9 +1424,19 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
     if (wasRejectedByGatherer) {
       historyNote = `Question approved after gatherer rejected the flag. Gatherer's reason was accepted. Moved to ${nextStatus}. All flag data cleared.`;
     } else if (wasUpdatedAfterFlag) {
-      historyNote = `Question approved after ${flagType} flag correction, moved to ${nextStatus}. Flag removed.`;
+      if (flagType === 'student') {
+        const questionType = (question.isVariant || question.originalQuestionId) ? 'variant' : 'question';
+        historyNote = `Question approved after student flag correction (${questionType}), moved to ${nextStatus}. Flag removed.`;
+      } else {
+        historyNote = `Question approved after ${flagType} flag correction, moved to ${nextStatus}. Flag removed.`;
+      }
     } else {
-      historyNote = `Question approved with ${flagType} flag, moved to ${nextStatus}. Flag removed.`;
+      if (flagType === 'student') {
+        const questionType = (question.isVariant || question.originalQuestionId) ? 'variant' : 'question';
+        historyNote = `Question approved with student flag (${questionType}), moved to ${nextStatus}. Flag removed.`;
+      } else {
+        historyNote = `Question approved with ${flagType} flag, moved to ${nextStatus}. Flag removed.`;
+      }
     }
   } else {
     historyNote = `Question approved, moved to ${nextStatus}`;
@@ -2670,6 +2707,166 @@ const getCompletedExplanationsByExplainer = async (explainerId) => {
   return filteredQuestions;
 };
 
+/**
+ * Get flagged questions for content moderation (superadmin)
+ */
+const getFlaggedQuestionsForModeration = async (filters = {}) => {
+  const { prisma } = require('../../../config/db/prisma');
+  
+  const where = {
+    isFlagged: true,
+    flagType: 'student',
+  };
+
+  if (filters.status) {
+    where.flagStatus = filters.status;
+  }
+
+  const questions = await prisma.question.findMany({
+    where,
+    include: {
+      exam: {
+        select: { id: true, name: true },
+      },
+      subject: {
+        select: { id: true, name: true },
+      },
+      topic: {
+        select: { id: true, name: true },
+      },
+      flaggedBy: {
+        select: { id: true, name: true, fullName: true, email: true },
+      },
+      flagReviewedBy: {
+        select: { id: true, name: true, email: true },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return questions.map((q) => {
+    // Get submitted by name - try name, fullName, or email as fallback
+    let submittedBy = 'Unknown';
+    if (q.flaggedBy) {
+      submittedBy = q.flaggedBy.name || q.flaggedBy.fullName || q.flaggedBy.email || 'Unknown';
+    }
+
+    return {
+      id: q.id,
+      contentType: 'Question',
+      submittedBy: submittedBy,
+      flagReason: q.flagReason,
+      dateReported: q.createdAt,
+      status: q.flagStatus || 'pending',
+      question: q.questionText,
+      options: q.options,
+      correctAnswer: q.correctAnswer,
+      explanation: q.explanation,
+      exam: q.exam ? { id: q.examId, ...q.exam } : null,
+      subject: q.subject ? { id: q.subjectId, ...q.subject } : null,
+      topic: q.topic ? { id: q.topicId, ...q.topic } : null,
+      flaggedBy: q.flaggedBy,
+      flagReviewedBy: q.flagReviewedBy,
+      flagRejectionReason: q.flagRejectionReason,
+      createdAt: q.createdAt,
+      updatedAt: q.updatedAt,
+    };
+  });
+};
+
+/**
+ * Approve student flag (superadmin)
+ * When approved, question goes to processor with student reason
+ */
+const approveStudentFlag = async (questionId, adminId) => {
+  const { prisma } = require('../../../config/db/prisma');
+  
+  const question = await prisma.question.findFirst({
+    where: { id: questionId },
+  });
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (!question.isFlagged || question.flagType !== 'student') {
+    throw new Error('Question is not flagged by a student');
+  }
+
+  // Update question: approve flag and send to processor
+  const updatedQuestion = await prisma.question.update({
+    where: { id: questionId },
+    data: {
+      flagStatus: 'approved',
+      flagReviewedById: adminId,
+      status: 'pending_processor',
+      updatedAt: new Date(),
+    },
+  });
+
+  // Create history entry
+  await prisma.questionHistory.create({
+    data: {
+      questionId: questionId,
+      action: 'flag_approved',
+      performedById: adminId,
+      role: 'superadmin',
+      notes: `Student flag approved. Reason: ${question.flagReason}. Question sent to processor.`,
+    },
+  });
+
+  return updatedQuestion;
+};
+
+/**
+ * Reject student flag (superadmin)
+ * Admin provides rejection reason that will be shown to student
+ */
+const rejectStudentFlag = async (questionId, rejectionReason, adminId) => {
+  const { prisma } = require('../../../config/db/prisma');
+  
+  const question = await prisma.question.findFirst({
+    where: { id: questionId },
+  });
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (!question.isFlagged || question.flagType !== 'student') {
+    throw new Error('Question is not flagged by a student');
+  }
+
+  if (!rejectionReason || !rejectionReason.trim()) {
+    throw new Error('Rejection reason is required');
+  }
+
+  // Update question: reject flag and keep status as completed
+  const updatedQuestion = await prisma.question.update({
+    where: { id: questionId },
+    data: {
+      flagStatus: 'rejected',
+      flagReviewedById: adminId,
+      flagRejectionReason: rejectionReason.trim(),
+      // Keep isFlagged true so student can see rejection reason
+      updatedAt: new Date(),
+    },
+  });
+
+  // Create history entry
+  await prisma.questionHistory.create({
+    data: {
+      questionId: questionId,
+      action: 'flag_rejected',
+      performedById: adminId,
+      role: 'superadmin',
+      notes: `Student flag rejected. Admin reason: ${rejectionReason.trim()}`,
+    },
+  });
+
+  return updatedQuestion;
+};
+
 module.exports = {
   createQuestion,
   getQuestionsByStatus,
@@ -2707,5 +2904,8 @@ module.exports = {
   getCompletedExplanationsByExplainer,
   getQuestionsByStatusAndRole,
   rejectGathererFlagRejection,
+  getFlaggedQuestionsForModeration,
+  approveStudentFlag,
+  rejectStudentFlag,
 };
 
