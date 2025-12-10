@@ -995,7 +995,26 @@
         "correctAnswerExplanation": "شرح الإجابة الصحيحة",
         "answer": "الإجابة:",
         "explanationLabel": "الشرح:"
-      }
+      },
+      "flagQuestion": "الإبلاغ عن السؤال",
+      "flagReasonLabel": "يرجى تقديم سبب للإبلاغ عن هذا السؤال:",
+      "flagReasonPlaceholder": "أدخل السبب...",
+      "flagReasonRequired": "يرجى تقديم سبب",
+      "flagSuccess": "تم الإبلاغ عن السؤال بنجاح. سيتم مراجعته من قبل المسؤول.",
+      "flagError": "فشل في الإبلاغ عن السؤال",
+      "flagging": "جاري الإبلاغ...",
+      "submitFlag": "إرسال",
+      "cancel": "إلغاء",
+      "flagRejected": "تم رفض إبلاغك",
+      "adminReason": "سبب المسؤول:",
+      "flagPending": "الإبلاغ قيد المراجعة",
+      "flagApproved": "تم الموافقة على الإبلاغ - السؤال قيد المراجعة",
+      "reason": "السبب",
+      "flagReason": "سبب الإبلاغ",
+      "yourReason": "سببك:",
+      "noReasonProvided": "لم يتم تقديم سبب",
+      "noReasonAvailable": "لا يوجد سبب متاح",
+      "close": "إغلاق"
     },
     "sessionCompletion": {
       "title": "اكتملت الجلسة",

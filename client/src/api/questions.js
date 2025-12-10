@@ -18,6 +18,47 @@ const questionsAPI = {
   },
 
   // ============================================
+  // ADMIN/SUPERADMIN ENDPOINTS
+  // ============================================
+
+  // Get approved questions (Superadmin only)
+  getApprovedQuestions: async (params = {}) => {
+    try {
+      const { page = 1, limit = 10, search, subject, exam, topic } = params;
+      const queryParams = new URLSearchParams();
+      if (page) queryParams.append('page', page);
+      if (limit) queryParams.append('limit', limit);
+      if (search) queryParams.append('search', search);
+      if (subject) queryParams.append('subject', subject);
+      if (exam) queryParams.append('exam', exam);
+      if (topic) queryParams.append('topic', topic);
+
+      const url = queryParams.toString()
+        ? `/admin/questions/approved?${queryParams.toString()}`
+        : '/admin/questions/approved';
+
+      const response = await axiosClient.get(url);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to fetch approved questions' };
+    }
+  },
+
+  // Toggle question visibility (Superadmin only)
+  toggleQuestionVisibility: async (questionId, isVisible) => {
+    try {
+      const response = await axiosClient.put(`/admin/questions/${questionId}/visibility`, {
+        isVisible: isVisible,
+      });
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to toggle question visibility' };
+    }
+  },
+
+  // ============================================
   // GATHERER ENDPOINTS
   // ============================================
 
@@ -534,6 +575,56 @@ const questionsAPI = {
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Failed to reject gatherer flag rejection' };
+    }
+  },
+
+  // ============================================
+  // CONTENT MODERATION ENDPOINTS (SUPERADMIN)
+  // ============================================
+
+  // Get flagged questions for moderation
+  // GET /api/admin/moderation/flagged?status=...
+  getFlaggedQuestionsForModeration: async (params = {}) => {
+    try {
+      const { status } = params;
+      const queryParams = new URLSearchParams();
+      if (status) queryParams.append('status', status);
+
+      const url = queryParams.toString()
+        ? `/admin/moderation/flagged?${queryParams.toString()}`
+        : '/admin/moderation/flagged';
+
+      const response = await axiosClient.get(url);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to fetch flagged questions' };
+    }
+  },
+
+  // Approve student flag
+  // POST /api/admin/moderation/:questionId/approve
+  approveStudentFlag: async (questionId) => {
+    try {
+      const response = await axiosClient.post(`/admin/moderation/${questionId}/approve`);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to approve flag' };
+    }
+  },
+
+  // Reject student flag
+  // POST /api/admin/moderation/:questionId/reject
+  rejectStudentFlag: async (questionId, rejectionReason) => {
+    try {
+      const response = await axiosClient.post(`/admin/moderation/${questionId}/reject`, {
+        rejectionReason: rejectionReason?.trim(),
+      });
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to reject flag' };
     }
   },
 };
