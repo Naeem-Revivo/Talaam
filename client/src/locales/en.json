@@ -1639,6 +1639,8 @@
         "active": "Active",
         "inactive": "Inactive"
       },
+      "loading": "Loading plans...",
+      "retry": "Retry",
       "table": {
         "columns": {
           "planName": "PLAN NAME",
@@ -1656,10 +1658,13 @@
     "addNewPlan": {
       "hero": {
         "title": "Add New Plans",
-        "subtitle": "Manage available plans and their pricing"
+        "subtitle": "Manage available plans and their pricing",
+        "editTitle": "Edit Plan",
+        "editSubtitle": "Update plan details and pricing"
       },
       "sections": {
-        "addNewPlan": "Add New Plan"
+        "addNewPlan": "Add New Plan",
+        "editPlan": "Edit Plan"
       },
       "fields": {
         "planName": "Plan Name",
@@ -1679,11 +1684,14 @@
         "inactive": "Inactive",
         "monthly": "Monthly",
         "quarterly": "Quarterly",
+        "semiAnnual": "Semi-Annual",
+        "annual": "Annual",
         "yearly": "Yearly"
       },
       "buttons": {
         "cancel": "Cancel",
-        "save": "Save"
+        "save": "Save",
+        "update": "Update"
       }
     },
     "paymentHistory": {

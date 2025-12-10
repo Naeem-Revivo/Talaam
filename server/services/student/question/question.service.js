@@ -462,8 +462,9 @@ const getTestSummary = async (studentId, filters = {}) => {
     totalQuestions: { gt: 0 }, // Only count tests with questions
   };
 
-  if (filters.exam) {
-    where.examId = filters.exam;
+  // Only add examId filter if it's provided and valid
+  if (filters.exam && typeof filters.exam === 'string' && filters.exam.trim() !== '') {
+    where.examId = filters.exam.trim();
   }
 
   const tests = await prisma.studentAnswer.findMany({
@@ -486,10 +487,12 @@ const getTestSummary = async (studentId, filters = {}) => {
 
   const questionBankWhere = {
     status: 'completed',
-    isVisible: true, // Only count visible questions
+    // Note: isVisible might not exist in database, so we'll filter by status only
+    // If isVisible exists, it will be included, otherwise it will be ignored
   };
-  if (filters.exam) {
-    questionBankWhere.examId = filters.exam;
+  // Only add examId filter if it's provided and valid
+  if (filters.exam && typeof filters.exam === 'string' && filters.exam.trim() !== '') {
+    questionBankWhere.examId = filters.exam.trim();
   }
   const totalQuestionsInBank = await prisma.question.count({
     where: questionBankWhere

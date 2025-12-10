@@ -1,30 +1,64 @@
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { DataTable } from "../../components/admin/SystemSetting/Table";
-import basePlansData from "../../data/subscriptionPlansData.json";
-
-// Mock data for subscription plans
-// DataTable converts column names to keys by: columnName.toLowerCase().replace(/ /g, "")
-// So "PLAN NAME" becomes "planname", "PRICE" becomes "price", etc.
-const allPlans = [
-    ...basePlansData,
-];
+import plansAPI from "../../api/plans";
+import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 
 const SubscriptionPlan = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const pageSize = 10;
 
+  // Fetch plans from API
+  useEffect(() => {
+    fetchPlans();
+  }, [statusFilter]);
+
+  const fetchPlans = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params = statusFilter ? { status: statusFilter.toLowerCase() } : {};
+      const response = await plansAPI.getAllPlans(params);
+      
+      if (response.success && response.data?.plans) {
+        // Transform API data to match table format
+        const transformedPlans = response.data.plans.map((plan) => ({
+          id: plan.id,
+          planname: plan.name,
+          price: `$${parseFloat(plan.price).toFixed(2)}`,
+          duration: plan.duration,
+          subscriber: plan.subscriberCount || 0,
+          status: plan.status.charAt(0).toUpperCase() + plan.status.slice(1), // Capitalize first letter
+          // Keep original data for edit/delete operations
+          _original: plan,
+        }));
+        
+        setPlans(transformedPlans);
+      } else {
+        setPlans([]);
+      }
+    } catch (err) {
+      console.error("Error fetching plans:", err);
+      setError(err.message || "Failed to fetch plans");
+      showErrorToast(err.message || "Failed to fetch plans");
+      setPlans([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredPlans = useMemo(() => {
-    return allPlans.filter((plan) => {
-      return statusFilter ? plan.status === statusFilter : true;
-    });
-  }, [statusFilter]);
+    return plans;
+  }, [plans]);
 
   const paginatedPlans = useMemo(() => {
     const start = (page - 1) * pageSize;
@@ -79,10 +113,26 @@ const SubscriptionPlan = () => {
     navigate("/admin/subscriptions/edit-plan", { state: { plan } });
   };
 
-  const handleDelete = (plan) => {
+  const handleDelete = async (plan) => {
     // Handle delete plan (using onView prop from DataTable)
     if (window.confirm(t('admin.subscriptionPlans.table.deleteConfirm').replace('{{planName}}', plan.planname))) {
-      console.log("Delete plan:", plan);
+      try {
+        const planId = plan._original?.id || plan.id;
+        const response = await plansAPI.deletePlan(planId);
+        
+        if (response.success) {
+          showSuccessToast(response.message || "Plan deleted successfully");
+          // Refresh plans list
+          fetchPlans();
+          // Reset to first page if current page becomes empty
+          if (paginatedPlans.length === 1 && page > 1) {
+            setPage(page - 1);
+          }
+        }
+      } catch (err) {
+        console.error("Error deleting plan:", err);
+        showErrorToast(err.message || "Failed to delete plan");
+      }
     }
   };
 
@@ -148,18 +198,40 @@ const SubscriptionPlan = () => {
           />
         </div> */}
 
+        {/* Loading State */}
+        {loading && (
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-8 text-center">
+            <p className="text-dark-gray">{t('admin.subscriptionPlans.loading') || 'Loading plans...'}</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {!loading && error && (
+          <div className="rounded-[12px] border border-red-300 bg-white p-8 text-center">
+            <p className="text-red-600 mb-4">{error}</p>
+            <button
+              onClick={fetchPlans}
+              className="h-[36px] rounded-[8px] bg-[#ED4122] px-6 font-roboto text-[16px] font-medium leading-[20px] text-white transition hover:bg-[#d43a1f]"
+            >
+              {t('admin.subscriptionPlans.retry') || 'Retry'}
+            </button>
+          </div>
+        )}
+
         {/* Table */}
-        <DataTable
-          items={paginatedPlans}
-          columns={columns}
-          page={page}
-          pageSize={pageSize}
-          total={filteredPlans.length}
-          onPageChange={setPage}
-          onEdit={handleEdit}
-          onView={handleDelete}
-          emptyMessage={t('admin.subscriptionPlans.table.emptyState')}
-        />
+        {!loading && !error && (
+          <DataTable
+            items={paginatedPlans}
+            columns={columns}
+            page={page}
+            pageSize={pageSize}
+            total={filteredPlans.length}
+            onPageChange={setPage}
+            onEdit={handleEdit}
+            onView={handleDelete}
+            emptyMessage={t('admin.subscriptionPlans.table.emptyState')}
+          />
+        )}
       </div>
     </div>
   );

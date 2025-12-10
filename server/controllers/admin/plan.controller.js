@@ -67,6 +67,31 @@ const createPlan = async (req, res, next) => {
         })),
       });
     }
+    if (error.name === 'DuplicatePlanName') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: [
+          {
+            field: error.field || 'name',
+            message: 'Plan name already exists. Please choose a different name.',
+          },
+        ],
+      });
+    }
+    // Handle Prisma unique constraint errors (if database has unique constraint)
+    if (error.code === 'P2002' && error.meta?.target?.includes('name')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: [
+          {
+            field: 'name',
+            message: 'Plan name already exists. Please choose a different name.',
+          },
+        ],
+      });
+    }
     next(error);
   }
 };

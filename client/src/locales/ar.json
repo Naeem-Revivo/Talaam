@@ -1649,6 +1649,8 @@
         "active": "نشط",
         "inactive": "غير نشط"
       },
+      "loading": "جاري تحميل الخطط...",
+      "retry": "إعادة المحاولة",
       "table": {
         "columns": {
           "planName": "اسم الخطة",
@@ -1666,10 +1668,13 @@
     "addNewPlan": {
       "hero": {
         "title": "إضافة خطط جديدة",
-        "subtitle": "إدارة الخطط المتاحة وأسعارها"
+        "subtitle": "إدارة الخطط المتاحة وأسعارها",
+        "editTitle": "تعديل الخطة",
+        "editSubtitle": "تحديث تفاصيل الخطة وأسعارها"
       },
       "sections": {
-        "addNewPlan": "إضافة خطة جديدة"
+        "addNewPlan": "إضافة خطة جديدة",
+        "editPlan": "تعديل الخطة"
       },
       "fields": {
         "planName": "اسم الخطة",
@@ -1689,11 +1694,14 @@
         "inactive": "غير نشط",
         "monthly": "شهري",
         "quarterly": "ربع سنوي",
+        "semiAnnual": "نصف سنوي",
+        "annual": "سنوي",
         "yearly": "سنوي"
       },
       "buttons": {
         "cancel": "إلغاء",
-        "save": "حفظ"
+        "save": "حفظ",
+        "update": "تحديث"
       }
     },
     "paymentHistory": {
