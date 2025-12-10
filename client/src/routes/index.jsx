@@ -75,6 +75,7 @@ import ProcessorLayout from '../components/Processor/ProcessorLayout';
 import AllProcessedQuestion from '../pages/Processor/AllProcessedQuestion';
 import GathererSubmission from '../pages/Processor/GathererSubmission';
 import ExplainerSubmission from '../pages/Processor/ExplainerSubmission';
+import AdminSubmission from '../pages/Processor/AdminSubmission';
 import CreaterSubmission from '../pages/Processor/CreatorSubmission';
 import ProcessorViewQuestion from '../pages/Processor/ProcessorViewQuestion';
 import CreatorLayout from '../components/creator/CreatorLayout';
@@ -222,6 +223,7 @@ export const AppRoutes = () => {
           <Route path="Processed-ViewQuestion" element={<ProcessorViewQuestion />} />
           <Route path="question-bank/gatherer-submission" element={<GathererSubmission />} />
           <Route path="question-bank/explainer-submission" element={<ExplainerSubmission />} />
+          <Route path="question-bank/admin-submission" element={<AdminSubmission />} />
           <Route path="question-bank/creator-submission" element={<CreaterSubmission />} />
         </Route>
       </Route>

@@ -97,7 +97,7 @@ const createQuestion = async (questionData, userId) => {
 /**
  * Get questions by status and role
  */
-const getQuestionsByStatus = async (status, userId, role) => {
+const getQuestionsByStatus = async (status, userId, role, flagType = null) => {
   const where = { status };
 
   // Gatherer can only see their own questions
@@ -120,6 +120,30 @@ const getQuestionsByStatus = async (status, userId, role) => {
     where.assignedExplainerId = userId;
   }
 
+  // Handle flagType parameter
+  // If flagType='student' is specified, only fetch student-flagged questions
+  // Otherwise, exclude student-flagged questions that are NOT accepted/approved
+  // Student-flagged questions should only appear in other pages after flag is accepted
+  if (flagType === 'student') {
+    where.flagType = 'student';
+  } else {
+    // Exclude questions with flagType='student' that are NOT approved
+    // Only show student-flagged questions in other pages if flagStatus='approved'
+    where.OR = [
+      {
+        flagType: {
+          not: 'student'
+        }
+      },
+      {
+        AND: [
+          { flagType: 'student' },
+          { flagStatus: 'approved' }
+        ]
+      }
+    ];
+  }
+
   const questions = await Question.findMany({
     where,
     orderBy: { createdAt: 'desc' },
@@ -132,7 +156,8 @@ const getQuestionsByStatus = async (status, userId, role) => {
       assignedProcessor: { select: { name: true, fullName: true, email: true } },
       assignedCreator: { select: { name: true, fullName: true, email: true } },
       assignedExplainer: { select: { name: true, fullName: true, email: true } },
-      approvedBy: { select: { name: true, fullName: true, email: true } }
+      approvedBy: { select: { name: true, fullName: true, email: true } },
+      flaggedBy: { select: { name: true, fullName: true, username: true, email: true } }
     }
   });
 
@@ -235,7 +260,7 @@ const getQuestionsByStatus = async (status, userId, role) => {
  * @param {string} submittedByRole - Role that submitted the question (gatherer, creator, explainer)
  * @param {string} processorId - ID of the processor (to filter by assignedProcessorId)
  */
-const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId = null) => {
+const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId = null, flagType = null) => {
   const { prisma } = require('../../../config/db/prisma');
   
   // Build where clause with status and role filtering
@@ -437,6 +462,36 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
     }
   }
 
+  // Handle flagType parameter
+  // If flagType='student' is specified, only fetch student-flagged questions
+  // Otherwise, exclude student-flagged questions that are NOT accepted/approved
+  // Student-flagged questions should only appear in other pages after flag is accepted
+  if (!where.AND) {
+    where.AND = [];
+  }
+  
+  if (flagType === 'student') {
+    // Only fetch student-flagged questions (all statuses for admin submission page)
+    where.AND.push({
+      flagType: 'student'
+    });
+  } else {
+    // Exclude questions with flagType='student' that are NOT approved
+    // Only show student-flagged questions in other pages if flagStatus='approved'
+    where.AND.push({
+      OR: [
+        { flagType: { not: 'student' } },
+        { flagType: null },
+        {
+          AND: [
+            { flagType: 'student' },
+            { flagStatus: 'approved' }
+          ]
+        }
+      ]
+    });
+  }
+
   const questions = await Question.findMany({
     where,
     orderBy: { createdAt: 'desc' },
@@ -450,6 +505,7 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
       assignedCreator: { select: { name: true, fullName: true, email: true } },
       assignedExplainer: { select: { name: true, fullName: true, email: true } },
       approvedBy: { select: { name: true, fullName: true, email: true } },
+      flaggedBy: { select: { name: true, fullName: true, username: true, email: true } },
       history: {
         include: {
           performedBy: { select: { id: true, adminRole: true } }
@@ -1216,7 +1272,8 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
 
   // Validate and assign creator/explainer if provided
   // Only assign if not already assigned (assignment happens only once)
-  if (assignedUserId) {
+  // Skip validation if nextStatus is 'completed' (no assignment needed)
+  if (assignedUserId && nextStatus !== 'completed') {
     const { prisma } = require('../../../config/db/prisma');
     const assignedUser = await prisma.user.findUnique({
       where: { id: assignedUserId },
@@ -1234,27 +1291,42 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
     // Assign based on next status
     if (nextStatus === 'pending_creator') {
       if (assignedUser.adminRole !== 'creator') {
-        throw new Error('Assigned user must be a creator');
-      }
-      // Only assign if not already assigned
-      if (!question.assignedCreatorId) {
-        // Will be set in updateData below
-      } else {
-        // Already assigned, don't change it
+        // If assigned user is not a creator, ignore the assignment rather than throwing error
+        // This handles cases where frontend might pass wrong user ID
+        console.warn(`Assigned user ${assignedUserId} is not a creator (role: ${assignedUser.adminRole}), ignoring assignment for nextStatus: ${nextStatus}`);
         assignedUserId = null;
+      } else {
+        // Only assign if not already assigned
+        if (!question.assignedCreatorId) {
+          // Will be set in updateData below
+        } else {
+          // Already assigned, don't change it
+          assignedUserId = null;
+        }
       }
     } else if (nextStatus === 'pending_explainer') {
       if (assignedUser.adminRole !== 'explainer') {
-        throw new Error('Assigned user must be an explainer');
-      }
-      // Only assign if not already assigned
-      if (!question.assignedExplainerId) {
-        // Will be set in updateData below
-      } else {
-        // Already assigned, don't change it
+        // If assigned user is not an explainer, ignore the assignment rather than throwing error
+        // This handles cases where frontend might pass wrong user ID
+        console.warn(`Assigned user ${assignedUserId} is not an explainer (role: ${assignedUser.adminRole}), ignoring assignment for nextStatus: ${nextStatus}`);
         assignedUserId = null;
+      } else {
+        // Only assign if not already assigned
+        if (!question.assignedExplainerId) {
+          // Will be set in updateData below
+        } else {
+          // Already assigned, don't change it
+          assignedUserId = null;
+        }
       }
+    } else {
+      // If nextStatus is something else (shouldn't happen, but handle gracefully)
+      // Don't assign user if status doesn't require assignment
+      assignedUserId = null;
     }
+  } else if (assignedUserId && nextStatus === 'completed') {
+    // If nextStatus is completed, ignore assignedUserId (no assignment needed)
+    assignedUserId = null;
   }
 
   // Prepare update data

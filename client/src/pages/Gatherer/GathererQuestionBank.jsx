@@ -63,9 +63,10 @@ const GathererQuestionBank = () => {
   };
 
   // Format status for display
-  const formatStatus = (status, isFlagged) => {
-    // If question is flagged, show "Flagged" status
-    if (isFlagged) {
+  const formatStatus = (status, isFlagged, flagStatus) => {
+    // Only show "Flagged" status if flag has been approved by processor
+    // Don't show flagged status if flag is pending processor review
+    if (isFlagged && flagStatus === 'approved') {
       return "Flagged";
     }
     if (!status) return "—";
@@ -73,6 +74,7 @@ const GathererQuestionBank = () => {
       pending_processor: "Pending Review",
       pending_creator: "Pending Creator",
       pending_explainer: "Pending Explainer",
+      pending_gatherer: "Pending My Action",
       approved: "Approved",
       rejected: "Rejected",
       completed: "Completed",
@@ -111,20 +113,30 @@ const GathererQuestionBank = () => {
                                   "—";
             console.log('Question ID:', question.id, 'Processor:', processorName, 'assignedProcessor object:', question.assignedProcessor);
             const isRejected = question.status === 'rejected';
-            const isFlagged = question.isFlagged === true;
+            
+            // Only consider question as flagged if flag has been approved by processor
+            // Don't show flagged status if flag is pending processor review (flagStatus === 'pending' or null)
+            const flagStatus = question.flagStatus;
+            const isFlagged = question.isFlagged === true && flagStatus === 'approved';
+            const isPendingProcessor = question.status === 'pending_processor';
+            
+            // Determine action type: edit icon only for flagged questions that are NOT pending_processor
+            // Questions with pending_processor status should not have edit option
+            const actionType = (isFlagged && !isPendingProcessor) ? "editicon" : "viewicon";
+            
             return {
               id: question.id,
               questionTitle: question.questionText?.substring(0, 50) + (question.questionText?.length > 50 ? "..." : "") || "—",
               processor: processorName,
               lastUpdate: formatDate(question.updatedAt || question.createdAt),
-              status: formatStatus(question.status, question.isFlagged),
+              status: formatStatus(question.status, question.isFlagged, flagStatus),
               indicators: {
                 reject: isRejected,
-                flag: isFlagged,
+                flag: isFlagged, // Only show flag indicator if flag is approved
               },
               rejectionReason: question.rejectionReason || null,
               flagReason: question.flagReason || null,
-              actionType: question.isFlagged ? "editicon" : "viewicon",
+              actionType: actionType,
               originalData: question, // Store full question data for edit page
             };
           });
@@ -182,6 +194,13 @@ const GathererQuestionBank = () => {
 
   const handleEdit = useCallback((item) => {
     if (item?.id) {
+      // Prevent editing questions with pending_processor status
+      const questionStatus = item.originalData?.status || item.status;
+      if (questionStatus === 'pending_processor') {
+        console.warn('Cannot edit question with pending_processor status');
+        return;
+      }
+      
       // Navigate to edit page with question ID and pass the question data via state
       navigate(`/gatherer/question-bank/Gatherer-editQuestion/${item.id}`, {
         state: { questionData: item.originalData }

@@ -120,11 +120,19 @@ const ProcessorViewQuestion = () => {
                     question.isFlagged === true && 
                     (question.flagStatus === 'pending' || !question.flagStatus);
   
-  // Check if gatherer rejected a flag (has flagRejectionReason)
+  // Check if gatherer rejected a flag (has flagRejectionReason AND was rejected by gatherer)
+  // This should only be true when a gatherer rejected a flag, not when creator/explainer flags were rejected
   const gathererRejectedFlag = question && 
                                question.flagRejectionReason && 
                                question.flagRejectionReason.trim() !== '' &&
-                               question.status === 'pending_processor';
+                               question.status === 'pending_processor' &&
+                               // Check history to ensure the rejection was done by gatherer
+                               question.history &&
+                               Array.isArray(question.history) &&
+                               question.history.some(h => 
+                                 h.action === 'flag_rejected_by_gatherer' && 
+                                 h.role === 'gatherer'
+                               );
   
   // Determine flag type
   const flagType = question?.flagType || null;

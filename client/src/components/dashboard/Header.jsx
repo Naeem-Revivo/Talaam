@@ -104,6 +104,7 @@ const Header = ({ onToggleSidebar }) => {
     if (pathname.includes('gatherer-submission')) return t('header.titles.processor.gathererSubmission');
     if (pathname.includes('creator-submission')) return t('header.titles.processor.creatorSubmission');
     if (pathname.includes('explainer-submission')) return t('header.titles.processor.explainerSubmission');
+    if (pathname.includes('admin-submission')) return t('header.titles.processor.adminSubmission');
     if (pathname.includes('profile')) return t('header.titles.processor.profile');
     return t('header.titles.processor.default');
   }

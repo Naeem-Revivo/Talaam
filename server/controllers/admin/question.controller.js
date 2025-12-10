@@ -512,11 +512,12 @@ const createQuestion = async (req, res, next) => {
  */
 const getQuestions = async (req, res, next) => {
   try {
-    const { status, submittedBy } = req.query;
+    const { status, submittedBy, flagType } = req.query;
 
     console.log('[QUESTION] GET /admin/questions → requested', {
       status,
       submittedBy,
+      flagType,
       requestedBy: req.user.id,
       requesterRole: req.user.adminRole,
     });
@@ -549,13 +550,15 @@ const getQuestions = async (req, res, next) => {
       questions = await questionService.getQuestionsByStatusAndRole(
         queryStatus,
         submittedBy,
-        req.user.id // Pass processor ID to filter by assignedProcessorId
+        req.user.id, // Pass processor ID to filter by assignedProcessorId
+        flagType // Pass flagType to allow fetching student-flagged questions
       );
     } else {
       questions = await questionService.getQuestionsByStatus(
         queryStatus,
         req.user.id,
-        req.user.adminRole
+        req.user.adminRole,
+        flagType // Pass flagType to allow fetching student-flagged questions
       );
     }
 

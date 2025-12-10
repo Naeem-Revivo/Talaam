@@ -140,6 +140,31 @@ const CreaterSubmission = () => {
         }
         });
         
+        // Also fetch creator-flagged questions explicitly
+        // Creator-flagged questions might not be included in the above fetch if they don't match the role filter
+        // Fetch questions with flagType='creator' and isFlagged=true, regardless of status
+        try {
+          // Fetch all pending_processor questions and filter for creator-flagged ones
+          const flaggedResponse = await questionsAPI.getProcessorQuestions({ status: 'pending_processor' });
+          if (flaggedResponse.success && flaggedResponse.data?.questions) {
+            const creatorFlaggedQuestions = flaggedResponse.data.questions.filter(q => 
+              q.isFlagged === true && 
+              q.flagType === 'creator' && 
+              (q.flagStatus === 'pending' || q.flagStatus === null || q.flagStatus === undefined)
+            );
+            // Add creator-flagged questions that aren't already in the list
+            const existingIds = new Set(allQuestions.map(q => q.id));
+            creatorFlaggedQuestions.forEach(q => {
+              if (!existingIds.has(q.id)) {
+                allQuestions.push(q);
+              }
+            });
+          }
+        } catch (error) {
+          console.warn('Error fetching creator-flagged questions:', error);
+          // Continue with existing questions if this fails
+        }
+        
         // Remove duplicates based on question ID
         const uniqueQuestions = [];
         const seenIds = new Set();
@@ -228,13 +253,15 @@ const CreaterSubmission = () => {
           const wasInCreatorWorkflow = question.history && Array.isArray(question.history) && 
                                       question.history.some(h => h.status === 'pending_creator' || h.action === 'approved');
           
-          // Check if question is currently flagged
+          // Check if question is currently flagged by creator
           // A question is flagged ONLY if:
           // 1. isFlagged property is explicitly true
-          // 2. flagStatus is 'pending' (or null/undefined for backward compatibility)
-          // 3. Status is not 'pending_explainer' or 'completed' (flag has been resolved if moved forward)
+          // 2. flagType is 'creator' (flagged by creator)
+          // 3. flagStatus is 'pending' (or null/undefined for backward compatibility)
+          // 4. Status is not 'pending_explainer' or 'completed' (flag has been resolved if moved forward)
           // Note: Don't check history or flagReason alone, as these persist even after flag is cleared
           const isFlagged = (question.isFlagged === true || question.isFlagged === 'true') &&
+                           (question.flagType === 'creator') &&
                            (question.flagStatus === 'pending' || question.flagStatus === null || question.flagStatus === undefined) &&
                            question.status?.toLowerCase() !== 'pending_explainer' &&
                            question.status?.toLowerCase() !== 'completed';
@@ -249,9 +276,22 @@ const CreaterSubmission = () => {
           // Get processor status
           const processorStatus = mapProcessorStatus(question.status);
 
+          // Check if this question is a variant
+          const isVariant = question.isVariant === true || question.isVariant === 'true';
+
           // Get creator status with proper mapping
           // Priority: Flag > Variant Created > Approved (if submitted/completed) > Other statuses
-          const creatorStatus = mapCreatorStatus(question.status, isFlagged, hasVariants, isSubmittedByCreator, isCompleted);
+          let creatorStatus = mapCreatorStatus(question.status, isFlagged, hasVariants, isSubmittedByCreator, isCompleted);
+          
+          // If this is a variant question, append "Variant" to the status
+          // Format: "Status - Variant" or just "Variant" if status is empty
+          if (isVariant) {
+            if (creatorStatus && creatorStatus !== '—') {
+              creatorStatus = `${creatorStatus} - Variant`;
+            } else {
+              creatorStatus = 'Variant';
+            }
+          }
 
           // Get flag reason
           const flagReason = question.flagReason || null;
@@ -264,11 +304,12 @@ const CreaterSubmission = () => {
             creatorStatus: creatorStatus,
             submittedOn: formatDate(question.updatedAt || question.createdAt),
             flagReason: flagReason,
+            isVariant: isVariant, // Store isVariant for table component
             indicators: {
-              approved: creatorStatus === 'Approved' || question.status === 'completed' || isSubmittedByCreator,
+              approved: creatorStatus.includes('Approved') || question.status === 'completed' || isSubmittedByCreator,
               flag: isFlagged,
               reject: question.status === 'rejected',
-              variant: hasVariants
+              variant: hasVariants || isVariant // Include variant indicator for variant questions
             },
             actionType: 'review',
             originalData: question // Store original data for navigation

@@ -153,6 +153,45 @@ const ExplainerSubmission = () => {
               const detailResponse = await questionsAPI.getProcessorQuestionById(question.id);
               if (detailResponse.success && detailResponse.data) {
                 const detailedQuestion = detailResponse.data.question;
+                
+                // Check if this is a variant
+                const isVariant = detailedQuestion?.isVariant === true || 
+                                 detailedQuestion?.isVariant === 'true' ||
+                                 question?.isVariant === true || 
+                                 question?.isVariant === 'true';
+                const originalQuestionId = detailedQuestion?.originalQuestionId || 
+                                          detailedQuestion?.originalQuestion?.id ||
+                                          question?.originalQuestionId;
+                
+                // Get assignedExplainer from detailed question
+                let assignedExplainer = detailedQuestion?.assignedExplainer || question.assignedExplainer || null;
+                
+                // Check if assignedExplainer is properly populated (has name/fullName/username)
+                const hasExplainerInfo = assignedExplainer && 
+                                        (assignedExplainer.name || 
+                                         assignedExplainer.fullName || 
+                                         assignedExplainer.username);
+                
+                // If variant doesn't have assignedExplainer properly populated, try to get it from parent question
+                if (isVariant && originalQuestionId && !hasExplainerInfo) {
+                  try {
+                    const parentResponse = await questionsAPI.getProcessorQuestionById(originalQuestionId);
+                    if (parentResponse.success && parentResponse.data?.question) {
+                      const parentQuestion = parentResponse.data.question;
+                      // Use parent's assignedExplainer if it's properly populated
+                      if (parentQuestion.assignedExplainer && 
+                          (parentQuestion.assignedExplainer.name || 
+                           parentQuestion.assignedExplainer.fullName || 
+                           parentQuestion.assignedExplainer.username)) {
+                        assignedExplainer = parentQuestion.assignedExplainer;
+                      }
+                    }
+                  } catch (parentError) {
+                    console.warn(`Could not fetch parent question ${originalQuestionId} for variant ${question.id}:`, parentError);
+                    // Continue with variant's assignedExplainer (or null)
+                  }
+                }
+                
                 return {
                   ...question,
                   ...detailedQuestion, // Merge detailed question data
@@ -165,7 +204,7 @@ const ExplainerSubmission = () => {
                             (detailedQuestion?.status?.toLowerCase() !== 'completed' && detailedQuestion?.status?.toLowerCase() !== 'pending_creator'),
                   explanation: detailedQuestion?.explanation || question.explanation || null,
                   history: detailedQuestion?.history || question.history || [],
-                  assignedExplainer: detailedQuestion?.assignedExplainer || question.assignedExplainer || null
+                  assignedExplainer: assignedExplainer
                 };
               }
               return question;
@@ -223,9 +262,12 @@ const ExplainerSubmission = () => {
         // Transform API data to match table structure
         const transformedData = filteredQuestions.map((question) => {
           // Get explainer name (assignedExplainer or lastModifiedBy if explainer submitted)
+          // Also check for fullName field which might be used instead of name
           const explainerName = question.assignedExplainer?.name || 
+                               question.assignedExplainer?.fullName ||
                                question.assignedExplainer?.username ||
                                question.lastModifiedBy?.name || 
+                               question.lastModifiedBy?.fullName ||
                                question.lastModifiedBy?.username || 
                                'Unknown';
 

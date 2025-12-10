@@ -173,10 +173,11 @@ const questionsAPI = {
   // Get questions (Processor view)
   getProcessorQuestions: async (params = {}) => {
     try {
-      const { status, submittedBy } = params;
+      const { status, submittedBy, flagType } = params;
       const queryParams = new URLSearchParams();
       if (status) queryParams.append('status', status);
       if (submittedBy) queryParams.append('submittedBy', submittedBy);
+      if (flagType) queryParams.append('flagType', flagType);
 
       const url = queryParams.toString()
         ? `/admin/questions/processor?${queryParams.toString()}`

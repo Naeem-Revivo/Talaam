@@ -142,6 +142,10 @@ const ProcessorSidebar = ({ isOpen, onClose }) => {
         path: "/processor/question-bank/explainer-submission",
         labelKey: "processor.sidebar.explainerSubmission",
       },
+      {
+        path: "/processor/question-bank/admin-submission",
+        labelKey: "processor.sidebar.adminSubmission",
+      },
     ],
   };
 
