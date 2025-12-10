@@ -19,11 +19,13 @@ const Subscription = {
 
   // Find subscriptions by user ID
   async findByUserId(userId, options = {}) {
-    return await prisma.subscription.findMany({
+    const queryOptions = {
       where: { userId },
       include: { plan: true },
       ...options
-    });
+    };
+    console.log('🔍 Subscription.findByUserId query:', JSON.stringify(queryOptions, null, 2));
+    return await prisma.subscription.findMany(queryOptions);
   },
 
   // Find active subscription for user
@@ -66,6 +68,11 @@ const Subscription = {
       },
       include: { user: true, plan: true }
     });
+  },
+
+  // Count subscriptions
+  async count(where = {}) {
+    return await prisma.subscription.count({ where });
   },
 };
 

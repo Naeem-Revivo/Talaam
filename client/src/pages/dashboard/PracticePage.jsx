@@ -4,6 +4,8 @@ import { useLanguage } from '../../context/LanguageContext';
 import subjectsAPI from '../../api/subjects';
 import topicsAPI from '../../api/topics';
 import studentQuestionsAPI from '../../api/studentQuestions';
+import subscriptionAPI from '../../api/subscription';
+import { showErrorToast } from '../../utils/toastConfig';
 
 const PracticePage = () => {
   const { t } = useLanguage();
@@ -24,6 +26,8 @@ const PracticePage = () => {
   const [loadingSubjects, setLoadingSubjects] = useState(false);
   const [loadingTopics, setLoadingTopics] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [checkingSubscription, setCheckingSubscription] = useState(true);
 
   const selectedSubtopicCount = Object.values(selectedSubtopics).filter(Boolean).length;
   const parsedSessionSize = Number(sessionSize);
@@ -34,6 +38,14 @@ const PracticePage = () => {
   const canStartSession = sessionMode === 'study' || canStartTestSession;
   const handleStartSession = () => {
     if (!canStartSession) return;
+    
+    // Check subscription before starting session
+    if (!hasActiveSubscription) {
+      showErrorToast('Please subscribe to access study mode and test mode');
+      navigate('/dashboard/subscription-billings');
+      return;
+    }
+    
     const mode = sessionMode === 'test' ? 'test' : 'study';
     
     // Get selected topic IDs
@@ -65,6 +77,32 @@ const PracticePage = () => {
     });
   };
 
+
+  // Check subscription status on component mount
+  useEffect(() => {
+    const checkSubscription = async () => {
+      try {
+        setCheckingSubscription(true);
+        const response = await subscriptionAPI.getMySubscription();
+        if (response.success && response.data?.subscription) {
+          const subscription = response.data.subscription;
+          // Check if subscription is active and not expired
+          const isActive = subscription.isActive === true && 
+                          subscription.paymentStatus === 'Paid' &&
+                          new Date(subscription.expiryDate) > new Date();
+          setHasActiveSubscription(isActive);
+        } else {
+          setHasActiveSubscription(false);
+        }
+      } catch (error) {
+        console.error('Error checking subscription:', error);
+        setHasActiveSubscription(false);
+      } finally {
+        setCheckingSubscription(false);
+      }
+    };
+    checkSubscription();
+  }, []);
 
   // Fetch subjects on component mount
   useEffect(() => {
@@ -159,6 +197,13 @@ const PracticePage = () => {
 
   // Handle session mode selection - automatically set question status based on mode
   const handleSessionModeChange = (mode) => {
+    // Check subscription before allowing mode change
+    if (!hasActiveSubscription) {
+      showErrorToast('Please subscribe to access study mode and test mode');
+      navigate('/dashboard/subscription-billings');
+      return;
+    }
+    
     setSessionMode(mode);
     if (mode === 'study') {
       // Study mode: automatically select 'new' and clear checkboxes
@@ -193,41 +238,63 @@ const PracticePage = () => {
         <h2 className="font-archivo font-bold text-lg md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-4">
           {t('dashboard.practice.sessionMode.title')}
         </h2>
+          {!hasActiveSubscription && !checkingSubscription && (
+            <div className="mb-4 flex items-center gap-2 rounded-lg w-full bg-yellow-50 border border-yellow-200 p-3">
+              <svg className="w-5 h-5 text-yellow-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <p className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-yellow-800">
+                Subscription required to access study mode and test mode. 
+                <button 
+                  onClick={() => navigate('/dashboard/subscription-billings')}
+                  className="ml-1 underline font-semibold hover:text-yellow-900"
+                >
+                  Subscribe now
+                </button>
+              </p>
+            </div>
+          )}
           <div className="flex flex-row gap-2 md:gap-4 mb-4">
             <button
               onClick={() => handleSessionModeChange('test')}
+              disabled={!hasActiveSubscription || checkingSubscription}
               className={`rounded-lg transition-all duration-200 text-left w-full h-[82px] md:h-[81.6px] p-2 md:p-4 ${
                 sessionMode === 'test'
                   ? 'bg-cinnebar-red border border-cinnebar-red shadow-input'
-                  : 'bg-white border border-[#E5E7EB]'
+                  : hasActiveSubscription
+                  ? 'bg-white border border-[#E5E7EB]'
+                  : 'bg-gray-100 border border-gray-300 opacity-60 cursor-not-allowed'
               }`}
             >
               <p className={`font-archivo font-bold text-[16px] leading-[24px] tracking-[0%] mb-1 md:mb-2 text-center ${
-                sessionMode === 'test' ? 'text-white' : 'text-black'
+                sessionMode === 'test' ? 'text-white' : hasActiveSubscription ? 'text-black' : 'text-gray-500'
               }`}>
                 {t('dashboard.practice.sessionMode.testMode')}
               </p>
               <p className={`font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-center ${
-                sessionMode === 'test' ? 'text-white' : 'text-gray-600'
+                sessionMode === 'test' ? 'text-white' : hasActiveSubscription ? 'text-gray-600' : 'text-gray-400'
               }`}>
                 {t('dashboard.practice.sessionMode.testModeDescription')}
               </p>
             </button>
             <button
               onClick={() => handleSessionModeChange('study')}
+              disabled={!hasActiveSubscription || checkingSubscription}
               className={`rounded-lg transition-all duration-200 text-left w-full h-[82px] md:h-[81.6px] p-2 md:p-4 ${
                 sessionMode === 'study'
                   ? 'bg-cinnebar-red border border-cinnebar-red shadow-input'
-                  : 'bg-white border border-[#E5E7EB]'
+                  : hasActiveSubscription
+                  ? 'bg-white border border-[#E5E7EB]'
+                  : 'bg-gray-100 border border-gray-300 opacity-60 cursor-not-allowed'
               }`}
             >
               <p className={`font-archivo font-bold text-[16px] leading-[24px] tracking-[0%] mb-1 md:mb-2 text-center ${
-                sessionMode === 'study' ? 'text-white' : 'text-black'
+                sessionMode === 'study' ? 'text-white' : hasActiveSubscription ? 'text-black' : 'text-gray-500'
               }`}>
                 {t('dashboard.practice.sessionMode.studyMode')}
               </p>
               <p className={`font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-center ${
-                sessionMode === 'study' ? 'text-white' : 'text-gray-600'
+                sessionMode === 'study' ? 'text-white' : hasActiveSubscription ? 'text-gray-600' : 'text-gray-400'
               }`}>
                 {t('dashboard.practice.sessionMode.studyModeDescription')}
               </p>
@@ -455,13 +522,15 @@ const PracticePage = () => {
       {/* Begin Session Button */}
       <div className="flex justify-center">
         <button
-          // disabled={!canStartSession}
+          disabled={!canStartSession || !hasActiveSubscription || checkingSubscription}
           onClick={handleStartSession}
           className={`font-archivo font-bold text-[20px] leading-[28px] tracking-[0%] text-oxford-blue text-center rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 w-full lg:w-[1120px] h-[50px] md:h-[60px] ${
-            canStartSession ? 'bg-cinnebar-red text-white' : 'bg-ash-gray text-oxford-blue cursor-not-allowed'
+            canStartSession && hasActiveSubscription ? 'bg-cinnebar-red text-white' : 'bg-ash-gray text-oxford-blue cursor-not-allowed'
           }`}
         >
-          {t('dashboard.practice.beginSession')}
+          {!hasActiveSubscription && !checkingSubscription 
+            ? 'Subscribe to Start Session' 
+            : t('dashboard.practice.beginSession')}
         </button>
       </div>
     </div>

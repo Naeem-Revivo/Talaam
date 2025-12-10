@@ -95,6 +95,7 @@ router.use('/plans', planRoutes);
 // Subscription Management Routes (all require superadmin access)
 router.get('/subscriptions', authMiddleware, superadminMiddleware, adminController.getAllUserSubscriptions);
 router.get('/subscriptions/:subscriptionId', authMiddleware, superadminMiddleware, adminController.getSubscriptionDetails);
+router.post('/subscriptions/:subscriptionId/sync-payment', authMiddleware, superadminMiddleware, adminController.syncSubscriptionPayment);
 router.get('/payments/history', authMiddleware, superadminMiddleware, adminController.getPaymentHistory);
 
 // Analytics & Reports Routes (all require superadmin access)
@@ -107,6 +108,10 @@ router.get('/analytics/user/performance', authMiddleware, superadminMiddleware, 
 router.get('/analytics/subscription/trend', authMiddleware, superadminMiddleware, adminController.getSubscriptionTrendMetrics);
 router.get('/analytics/subscription/revenue-trend', authMiddleware, superadminMiddleware, adminController.getRevenueTrendChart);
 router.get('/analytics/subscription/plan-breakdown', authMiddleware, superadminMiddleware, adminController.getPlanWiseBreakdown);
+router.get('/analytics/subscription/plan-distribution', authMiddleware, superadminMiddleware, adminController.getPlanDistribution);
+
+// Practice Analytics
+router.get('/analytics/practice-distribution', authMiddleware, superadminMiddleware, adminController.getPracticeDistribution);
 
 // Content Moderation Routes (all require superadmin access)
 const questionController = require('../../controllers/admin/question.controller');

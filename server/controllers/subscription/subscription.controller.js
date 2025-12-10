@@ -125,10 +125,20 @@ const confirmPayment = async (req, res, next) => {
  */
 const getMySubscription = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      console.error('❌ No user ID in request');
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated',
+      });
+    }
 
+    console.log('📞 GET /api/subscription/me - User ID:', userId);
     const subscription = await subscriptionService.getMySubscription(userId);
 
+    console.log('✅ Subscription found, returning response');
     res.status(200).json({
       success: true,
       data: {
@@ -143,12 +153,16 @@ const getMySubscription = async (req, res, next) => {
           paymentStatus: subscription.paymentStatus,
           isActive: subscription.isActive,
           transactionId: subscription.transactionId,
+          moyassarPaymentId: subscription.moyassarPaymentId || null,
+          moyassarPaymentStatus: subscription.moyassarPaymentStatus || null,
+          paymentUrl: subscription.paymentUrl || null,
           createdAt: subscription.createdAt,
           updatedAt: subscription.updatedAt,
         },
       },
     });
   } catch (error) {
+    console.error('❌ Error in getMySubscription controller:', error);
     if (error.message === 'No subscription found') {
       return res.status(404).json({
         success: false,
@@ -159,9 +173,32 @@ const getMySubscription = async (req, res, next) => {
   }
 };
 
+/**
+ * Get my billing history
+ * GET /api/subscription/billing-history
+ */
+const getMyBillingHistory = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    const billingHistory = await subscriptionService.getMyBillingHistory(userId);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        billingHistory,
+        total: billingHistory.length,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   subscribeToPlan,
   confirmPayment,
   getMySubscription,
+  getMyBillingHistory,
 };
 

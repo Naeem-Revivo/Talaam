@@ -1,20 +1,67 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AdminMetricCard from "../../components/admin/AdminMetricCard";
 import { useLanguage } from "../../context/LanguageContext";
 import Dropdown from "../../components/shared/Dropdown";
+import adminAPI from "../../api/admin";
 
 const SubscriptionTrendsPage = () => {
   const { t } = useLanguage();
   // Subscription Trends filters
   const [planType, setPlanType] = useState("");
   const [dateRange, setDateRange] = useState("");
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [subscriptionData, setSubscriptionData] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Subscription Trends KPI Cards
-  const subscriptionKPICards = [
+  useEffect(() => {
+    const fetchSubscriptionData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const [metricsData, revenueData, planDistData, breakdownData] = await Promise.all([
+          adminAPI.getSubscriptionTrendMetrics(),
+          adminAPI.getRevenueTrendChart(),
+          adminAPI.getPlanDistribution(),
+          adminAPI.getPlanWiseBreakdown({ page: currentPage, limit: 3 }),
+        ]);
+
+        setSubscriptionData({
+          metrics: metricsData.data,
+          revenue: revenueData.data,
+          planDistribution: planDistData.data,
+          breakdown: breakdownData.data,
+        });
+      } catch (err) {
+        console.error('Error fetching subscription data:', err);
+        setError(err.message || 'Failed to load subscription data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubscriptionData();
+  }, [currentPage]);
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    if (typeof amount === 'string') return amount;
+    return `$${amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}`;
+  };
+
+  // Format number
+  const formatNumber = (num) => {
+    return num?.toLocaleString() || '0';
+  };
+
+  // Prepare Subscription KPI Cards from API data
+  const subscriptionKPICards = subscriptionData?.metrics ? [
     {
       id: 1,
       title: t('admin.subscriptionTrends.kpi.totalSubscribers'),
-      value: "1,234",
+      value: formatNumber(subscriptionData.metrics.totalSubscribers),
       subtext: "",
       subtextClassName: "text-dark-gray",
       icon: (
@@ -27,7 +74,7 @@ const SubscriptionTrendsPage = () => {
     {
       id: 2,
       title: t('admin.subscriptionTrends.kpi.totalRevenue'),
-      value: "$50,432",
+      value: formatCurrency(subscriptionData.metrics.totalRevenue),
       subtext: "",
       subtextClassName: "text-dark-gray",
       icon: (
@@ -40,7 +87,7 @@ const SubscriptionTrendsPage = () => {
     {
       id: 3,
       title: t('admin.subscriptionTrends.kpi.renewalRate'),
-      value: "95%",
+      value: subscriptionData.metrics.renewalRate || "0%",
       subtext: "",
       subtextClassName: "text-dark-gray",
       icon: (
@@ -53,7 +100,7 @@ const SubscriptionTrendsPage = () => {
     {
       id: 4,
       title: t('admin.subscriptionTrends.kpi.churnRate'),
-      value: "5%",
+      value: subscriptionData.metrics.churnRate || "0%",
       subtext: "",
       subtextClassName: "text-dark-gray",
       icon: (
@@ -63,61 +110,26 @@ const SubscriptionTrendsPage = () => {
         </svg>
       ),
     },
-  ];
+  ] : [];
 
-  // Revenue Trend Chart Data - matching the pattern: low start, peak, trough, then rise
-  const revenueData = [
-    { month: "Jan", revenue: 15000 },
-    { month: "Feb", revenue: 28000 },
-    { month: "Mar", revenue: 32000 },
-    { month: "Apr", revenue: 18000 },
-    { month: "May", revenue: 12000 },
-    { month: "Jun", revenue: 22000 },
-    { month: "Jul", revenue: 26000 },
-  ];
+  // Prepare Revenue Trend Chart Data from API
+  const revenueData = subscriptionData?.revenue?.data?.map(item => ({
+    month: item.month || item.monthName || 'N/A',
+    revenue: typeof item.revenue === 'string' ? parseFloat(item.revenue) : (item.revenue || 0),
+  })) || [];
 
-  // Plan Distribution Data
-  const planDistribution = [
-    { plan: "Basic", percentage: 60, color: "#ED4122" },
-    { plan: "Premium", percentage: 30, color: "#6CA6C1" },
-    { plan: "Enterprise", percentage: 10, color: "#FDF0D5" },
-  ];
+  // Prepare Plan Distribution from API
+  const planDistribution = subscriptionData?.planDistribution || [];
 
-  // Plan-Wise Breakdown Data
-  const planBreakdown = [
-    {
-      planType: "Basic Plan",
-      subscribers: 500,
-      active: 450,
-      expired: 50,
-      revenue: "$3,000",
-      avgDuration: "3 month",
-    },
-    {
-      planType: "Premium Plan",
-      subscribers: 300,
-      active: 280,
-      expired: 20,
-      revenue: "$25,000",
-      avgDuration: "6 month",
-    },
-    {
-      planType: "Enterprise",
-      subscribers: 200,
-      active: 190,
-      expired: 10,
-      revenue: "$2,000",
-      avgDuration: "12 month",
-    },
-    {
-      planType: "Trial",
-      subscribers: 190,
-      active: 190,
-      expired: 0,
-      revenue: "$0",
-      avgDuration: "1 month",
-    },
-  ];
+  // Prepare Plan-Wise Breakdown from API
+  const planBreakdown = subscriptionData?.breakdown?.plans?.map(plan => ({
+    planType: plan.planType || plan.name || 'N/A',
+    subscribers: plan.subscribers || 0,
+    active: plan.active || 0,
+    expired: plan.expired || 0,
+    revenue: formatCurrency(plan.revenue),
+    avgDuration: plan.avgDuration || 'N/A',
+  })) || [];
 
   // Calculate donut chart path
   const getDonutPath = (percentage, startAngle, radius, innerRadius) => {
@@ -142,11 +154,40 @@ const SubscriptionTrendsPage = () => {
   };
 
   let currentAngle = -90;
-  const donutPaths = planDistribution.map((item) => {
+  const donutPaths = planDistribution.length > 0 ? planDistribution.map((item) => {
     const path = getDonutPath(item.percentage, currentAngle, 60, 35);
     currentAngle += (item.percentage / 100) * 360;
     return { ...item, path };
-  });
+  }) : [];
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px] flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-oxford-blue"></div>
+          <p className="mt-4 text-oxford-blue font-roboto">Loading subscription data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-[#EF4444] font-roboto text-lg">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-oxford-blue text-white rounded-lg hover:bg-opacity-90 transition"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]">
@@ -283,9 +324,11 @@ const SubscriptionTrendsPage = () => {
                 })}
                 {/* Calculate smooth curve path */}
                 {(() => {
+                  if (revenueData.length === 0) return null;
+                  const maxRevenue = Math.max(...revenueData.map(d => d.revenue), 35000);
                   const points = revenueData.map((data, index) => {
-                    const x = 50 + (index * 499) / (revenueData.length - 1);
-                    const y = 302 - (data.revenue / 35000) * 260;
+                    const x = 50 + (index * 499) / Math.max(revenueData.length - 1, 1);
+                    const y = 302 - (data.revenue / maxRevenue) * 260;
                     return { x, y };
                   });
 
@@ -334,18 +377,24 @@ const SubscriptionTrendsPage = () => {
             </h2>
             <div className="flex flex-col items-center justify-center gap-4 md:gap-6 mt-4 md:mt-6">
               <div className="relative w-full max-w-[270px]">
-                <svg width="100%" height="100%" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
-                  {donutPaths.map((item, index) => (
-                    <path
-                      key={index}
-                      d={item.path}
-                      fill={item.color}
-                    />
-                  ))}
-                </svg>
+                {donutPaths.length > 0 ? (
+                  <svg width="100%" height="100%" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
+                    {donutPaths.map((item, index) => (
+                      <path
+                        key={index}
+                        d={item.path}
+                        fill={item.color}
+                      />
+                    ))}
+                  </svg>
+                ) : (
+                  <div className="w-full h-[200px] flex items-center justify-center text-dark-gray">
+                    No data
+                  </div>
+                )}
               </div>
               <div className="flex flex-col sm:flex-row justify-around gap-3 w-full max-w-[400px]">
-                {planDistribution.map((item, index) => (
+                {planDistribution.length > 0 ? planDistribution.map((item, index) => (
                   <div key={index} className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3">
                     <div className="flex items-center gap-2 sm:gap-3">
                       <div
@@ -360,7 +409,9 @@ const SubscriptionTrendsPage = () => {
                       {item.percentage}%
                     </span>
                   </div>
-                ))}
+                )) : (
+                  <p className="text-center text-dark-gray">No data available</p>
+                )}
               </div>
             </div>
           </div>
@@ -396,7 +447,7 @@ const SubscriptionTrendsPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {planBreakdown.length ? (
+                {planBreakdown.length > 0 ? (
                   planBreakdown.map((plan, index) => (
                     <tr
                       key={index}
@@ -406,13 +457,13 @@ const SubscriptionTrendsPage = () => {
                         {plan.planType}
                       </td>
                       <td className="px-3 md:px-6 py-3 md:py-4 text-[12px] md:text-[14px] font-roboto font-normal leading-[100%] text-center">
-                        {plan.subscribers}
+                        {formatNumber(plan.subscribers)}
                       </td>
                       <td className="px-3 md:px-6 py-3 md:py-4 text-[12px] md:text-[14px] font-roboto font-normal leading-[100%] text-center">
-                        {plan.active}
+                        {formatNumber(plan.active)}
                       </td>
                       <td className="px-3 md:px-6 py-3 md:py-4 text-[12px] md:text-[14px] font-roboto font-normal leading-[100%] text-center">
-                        {plan.expired}
+                        {formatNumber(plan.expired)}
                       </td>
                       <td className="px-3 md:px-6 py-3 md:py-4 text-[12px] md:text-[14px] font-roboto font-normal leading-[100%] text-center">
                         {plan.revenue}
@@ -436,43 +487,51 @@ const SubscriptionTrendsPage = () => {
             </table>
           </div>
           {/* Pagination */}
-          <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-oxford-blue md:flex-row md:items-center md:justify-between md:bg-oxford-blue md:px-6 md:text-white">
-            <p className="text-[12px] font-roboto font-medium leading-[18px] tracking-[3%]">
-              {t('admin.subscriptionTrends.table.pagination.showing').replace('{{first}}', '1').replace('{{last}}', '3').replace('{{total}}', '25')}
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
-              >
-                {t('admin.subscriptionTrends.table.pagination.previous')}
-              </button>
-              <button
-                type="button"
-                className="flex h-8 w-8 items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#ED4122] bg-[#ED4122] text-white"
-              >
-                1
-              </button>
-              <button
-                type="button"
-                className="flex h-8 w-8 items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
-              >
-                2
-              </button>
-              <button
-                type="button"
-                className="flex h-8 w-8 items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
-              >
-                3
-              </button>
-              <button
-                type="button"
-                className="flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white"
-              >
-                {t('admin.subscriptionTrends.table.pagination.next')}
-              </button>
+          {subscriptionData?.breakdown?.pagination && (
+            <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-4 py-4 text-oxford-blue md:flex-row md:items-center md:justify-between md:bg-oxford-blue md:px-6 md:text-white">
+              <p className="text-[12px] font-roboto font-medium leading-[18px] tracking-[3%]">
+                {t('admin.subscriptionTrends.table.pagination.showing')
+                  .replace('{{first}}', subscriptionData.breakdown.pagination.showing?.from || '1')
+                  .replace('{{last}}', subscriptionData.breakdown.pagination.showing?.to || '3')
+                  .replace('{{total}}', subscriptionData.breakdown.pagination.totalItems || '0')}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={!subscriptionData.breakdown.pagination.hasPreviousPage}
+                  className="flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {t('admin.subscriptionTrends.table.pagination.previous')}
+                </button>
+                {Array.from({ length: Math.min(subscriptionData.breakdown.pagination.totalPages, 5) }, (_, i) => {
+                  const pageNum = i + 1;
+                  return (
+                    <button
+                      key={pageNum}
+                      type="button"
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`flex h-8 w-8 items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors ${
+                        currentPage === pageNum
+                          ? 'border-[#ED4122] bg-[#ED4122] text-white'
+                          : 'border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  disabled={!subscriptionData.breakdown.pagination.hasNextPage}
+                  className="flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-white disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {t('admin.subscriptionTrends.table.pagination.next')}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </section>
       </div>
     </div>
