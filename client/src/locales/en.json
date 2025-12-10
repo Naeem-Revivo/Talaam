@@ -1718,6 +1718,7 @@
       "hero": {
         "title": "Payment History"
       },
+      "loading": "Loading payment history...",
       "buttons": {
         "exportBilling": "Export Billing Reports"
       },
@@ -1764,6 +1765,7 @@
       "hero": {
         "title": "Manage User Subscriptions"
       },
+      "loading": "Loading subscriptions...",
       "actions": {
         "exportBillingReports": "Export Billing Reports"
       },
@@ -1802,6 +1804,8 @@
       "hero": {
         "title": "Subscription Details"
       },
+      "loading": "Loading subscription details...",
+      "notFound": "Subscription not found",
       "sections": {
         "userInfo": "User Info",
         "planInfo": "Plan Info",
@@ -1812,20 +1816,28 @@
         "email": "Email",
         "currentPlan": "Current Plan",
         "duration": "Duration",
+        "startDate": "Start Date",
         "renewalDate": "Renewal Date",
+        "expiryDate": "Expiry Date",
         "status": "Status",
+        "paymentStatus": "Payment Status",
         "lastPayment": "Last payment",
         "nextDueDate": "Next Due Date",
-        "paymentMethod": "Payment Method"
+        "paymentMethod": "Payment Method",
+        "transactionId": "Transaction ID",
+        "moyassarStatus": "Moyassar Status"
       },
       "actions": {
         "upgradeDowngrade": "Upgrade / Downgrade Plan",
         "cancelSubscription": "Cancel Subscription",
-        "renewalManually": "Renewal Manually"
+        "renewalManually": "Renewal Manually",
+        "syncPayment": "Sync Payment",
+        "syncing": "Syncing..."
       },
       "buttons": {
         "cancel": "Cancel",
-        "saveChanges": "Save Changes"
+        "saveChanges": "Save Changes",
+        "back": "Back to Subscriptions"
       }
     },
     "subscriptionTrends": {
@@ -3506,6 +3518,13 @@
     "subject": "Subject",
     "role": "Role",
     "status": "Status"
+  },
+  "payment": {
+    "title": "Moyassar Payment",
+    "settingUp": "Setting up your payment...",
+    "loading": "Processing your subscription...",
+    "redirecting": "Redirecting to payment page...",
+    "continue": "Continue to Payment"
   },
   "toast": {
     "title": {

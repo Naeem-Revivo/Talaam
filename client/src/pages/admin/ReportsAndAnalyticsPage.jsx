@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
+import adminAPI from "../../api/admin";
 
 // Reusable KPI Card Component
 const KPICard = ({
@@ -43,31 +44,65 @@ const KPICard = ({
 const ReportsAndAnalyticsPage = () => {
   const { t, isRTL } = useLanguage();
   const navigate = useNavigate();
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Overall User Growth Chart Data (Week 1-4)
-  const userGrowthData = [
-    { week: "Week 1", users: 70 },
-    { week: "Week 2", users: 190 },
-    { week: "Week 3", users: 120 },
-    { week: "Week 4", users: 170 },
-  ];
+  useEffect(() => {
+    const fetchAnalyticsData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const [heroData, growthData, practiceData, performanceData] = await Promise.all([
+          adminAPI.getUserAnalyticsHero(),
+          adminAPI.getUserGrowthChart(),
+          adminAPI.getPracticeDistribution(),
+          adminAPI.getTopPerformanceUsers({ page: currentPage, limit: 5 }),
+        ]);
 
-  const practiceDistribution = [
-    { subject: "Math", percentage: 40, color: "#ED4122" },
-    { subject: "Science", percentage: 25, color: "#032746" },
-    { subject: "English", percentage: 15, color: "#FBBF24" },
-    { subject: "History", percentage: 12, color: "#9CA3AF" },
-    { subject: "Art", percentage: 8, color: "#60A5FA" },
-  ];
+        setAnalyticsData({
+          hero: heroData.data,
+          growth: growthData.data,
+          practice: practiceData.data,
+          performance: performanceData.data,
+        });
+      } catch (err) {
+        console.error('Error fetching analytics data:', err);
+        setError(err.message || 'Failed to load analytics data');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // KPI Cards Data
-  const kpiCards = [
+    fetchAnalyticsData();
+  }, [currentPage]);
+
+  // Format number with commas
+  const formatNumber = (num) => {
+    return num?.toLocaleString() || '0';
+  };
+
+  // Format percentage change
+  const formatChange = (change, changeType) => {
+    if (change === null || change === undefined) return '';
+    const sign = change >= 0 ? '+' : '';
+    const color = changeType === 'increase' ? 'text-[#ED4122]' : 'text-dark-gray';
+    return { text: `${sign}${change}%`, color };
+  };
+
+  // Prepare KPI Cards from API data
+  const kpiCards = analyticsData?.hero ? [
     {
       id: 1,
       title: t("admin.reportsAndAnalytics.kpi.newSignups"),
-      value: "10,884",
-      subtitle: "+15% from last month",
-      subtitlecolor: "text-[#ED4122]",
+      value: formatNumber(analyticsData.hero.newSignUps?.value || 0),
+      subtitle: analyticsData.hero.newSignUps?.change !== undefined 
+        ? `${analyticsData.hero.newSignUps.change >= 0 ? '+' : ''}${analyticsData.hero.newSignUps.change}% from last month`
+        : '',
+      subtitlecolor: analyticsData.hero.newSignUps?.changeType === 'increase' ? "text-[#ED4122]" : "text-dark-gray",
       valueWeight: "font-semibold",
       icon: (
         <svg
@@ -88,9 +123,11 @@ const ReportsAndAnalyticsPage = () => {
     {
       id: 2,
       title: t("admin.reportsAndAnalytics.kpi.activeUsers"),
-      value: "5,432",
-      subtitle: "+8% vs last month",
-      subtitlecolor: "text-[#ED4122]",
+      value: formatNumber(analyticsData.hero.activeUsers?.value || 0),
+      subtitle: analyticsData.hero.activeUsers?.change !== undefined
+        ? `${analyticsData.hero.activeUsers.change >= 0 ? '+' : ''}${analyticsData.hero.activeUsers.change}% vs last month`
+        : '',
+      subtitlecolor: analyticsData.hero.activeUsers?.changeType === 'increase' ? "text-[#ED4122]" : "text-dark-gray",
       valueWeight: "font-semibold",
       icon: (
         <svg
@@ -111,7 +148,7 @@ const ReportsAndAnalyticsPage = () => {
     {
       id: 3,
       title: t("admin.reportsAndAnalytics.kpi.mostAttemptedSubject"),
-      value: "Mathematics",
+      value: analyticsData.hero.mostAttemptedSubject || "N/A",
       valueWeight: "font-semibold",
       icon: (
         <svg
@@ -134,7 +171,7 @@ const ReportsAndAnalyticsPage = () => {
     {
       id: 4,
       title: t("admin.reportsAndAnalytics.kpi.averageTimePerQuestion"),
-      value: "45s",
+      value: analyticsData.hero.averageTimePerQuestion || "45s",
       valueWeight: "font-semibold",
       icon: (
         <svg
@@ -154,55 +191,27 @@ const ReportsAndAnalyticsPage = () => {
         </svg>
       ),
     },
-  ];
+  ] : [];
 
-  const topUsers = [
-    {
-      id: "001",
-      name: "John Due",
-      email: "johndue@gmail.com",
-      attempts: 150,
-      accuracy: 92,
-      avgTime: 30,
-      lastActive: "2 days ago",
-    },
-    {
-      id: "002",
-      name: "Ali Raza",
-      email: "aliraza@gmail.com",
-      attempts: 140,
-      accuracy: 90,
-      avgTime: 35,
-      lastActive: "3 days ago",
-    },
-    {
-      id: "003",
-      name: "Sarah khan",
-      email: "sarahkhan@gmail.com",
-      attempts: 145,
-      accuracy: 88,
-      avgTime: 45,
-      lastActive: "4 days ago",
-    },
-    {
-      id: "004",
-      name: "Sofia Clark",
-      email: "sofiaclark@gmail.com",
-      attempts: 135,
-      accuracy: 85,
-      avgTime: 50,
-      lastActive: "5 days ago",
-    },
-    {
-      id: "005",
-      name: "Laim Harper",
-      email: "laimharper@gmail.com",
-      attempts: 130,
-      accuracy: 82,
-      avgTime: 40,
-      lastActive: "6 days ago",
-    },
-  ];
+  // Prepare practice distribution from API
+  const practiceDistribution = analyticsData?.practice || [];
+
+  // Prepare user growth data from API
+  const userGrowthData = analyticsData?.growth?.weeks?.map(week => ({
+    week: week.label || `Week ${week.week}`,
+    users: week.newUsers || 0,
+  })) || [];
+
+  // Prepare top users from API
+  const topUsers = analyticsData?.performance?.users?.map((user, index) => ({
+    id: String(user.rank || index + 1).padStart(3, '0'),
+    name: user.user?.name || 'N/A',
+    email: user.user?.email || 'N/A',
+    attempts: user.attempts || 0,
+    accuracy: user.accuracy || 0,
+    avgTime: user.averageTimePerQuestion || 45,
+    lastActive: user.lastActive || 'N/A',
+  })) || [];
 
   // Calculate donut chart path
   const getDonutPath = (percentage, startAngle, radius, innerRadius) => {
@@ -227,11 +236,40 @@ const ReportsAndAnalyticsPage = () => {
   };
 
   let currentAngle = -90;
-  const donutPaths = practiceDistribution.map((item) => {
+  const donutPaths = practiceDistribution.length > 0 ? practiceDistribution.map((item) => {
     const path = getDonutPath(item.percentage, currentAngle, 60, 35);
     currentAngle += (item.percentage / 100) * 360;
     return { ...item, path };
-  });
+  }) : [];
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 2xl:px-0 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-oxford-blue"></div>
+          <p className="mt-4 text-oxford-blue font-roboto">Loading analytics data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 2xl:px-0 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-[#EF4444] font-roboto text-lg">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-oxford-blue text-white rounded-lg hover:bg-opacity-90 transition"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 2xl:px-0">
@@ -340,10 +378,10 @@ const ReportsAndAnalyticsPage = () => {
                   </g>
                 ))}
                 {/* X-axis labels */}
-                {userGrowthData.map((data, index) => (
+                {userGrowthData.length > 0 && userGrowthData.map((data, index) => (
                   <text
-                    key={data.week}
-                    x={100 + (index * 450) / 3}
+                    key={`${data.week}-${index}`}
+                    x={100 + (index * 450) / Math.max(userGrowthData.length - 1, 1)}
                     y="295"
                     textAnchor="middle"
                     className="font-roboto text-[12px] fill-[#6B7280]"
@@ -352,47 +390,51 @@ const ReportsAndAnalyticsPage = () => {
                   </text>
                 ))}
                 {/* Area chart */}
-                <path
-                  d={`M${100 + (0 * 450) / 3},${
-                    280 - (userGrowthData[0].users / 300) * 240
-                  } ${userGrowthData
-                    .map(
-                      (data, index) =>
-                        `L${100 + (index * 450) / 3},${
-                          280 - (data.users / 300) * 240
-                        }`
-                    )
-                    .join(" ")} L${
-                    100 + ((userGrowthData.length - 1) * 450) / 3
-                  },280 L100,280 Z`}
-                  fill="url(#userGrowthGradient)"
-                />
-                {/* Line chart */}
-                <polyline
-                  points={userGrowthData
-                    .map(
-                      (data, index) =>
-                        `${100 + (index * 450) / 3},${
-                          280 - (data.users / 300) * 240
-                        }`
-                    )
-                    .join(" ")}
-                  fill="none"
-                  stroke="#ED4122"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                {/* Data points */}
-                {userGrowthData.map((data, index) => (
-                  <circle
-                    key={data.week}
-                    cx={100 + (index * 450) / 3}
-                    cy={280 - (data.users / 300) * 240}
-                    r="4"
-                    fill="#ED4122"
-                  />
-                ))}
+                {userGrowthData.length > 0 && (
+                  <>
+                    <path
+                      d={`M${100 + (0 * 450) / Math.max(userGrowthData.length - 1, 1)},${
+                        280 - (userGrowthData[0].users / Math.max(...userGrowthData.map(d => d.users), 300)) * 240
+                      } ${userGrowthData
+                        .map(
+                          (data, index) =>
+                            `L${100 + (index * 450) / Math.max(userGrowthData.length - 1, 1)},${
+                              280 - (data.users / Math.max(...userGrowthData.map(d => d.users), 300)) * 240
+                            }`
+                        )
+                        .join(" ")} L${
+                        100 + ((userGrowthData.length - 1) * 450) / Math.max(userGrowthData.length - 1, 1)
+                      },280 L100,280 Z`}
+                      fill="url(#userGrowthGradient)"
+                    />
+                    {/* Line chart */}
+                    <polyline
+                      points={userGrowthData
+                        .map(
+                          (data, index) =>
+                            `${100 + (index * 450) / Math.max(userGrowthData.length - 1, 1)},${
+                              280 - (data.users / Math.max(...userGrowthData.map(d => d.users), 300)) * 240
+                            }`
+                        )
+                        .join(" ")}
+                      fill="none"
+                      stroke="#ED4122"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    {/* Data points */}
+                    {userGrowthData.map((data, index) => (
+                      <circle
+                        key={`${data.week}-${index}`}
+                        cx={100 + (index * 450) / Math.max(userGrowthData.length - 1, 1)}
+                        cy={280 - (data.users / Math.max(...userGrowthData.map(d => d.users), 300)) * 240}
+                        r="4"
+                        fill="#ED4122"
+                      />
+                    ))}
+                  </>
+                )}
               </svg>
             </div>
           </div>
@@ -404,14 +446,20 @@ const ReportsAndAnalyticsPage = () => {
             </h2>
             <div className="flex flex-col items-center justify-center gap-6">
               <div className="relative">
-                <svg width="200" height="200" viewBox="0 0 200 200">
-                  {donutPaths.map((item, index) => (
-                    <path key={index} d={item.path} fill={item.color} />
-                  ))}
-                </svg>
+                {donutPaths.length > 0 ? (
+                  <svg width="200" height="200" viewBox="0 0 200 200">
+                    {donutPaths.map((item, index) => (
+                      <path key={index} d={item.path} fill={item.color} />
+                    ))}
+                  </svg>
+                ) : (
+                  <div className="w-[200px] h-[200px] flex items-center justify-center text-dark-gray">
+                    No data
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-x-8 gap-y-3 w-full max-w-[300px] mx-auto">
-                {practiceDistribution.map((item, index) => (
+                {practiceDistribution.length > 0 ? practiceDistribution.map((item, index) => (
                   <div key={index} className="flex items-center gap-3">
                     <div
                       className="w-4 h-4 rounded-full flex-shrink-0"
@@ -421,7 +469,9 @@ const ReportsAndAnalyticsPage = () => {
                       {item.subject}
                     </span>
                   </div>
-                ))}
+                )) : (
+                  <p className="col-span-2 text-center text-dark-gray">No data available</p>
+                )}
               </div>
             </div>
           </div>
@@ -460,7 +510,7 @@ const ReportsAndAnalyticsPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {topUsers.map((user) => (
+                {topUsers.length > 0 ? topUsers.map((user) => (
                   <tr
                     key={user.id}
                     className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition"
@@ -479,16 +529,22 @@ const ReportsAndAnalyticsPage = () => {
                       {user.attempts}
                     </td>
                     <td className="py-4 px-3 md:px-4 text-center font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
-                      {user.accuracy}%
+                      {typeof user.accuracy === 'string' ? user.accuracy : `${user.accuracy}%`}
                     </td>
                     <td className="py-4 px-3 md:px-4 text-center font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
-                      {user.avgTime}s
+                      {typeof user.avgTime === 'string' ? user.avgTime : `${user.avgTime}s`}
                     </td>
                     <td className="py-4 px-3 md:px-4 font-roboto text-[12px] md:text-[14px] font-normal leading-[20px] text-oxford-blue whitespace-nowrap">
                       {user.lastActive}
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-dark-gray">
+                      No performance data available
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

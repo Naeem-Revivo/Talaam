@@ -1,23 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLanguage } from "../../context/LanguageContext";
 import { DataTable } from "../../components/admin/SystemSetting/Table";
-import basePaymentsData from "../../data/paymentHistoryData.json";
-
-// Mock data for payment history
-const allPayments = [
-  ...basePaymentsData,
-  // Add more mock data
-  ...Array.from({ length: 20 }, (_, i) => ({
-    id: i + 6,
-    invoiceid: `Inv-${String(i + 6).padStart(3, "0")}`,
-    user: `User ${i + 6}`,
-    plan: i % 3 === 0 ? "Premium" : i % 3 === 1 ? "Basic" : "Organization",
-    amount: `$${(Math.random() * 100 + 10).toFixed(2)}`,
-    date: `01-${String((i % 12) + 1).padStart(2, "0")}-2024`,
-    paymentmethod: i % 3 === 0 ? "Credit Card" : i % 3 === 1 ? "Bank Transfer" : "Paypal",
-    status: i % 2 === 0 ? "Paid" : "Pending",
-  })),
-];
+import adminAPI from "../../api/admin";
+import { showErrorToast } from "../../utils/toastConfig";
 
 // Custom TableRow component for payments with badge support
 const PaymentTableRow = ({ item, t }) => {
@@ -68,26 +53,92 @@ const PaymentHistoryPage = () => {
   const [paymentStatusFilter, setPaymentStatusFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("Active");
   const [page, setPage] = useState(1);
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
   const pageSize = 3;
 
+  // Fetch payments from API
+  useEffect(() => {
+    fetchPayments();
+  }, [dateRangeFilter, planFilter, paymentStatusFilter, statusFilter, page]);
+
+  const fetchPayments = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page,
+        limit: pageSize,
+      };
+      
+      if (dateRangeFilter !== "All") {
+        params.dateRange = dateRangeFilter;
+      }
+      
+      if (planFilter !== "All") {
+        params.plan = planFilter;
+      }
+      
+      if (paymentStatusFilter !== "All") {
+        params.status = paymentStatusFilter;
+      }
+
+      const response = await adminAPI.getPaymentHistory(params);
+      
+      if (response.success && response.data) {
+        // Transform API data to match table format
+        const transformed = response.data.payments?.map((payment) => {
+          const date = payment.date || payment.createdAt 
+            ? new Date(payment.date || payment.createdAt).toLocaleDateString('en-GB')
+            : 'N/A';
+          
+          return {
+            id: payment.id,
+            invoiceid: payment.invoiceId || payment.transactionId || `Inv-${String(payment.id).padStart(3, "0")}`,
+            user: payment.userName || payment.user?.name || 'N/A',
+            plan: payment.planName || payment.plan?.name || 'N/A',
+            amount: payment.amount ? `$${parseFloat(payment.amount).toFixed(2)}` : '$0.00',
+            date: date,
+            paymentmethod: payment.paymentMethod || 'N/A',
+            status: payment.status || 'Pending',
+            _original: payment,
+          };
+        }) || [];
+        
+        // Apply status filter on client side if needed
+        let filtered = transformed;
+        if (statusFilter !== "All") {
+          filtered = transformed.filter((payment) => {
+            if (statusFilter === "Active") {
+              return payment.status === "Paid";
+            } else if (statusFilter === "Expire") {
+              return payment.status === "Pending";
+            } else if (statusFilter === "Pending") {
+              return payment.status === "Pending";
+            }
+            return true;
+          });
+        }
+        
+        setPayments(filtered);
+        setTotal(response.data.total || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching payment history:", error);
+      showErrorToast(error.message || "Failed to fetch payment history");
+      setPayments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredPayments = useMemo(() => {
-    return allPayments.filter((payment) => {
-      const matchesDateRange = dateRangeFilter === "All" || true; // Date range logic can be added
-      const matchesPlan = planFilter === "All" || payment.plan === planFilter;
-      const matchesPaymentStatus = paymentStatusFilter === "All" || payment.status === paymentStatusFilter;
-      const matchesStatus =
-        statusFilter === "All" ||
-        (statusFilter === "Active" && payment.status === "Paid") ||
-        (statusFilter === "Expire" && payment.status === "Pending") ||
-        (statusFilter === "Pending" && payment.status === "Pending");
-      return matchesDateRange && matchesPlan && matchesPaymentStatus && matchesStatus;
-    });
-  }, [dateRangeFilter, planFilter, paymentStatusFilter, statusFilter]);
+    return payments;
+  }, [payments]);
 
   const paginatedPayments = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filteredPayments.slice(start, start + pageSize);
-  }, [filteredPayments, page]);
+    return filteredPayments;
+  }, [filteredPayments]);
 
   // Transform data for table
   const transformedPayments = useMemo(() => {
@@ -143,16 +194,16 @@ const PaymentHistoryPage = () => {
 
   // Get unique plans for filter
   const uniquePlans = useMemo(() => {
-    const plans = [...new Set(allPayments.map((payment) => payment.plan))];
-    return ["All", ...plans];
-  }, []);
+    const plans = [...new Set(payments.map((payment) => payment.plan))];
+    return ["All", ...plans.filter(p => p !== 'N/A')];
+  }, [payments]);
 
   // Custom table component
   const CustomPaymentTable = () => {
-    const totalPages = Math.ceil(filteredPayments.length / pageSize);
-    const firstItem = filteredPayments.length ? (page - 1) * pageSize + 1 : 0;
-    const lastItem = filteredPayments.length
-      ? Math.min(page * pageSize, filteredPayments.length)
+    const totalPages = Math.ceil(total / pageSize);
+    const firstItem = total ? (page - 1) * pageSize + 1 : 0;
+    const lastItem = total
+      ? Math.min(page * pageSize, total)
       : 0;
 
     return (
@@ -224,7 +275,11 @@ const PaymentHistoryPage = () => {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setPage(page > 1 ? page - 1 : 1)}
+              onClick={() => {
+                if (page > 1) {
+                  setPage(page - 1);
+                }
+              }}
               disabled={page === 1}
               className={`flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-normal leading-[16px] transition-colors ${
                 page === 1
@@ -250,10 +305,14 @@ const PaymentHistoryPage = () => {
             ))}
             <button
               type="button"
-              onClick={() => setPage(page < totalPages ? page + 1 : page)}
-              disabled={page === totalPages}
+              onClick={() => {
+                if (page < totalPages) {
+                  setPage(page + 1);
+                }
+              }}
+              disabled={page === totalPages || totalPages === 0}
               className={`flex h-[27.16px] w-[78px] items-center justify-center rounded border text-[14px] font-archivo font-normal leading-[16px] transition-colors ${
-                page === totalPages
+                page === totalPages || totalPages === 0
                   ? "cursor-not-allowed border-transparent bg-white/20 text-white/70"
                   : "border-white bg-transparent text-white hover:bg-white/10"
               }`}
@@ -416,8 +475,15 @@ const PaymentHistoryPage = () => {
           </div>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-8 text-center">
+            <p className="text-dark-gray">{t('admin.paymentHistory.loading') || 'Loading payment history...'}</p>
+          </div>
+        )}
+
         {/* Custom Table */}
-        <CustomPaymentTable />
+        {!loading && <CustomPaymentTable />}
       </div>
     </div>
   );

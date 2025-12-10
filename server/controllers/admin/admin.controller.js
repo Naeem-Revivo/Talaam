@@ -431,6 +431,7 @@ const getDashboardStatistics = async (req, res, next) => {
         },
         userGrowthData: statistics.userGrowthData,
         latestSignups: statistics.latestSignups,
+        subscriptionPlanBreakdown: statistics.subscriptionPlanBreakdown,
       },
     };
 
@@ -1725,6 +1726,63 @@ const getSubscriptionDetails = async (req, res, next) => {
 };
 
 /**
+ * Sync payment status for a subscription (Admin only)
+ * POST /api/admin/subscriptions/:subscriptionId/sync-payment
+ */
+const syncSubscriptionPayment = async (req, res, next) => {
+  try {
+    const { subscriptionId } = req.params;
+
+    console.log('[SUBSCRIPTION] POST /admin/subscriptions/:subscriptionId/sync-payment → requested', {
+      subscriptionId,
+      requestedBy: req.user.id,
+    });
+
+    // Ensure only superadmin can access this
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only superadmin can sync payment status',
+      });
+    }
+
+    // Sync payment status
+    const moyassarService = require('../../services/payment/moyassar.service');
+    const syncResult = await moyassarService.syncPaymentStatus(subscriptionId);
+
+    if (syncResult.wasUpdated) {
+      // Re-fetch subscription details
+      const subscription = await adminService.getSubscriptionDetails(subscriptionId);
+      
+      res.status(200).json({
+        success: true,
+        message: syncResult.message || 'Payment status synced successfully',
+        data: {
+          subscription,
+        },
+      });
+    } else {
+      res.status(200).json({
+        success: syncResult.success,
+        message: syncResult.message || 'Payment status is already up to date',
+        data: {
+          subscription: syncResult.subscription,
+        },
+      });
+    }
+  } catch (error) {
+    console.error('[SUBSCRIPTION] POST /admin/subscriptions/:subscriptionId/sync-payment → error', error);
+    if (error.message === 'Subscription not found' || error.message === 'No Moyassar payment ID found for this subscription') {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+/**
  * Get payment history with filtering and pagination
  * Only superadmin can access this
  */
@@ -1995,7 +2053,7 @@ const getTopPerformanceUsers = async (req, res, next) => {
 
     console.log('[ANALYTICS] GET /admin/analytics/user/performance → 200 (ok)', {
       count: formattedUsers.length,
-      totalItems: totalCount,
+      totalItems: result.pagination.totalItems,
     });
     res.status(200).json(response);
   } catch (error) {
@@ -2085,6 +2143,78 @@ const getRevenueTrendChart = async (req, res, next) => {
     res.status(200).json(response);
   } catch (error) {
     console.error('[ANALYTICS] GET /admin/analytics/subscription/revenue-trend → error', error);
+    next(error);
+  }
+};
+
+/**
+ * Get practice distribution by subject
+ * Only superadmin can access this
+ */
+const getPracticeDistribution = async (req, res, next) => {
+  try {
+    console.log('[ANALYTICS] GET /admin/analytics/practice-distribution → requested', {
+      requestedBy: req.user.id,
+      requesterRole: req.user.role,
+    });
+
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only superadmin can access practice distribution data',
+      });
+    }
+
+    const distribution = await adminService.getPracticeDistribution();
+
+    const response = {
+      success: true,
+      message: 'Practice distribution retrieved successfully',
+      data: distribution,
+    };
+
+    console.log('[ANALYTICS] GET /admin/analytics/practice-distribution → 200 (ok)', {
+      subjects: distribution.length,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[ANALYTICS] GET /admin/analytics/practice-distribution → error', error);
+    next(error);
+  }
+};
+
+/**
+ * Get plan distribution for donut chart
+ * Only superadmin can access this
+ */
+const getPlanDistribution = async (req, res, next) => {
+  try {
+    console.log('[ANALYTICS] GET /admin/analytics/subscription/plan-distribution → requested', {
+      requestedBy: req.user.id,
+      requesterRole: req.user.role,
+    });
+
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only superadmin can access plan distribution data',
+      });
+    }
+
+    const distribution = await adminService.getPlanDistribution();
+
+    const response = {
+      success: true,
+      message: 'Plan distribution retrieved successfully',
+      data: distribution,
+    };
+
+    console.log('[ANALYTICS] GET /admin/analytics/subscription/plan-distribution → 200 (ok)', {
+      plans: distribution.length,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[ANALYTICS] GET /admin/analytics/subscription/plan-distribution → error', error);
     next(error);
   }
 };
@@ -2180,11 +2310,14 @@ module.exports = {
   getAllUserSubscriptions,
   getSubscriptionDetails,
   getPaymentHistory,
+  syncSubscriptionPayment,
   getUserAnalyticsHero,
   getUserGrowthChart,
   getTopPerformanceUsers,
   getSubscriptionTrendMetrics,
   getRevenueTrendChart,
   getPlanWiseBreakdown,
+  getPracticeDistribution,
+  getPlanDistribution,
 };
 

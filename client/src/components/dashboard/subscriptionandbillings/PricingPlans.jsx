@@ -1,41 +1,67 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
+import { bookIcon, videoIcon, checkCircleIcon, phoneIcon, check } from "../../../assets/svg";
+import productsData from "../../../data/productsData.json";
 
 export default function PricingPlans() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
-  const plans = [
-    {
-      name: t("dashboard.subscriptionBilling.pricingPlans.starter.name"),
-      price: "9.99",
-      currency: t("dashboard.subscriptionBilling.pricingPlans.starter.currency"),
-      period: t("dashboard.subscriptionBilling.pricingPlans.starter.period"),
-      features: t("dashboard.subscriptionBilling.pricingPlans.starter.features", { returnObjects: true }),
-      buttonText: t("dashboard.subscriptionBilling.pricingPlans.starter.buttonText"),
-      buttonStyle: "border border-oxford-blue text-[14px] leading-[14px] text-oxford-blue hover:bg-gray-800 hover:text-white",
-      isPopular: false,
-    },
-    {
-      name: t("dashboard.subscriptionBilling.pricingPlans.professional.name"),
-      price: "24.99",
-      currency: t("dashboard.subscriptionBilling.pricingPlans.professional.currency"),
-      period: t("dashboard.subscriptionBilling.pricingPlans.professional.period"),
-      features: t("dashboard.subscriptionBilling.pricingPlans.professional.features", { returnObjects: true }),
-      buttonText: t("dashboard.subscriptionBilling.pricingPlans.professional.buttonText"),
-      buttonStyle: "bg-gradient-to-r from-[#ED4122] to-[#FF8B67] font-[14px] leading-[100%] font-bold text-white hover:bg-orange-600",
-      isPopular: true,
-    },
-    {
-      name: t("dashboard.subscriptionBilling.pricingPlans.enterprise.name"),
-      price: t("dashboard.subscriptionBilling.pricingPlans.enterprise.price"),
-      // currency: t("dashboard.subscriptionBilling.pricingPlans.enterprise.currency"),
-      period: t("dashboard.subscriptionBilling.pricingPlans.enterprise.period"),
-      features: t("dashboard.subscriptionBilling.pricingPlans.enterprise.features", { returnObjects: true }),
-      buttonText: t("dashboard.subscriptionBilling.pricingPlans.enterprise.buttonText"),
-      buttonStyle: "border border-oxford-blue text-[14px] leading-[14px] text-oxford-blue hover:bg-gray-800 hover:text-white",
-      isPopular: false,
-    },
+  const iconMap = {
+    bookIcon,
+    videoIcon,
+    checkCircleIcon,
+    phoneIcon
+  };
+
+  // Create Taalam Qudurat Access product from translations
+  const quduratFeatures = [
+    t('products.choosePlan.features.feature1'),
+    t('products.choosePlan.features.feature2'),
+    t('products.choosePlan.features.feature3'),
+    t('products.choosePlan.features.feature4'),
+    t('products.choosePlan.features.feature5'),
+    t('products.choosePlan.features.feature6')
   ];
+
+  const quduratProduct = {
+    id: 'qudurat',
+    name: t('products.choosePlan.planName'),
+    description: 'Premium access to Qudurat question bank with smart study tools and performance tracking.',
+    features: quduratFeatures,
+    price: t('products.choosePlan.price'),
+    popular: false,
+    iconName: 'checkCircleIcon',
+    isQudurat: true
+  };
+
+  // Prepare products array with only Qudurat card
+  const products = [{
+    ...quduratProduct,
+    icon: <img src={iconMap[quduratProduct.iconName]} alt="" className="w-12 h-12" />
+  }];
+
+  const handleSubscribe = (product) => {
+    console.log('Subscribe button clicked for product:', product);
+    // Check if user is logged in
+    const token = localStorage.getItem('authToken');
+    const user = localStorage.getItem('user');
+    
+    console.log('Auth check - token:', !!token, 'user:', !!user);
+    
+    if (!token || !user) {
+      // Store the intended destination in localStorage
+      localStorage.setItem('redirectAfterLogin', '/moyassar-payment');
+      // Navigate to login
+      console.log('User not logged in, redirecting to login');
+      navigate('/login');
+    } else {
+      // User is logged in, navigate to Moyassar payment page in same tab
+      console.log('User logged in, navigating to /moyassar-payment');
+      navigate('/moyassar-payment');
+    }
+  };
 
   return (
     <div className="w-full">
@@ -43,84 +69,71 @@ export default function PricingPlans() {
         {t("dashboard.subscriptionBilling.pricingPlans.title")}
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-        {plans.map((plan, index) => (
-          <PlanCard key={index} plan={plan} />
-        ))}
-      </div>
-    </div>
-  );
-}
+      <div className="flex justify-center">
+        <div className="w-full max-w-md">
+          {products.map((product) => (
+            <div key={product.id} className={`relative bg-white rounded-lg shadow-lg overflow-hidden transition duration-300 hover:shadow-xl ${product.popular ? 'ring-2 ring-[#ED4122]' : ''}`}>
+              {product.popular && (
+                <div className="absolute top-4 right-4 bg-[#ED4122] text-white px-3 py-1 rounded-full text-sm font-medium">
+                  Most Popular
+                </div>
+              )}
+              
+              <div className="p-8">
+                <div className="flex items-center mb-6">
+                  <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                    <div className="text-oxford-blue">
+                      {product.icon}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">
+                      {product.name}
+                    </h3>
+                    <p className="text-[#ED4122] font-semibold">
+                      {product.price}
+                    </p>
+                  </div>
+                </div>
 
-function PlanCard({ plan }) {
-  const { t } = useLanguage();
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  {product.description}
+                </p>
 
-  return (
-    <div
-      className={`bg-white rounded-[12px] shadow-[0px_2px_10px_0px_#0327461A] ${
-        plan.isPopular
-          ? "border-[#E43F21] border"
-          : "border-[#D2D2D2] border-[0.5px]"
-      } px-6 py-[30px] relative flex flex-col h-full`}
-    >
-      {plan.isPopular && (
-        <div className="absolute -top-3 left-4">
-          <span className="bg-[#E43F21] text-[#FBFCFB] text-[14px] leading-[100%] font-normal font-roboto px-[21px] py-1.5 rounded-full">
-            {t("dashboard.subscriptionBilling.pricingPlans.mostPopular")}
-          </span>
+                <div className="mb-6">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
+                    Key Features
+                  </h4>
+                  <ul className="space-y-2">
+                    {product.features.map((feature, index) => (
+                      <li key={index} className="flex items-center text-gray-600">
+                        <img src={check} alt="" className="w-4 h-4 text-green-500 mr-2" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="flex space-x-3">
+                  <button className="flex-1 bg-oxford-blue hover:bg-[#021f38] text-white px-4 py-2 rounded-md font-medium transition duration-200">
+                    Learn More
+                  </button>
+                  <button 
+                    onClick={() => handleSubscribe(product)}
+                    className={`flex-1 px-4 py-2 rounded-md font-medium transition duration-200 ${
+                      product.popular || product.isMoyassar || product.isQudurat
+                        ? 'bg-gradient-to-r from-[#ED4122] to-[#FF8B67] hover:from-[#d6341f] hover:to-[#e67a5a] text-white' 
+                        : 'border border-[#032746] text-oxford-blue hover:bg-oxford-blue hover:text-white'
+                    }`}
+                  >
+                    {product.isMoyassar || product.isQudurat ? 'Subscribe' : product.popular ? 'Get Started' : 'Try Free'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      )}
-
-      <div className="mb-[30px]">
-        <h3 className="text-[24px] leading-[100%] font-semibold text-oxford-blue font-archivo mb-[30px]">
-          {plan.name}
-        </h3>
-        <div className="flex items-baseline">
-          <span
-            className={`text-[30px] leading-[100%] font-semibold font-archivo text-orange-dark`}
-          >
-            {plan.price}
-          </span>
-          {plan.currency && (
-            <>
-              <span className="ml-1 text-[20px] leading-[100%] font-semibold font-archivo text-orange-dark">
-                {plan.currency}
-              </span>
-              <span className="text-[20px] leading-[100%] font-semibold font-archivo text-orange-dark">
-                / {plan.period}
-              </span>
-            </>
-          )}
-        </div>
       </div>
-
-      <div className="space-y-5 mb-[30px] flex-grow">
-        {plan.features.map((feature, idx) => (
-          <div key={idx} className="flex items-start">
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 22 22"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="11" cy="11" r="11" fill="#ED4122" />
-              <path
-                d="M8.74959 15C8.74959 15 8.7481 15 8.7466 15C8.54636 14.9992 8.35587 14.919 8.21562 14.7765L5.21582 11.7298C4.92484 11.4343 4.92859 10.9595 5.22407 10.6692C5.51955 10.379 5.99352 10.382 6.2845 10.6775L8.75409 13.1856L15.7197 6.21995C16.0129 5.92668 16.4868 5.92668 16.7801 6.21995C17.0733 6.51247 17.0733 6.988 16.7801 7.28052L9.28056 14.781C9.13956 14.9213 8.94833 15 8.74959 15Z"
-                fill="white"
-              />
-            </svg>
-
-            <span className="ml-[18px] text-[16px] leading-[26px] font-normal text-oxford-blue">{feature}</span>
-          </div>
-        ))}
-      </div>
-
-      <button
-        className={`w-full py-4 px-4 rounded-lg font-semibold font-archivo text-sm transition-colors ${plan.buttonStyle}`}
-      >
-        {plan.buttonText}
-      </button>
     </div>
   );
 }

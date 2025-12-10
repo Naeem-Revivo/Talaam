@@ -41,6 +41,24 @@ const initiateMoyassarPayment = async (req, res, next) => {
       });
     }
 
+    // If subscription already has a Moyassar payment ID and payment URL, return existing payment
+    if (subscription.moyassarPaymentId && subscription.paymentUrl) {
+      console.log('⚠️  Subscription already has payment initiated, returning existing payment URL');
+      return res.status(200).json({
+        success: true,
+        message: 'Payment already initiated',
+        data: {
+          paymentId: subscription.moyassarPaymentId,
+          paymentUrl: subscription.paymentUrl,
+          subscription: {
+            id: subscription.id,
+            paymentStatus: subscription.paymentStatus,
+            moyassarPaymentStatus: subscription.moyassarPaymentStatus,
+          },
+        },
+      });
+    }
+
     // Create payment with Moyassar
     const paymentResult = await moyassarService.createSubscriptionPayment(subscriptionId);
 
@@ -169,6 +187,19 @@ const handleMoyassarWebhook = async (req, res, next) => {
     // Process webhook
     const result = await moyassarService.handleWebhook(webhookData);
 
+    // Check if webhook was processed successfully
+    if (result.success === false && result.message) {
+      // Webhook received but couldn't process (e.g., subscription not found)
+      // Still return 200 to prevent Moyassar from retrying
+      // Payment will be synced when user returns from payment page
+      console.log('⚠️  Webhook received but not fully processed:', result.message);
+      return res.status(200).json({
+        success: true,
+        message: 'Webhook received. Payment will be synced on user return.',
+        data: result,
+      });
+    }
+
     // Return 200 to acknowledge receipt
     console.log('✅ Webhook processed successfully, returning 200');
     res.status(200).json({
@@ -185,9 +216,10 @@ const handleMoyassarWebhook = async (req, res, next) => {
     
     // Still return 200 to prevent Moyassar from retrying
     // But log the error for investigation
+    // Payment can still be synced when user returns from payment page
     res.status(200).json({
       success: false,
-      message: 'Webhook received but processing failed',
+      message: 'Webhook received but processing failed. Payment will be synced on user return.',
       error: error.message,
     });
   }
@@ -201,10 +233,14 @@ const getPaymentStatus = async (req, res, next) => {
   try {
     const { subscriptionId } = req.params;
     const userId = req.user.id;
+    const { sync = 'false' } = req.query; // Optional sync parameter
 
-    const subscription = await Subscription.findOne({
-      _id: subscriptionId,
-      userId: userId,
+    const { prisma } = require('../../config/db/prisma');
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        id: subscriptionId,
+        userId: userId,
+      },
     });
 
     if (!subscription) {
@@ -215,12 +251,41 @@ const getPaymentStatus = async (req, res, next) => {
     }
 
     let paymentDetails = null;
+    let wasSynced = false;
 
     // If payment was initiated with Moyassar, get latest status
     if (subscription.moyassarPaymentId) {
       try {
         const paymentResult = await moyassarService.verifyPayment(subscription.moyassarPaymentId);
         paymentDetails = paymentResult.payment;
+
+        // If sync is requested and payment is paid in Moyassar but not in DB, sync it
+        if (sync === 'true' || sync === true) {
+          const syncResult = await moyassarService.syncPaymentStatus(subscriptionId);
+          if (syncResult.wasUpdated) {
+            wasSynced = true;
+            // Re-fetch subscription to get updated status
+            const updatedSubscription = await prisma.subscription.findFirst({
+              where: { id: subscriptionId },
+            });
+            return res.status(200).json({
+              success: true,
+              message: 'Payment status synced successfully',
+              data: {
+                subscription: {
+                  id: updatedSubscription.id,
+                  paymentStatus: updatedSubscription.paymentStatus,
+                  isActive: updatedSubscription.isActive,
+                  moyassarPaymentStatus: updatedSubscription.moyassarPaymentStatus,
+                  paymentUrl: updatedSubscription.paymentUrl,
+                  transactionId: updatedSubscription.transactionId,
+                },
+                payment: paymentDetails,
+                synced: true,
+              },
+            });
+          }
+        }
       } catch (error) {
         console.error('Error fetching payment details:', error);
       }
@@ -238,10 +303,71 @@ const getPaymentStatus = async (req, res, next) => {
           transactionId: subscription.transactionId,
         },
         payment: paymentDetails,
+        synced: wasSynced,
       },
     });
   } catch (error) {
     next(error);
+  }
+};
+
+/**
+ * Handle payment callback after user returns from Moyassar
+ * GET /api/payment/moyassar/callback?subscriptionId=xxx&paymentId=xxx
+ * Note: This endpoint should be accessible without auth since Moyassar redirects here
+ */
+const handlePaymentCallback = async (req, res, next) => {
+  try {
+    const { subscriptionId, paymentId, id, status } = req.query;
+    
+    // Get payment/invoice ID from query (Moyassar may send it as 'id')
+    const moyassarPaymentId = paymentId || id;
+
+    if (!subscriptionId && !moyassarPaymentId) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      return res.redirect(`${frontendUrl}/dashboard/subscription-billings?error=missing_params`);
+    }
+
+    // If we have payment ID but no subscription ID, try to find subscription by payment ID
+    let finalSubscriptionId = subscriptionId;
+    if (!finalSubscriptionId && moyassarPaymentId) {
+      const { prisma } = require('../../config/db/prisma');
+      const subscription = await prisma.subscription.findFirst({
+        where: {
+          OR: [
+            { moyassarPaymentId: moyassarPaymentId },
+            { transactionId: moyassarPaymentId }
+          ]
+        },
+      });
+      if (subscription) {
+        finalSubscriptionId = subscription.id;
+      }
+    }
+
+    if (!finalSubscriptionId) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      return res.redirect(`${frontendUrl}/dashboard/subscription-billings?error=subscription_not_found`);
+    }
+
+    // Sync payment status immediately
+    console.log('🔄 Syncing payment status on callback:', { subscriptionId: finalSubscriptionId, moyassarPaymentId });
+    const syncResult = await moyassarService.syncPaymentStatus(finalSubscriptionId);
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    
+    if (syncResult.wasUpdated && syncResult.subscription.paymentStatus === 'Paid') {
+      // Payment successful
+      return res.redirect(`${frontendUrl}/moyassar-payment?subscriptionId=${finalSubscriptionId}&payment=success`);
+    } else {
+      // Payment still pending or failed
+      const paymentStatus = syncResult.subscription?.paymentStatus || 'pending';
+      return res.redirect(`${frontendUrl}/moyassar-payment?subscriptionId=${finalSubscriptionId}&payment=${paymentStatus.toLowerCase()}`);
+    }
+  } catch (error) {
+    console.error('Payment callback error:', error);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    return res.redirect(`${frontendUrl}/dashboard/subscription-billings?error=callback_failed`);
   }
 };
 
@@ -250,5 +376,6 @@ module.exports = {
   verifyMoyassarPayment,
   handleMoyassarWebhook,
   getPaymentStatus,
+  handlePaymentCallback,
 };
 

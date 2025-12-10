@@ -11,6 +11,7 @@ router.use(authMiddleware);
 router.post('/subscribe', subscriptionController.subscribeToPlan);
 router.post('/payment/confirm', subscriptionController.confirmPayment);
 router.get('/me', subscriptionController.getMySubscription);
+router.get('/billing-history', subscriptionController.getMyBillingHistory);
 
 // Example protected route using verifySubscription middleware
 router.get('/exam/:id', verifySubscription, (req, res) => {

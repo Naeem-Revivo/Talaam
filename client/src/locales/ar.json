@@ -1728,6 +1728,7 @@
       "hero": {
         "title": "سجل المدفوعات"
       },
+      "loading": "جاري تحميل سجل الدفع...",
       "buttons": {
         "exportBilling": "تصدير تقارير الفواتير"
       },
@@ -1774,6 +1775,7 @@
       "hero": {
         "title": "إدارة اشتراكات المستخدمين"
       },
+      "loading": "جاري تحميل الاشتراكات...",
       "actions": {
         "exportBillingReports": "تصدير تقارير الفوترة"
       },
@@ -1812,6 +1814,8 @@
       "hero": {
         "title": "تفاصيل الاشتراك"
       },
+      "loading": "جاري تحميل تفاصيل الاشتراك...",
+      "notFound": "الاشتراك غير موجود",
       "sections": {
         "userInfo": "معلومات المستخدم",
         "planInfo": "معلومات الخطة",
@@ -1822,20 +1826,28 @@
         "email": "البريد الإلكتروني",
         "currentPlan": "الخطة الحالية",
         "duration": "المدة",
+        "startDate": "تاريخ البدء",
         "renewalDate": "تاريخ التجديد",
+        "expiryDate": "تاريخ الانتهاء",
         "status": "الحالة",
+        "paymentStatus": "حالة الدفع",
         "lastPayment": "آخر دفعة",
         "nextDueDate": "تاريخ الاستحقاق القادم",
-        "paymentMethod": "طريقة الدفع"
+        "paymentMethod": "طريقة الدفع",
+        "transactionId": "معرف المعاملة",
+        "moyassarStatus": "حالة مويصر"
       },
       "actions": {
         "upgradeDowngrade": "ترقية / تخفيض الخطة",
         "cancelSubscription": "إلغاء الاشتراك",
-        "renewalManually": "تجديد يدوي"
+        "renewalManually": "تجديد يدوي",
+        "syncPayment": "مزامنة الدفع",
+        "syncing": "جاري المزامنة..."
       },
       "buttons": {
         "cancel": "إلغاء",
-        "saveChanges": "حفظ التغييرات"
+        "saveChanges": "حفظ التغييرات",
+        "back": "العودة إلى الاشتراكات"
       }
     },
     "subscriptionTrends": {
@@ -3508,6 +3520,13 @@
     "subject": "المادة",
     "role": "الدور",
     "status": "الحالة"
+  },
+  "payment": {
+    "title": "دفع مويسر",
+    "settingUp": "جاري إعداد الدفع...",
+    "loading": "جاري معالجة الاشتراك...",
+    "redirecting": "جاري التوجيه إلى صفحة الدفع...",
+    "continue": "متابعة إلى الدفع"
   },
   "toast": {
     "title": {

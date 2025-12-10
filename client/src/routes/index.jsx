@@ -15,6 +15,7 @@ import ForgotModalPage from '../pages/ForgotModalPage';
 import SetNewPasswordPage from '../pages/SetNewPasswordPage';
 import PasswordResetPage from '../pages/PasswordResetPage';
 import AuthCallbackPage from '../pages/AuthCallbackPage';
+import MoyassarPaymentPage from '../pages/MoyassarPaymentPage';
 import DashboardLayout from '../pages/dashboard/DashboardLayout';
 import DashboardPage from '../pages/dashboard/DashboardPage';
 import PracticePage from '../pages/dashboard/PracticePage';
@@ -125,6 +126,7 @@ export const AppRoutes = () => {
       <Route path="/forgot-modal" element={<ForgotModalPage />} />
       <Route path="/set-new-password" element={<SetNewPasswordPage />} />
       <Route path="/password-reset" element={<PasswordResetPage />} />
+      <Route path="/moyassar-payment" element={<MoyassarPaymentPage />} />
       
       {/* Dashboard Routes (User) */}
       <Route element={<RoleRoute allow={['user']} />}>

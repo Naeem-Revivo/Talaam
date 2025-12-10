@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { tick } from '../../assets/svg';
 import { useLanguage } from '../../context/LanguageContext';
 
 const ChooseYourPlanSection = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   
   const features = [
     t('products.choosePlan.features.feature1'),
@@ -13,6 +15,22 @@ const ChooseYourPlanSection = () => {
     t('products.choosePlan.features.feature5'),
     t('products.choosePlan.features.feature6')
   ];
+
+  const handleSubscribe = () => {
+    // Check if user is logged in
+    const token = localStorage.getItem('authToken');
+    const user = localStorage.getItem('user');
+    
+    if (!token || !user) {
+      // Store the intended destination in localStorage
+      localStorage.setItem('redirectAfterLogin', '/moyassar-payment');
+      // Navigate to login
+      navigate('/login');
+    } else {
+      // User is logged in, navigate to Moyassar payment page
+      navigate('/moyassar-payment');
+    }
+  };
 
   return (
     <section className="py-10 md:py-20 bg-soft-blue-green">
@@ -53,7 +71,10 @@ const ChooseYourPlanSection = () => {
 
             {/* CTA Button */}
             <div className="text-center mt-10 md:mt-0 md:my-7 lg:mt-16 px-2">
-              <button className="font-archivo w-full md:w-[390px] h-[50px] bg-orange-gradient rounded-[8px] text-white font-bold text-[12px] leading-[100%] tracking-[0] align-middle uppercase">
+              <button 
+                onClick={handleSubscribe}
+                className="font-archivo w-full md:w-[390px] h-[50px] bg-orange-gradient rounded-[8px] text-white font-bold text-[12px] leading-[100%] tracking-[0] align-middle uppercase hover:opacity-90 transition-opacity"
+              >
                 {t('products.choosePlan.subscribe')}
               </button>
             </div>

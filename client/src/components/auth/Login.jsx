@@ -121,6 +121,14 @@ const Login = () => {
           isAuth: true
         })
 
+        // Check if there's a redirect destination stored
+        const redirectAfterLogin = localStorage.getItem('redirectAfterLogin')
+        if (redirectAfterLogin) {
+          localStorage.removeItem('redirectAfterLogin')
+          navigate(redirectAfterLogin, { replace: true })
+          return
+        }
+
         // Map backend roles to routes
         if (role === 'superadmin') {
           navigate('/admin', { replace: true })
