@@ -18,7 +18,7 @@ const TableHeader = ({ columns }) => (
   </thead>
 );
 
-const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagReason }) => {
+const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagReason, onShowRejectionReason }) => {
   const getFieldKey = (columnName) => {
     return columnName.toLowerCase().replace(/ /g, "");
   };
@@ -47,9 +47,21 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
                   </span>
                 )}
                 {indicators.reject && (
-                  <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-gray-100 text-gray-700">
-                    {t("creator.assignedQuestionPage.indicators.reject") || "Reject"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-gray-100 text-gray-700">
+                      {t("creator.assignedQuestionPage.indicators.reject") || "Reject"}
+                    </span>
+                    {item.rejectionReason && onShowRejectionReason && (
+                      <button
+                        type="button"
+                        onClick={() => onShowRejectionReason(item.rejectionReason)}
+                        className="text-orange-dark text-[10px] font-normal leading-[16px] font-roboto hover:underline transition px-1 py-0"
+                        title={t("creator.assignedQuestionPage.rejectionReasonButton") || "View Rejection Reason"}
+                      >
+                        {t("creator.assignedQuestionPage.reasonButton") || "Reason"}
+                      </button>
+                    )}
+                  </div>
                 )}
                 {indicators.variant && (
                   <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-blue-100 text-blue-700">
@@ -327,7 +339,7 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
   );
 };
 
-const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagReason }) => {
+const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagReason, onShowRejectionReason }) => {
   const displayColumns = columns.slice(0, -1);
   const { language, t } = useLanguage();
   const isRTL = language === "ar";
@@ -358,9 +370,21 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
                     </span>
                   )}
                   {indicators.reject && (
-                    <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-gray-100 text-gray-700">
-                      {t("creator.assignedQuestionPage.indicators.reject") || "Reject"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-gray-100 text-gray-700">
+                        {t("creator.assignedQuestionPage.indicators.reject") || "Reject"}
+                      </span>
+                      {item.rejectionReason && onShowRejectionReason && (
+                        <button
+                          type="button"
+                          onClick={() => onShowRejectionReason(item.rejectionReason)}
+                          className="text-orange-dark text-[10px] font-normal leading-[16px] font-roboto hover:underline transition px-1 py-0"
+                          title={t("creator.assignedQuestionPage.rejectionReasonButton") || "View Rejection Reason"}
+                        >
+                          {t("creator.assignedQuestionPage.reasonButton") || "Reason"}
+                        </button>
+                      )}
+                    </div>
                   )}
                   {indicators.variant && (
                     <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-blue-100 text-blue-700">
@@ -725,6 +749,7 @@ export const Table = ({
   emptyMessage,
   showPagination = true,
   onShowFlagReason,
+  onShowRejectionReason,
 }) => {
   const { t, language } = useLanguage();
   const dir = language === "ar" ? "rtl" : "ltr";
@@ -749,6 +774,7 @@ export const Table = ({
                   onEdit={onEdit}
                   onCustomAction={onCustomAction}
                   onShowFlagReason={onShowFlagReason}
+                  onShowRejectionReason={onShowRejectionReason}
                 />
               ))
             ) : (
@@ -777,6 +803,7 @@ export const Table = ({
               onEdit={onEdit}
               onCustomAction={onCustomAction}
               onShowFlagReason={onShowFlagReason}
+              onShowRejectionReason={onShowRejectionReason}
             />
           ))
         ) : (

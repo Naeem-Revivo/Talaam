@@ -2785,6 +2785,7 @@
       "reviewFeedback": "ملاحظات المراجعة",
       "workflowProgress": "تقدم سير العمل",
       "recentActivity": "النشاط الأخير",
+      "noActivity": "لا يوجد نشاط حديث",
       "workflowSteps": {
         "gatherer": "المجمع",
         "processor": "المعالج",
@@ -2812,6 +2813,7 @@
         "processor": "المعالج",
         "lastUpdate": "آخر تحديث",
         "status": "الحالة",
+        "indicators": "المؤشرات",
         "actions": "الإجراءات"
       },
       "emptyMessage": "لم يتم العثور على أسئلة"
@@ -3396,15 +3398,20 @@
       "flagReasonDescription": "قام المنشئ بالإبلاغ عن هذا السؤال للأسباب التالية:",
       "flagReasonDescriptionExplainer": "قام المشرح بالإبلاغ عن هذا السؤال للأسباب التالية:",
       "rejectFlagReason": "رفض سبب الإبلاغ",
-      "rejectFlagReasonDescription": "يرجى تقديم سبب لرفض إبلاغ المنشئ. سيتم إرسال السؤال مرة أخرى إلى المنشئ.",
-      "rejectFlagReasonDescriptionExplainer": "يرجى تقديم سبب لرفض إبلاغ المشرح. سيتم إرسال السؤال مرة أخرى إلى المشرح.",
+      "rejectFlagReasonDescription": "يرجى تقديم سبب لرفض إبلاغ المنشئ. سيتم حل الإبلاغ وسيتم إرسال السؤال مرة أخرى إلى المنشئ.",
+      "rejectFlagReasonDescriptionExplainer": "يرجى تقديم سبب لرفض إبلاغ المشرح. سيتم حل الإبلاغ وسيتم إرسال السؤال مرة أخرى إلى المشرح.",
       "rejectFlagReasonPlaceholder": "أدخل سبب رفض الإبلاغ...",
       "confirmRejectFlag": "رفض سبب الإبلاغ",
       "gathererFlagRejection": "رفض المجمع للإبلاغ",
       "gathererFlagRejectionDescription": "رفض المجمع الإبلاغ للأسباب التالية:",
       "acceptGathererRejection": "قبول رفض المجمع",
       "rejectGathererRejection": "رفض رفض المجمع",
-      "rejectGathererRejectionDescription": "يرجى تقديم سبب لرفض رفض المجمع للإبلاغ. سيتم استعادة الإبلاغ وسيتم إرسال السؤال مرة أخرى إلى المجمع."
+      "rejectGathererRejectionDescription": "يرجى تقديم سبب لرفض رفض المجمع للإبلاغ. سيتم استعادة الإبلاغ وسيتم إرسال السؤال مرة أخرى إلى المجمع.",
+      "parentQuestionReference": "مرجع السؤال الأصلي",
+      "parentQuestionDescription": "ينتمي هذا المتغير إلى السؤال الأصلي التالي:",
+      "parentQuestionLabel": "السؤال",
+      "parentOptionsLabel": "الخيارات",
+      "parentCorrectAnswerLabel": "الإجابة الصحيحة"
     },
     "profile": {
       "title": "إعدادات الحساب",

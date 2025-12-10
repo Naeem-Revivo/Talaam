@@ -439,8 +439,8 @@ const CreatorVariantsPage = () => {
         // Show success message
         showSuccessToast(`Successfully created ${validVariants.length} variant(s)!`);
         shouldRedirect = true;
-        // Redirect to variants list page after creating variants
-        redirectPath = "/creator/question-bank/variants-list";
+        // Redirect to assigned question page after creating variants
+        redirectPath = "/creator/question-bank/assigned-question";
       } else {
         // No variants created - submit the question explicitly
         try {
@@ -689,17 +689,8 @@ const CreatorVariantsPage = () => {
       // Close modal and reset
       handleFlagClose();
       
-      // Refresh the question data to reflect the status change
-      if (questionId) {
-        const response = await questionsAPI.getCreatorQuestionById(questionId);
-        if (response.success && response.data?.question) {
-          const question = response.data.question;
-          setOriginalQuestion(question);
-        }
-      }
-      
-      // Optionally navigate back or refresh
-      // navigate("/creator/question-bank");
+      // Navigate to assigned question page
+      navigate("/creator/question-bank/assigned-question");
     } catch (error) {
       console.error("Error flagging question:", error);
       showErrorToast(error.message || "Failed to flag question. Please try again.");

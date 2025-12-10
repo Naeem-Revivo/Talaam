@@ -548,7 +548,8 @@ const getQuestions = async (req, res, next) => {
     if (req.user.adminRole === 'processor' && submittedBy) {
       questions = await questionService.getQuestionsByStatusAndRole(
         queryStatus,
-        submittedBy
+        submittedBy,
+        req.user.id // Pass processor ID to filter by assignedProcessorId
       );
     } else {
       questions = await questionService.getQuestionsByStatus(
