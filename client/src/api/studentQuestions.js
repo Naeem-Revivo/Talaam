@@ -190,6 +190,32 @@ const studentQuestionsAPI = {
       throw apiError || { message: 'Failed to fetch test mode accuracy trend' };
     }
   },
+
+  // Flag question by student
+  // POST /api/student/questions/:questionId/flag
+  flagQuestion: async (questionId, flagReason) => {
+    try {
+      const response = await axiosClient.post(`/student/questions/${questionId}/flag`, {
+        flagReason,
+      });
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to flag question' };
+    }
+  },
+
+  // Get student's flagged questions
+  // GET /api/student/questions/flagged
+  getStudentFlaggedQuestions: async () => {
+    try {
+      const response = await axiosClient.get('/student/questions/flagged');
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to fetch flagged questions' };
+    }
+  },
 };
 
 export default studentQuestionsAPI;

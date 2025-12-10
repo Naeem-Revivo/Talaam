@@ -2392,6 +2392,81 @@ const getCompletedExplanations = async (req, res, next) => {
   }
 };
 
+/**
+ * Get flagged questions for content moderation (superadmin)
+ * GET /api/admin/moderation/flagged
+ */
+const getFlaggedQuestionsForModeration = async (req, res, next) => {
+  try {
+    const { status } = req.query;
+    const filters = {};
+    if (status) filters.status = status;
+
+    const questions = await questionService.getFlaggedQuestionsForModeration(filters);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        questions,
+        count: questions.length,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Approve student flag (superadmin)
+ * POST /api/admin/moderation/:questionId/approve
+ */
+const approveStudentFlag = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const adminId = req.user.id;
+
+    const question = await questionService.approveStudentFlag(questionId, adminId);
+
+    res.status(200).json({
+      success: true,
+      data: question,
+      message: 'Flag approved. Question sent to processor.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Reject student flag (superadmin)
+ * POST /api/admin/moderation/:questionId/reject
+ * Body: { rejectionReason }
+ */
+const rejectStudentFlag = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const { rejectionReason } = req.body;
+    const adminId = req.user.id;
+
+    if (!rejectionReason || !rejectionReason.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rejection reason is required',
+      });
+    }
+
+    const question = await questionService.rejectStudentFlag(questionId, rejectionReason, adminId);
+
+    res.status(200).json({
+      success: true,
+      data: question,
+      message: 'Flag rejected. Student will be notified.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllQuestionsForSuperadmin,
   getQuestionDetailForSuperadmin,
@@ -2419,4 +2494,7 @@ module.exports = {
   rejectFlagByCreator,
   getCompletedExplanations,
   rejectGathererFlagRejection,
+  getFlaggedQuestionsForModeration,
+  approveStudentFlag,
+  rejectStudentFlag,
 };

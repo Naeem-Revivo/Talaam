@@ -71,12 +71,13 @@ const getAvailableQuestions = async (filters = {}) => {
 
 /**
  * Get question by ID for student (without correct answer)
+ * Includes flag information if student has flagged this question
  */
-const getQuestionById = async (questionId) => {
+const getQuestionById = async (questionId, studentId = null) => {
   const question = await prisma.question.findFirst({
     where: {
       id: questionId,
-    status: 'completed',
+      status: 'completed',
       isVisible: true, // Only show visible questions
     },
     include: {
@@ -98,6 +99,19 @@ const getQuestionById = async (questionId) => {
 
   const questionObj = { ...question };
   delete questionObj.correctAnswer;
+  
+  // Include flag information if student has flagged this question
+  // Always include flag info if student flagged it, even if rejected
+  let flagInfo = null;
+  if (studentId && question.flaggedById === studentId && question.flagType === 'student') {
+    flagInfo = {
+      isFlagged: question.isFlagged,
+      flagStatus: question.flagStatus || 'pending',
+      flagReason: question.flagReason,
+      flagRejectionReason: question.flagRejectionReason,
+    };
+  }
+  
   // Map Prisma fields to expected format
   return {
     ...questionObj,
@@ -105,6 +119,7 @@ const getQuestionById = async (questionId) => {
     subject: question.subject,
     topic: question.topic,
     _id: question.id,
+    ...flagInfo, // Include flag info if applicable
   };
 };
 
@@ -1491,6 +1506,89 @@ const saveStudySessionResults = async (studentId, sessionData) => {
   };
 };
 
+/**
+ * Flag question by Student
+ * POST /api/student/questions/:questionId/flag
+ */
+const flagQuestionByStudent = async (questionId, flagReason, studentId) => {
+  // Check if question exists and is visible
+  const question = await prisma.question.findFirst({
+    where: {
+      id: questionId,
+      status: 'completed',
+      isVisible: true,
+    },
+  });
+
+  if (!question) {
+    throw new Error('Question not found or not available');
+  }
+
+  if (!flagReason || !flagReason.trim()) {
+    throw new Error('Flag reason is required');
+  }
+
+  // Update question with flag
+  const updatedQuestion = await prisma.question.update({
+    where: { id: questionId },
+    data: {
+      isFlagged: true,
+      flaggedById: studentId,
+      flagReason: flagReason.trim(),
+      flagType: 'student',
+      flagStatus: 'pending',
+      updatedAt: new Date(),
+    },
+  });
+
+  // Create history entry
+  await prisma.questionHistory.create({
+    data: {
+      questionId: questionId,
+      action: 'flagged',
+      performedById: studentId,
+      role: 'student',
+      notes: `Question flagged by student: ${flagReason.trim()}`,
+    },
+  });
+
+  return updatedQuestion;
+};
+
+/**
+ * Get student's flagged questions with rejection reasons
+ */
+const getStudentFlaggedQuestions = async (studentId) => {
+  const questions = await prisma.question.findMany({
+    where: {
+      flaggedById: studentId,
+      flagType: 'student',
+    },
+    include: {
+      exam: {
+        select: { id: true, name: true },
+      },
+      subject: {
+        select: { id: true, name: true },
+      },
+      topic: {
+        select: { id: true, name: true },
+      },
+      flagReviewedBy: {
+        select: { id: true, name: true, email: true },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return questions.map((q) => ({
+    ...q,
+    exam: q.exam ? { id: q.examId, ...q.exam } : null,
+    subject: q.subject ? { id: q.subjectId, ...q.subject } : null,
+    topic: q.topic ? { id: q.topicId, ...q.topic } : null,
+  }));
+};
+
 module.exports = {
   getAvailableQuestions,
   getQuestionById,
@@ -1508,6 +1606,8 @@ module.exports = {
   getSessionDetail,
   getSessionIncorrectItems,
   getPlanStructure,
+  flagQuestionByStudent,
+  getStudentFlaggedQuestions,
 };
 
 

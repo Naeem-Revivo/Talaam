@@ -48,6 +48,12 @@ router.get('/plan/structure', questionController.getPlanStructure);
 // Test Mode: Get detailed test result by ID
 router.get('/test/:testId', questionController.getTestResultById);
 
+// Flag question by student
+router.post('/:questionId/flag', questionController.flagQuestion);
+
+// Get student's flagged questions
+router.get('/flagged', questionController.getStudentFlaggedQuestions);
+
 // Get question by ID (must be last to avoid conflicts with specific routes)
 router.get('/:questionId', questionController.getQuestionById);
 
