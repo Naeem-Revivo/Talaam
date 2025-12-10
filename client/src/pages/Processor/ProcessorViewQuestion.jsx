@@ -91,6 +91,10 @@ const ProcessorViewQuestion = () => {
   const [explainers, setExplainers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   
+  // Parent question state for variants
+  const [parentQuestion, setParentQuestion] = useState(null);
+  const [loadingParent, setLoadingParent] = useState(false);
+  
   // Check if question was updated after a flag (gatherer updated flagged question)
   const wasUpdatedAfterFlag = question && 
                                question.isFlagged === true && 
@@ -233,7 +237,32 @@ const ProcessorViewQuestion = () => {
         const response = await questionsAPI.getProcessorQuestionById(questionId);
         
         if (response.success && response.data?.question) {
-          setQuestion(response.data.question);
+          const fetchedQuestion = response.data.question;
+          setQuestion(fetchedQuestion);
+          
+          // If this is a variant and viewing from creator/explainer submission, fetch parent question
+          const isVariant = fetchedQuestion.isVariant === true || fetchedQuestion.isVariant === 'true';
+          const originalQuestionId = fetchedQuestion.originalQuestionId || fetchedQuestion.originalQuestion?.id || fetchedQuestion.originalQuestion;
+          
+          // Check source from searchParams directly
+          const currentSource = searchParams.get("source");
+          const isFromCreator = currentSource === "creator-submission";
+          const isFromExplainer = currentSource === "explainer-submission";
+          
+          if (isVariant && originalQuestionId && (isFromCreator || isFromExplainer)) {
+            try {
+              setLoadingParent(true);
+              const parentResponse = await questionsAPI.getProcessorQuestionById(originalQuestionId);
+              if (parentResponse.success && parentResponse.data?.question) {
+                setParentQuestion(parentResponse.data.question);
+              }
+            } catch (parentError) {
+              console.error("Error fetching parent question:", parentError);
+              // Don't show error toast for parent question fetch failure
+            } finally {
+              setLoadingParent(false);
+            }
+          }
         } else {
           showErrorToast("Failed to load question");
           navigate("/processor/question-bank/gatherer-submission");
@@ -248,7 +277,7 @@ const ProcessorViewQuestion = () => {
     };
 
     fetchQuestion();
-  }, [questionId, navigate]);
+  }, [questionId, navigate, searchParams]);
 
   const handleClose = () => {
     if (isFromExplainerSubmission) {
@@ -688,6 +717,58 @@ const ProcessorViewQuestion = () => {
         <div className="flex flex-col gap-6 lg:flex-row">
           {/* Left Column */}
           <div className="flex-1 flex flex-col gap-6">
+            {/* Parent Question Reference - Show when viewing a variant from creator/explainer submission */}
+            {question.isVariant && (isFromCreatorSubmission || isFromExplainerSubmission) && parentQuestion && (
+              <div className="rounded-[12px] border border-[#03274633] bg-white pt-[20px] px-[30px] pb-[30px] w-full">
+                <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[32px] text-oxford-blue">
+                  {t("processor.viewQuestion.parentQuestionReference")}
+                </h2>
+                <p className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280] mb-4">
+                  {t("processor.viewQuestion.parentQuestionDescription")}
+                </p>
+                <div className="bg-[#F6F7F8] rounded-lg p-4 border border-[#E5E7EB]">
+                  <div className="mb-3">
+                    <span className="font-roboto text-[14px] font-semibold text-oxford-blue">{t("processor.viewQuestion.parentQuestionLabel")}:</span>
+                    <p
+                      className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue mt-2"
+                      dir="ltr"
+                    >
+                      {parentQuestion.questionText || "—"}
+                    </p>
+                  </div>
+                  
+                  {parentQuestion.questionType === "MCQ" && parentQuestion.options && (
+                    <>
+                      <div className="mt-4 mb-3">
+                        <span className="font-roboto text-[14px] font-semibold text-oxford-blue">{t("processor.viewQuestion.parentOptionsLabel")}:</span>
+                        <div className="space-y-2 mt-2" dir="ltr">
+                          {Object.entries(parentQuestion.options).map(([key, value]) => (
+                            <div key={key} className="flex items-center gap-2">
+                              <span className="font-roboto text-[14px] font-normal text-dark-gray min-w-[20px]">
+                                {key}.
+                              </span>
+                              <span className="font-roboto text-[14px] font-normal text-dark-gray">
+                                {value}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {parentQuestion.correctAnswer && (
+                        <div className="mt-4 pt-3 border-t border-[#E5E7EB]">
+                          <span className="font-roboto text-[14px] font-semibold text-oxford-blue">{t("processor.viewQuestion.parentCorrectAnswerLabel")}: </span>
+                          <span className="font-roboto text-[14px] font-normal text-[#ED4122]">
+                            {parentQuestion.correctAnswer}. {parentQuestion.options[parentQuestion.correctAnswer]}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Question Info Card */}
             <div
               className="rounded-[12px] border border-[#03274633] bg-white pt-[20px] px-[30px] pb-[67px] w-full"

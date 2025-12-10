@@ -237,10 +237,13 @@ export default function AddExplanationPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [explanation, setExplanation] = useState("");
+  const [explanations, setExplanations] = useState({}); // Store explanations for original and each variant
   const [file, setFile] = useState(null);
   const [question, setQuestion] = useState(null);
+  const [originalQuestion, setOriginalQuestion] = useState(null); // For variant view
   const [variants, setVariants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingOriginal, setLoadingOriginal] = useState(false);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
@@ -272,24 +275,113 @@ export default function AddExplanationPage() {
         if (questionResponse.success && questionResponse.data?.question) {
           const fetchedQuestion = questionResponse.data.question;
           setQuestion(fetchedQuestion);
-
-          // Check if this question has variants by looking for questions with originalQuestionId
-          // We'll fetch all explainer questions and filter for variants
-          try {
-            const allQuestionsResponse = await questionsAPI.getExplainerQuestions({ status: 'pending_explainer' });
-            if (allQuestionsResponse.success && allQuestionsResponse.data?.questions) {
-              const questionIdStr = fetchedQuestion.id || fetchedQuestion._id;
-              const relatedVariants = allQuestionsResponse.data.questions.filter(
-                (q) => {
-                  const originalId = q.originalQuestionId || q.parentQuestionId;
-                  return originalId && (originalId.toString() === questionIdStr.toString() || originalId === questionIdStr);
-                }
-              );
-              setVariants(relatedVariants);
+          
+          // Initialize explanation for current question
+          // First check if there's a saved draft
+          const draftKey = `explainer_draft_${questionId}`;
+          const savedDraft = localStorage.getItem(draftKey);
+          let initialExplanation = fetchedQuestion.explanation || "";
+          
+          if (savedDraft) {
+            try {
+              const draftData = JSON.parse(savedDraft);
+              if (draftData.explanations && draftData.explanations[questionId]) {
+                initialExplanation = draftData.explanations[questionId];
+              }
+            } catch (e) {
+              console.warn("Could not parse saved draft:", e);
             }
-          } catch (variantError) {
-            console.warn("Could not fetch variants:", variantError);
-            // Continue without variants
+          }
+          
+          setExplanations(prev => ({
+            ...prev,
+            [questionId]: initialExplanation
+          }));
+
+          // Check if this is a variant - if so, fetch the original question
+          const isVariant = fetchedQuestion.isVariant === true || fetchedQuestion.isVariant === 'true';
+          const originalQuestionId = fetchedQuestion.originalQuestionId || fetchedQuestion.originalQuestion?.id || fetchedQuestion.originalQuestion;
+          
+          if (isVariant && originalQuestionId) {
+            try {
+              setLoadingOriginal(true);
+              const originalResponse = await questionsAPI.getExplainerQuestionById(originalQuestionId);
+              if (originalResponse.success && originalResponse.data?.question) {
+                setOriginalQuestion(originalResponse.data.question);
+                // Initialize explanation for original question if it exists
+                // Check for saved draft
+                const draftKey = `explainer_draft_${questionId}`;
+                const savedDraft = localStorage.getItem(draftKey);
+                let originalExplanation = originalResponse.data.question.explanation || "";
+                
+                if (savedDraft) {
+                  try {
+                    const draftData = JSON.parse(savedDraft);
+                    if (draftData.explanations && draftData.explanations[originalQuestionId]) {
+                      originalExplanation = draftData.explanations[originalQuestionId];
+                    }
+                  } catch (e) {
+                    console.warn("Could not parse saved draft:", e);
+                  }
+                }
+                
+                setExplanations(prev => ({
+                  ...prev,
+                  [originalQuestionId]: originalExplanation
+                }));
+              }
+            } catch (originalError) {
+              console.warn("Could not fetch original question:", originalError);
+            } finally {
+              setLoadingOriginal(false);
+            }
+          } else {
+            // If this is the original question, check if it has variants
+            try {
+              const allQuestionsResponse = await questionsAPI.getExplainerQuestions({ status: 'pending_explainer' });
+              if (allQuestionsResponse.success && allQuestionsResponse.data?.questions) {
+                const questionIdStr = fetchedQuestion.id || fetchedQuestion._id;
+                // Get all variants (including those with explanations) - we'll filter explanation editors separately
+                const relatedVariants = allQuestionsResponse.data.questions.filter(
+                  (q) => {
+                    const isVariantQ = q.isVariant === true || q.isVariant === 'true';
+                    const originalId = q.originalQuestionId || q.parentQuestionId;
+                    return isVariantQ && originalId && (originalId.toString() === questionIdStr.toString() || originalId === questionIdStr);
+                  }
+                );
+                setVariants(relatedVariants);
+                
+                // Initialize explanations for variants
+                // Check for saved draft
+                const draftKey = `explainer_draft_${questionId}`;
+                const savedDraft = localStorage.getItem(draftKey);
+                let draftExplanations = {};
+                
+                if (savedDraft) {
+                  try {
+                    const draftData = JSON.parse(savedDraft);
+                    if (draftData.explanations) {
+                      draftExplanations = draftData.explanations;
+                    }
+                  } catch (e) {
+                    console.warn("Could not parse saved draft:", e);
+                  }
+                }
+                
+                const variantExplanations = {};
+                relatedVariants.forEach(variant => {
+                  const variantId = variant.id || variant._id;
+                  variantExplanations[variantId] = draftExplanations[variantId] || variant.explanation || "";
+                });
+                setExplanations(prev => ({
+                  ...prev,
+                  ...variantExplanations
+                }));
+              }
+            } catch (variantError) {
+              console.warn("Could not fetch variants:", variantError);
+              // Continue without variants
+            }
           }
         } else {
           setError("Question not found");
@@ -355,8 +447,19 @@ export default function AddExplanationPage() {
 
   // Handle save draft
   const handleSaveDraft = async () => {
-    if (!questionId || !explanation.trim()) {
-      showErrorToast("Please enter an explanation before saving draft");
+    if (!questionId) {
+      showErrorToast("Question ID is missing");
+      return;
+    }
+
+    const isVariant = question?.isVariant === true || question?.isVariant === 'true';
+    const hasVariants = variants.length > 0;
+
+    // Check if at least one explanation has content
+    const hasAnyExplanation = Object.values(explanations).some(exp => exp && exp.trim());
+    
+    if (!hasAnyExplanation) {
+      showErrorToast("Please enter at least one explanation before saving draft");
       return;
     }
 
@@ -364,7 +467,15 @@ export default function AddExplanationPage() {
       setIsSavingDraft(true);
       // Note: The API might not have a draft endpoint, so we might need to store locally
       // or use a different approach. For now, we'll just show a message.
-      showSuccessToast("Draft saved locally (feature to be implemented)");
+      // In the future, we could save to localStorage or use a draft API endpoint
+      const draftData = {
+        questionId,
+        isVariant,
+        explanations,
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem(`explainer_draft_${questionId}`, JSON.stringify(draftData));
+      showSuccessToast("Draft saved locally");
     } catch (err) {
       console.error("Error saving draft:", err);
       showErrorToast("Failed to save draft");
@@ -373,25 +484,87 @@ export default function AddExplanationPage() {
     }
   };
 
-  // Handle submit explanation
+  // Handle explanation change for a specific question
+  const handleExplanationChange = (questionId, value) => {
+    setExplanations(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
+  };
+
+  // Handle submit explanation(s)
   const handleSubmitExplanation = async () => {
     if (!questionId) {
       showErrorToast("Question ID is missing");
       return;
     }
 
-    if (!explanation.trim()) {
-      showErrorToast("Please enter an explanation before submitting");
+    const isVariant = question?.isVariant === true || question?.isVariant === 'true';
+    const hasOriginal = originalQuestion !== null;
+    const hasVariants = variants.length > 0;
+
+    // Determine which explanations to submit
+    const explanationsToSubmit = [];
+    
+    // Helper to check if a variant needs explanation
+    const variantNeedsExplanation = (variant) => {
+      const variantId = variant.id || variant._id;
+      const hasExplanation = variant.explanation && variant.explanation.trim() !== '';
+      // Only variants that are pending_explainer and don't have explanations need explanation editors
+      const statusNeedsExplanation = variant.status === 'pending_explainer';
+      const notSubmitted = variant.status !== 'pending_processor' && variant.status !== 'completed';
+      return statusNeedsExplanation && !hasExplanation && notSubmitted;
+    };
+    
+    // If viewing original question with variants, submit original + variants that need explanations
+    if (!isVariant && hasVariants) {
+      // Submit original question explanation
+      if (explanations[questionId]?.trim()) {
+        explanationsToSubmit.push({ questionId, explanation: explanations[questionId] });
+      }
+      // Submit variant explanations only for variants that need them
+      variants
+        .filter(variantNeedsExplanation)
+        .forEach(variant => {
+          const variantId = variant.id || variant._id;
+          if (explanations[variantId]?.trim()) {
+            explanationsToSubmit.push({ questionId: variantId, explanation: explanations[variantId] });
+          }
+        });
+    } 
+    // If viewing a variant, submit variant explanation only
+    else if (isVariant) {
+      if (explanations[questionId]?.trim()) {
+        explanationsToSubmit.push({ questionId, explanation: explanations[questionId] });
+      }
+    }
+    // If viewing original without variants, submit original only
+    else {
+      if (explanations[questionId]?.trim()) {
+        explanationsToSubmit.push({ questionId, explanation: explanations[questionId] });
+      }
+    }
+
+    if (explanationsToSubmit.length === 0) {
+      showErrorToast("Please enter at least one explanation before submitting");
       return;
     }
 
     try {
       setIsSubmitting(true);
       
-      // Update explanation - this automatically sets status to pending_processor
-      await questionsAPI.updateExplanation(questionId, explanation);
+      // Submit all explanations
+      await Promise.all(
+        explanationsToSubmit.map(({ questionId: id, explanation: exp }) =>
+          questionsAPI.updateExplanation(id, exp)
+        )
+      );
       
-      showSuccessToast("Explanation submitted successfully! Question sent to processor for review.");
+      // Clear saved draft after successful submission
+      const draftKey = `explainer_draft_${questionId}`;
+      localStorage.removeItem(draftKey);
+      
+      showSuccessToast("Explanation(s) submitted successfully! Question(s) sent to processor for review.");
       
       // Navigate back to question bank
       setTimeout(() => {
@@ -431,6 +604,7 @@ export default function AddExplanationPage() {
   }
 
   const questionIdDisplay = question.id || question._id || questionId;
+  const isVariant = question?.isVariant === true || question?.isVariant === 'true';
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -440,25 +614,77 @@ export default function AddExplanationPage() {
             Add Explanation
           </h1>
           <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
-            Question ID: {questionIdDisplay}
+            {isVariant ? "Variant" : "Question"} ID: {questionIdDisplay}
           </p>
         </div>
 
-        {/* Display Original Question */}
+        {/* Display Original Question Reference if viewing a variant */}
+        {isVariant && originalQuestion && (
+          <div className="rounded-[12px] border border-[#03274633] bg-white pt-[20px] px-[30px] pb-[30px] w-full mb-[30px]">
+            <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[32px] text-oxford-blue">
+              Original Question Reference
+            </h2>
+            <p className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280] mb-4">
+              This variant belongs to the following original question:
+            </p>
+            <div className="bg-[#F6F7F8] rounded-lg p-4 border border-[#E5E7EB]">
+              <div className="mb-3">
+                <span className="font-roboto text-[14px] font-semibold text-oxford-blue">Question:</span>
+                <p
+                  className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue mt-2"
+                  dir="ltr"
+                >
+                  {originalQuestion.questionText || "—"}
+                </p>
+              </div>
+              
+              {originalQuestion.questionType === "MCQ" && originalQuestion.options && (
+                <>
+                  <div className="mt-4 mb-3">
+                    <span className="font-roboto text-[14px] font-semibold text-oxford-blue">Options:</span>
+                    <div className="space-y-2 mt-2" dir="ltr">
+                      {Object.entries(originalQuestion.options).map(([key, value]) => (
+                        <div key={key} className="flex items-center gap-2">
+                          <span className="font-roboto text-[14px] font-normal text-dark-gray min-w-[20px]">
+                            {key}.
+                          </span>
+                          <span className="font-roboto text-[14px] font-normal text-dark-gray">
+                            {value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {originalQuestion.correctAnswer && (
+                    <div className="mt-4 pt-3 border-t border-[#E5E7EB]">
+                      <span className="font-roboto text-[14px] font-semibold text-oxford-blue">Correct Answer: </span>
+                      <span className="font-roboto text-[14px] font-normal text-[#ED4122]">
+                        {originalQuestion.correctAnswer}. {originalQuestion.options[originalQuestion.correctAnswer]}
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Display Original Question (if not a variant) or Variant Question (if viewing variant) */}
         <div className="border border-[#03274633] shadow-[0px_2px_20px_0px_#0327460D] bg-white pt-[18px] pb-[53px] px-[30px] rounded-[14px] mb-[30px]">
           <h2 className="text-[20px] leading-[32px] font-bold text-blue-dark font-archivo mb-[18px]">
-            Question Details
+            {isVariant ? "Variant Question Details" : "Question Details"}
           </h2>
           <QuestionDetails
             question={question}
-            isVariant={false}
+            isVariant={isVariant}
             onFlag={handleFlagClick}
             isFlagged={flaggedQuestions.has(question.id || question._id)}
           />
         </div>
 
-        {/* Display Variants if any */}
-        {variants.length > 0 && (
+        {/* Display Variants if viewing original question */}
+        {!isVariant && variants.length > 0 && (
           <div className="border border-[#03274633] shadow-[0px_2px_20px_0px_#0327460D] bg-white pt-[18px] pb-[53px] px-[30px] rounded-[14px] mb-[30px]">
             <h2 className="text-[20px] leading-[32px] font-bold text-blue-dark font-archivo mb-[18px]">
               Question Variants ({variants.length})
@@ -476,21 +702,77 @@ export default function AddExplanationPage() {
           </div>
         )}
 
-        {/* Explanation Editor */}
-        <div className="border border-[#03274633] shadow-[0px_2px_20px_0px_#0327460D] bg-white pt-[18px] pb-[53px] px-[30px] rounded-[14px] mb-[30px]">
-          <h2 className="text-[20px] leading-[32px] font-bold text-blue-dark font-archivo mb-[18px]">
-            Explanation Editor
-          </h2>
-          <p className="text-[16px] leading-[100%] font-medium font-roboto text-blue-dark mb-5">
-            Explanation
-          </p>
-          <RichTextEditor
-            value={explanation}
-            onChange={setExplanation}
-            placeholder="Enter the detailed explanation for question here..."
-            minHeight="150px"
-          />
-        </div>
+        {/* Explanation Editor for Original Question (if viewing original with variants) */}
+        {!isVariant && (
+          <div className="border border-[#03274633] shadow-[0px_2px_20px_0px_#0327460D] bg-white pt-[18px] pb-[53px] px-[30px] rounded-[14px] mb-[30px]">
+            <h2 className="text-[20px] leading-[32px] font-bold text-blue-dark font-archivo mb-[18px]">
+              Explanation for Original Question
+            </h2>
+            <p className="text-[16px] leading-[100%] font-medium font-roboto text-blue-dark mb-5">
+              Explanation
+            </p>
+            <RichTextEditor
+              value={explanations[questionId] || ""}
+              onChange={(value) => handleExplanationChange(questionId, value)}
+              placeholder="Enter the detailed explanation for the original question here..."
+              minHeight="150px"
+            />
+          </div>
+        )}
+
+        {/* Explanation Editor for Variants (if viewing original with variants) */}
+        {/* Only show explanation editors for variants that don't have explanations yet */}
+        {!isVariant && variants.length > 0 && variants
+          .filter(variant => {
+            const variantId = variant.id || variant._id;
+            const hasExplanation = variant.explanation && variant.explanation.trim() !== '';
+            // Only show editor if variant is still pending explanation (status is pending_explainer and no explanation)
+            // Exclude variants that already have explanations or have been submitted (status is pending_processor)
+            const statusNeedsExplanation = variant.status === 'pending_explainer';
+            const notSubmitted = variant.status !== 'pending_processor' && variant.status !== 'completed';
+            return statusNeedsExplanation && !hasExplanation && notSubmitted;
+          })
+          .map((variant, index) => {
+            const variantId = variant.id || variant._id;
+            // Get the actual variant number from all variants (including those with explanations)
+            const allVariants = variants;
+            const variantNumber = allVariants.findIndex(v => (v.id || v._id) === variantId) + 1;
+            
+            return (
+              <div key={variantId} className="border border-[#03274633] shadow-[0px_2px_20px_0px_#0327460D] bg-white pt-[18px] pb-[53px] px-[30px] rounded-[14px] mb-[30px]">
+                <h2 className="text-[20px] leading-[32px] font-bold text-blue-dark font-archivo mb-[18px]">
+                  Explanation for Variant {variantNumber}
+                </h2>
+                <p className="text-[16px] leading-[100%] font-medium font-roboto text-blue-dark mb-5">
+                  Explanation
+                </p>
+                <RichTextEditor
+                  value={explanations[variantId] || ""}
+                  onChange={(value) => handleExplanationChange(variantId, value)}
+                  placeholder={`Enter the detailed explanation for variant ${variantNumber} here...`}
+                  minHeight="150px"
+                />
+              </div>
+            );
+          })}
+
+        {/* Explanation Editor for Variant (if viewing a variant) */}
+        {isVariant && (
+          <div className="border border-[#03274633] shadow-[0px_2px_20px_0px_#0327460D] bg-white pt-[18px] pb-[53px] px-[30px] rounded-[14px] mb-[30px]">
+            <h2 className="text-[20px] leading-[32px] font-bold text-blue-dark font-archivo mb-[18px]">
+              Explanation for Variant
+            </h2>
+            <p className="text-[16px] leading-[100%] font-medium font-roboto text-blue-dark mb-5">
+              Explanation
+            </p>
+            <RichTextEditor
+              value={explanations[questionId] || ""}
+              onChange={(value) => handleExplanationChange(questionId, value)}
+              placeholder="Enter the detailed explanation for this variant here..."
+              minHeight="150px"
+            />
+          </div>
+        )}
 
         <SupportingMaterial
           file={file}

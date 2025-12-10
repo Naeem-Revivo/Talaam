@@ -81,6 +81,9 @@ const CreatorViewVariant = () => {
                                 variant.flagStatus === 'approved' &&
                                 variant.status === 'pending_creator';
 
+  // Check if variant is rejected
+  const isRejected = variant && variant.status === 'rejected' && variant.rejectionReason;
+
   const handleUpdateVariant = () => {
     if (variant) {
       // Navigate to edit variant page
@@ -199,6 +202,23 @@ const CreatorViewVariant = () => {
                 )}
             </div>
           </div>
+
+          {/* Rejection Reason Card - Show if variant is rejected */}
+          {isRejected && variant.rejectionReason && (
+            <div className="rounded-[12px] border-2 border-[#ED4122] bg-[#FEF2F2] p-4 md:p-6 w-full">
+              <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-[#ED4122]">
+                {t('creator.assignedQuestionPage.rejectionReasonModal.title') || 'Rejection Reason'}
+              </h2>
+              <p className="font-roboto text-[14px] font-normal leading-[20px] text-dark-gray mb-3">
+                {t('creator.assignedQuestionPage.rejectionReasonModal.subtitle') || 'The variant was rejected by processor with the following reason:'}
+              </p>
+              <div className="bg-white rounded-lg p-4 border border-[#ED4122]">
+                <p className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue whitespace-pre-wrap">
+                  {variant.rejectionReason}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Flag Information Card - Show if variant is flagged */}
           {isFlaggedAndApproved && variant.flagReason && (

@@ -23,6 +23,8 @@ const AssignedQuestionPage = () => {
   const pollingIntervalRef = useRef(null);
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
   const [selectedFlagReason, setSelectedFlagReason] = useState("");
+  const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
+  const [selectedRejectionReason, setSelectedRejectionReason] = useState("");
 
   const QuestionsColumns = [
     { key: 'questionTitle', label: t("creator.assignedQuestionPage.table.question") },
@@ -82,7 +84,26 @@ const AssignedQuestionPage = () => {
   };
 
   // Transform API response to table format
-  const transformQuestionData = (questions) => {
+  const transformQuestionData = (questions, allQuestions = []) => {
+    // Create a map of question IDs to their variants for quick lookup
+    const questionIdStr = (id) => String(id || '');
+    const variantsByParentId = new Map();
+    
+    // Build map of variants by parent question ID
+    allQuestions.forEach((q) => {
+      const isVariant = q.isVariant === true || q.isVariant === 'true';
+      if (isVariant) {
+        const originalId = q.originalQuestionId || q.originalQuestion;
+        if (originalId) {
+          const parentId = questionIdStr(originalId);
+          if (!variantsByParentId.has(parentId)) {
+            variantsByParentId.set(parentId, []);
+          }
+          variantsByParentId.get(parentId).push(q);
+        }
+      }
+    });
+
     return questions.map((question) => {
       // Get processor name from approvedBy (processor who approved and sent to creator)
       const processorName = question.approvedBy?.name || question.assignedProcessor?.name || "—";
@@ -94,21 +115,28 @@ const AssignedQuestionPage = () => {
       const isApproved = question.status === 'completed';
       const isFlagged = question.isFlagged === true;
       const isRejected = question.status === 'rejected';
-      const isVariant = question.isVariant === true;
+      const isVariant = question.isVariant === true || question.isVariant === 'true';
       
-      // Check if creator has submitted the question
-      // If status is pending_processor and question is in creator's assigned list (has approvedBy or was in pending_creator),
-      // it means creator has submitted it back, so show as "Approved"
-      // We check for approvedBy because questions assigned to creator come from processor with approvedBy set
+      // Check if question has variants created by creator
+      const questionId = questionIdStr(question.id || question._id);
+      const hasVariants = variantsByParentId.has(questionId) && variantsByParentId.get(questionId).length > 0;
+      
+      // Check if creator has submitted/approved the question
+      // Variants are automatically approved by creator when created (status pending_processor)
+      // Parent questions with variants are also approved by creator
+      // Questions submitted back to processor (status pending_processor with approvedBy) are also approved
+      const isVariantQuestion = isVariant && question.status === 'pending_processor' && !isFlagged;
+      const isParentWithVariants = hasVariants && question.status === 'pending_processor' && !isFlagged;
       const isSubmittedByCreator = question.status === 'pending_processor' && 
                                    !isFlagged && 
-                                   (question.approvedBy || question.originalData?.approvedBy); // Has approvedBy means it was assigned to creator before
+                                   (question.approvedBy || question.originalData?.approvedBy);
       
-      // Get status - priority: Flag > Approved (if submitted by creator) > In Review (pending_explainer) > Original status
+      // Get status - priority: Flag > Approved (if variant, has variants, or submitted by creator) > In Review (pending_explainer) > Original status
       let status;
       if (isFlagged) {
         status = 'Flag';
-      } else if (isSubmittedByCreator) {
+      } else if (isVariantQuestion || isParentWithVariants || isSubmittedByCreator) {
+        // Variant questions are approved by creator, parent questions with variants are approved, or questions submitted by creator
         status = 'Approved';
       } else if (question.status === 'pending_explainer') {
         status = 'In Review'; // Show as "In Review" when with explainer
@@ -130,12 +158,13 @@ const AssignedQuestionPage = () => {
         processor: processorName,
         status: status,
         indicators: {
-          approved: isApproved || isSubmittedByCreator, // Show approved indicator if completed or submitted by creator
+          approved: isApproved || isVariantQuestion || isParentWithVariants || isSubmittedByCreator, // Show approved indicator if completed, variant, has variants, or submitted by creator
           flag: isFlagged,
           reject: isRejected,
           variant: isVariant
         },
         flagReason: question.flagReason || null,
+        rejectionReason: question.rejectionReason || null,
         updatedOn: formatDate(question.updatedAt),
         actionType: question.isVariant ? 'createVariant' : 'open',
         originalData: question // Store original data for navigation
@@ -171,9 +200,19 @@ const AssignedQuestionPage = () => {
         new Map(allQuestions.map(q => [q.id || q._id, q])).values()
       );
       
-      const transformedData = transformQuestionData(uniqueQuestions);
+      // Filter out flagged questions (flagged by creator) - they should not appear until resolved
+      const nonFlaggedQuestions = uniqueQuestions.filter(q => {
+        // Exclude questions that are flagged by creator
+        if (q.isFlagged === true && q.flagType === 'creator') {
+          return false;
+        }
+        return true;
+      });
+      
+      // Pass all questions (including variants) to transformQuestionData for variant detection
+      const transformedData = transformQuestionData(nonFlaggedQuestions, allQuestions);
       setAllQuestionsData(transformedData);
-      setTotalQuestions(uniqueQuestions.length);
+      setTotalQuestions(nonFlaggedQuestions.length);
       // Apply filters to the data
       applyFilters(transformedData);
     } catch (err) {
@@ -298,6 +337,16 @@ const AssignedQuestionPage = () => {
     setSelectedFlagReason("");
   };
 
+  const handleShowRejectionReason = (rejectionReason) => {
+    setSelectedRejectionReason(rejectionReason || "");
+    setIsRejectionModalOpen(true);
+  };
+
+  const handleCloseRejectionModal = () => {
+    setIsRejectionModalOpen(false);
+    setSelectedRejectionReason("");
+  };
+
   const subjectOptions = ["Subject", "Mathematics", "Physics", "Chemistry", "Biology"];
   const subtopicOptions = ["Status", "Approved", "Failed", "Reject", "Flag"];
 
@@ -362,6 +411,7 @@ const AssignedQuestionPage = () => {
           }}
           emptyMessage={t("creator.assignedQuestionPage.emptyMessage")}
           onShowFlagReason={handleShowFlagReason}
+          onShowRejectionReason={handleShowRejectionReason}
         />
       )}
 
@@ -389,6 +439,36 @@ const AssignedQuestionPage = () => {
                 className="flex-1 font-roboto px-4 py-3 border-[0.5px] text-base font-normal border-[#032746] rounded-lg text-blue-dark hover:bg-gray-50 transition-colors"
               >
                 {t("creator.assignedQuestionPage.flagReasonModal.close")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rejection Reason Modal */}
+      {isRejectionModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white rounded-lg shadow-xl max-w-[600px] w-full p-8">
+            <h2 className="text-[24px] leading-[100%] font-bold text-oxford-blue mb-2">
+              {t("creator.assignedQuestionPage.rejectionReasonModal.title")}
+            </h2>
+            <p className="text-[16px] leading-[100%] font-normal text-dark-gray mb-6">
+              {t("creator.assignedQuestionPage.rejectionReasonModal.subtitle")}
+            </p>
+            <div className="mb-6">
+              <label className="block text-[16px] leading-[100%] font-roboto font-normal text-oxford-blue mb-2">
+                {t("creator.assignedQuestionPage.rejectionReasonModal.reasonLabel")}
+              </label>
+              <div className="w-full min-h-[120px] rounded-[8px] border border-[#03274633] bg-white px-4 py-3 font-roboto text-[16px] leading-[20px] text-oxford-blue">
+                {selectedRejectionReason || t("creator.assignedQuestionPage.rejectionReasonModal.noReason")}
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={handleCloseRejectionModal}
+                className="flex-1 font-roboto px-4 py-3 border-[0.5px] text-base font-normal border-[#032746] rounded-lg text-blue-dark hover:bg-gray-50 transition-colors"
+              >
+                {t("creator.assignedQuestionPage.rejectionReasonModal.close")}
               </button>
             </div>
           </div>

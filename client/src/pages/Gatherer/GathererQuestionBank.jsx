@@ -21,6 +21,8 @@ const GathererQuestionBank = () => {
   const [loading, setLoading] = useState(true);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [statusFilter, setStatusFilter] = useState(""); // Empty string means "all"
+  const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
+  const [selectedRejectionReason, setSelectedRejectionReason] = useState("");
   const [stats, setStats] = useState([
     { label: t("gatherer.questionBank.stats.questionAdded"), value: 0, color: "blue" },
     { label: t("gatherer.questionBank.stats.pendingReview"), value: 0, color: "red" },
@@ -37,6 +39,7 @@ const GathererQuestionBank = () => {
     { key: "processor", label: t("gatherer.questionBank.table.processor") },
     { key: "lastUpdate", label: t("gatherer.questionBank.table.lastUpdate") },
     { key: "status", label: t("gatherer.questionBank.table.status") },
+    { key: "indicators", label: t("gatherer.questionBank.table.indicators") || "Indicators" },
     { key: "actions", label: t("gatherer.questionBank.table.actions") },
   ], [t]);
   
@@ -107,12 +110,20 @@ const GathererQuestionBank = () => {
                                   question.assignedProcessor?.username || 
                                   "—";
             console.log('Question ID:', question.id, 'Processor:', processorName, 'assignedProcessor object:', question.assignedProcessor);
+            const isRejected = question.status === 'rejected';
+            const isFlagged = question.isFlagged === true;
             return {
               id: question.id,
               questionTitle: question.questionText?.substring(0, 50) + (question.questionText?.length > 50 ? "..." : "") || "—",
               processor: processorName,
               lastUpdate: formatDate(question.updatedAt || question.createdAt),
               status: formatStatus(question.status, question.isFlagged),
+              indicators: {
+                reject: isRejected,
+                flag: isFlagged,
+              },
+              rejectionReason: question.rejectionReason || null,
+              flagReason: question.flagReason || null,
               actionType: question.isFlagged ? "editicon" : "viewicon",
               originalData: question, // Store full question data for edit page
             };
@@ -180,6 +191,16 @@ const GathererQuestionBank = () => {
 
   const handleCustomAction = useCallback((item) => {
     console.log("Custom action for item:", item);
+  }, []);
+
+  const handleShowRejectionReason = useCallback((rejectionReason) => {
+    setSelectedRejectionReason(rejectionReason || "");
+    setIsRejectionModalOpen(true);
+  }, []);
+
+  const handleCloseRejectionModal = useCallback(() => {
+    setIsRejectionModalOpen(false);
+    setSelectedRejectionReason("");
   }, []);
 
   const feedbackData = useMemo(() => ({}), []);
@@ -283,6 +304,7 @@ const GathererQuestionBank = () => {
               onEdit={handleEdit}
               onCustomAction={handleCustomAction}
               emptyMessage={t("gatherer.questionBank.emptyMessage")}
+              onShowRejectionReason={handleShowRejectionReason}
             />
           {/* )} */}
         </div>
@@ -347,6 +369,36 @@ const GathererQuestionBank = () => {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleSubmit}
       />
+
+      {/* Rejection Reason Modal */}
+      {isRejectionModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white rounded-lg shadow-xl max-w-[600px] w-full p-8">
+            <h2 className="text-[24px] leading-[100%] font-bold text-oxford-blue mb-2">
+              {t("gatherer.questionBank.rejectionReasonModal.title") || "Rejection Reason"}
+            </h2>
+            <p className="text-[16px] leading-[100%] font-normal text-dark-gray mb-6">
+              {t("gatherer.questionBank.rejectionReasonModal.subtitle") || "The question was rejected with the following reason:"}
+            </p>
+            <div className="mb-6">
+              <label className="block text-[16px] leading-[100%] font-roboto font-normal text-oxford-blue mb-2">
+                {t("gatherer.questionBank.rejectionReasonModal.reasonLabel") || "Reason"}
+              </label>
+              <div className="w-full min-h-[120px] rounded-[8px] border border-[#03274633] bg-white px-4 py-3 font-roboto text-[16px] leading-[20px] text-oxford-blue">
+                {selectedRejectionReason || t("gatherer.questionBank.rejectionReasonModal.noReason") || "No reason provided"}
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={handleCloseRejectionModal}
+                className="flex-1 font-roboto px-4 py-3 border-[0.5px] text-base font-normal border-[#032746] rounded-lg text-blue-dark hover:bg-gray-50 transition-colors"
+              >
+                {t("gatherer.questionBank.rejectionReasonModal.close") || "Close"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -105,6 +105,11 @@ const getQuestionsByStatus = async (status, userId, role) => {
     where.createdById = userId;
   }
   
+  // Processor can only see questions assigned to them
+  if (role === 'processor') {
+    where.assignedProcessorId = userId;
+  }
+  
   // Creator can only see questions assigned to them
   if (role === 'creator') {
     where.assignedCreatorId = userId;
@@ -226,14 +231,23 @@ const getQuestionsByStatus = async (status, userId, role) => {
 /**
  * Get questions by status and filter by submitter role
  * Used by processor to see submissions from specific roles (creator, explainer, gatherer)
+ * @param {string} status - Question status
+ * @param {string} submittedByRole - Role that submitted the question (gatherer, creator, explainer)
+ * @param {string} processorId - ID of the processor (to filter by assignedProcessorId)
  */
-const getQuestionsByStatusAndRole = async (status, submittedByRole) => {
+const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId = null) => {
   const { prisma } = require('../../../config/db/prisma');
   
   // Build where clause with status and role filtering
   const where = {
     status: status
   };
+  
+  // CRITICAL: Filter by assignedProcessorId if processorId is provided
+  // This ensures processors only see questions assigned to them
+  if (processorId) {
+    where.assignedProcessorId = processorId;
+  }
   
   // Get user IDs with the specified role (needed for filtering)
   let userIdsWithRole = [];
@@ -327,23 +341,8 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole) => {
         }
       });
       
-      // Also include questions flagged by creator (they have status pending_processor but are flagged)
-      roleConditions.push({
-        AND: [
-          {
-            isFlagged: true
-          },
-          {
-            flagType: 'creator'
-          },
-          {
-            OR: [
-              { flagStatus: 'pending' },
-              { flagStatus: null }
-            ]
-          }
-        ]
-      });
+      // Note: Excluding flagged questions from creator's view until they're resolved and come back
+      // Flagged questions will only appear again when they're back in pending_creator status without the flag
       
       // Include questions in pending_explainer or completed that have approvedBy
       // These went through creator workflow, then processor approved and sent to explainer
@@ -420,6 +419,18 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole) => {
           OR: roleConditions
         }
       ];
+      
+      // For creator: exclude questions flagged by creator until they're resolved and come back
+      if (submittedByRole === 'creator') {
+        where.AND.push({
+          NOT: {
+            AND: [
+              { isFlagged: true },
+              { flagType: 'creator' }
+            ]
+          }
+        });
+      }
     } else {
       // If no role conditions found, return empty result
       return [];
@@ -656,7 +667,7 @@ const createQuestionVariant = async (originalQuestionId, variantData, userId) =>
     assignedProcessor: assignedProcessorId, // Required field - inherit from original question
     assignedCreator: assignedCreatorId, // Copy from original question
     assignedExplainer: assignedExplainerId, // Copy from original question
-    status: 'pending_processor',
+    status: 'pending_processor', // Variant approved by creator, now pending processor review
     history: [
       {
         action: 'variant_created',
@@ -664,6 +675,13 @@ const createQuestionVariant = async (originalQuestionId, variantData, userId) =>
         role: 'creator',
         timestamp: new Date(),
         notes: `Variant created from question ${originalQuestionId}`,
+      },
+      {
+        action: 'approved',
+        performedBy: userId,
+        role: 'creator',
+        timestamp: new Date(),
+        notes: 'Variant approved by creator',
       },
     ],
   });
@@ -710,6 +728,13 @@ const getQuestionById = async (questionId, userId, role) => {
   // Gatherer can only access their own questions
   if (role === 'gatherer' && question.createdById !== userId) {
     throw new Error('Access denied');
+  }
+  
+  // Processor can only see questions assigned to them
+  if (role === 'processor') {
+    if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+      throw new Error('Access denied. This question is not assigned to you.');
+    }
   }
   
   // Creator can only see questions assigned to them
@@ -1092,6 +1117,12 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
     throw new Error('Question is not in pending_processor status');
   }
 
+  // CRITICAL: Ensure the processor is the assigned processor
+  // The question must be assigned to this processor throughout the workflow
+  if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+    throw new Error('Access denied. This question is not assigned to you.');
+  }
+
   // Check if question was updated after a flag was approved
   const wasUpdatedAfterFlag = question.isFlagged && 
     question.flagStatus === 'approved' && 
@@ -1325,6 +1356,12 @@ const rejectQuestion = async (questionId, rejectionReason, userId) => {
 
   if (question.status !== 'pending_processor') {
     throw new Error('Question is not in pending_processor status');
+  }
+
+  // CRITICAL: Ensure the processor is the assigned processor
+  // The question must be assigned to this processor throughout the workflow
+  if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+    throw new Error('Access denied. This question is not assigned to you.');
   }
 
   const finalRejectionReason = rejectionReason || 'No reason provided';
@@ -1699,6 +1736,11 @@ const reviewCreatorFlag = async (questionId, decision, rejectionReason, userId) 
     throw new Error('Question not found');
   }
 
+  // CRITICAL: Ensure the processor is the assigned processor
+  if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+    throw new Error('Access denied. This question is not assigned to you.');
+  }
+
   if (!question.isFlagged || question.flagType !== 'creator' || question.flagStatus !== 'pending') {
     throw new Error('Question is not flagged by creator or flag has already been reviewed');
   }
@@ -1796,6 +1838,11 @@ const reviewExplainerFlag = async (questionId, decision, rejectionReason, userId
     throw new Error('Question not found');
   }
 
+  // CRITICAL: Ensure the processor is the assigned processor
+  if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+    throw new Error('Access denied. This question is not assigned to you.');
+  }
+
   if (!question.isFlagged || question.flagType !== 'explainer' || question.flagStatus !== 'pending') {
     throw new Error('Question is not flagged by explainer or flag has already been reviewed');
   }
@@ -1885,12 +1932,18 @@ const handleGathererUpdateAfterFlag = async (questionId, updateData, userId) => 
   const prismaUpdateData = {
     lastModifiedBy: userId,
     status: 'pending_processor', // Send back to processor for review
+    // Resolve the flag when gatherer updates the question
+    isFlagged: false,
+    flagStatus: null,
+    flaggedBy: null,
+    flagReason: null,
+    flagReviewedBy: null,
     history: [{
       action: 'updated',
       performedBy: userId,
       role: 'gatherer',
       timestamp: new Date(),
-      notes: 'Question updated by gatherer after creator flag approval',
+      notes: 'Question updated by gatherer after creator flag approval. Flag resolved and sent to processor for review.',
     }],
   };
 
@@ -1948,12 +2001,18 @@ const handleCreatorUpdateVariantAfterFlag = async (questionId, updateData, userI
   const prismaUpdateData = {
     lastModifiedBy: userId,
     status: 'pending_processor', // Send back to processor for review
+    // Resolve the flag when creator updates the variant
+    isFlagged: false,
+    flagStatus: null,
+    flaggedBy: null,
+    flagReason: null,
+    flagReviewedBy: null,
     history: [{
       action: 'updated',
       performedBy: userId,
       role: 'creator',
       timestamp: new Date(),
-      notes: 'Question variant updated by creator after explainer flag approval',
+      notes: 'Question variant updated by creator after flag approval. Flag resolved and sent to processor for review.',
     }],
   };
 
@@ -2009,12 +2068,18 @@ const handleGathererUpdateAfterExplainerFlag = async (questionId, updateData, us
   const prismaUpdateData = {
     lastModifiedBy: userId,
     status: 'pending_processor', // Send back to processor for review
+    // Resolve the flag when gatherer updates the question
+    isFlagged: false,
+    flagStatus: null,
+    flaggedBy: null,
+    flagReason: null,
+    flagReviewedBy: null,
     history: [{
       action: 'updated',
       performedBy: userId,
       role: 'gatherer',
       timestamp: new Date(),
-      notes: 'Question updated by gatherer after explainer flag approval',
+      notes: 'Question updated by gatherer after explainer flag approval. Flag resolved and sent to processor for review.',
     }],
   };
 
@@ -2346,6 +2411,11 @@ const rejectGathererFlagRejection = async (questionId, rejectionReason, userId) 
 
   if (!question) {
     throw new Error('Question not found');
+  }
+
+  // CRITICAL: Ensure the processor is the assigned processor
+  if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+    throw new Error('Access denied. This question is not assigned to you.');
   }
 
   if (!question.flagRejectionReason || question.flagRejectionReason.trim() === '') {

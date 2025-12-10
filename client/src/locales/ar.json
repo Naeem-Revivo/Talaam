@@ -1649,6 +1649,8 @@
         "active": "نشط",
         "inactive": "غير نشط"
       },
+      "loading": "جاري تحميل الخطط...",
+      "retry": "إعادة المحاولة",
       "table": {
         "columns": {
           "planName": "اسم الخطة",
@@ -1666,10 +1668,13 @@
     "addNewPlan": {
       "hero": {
         "title": "إضافة خطط جديدة",
-        "subtitle": "إدارة الخطط المتاحة وأسعارها"
+        "subtitle": "إدارة الخطط المتاحة وأسعارها",
+        "editTitle": "تعديل الخطة",
+        "editSubtitle": "تحديث تفاصيل الخطة وأسعارها"
       },
       "sections": {
-        "addNewPlan": "إضافة خطة جديدة"
+        "addNewPlan": "إضافة خطة جديدة",
+        "editPlan": "تعديل الخطة"
       },
       "fields": {
         "planName": "اسم الخطة",
@@ -1689,11 +1694,14 @@
         "inactive": "غير نشط",
         "monthly": "شهري",
         "quarterly": "ربع سنوي",
+        "semiAnnual": "نصف سنوي",
+        "annual": "سنوي",
         "yearly": "سنوي"
       },
       "buttons": {
         "cancel": "إلغاء",
-        "save": "حفظ"
+        "save": "حفظ",
+        "update": "تحديث"
       }
     },
     "paymentHistory": {
@@ -2785,6 +2793,7 @@
       "reviewFeedback": "ملاحظات المراجعة",
       "workflowProgress": "تقدم سير العمل",
       "recentActivity": "النشاط الأخير",
+      "noActivity": "لا يوجد نشاط حديث",
       "workflowSteps": {
         "gatherer": "المجمع",
         "processor": "المعالج",
@@ -2812,6 +2821,7 @@
         "processor": "المعالج",
         "lastUpdate": "آخر تحديث",
         "status": "الحالة",
+        "indicators": "المؤشرات",
         "actions": "الإجراءات"
       },
       "emptyMessage": "لم يتم العثور على أسئلة"
@@ -3396,15 +3406,20 @@
       "flagReasonDescription": "قام المنشئ بالإبلاغ عن هذا السؤال للأسباب التالية:",
       "flagReasonDescriptionExplainer": "قام المشرح بالإبلاغ عن هذا السؤال للأسباب التالية:",
       "rejectFlagReason": "رفض سبب الإبلاغ",
-      "rejectFlagReasonDescription": "يرجى تقديم سبب لرفض إبلاغ المنشئ. سيتم إرسال السؤال مرة أخرى إلى المنشئ.",
-      "rejectFlagReasonDescriptionExplainer": "يرجى تقديم سبب لرفض إبلاغ المشرح. سيتم إرسال السؤال مرة أخرى إلى المشرح.",
+      "rejectFlagReasonDescription": "يرجى تقديم سبب لرفض إبلاغ المنشئ. سيتم حل الإبلاغ وسيتم إرسال السؤال مرة أخرى إلى المنشئ.",
+      "rejectFlagReasonDescriptionExplainer": "يرجى تقديم سبب لرفض إبلاغ المشرح. سيتم حل الإبلاغ وسيتم إرسال السؤال مرة أخرى إلى المشرح.",
       "rejectFlagReasonPlaceholder": "أدخل سبب رفض الإبلاغ...",
       "confirmRejectFlag": "رفض سبب الإبلاغ",
       "gathererFlagRejection": "رفض المجمع للإبلاغ",
       "gathererFlagRejectionDescription": "رفض المجمع الإبلاغ للأسباب التالية:",
       "acceptGathererRejection": "قبول رفض المجمع",
       "rejectGathererRejection": "رفض رفض المجمع",
-      "rejectGathererRejectionDescription": "يرجى تقديم سبب لرفض رفض المجمع للإبلاغ. سيتم استعادة الإبلاغ وسيتم إرسال السؤال مرة أخرى إلى المجمع."
+      "rejectGathererRejectionDescription": "يرجى تقديم سبب لرفض رفض المجمع للإبلاغ. سيتم استعادة الإبلاغ وسيتم إرسال السؤال مرة أخرى إلى المجمع.",
+      "parentQuestionReference": "مرجع السؤال الأصلي",
+      "parentQuestionDescription": "ينتمي هذا المتغير إلى السؤال الأصلي التالي:",
+      "parentQuestionLabel": "السؤال",
+      "parentOptionsLabel": "الخيارات",
+      "parentCorrectAnswerLabel": "الإجابة الصحيحة"
     },
     "profile": {
       "title": "إعدادات الحساب",

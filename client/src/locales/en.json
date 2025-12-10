@@ -1639,6 +1639,8 @@
         "active": "Active",
         "inactive": "Inactive"
       },
+      "loading": "Loading plans...",
+      "retry": "Retry",
       "table": {
         "columns": {
           "planName": "PLAN NAME",
@@ -1656,10 +1658,13 @@
     "addNewPlan": {
       "hero": {
         "title": "Add New Plans",
-        "subtitle": "Manage available plans and their pricing"
+        "subtitle": "Manage available plans and their pricing",
+        "editTitle": "Edit Plan",
+        "editSubtitle": "Update plan details and pricing"
       },
       "sections": {
-        "addNewPlan": "Add New Plan"
+        "addNewPlan": "Add New Plan",
+        "editPlan": "Edit Plan"
       },
       "fields": {
         "planName": "Plan Name",
@@ -1679,11 +1684,14 @@
         "inactive": "Inactive",
         "monthly": "Monthly",
         "quarterly": "Quarterly",
+        "semiAnnual": "Semi-Annual",
+        "annual": "Annual",
         "yearly": "Yearly"
       },
       "buttons": {
         "cancel": "Cancel",
-        "save": "Save"
+        "save": "Save",
+        "update": "Update"
       }
     },
     "paymentHistory": {
@@ -2775,6 +2783,7 @@
       "reviewFeedback": "Review Feedback",
       "workflowProgress": "Workflow Progress",
       "recentActivity": "Recent Activity",
+      "noActivity": "No recent activity",
       "workflowSteps": {
         "gatherer": "Gatherer",
         "processor": "Processor",
@@ -2802,6 +2811,7 @@
         "processor": "PROCESSOR",
         "lastUpdate": "LAST UPDATE",
         "status": "STATUS",
+        "indicators": "INDICATORS",
         "actions": "ACTIONS"
       },
       "emptyMessage": "No questions found"
@@ -3009,6 +3019,14 @@
         "noReason": "No reason provided",
         "close": "Close"
       },
+      "rejectionReasonModal": {
+        "title": "Rejection Reason",
+        "subtitle": "The question was rejected with the following reason:",
+        "reasonLabel": "Reason for Rejection",
+        "noReason": "No reason provided",
+        "close": "Close"
+      },
+      "rejectionReasonButton": "View Rejection Reason",
       "emptyMessage": "No questions found"
     },
     "completedQuestionPage": {
@@ -3386,15 +3404,20 @@
       "flagReasonDescription": "The creator has flagged this question with the following reason:",
       "flagReasonDescriptionExplainer": "The explainer has flagged this question with the following reason:",
       "rejectFlagReason": "Reject Flag Reason",
-      "rejectFlagReasonDescription": "Please provide a reason for rejecting the creator's flag. The question will be sent back to the creator.",
-      "rejectFlagReasonDescriptionExplainer": "Please provide a reason for rejecting the explainer's flag. The question will be sent back to the explainer.",
+      "rejectFlagReasonDescription": "Please provide a reason for rejecting the creator's flag. The flag will be resolved and the question will be sent back to the creator.",
+      "rejectFlagReasonDescriptionExplainer": "Please provide a reason for rejecting the explainer's flag. The flag will be resolved and the question will be sent back to the explainer.",
       "rejectFlagReasonPlaceholder": "Enter reason for rejecting the flag...",
       "confirmRejectFlag": "Reject Flag Reason",
       "gathererFlagRejection": "Gatherer's Flag Rejection",
       "gathererFlagRejectionDescription": "The gatherer has rejected the flag with the following reason:",
       "acceptGathererRejection": "Accept Gatherer's Rejection",
       "rejectGathererRejection": "Reject Gatherer's Rejection",
-      "rejectGathererRejectionDescription": "Please provide a reason for rejecting the gatherer's flag rejection. The flag will be restored and the question will be sent back to the gatherer."
+      "rejectGathererRejectionDescription": "Please provide a reason for rejecting the gatherer's flag rejection. The flag will be restored and the question will be sent back to the gatherer.",
+      "parentQuestionReference": "Parent Question Reference",
+      "parentQuestionDescription": "This variant belongs to the following parent question:",
+      "parentQuestionLabel": "Question",
+      "parentOptionsLabel": "Options",
+      "parentCorrectAnswerLabel": "Correct Answer"
     },
     "profile": {
       "title": "Account Settings",

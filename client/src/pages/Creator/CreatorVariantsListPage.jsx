@@ -268,10 +268,12 @@ const CreatorVariantsListPage = () => {
                                   ).join(' ');
                                 };
 
+                                const isRejected = variant.status === 'rejected' && variant.rejectionReason;
+
                                 return (
                                   <div
                                     key={variant.id || index}
-                                    className="p-4 rounded-[8px] border border-[#E5E7EB] bg-white hover:border-[#ED4122] transition-colors cursor-pointer"
+                                    className={`p-4 rounded-[8px] border ${isRejected ? 'border-[#ED4122] bg-[#FEF2F2]' : 'border-[#E5E7EB] bg-white'} hover:border-[#ED4122] transition-colors cursor-pointer`}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleVariantClick(variant);
@@ -283,9 +285,16 @@ const CreatorVariantsListPage = () => {
                                           className="font-roboto text-[14px] font-normal text-oxford-blue mb-2"
                                           dangerouslySetInnerHTML={{ __html: getQuestionTitle(variant.questionText) }}
                                         />
-                                        <span className="font-roboto text-[12px] text-dark-gray">
-                                          Status: {formatStatus(variant.status)}
-                                        </span>
+                                        <div className="flex flex-col gap-1">
+                                          <span className={`font-roboto text-[12px] ${isRejected ? 'text-[#ED4122] font-semibold' : 'text-dark-gray'}`}>
+                                            Status: {formatStatus(variant.status)}
+                                          </span>
+                                          {isRejected && variant.rejectionReason && (
+                                            <span className="font-roboto text-[11px] text-dark-gray line-clamp-2">
+                                              Reason: {variant.rejectionReason.length > 80 ? variant.rejectionReason.substring(0, 80) + '...' : variant.rejectionReason}
+                                            </span>
+                                          )}
+                                        </div>
                                       </div>
                                       <svg
                                         width="20"
