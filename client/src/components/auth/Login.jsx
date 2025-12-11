@@ -104,7 +104,11 @@ const Login = () => {
 
     try {
       const resultAction = await dispatch(
-        login({ email: formData.email, password: formData.password })
+        login({ 
+          email: formData.email, 
+          password: formData.password,
+          rememberMe: rememberMe 
+        })
       )
 
       if (login.fulfilled.match(resultAction)) {

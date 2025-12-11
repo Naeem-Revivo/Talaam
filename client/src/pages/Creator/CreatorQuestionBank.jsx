@@ -91,6 +91,8 @@ const CreatorQuestionBank = () => {
   const transformQuestionData = (questions, allQuestions = []) => {
     const questionIdStr = (id) => String(id || '');
     const variantsByParentId = new Map();
+    const processedQuestionIds = new Set();
+    const result = [];
     
     // Build map of variants by parent question ID
     allQuestions.forEach((q) => {
@@ -107,7 +109,8 @@ const CreatorQuestionBank = () => {
       }
     });
 
-    return questions.map((question) => {
+    // Process all questions (including variants) to show both original and variants
+    questions.forEach((question) => {
       const processorName = question.approvedBy?.name || question.assignedProcessor?.name || "—";
       const subjectName = question.subject?.name || "—";
       
@@ -142,7 +145,7 @@ const CreatorQuestionBank = () => {
             : question.questionText)
         : "—";
 
-      return {
+      const questionData = {
         id: question.id,
         questionTitle: questionTitle,
         subject: subjectName,
@@ -160,7 +163,65 @@ const CreatorQuestionBank = () => {
         actionType: question.isVariant ? 'createVariant' : 'open',
         originalData: question
       };
+      
+      result.push(questionData);
+      processedQuestionIds.add(questionIdStr(question.id || question._id));
     });
+
+    // Also include variants that might not be in the questions array
+    // This ensures both original questions and their variants are shown
+    allQuestions.forEach((q) => {
+      const isVariant = q.isVariant === true || q.isVariant === 'true';
+      if (isVariant) {
+        const variantId = questionIdStr(q.id || q._id);
+        // Only add if not already processed
+        if (!processedQuestionIds.has(variantId)) {
+          const processorName = q.approvedBy?.name || q.assignedProcessor?.name || "—";
+          const subjectName = q.subject?.name || "—";
+          const isFlagged = q.isFlagged === true;
+          const isRejected = q.status === 'rejected';
+          const isVariantQuestion = q.status === 'pending_processor' && !isFlagged;
+          
+          let status;
+          if (isFlagged) {
+            status = 'Flag';
+          } else if (isVariantQuestion) {
+            status = 'Approved';
+          } else if (q.status === 'pending_explainer') {
+            status = 'In Review';
+          } else {
+            status = formatStatus(q.status);
+          }
+          
+          const questionTitle = q.questionText 
+            ? (q.questionText.length > 50 
+                ? q.questionText.substring(0, 50) + "..." 
+                : q.questionText)
+            : "—";
+
+          result.push({
+            id: q.id,
+            questionTitle: questionTitle,
+            subject: subjectName,
+            processor: processorName,
+            status: status,
+            indicators: {
+              approved: isVariantQuestion || q.status === 'completed',
+              flag: isFlagged,
+              reject: isRejected,
+              variant: true
+            },
+            flagReason: q.flagReason || null,
+            rejectionReason: q.rejectionReason || null,
+            updatedOn: formatDate(q.updatedAt),
+            actionType: 'createVariant',
+            originalData: q
+          });
+        }
+      }
+    });
+
+    return result;
   };
 
   // Calculate stats from questions

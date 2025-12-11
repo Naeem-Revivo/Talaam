@@ -95,25 +95,25 @@ const MoyassarPaymentPage = () => {
     try {
       setIsProcessing(true);
       setLoading(true);
-      console.log('Finding Taalam plan...');
+      console.log('Finding active plan...');
+      // Fetch all plans (students will only see active plans from backend)
+      // The backend automatically filters to show only active plans for non-superadmin users
       const response = await plansAPI.getAllPlans();
       console.log('Plans response:', response);
-      if (response.success && response.data?.plans) {
-        // Find plan with name containing "Taalam" or "Moyassar"
-        const taalamPlan = response.data.plans.find(
-          (p) => p.name.toLowerCase().includes('taalam') || 
-                 p.name.toLowerCase().includes('moyassar')
-        );
-        console.log('Found Taalam plan:', taalamPlan);
-        if (taalamPlan) {
-          await loadPlanAndCreateSubscription(taalamPlan.id);
+      if (response.success && response.data?.plans && response.data.plans.length > 0) {
+        // Get the first active plan (or you could sort by price/date and get the first one)
+        // Since students can only see active plans, we'll use the first available active plan
+        const activePlan = response.data.plans[0];
+        console.log('Found active plan:', activePlan);
+        if (activePlan) {
+          await loadPlanAndCreateSubscription(activePlan.id);
         } else {
-          console.error('Taalam plan not found in plans:', response.data.plans);
-          showErrorToast('Taalam plan not found. Please contact support.');
+          console.error('No active plan found in plans:', response.data.plans);
+          showErrorToast('No active subscription plan found. Please contact support.');
         }
       } else {
-        console.error('Failed to get plans:', response);
-        showErrorToast('Failed to load plans. Please try again.');
+        console.error('Failed to get plans or no plans available:', response);
+        showErrorToast('No subscription plans available. Please contact support.');
       }
     } catch (error) {
       console.error('Error finding plan:', error);

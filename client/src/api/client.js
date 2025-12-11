@@ -15,9 +15,14 @@ const axiosClient = axios.create({
 });
 
 // Request interceptor to add auth token
+// Check both localStorage (remember me) and sessionStorage (session-only)
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    // Check localStorage first (remember me), then sessionStorage (session-only)
+    let token = localStorage.getItem('authToken');
+    if (!token) {
+      token = sessionStorage.getItem('authToken');
+    }
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -49,8 +54,12 @@ axiosClient.interceptors.response.use(
         // Handle unauthorized error, e.g., redirect to login
         // Skip toast for auth/admin endpoints - handled by components
         if (!shouldSkipToast) {
+          // Clear from both storages
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');
+          localStorage.removeItem('rememberMe');
+          sessionStorage.removeItem('authToken');
+          sessionStorage.removeItem('user');
           
           showLogoutToast('Your session has expired. Please login again.');
           

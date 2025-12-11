@@ -2,18 +2,29 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authAPI from '../../api/auth';
 
-// Load initial state from localStorage
+// Load initial state from localStorage or sessionStorage
+// Check both storages - localStorage for "remember me", sessionStorage for session-only
 const getAuthFromStorage = () => {
   try {
-    const token = localStorage.getItem('authToken');
-    const user = localStorage.getItem('user');
+    // Check localStorage first (remember me)
+    let token = localStorage.getItem('authToken');
+    let user = localStorage.getItem('user');
+    let rememberMe = localStorage.getItem('rememberMe') === 'true';
+    
+    // If not in localStorage, check sessionStorage (session-only)
+    if (!token) {
+      token = sessionStorage.getItem('authToken');
+      user = sessionStorage.getItem('user');
+    }
+    
     return {
       user: user ? JSON.parse(user) : null,
       token: token || null,
       isAuthenticated: !!token,
+      rememberMe: rememberMe,
     };
   } catch {
-    return { user: null, token: null, isAuthenticated: false };
+    return { user: null, token: null, isAuthenticated: false, rememberMe: false };
   }
 };
 
@@ -31,12 +42,17 @@ export const signup = createAsyncThunk(
 );
 
 // Async thunk for login
+// credentials: { email, password, rememberMe }
 export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      const data = await authAPI.login(credentials);
-      return data;
+      // Extract rememberMe from credentials, pass only email/password to API
+      const { rememberMe, ...loginCredentials } = credentials;
+      const data = await authAPI.login(loginCredentials);
+      
+      // Attach rememberMe to the response so we can use it in the reducer
+      return { ...data, rememberMe: rememberMe || false };
     } catch (error) {
       return rejectWithValue(error.message || 'Login failed');
     }
@@ -121,11 +137,14 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
+// Get initial auth state from storage
+const initialAuthState = getAuthFromStorage();
+
 // Create the slice
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    ...getAuthFromStorage(),
+    ...initialAuthState,
     loading: false,
     error: null,
     success: false,
@@ -138,13 +157,17 @@ const authSlice = createSlice({
       state.token = token;
       state.isAuthenticated = true;
     },
-    // Logout action
+    // Logout action - clear from both localStorage and sessionStorage
     logout: (state) => {
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
+      localStorage.removeItem('rememberMe');
+      sessionStorage.removeItem('authToken');
+      sessionStorage.removeItem('user');
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
+      state.rememberMe = false;
       state.error = null;
       state.success = false;
     },
@@ -167,11 +190,15 @@ const authSlice = createSlice({
         const { data } = action.payload || {};
         const token = data?.token || null;
         const user = data?.user || null;
+        // Signup defaults to rememberMe = true (persistent storage)
+        const rememberMe = true;
         
         if (token) {
           localStorage.setItem('authToken', token);
+          localStorage.setItem('rememberMe', 'true');
           state.token = token;
           state.isAuthenticated = true;
+          state.rememberMe = rememberMe;
         }
         if (user) {
           localStorage.setItem('user', JSON.stringify(user));
@@ -194,17 +221,38 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
-        const { data } = action.payload || {};
+        const { data, rememberMe } = action.payload || {};
         const token = data?.token || null;
         const user = data?.user || null;
+        const shouldRemember = rememberMe === true;
         
         if (token) {
-          localStorage.setItem('authToken', token);
+          if (shouldRemember) {
+            // Store in localStorage (persistent)
+            localStorage.setItem('authToken', token);
+            localStorage.setItem('rememberMe', 'true');
+            // Clear from sessionStorage if it exists
+            sessionStorage.removeItem('authToken');
+            sessionStorage.removeItem('user');
+          } else {
+            // Store in sessionStorage (session-only)
+            sessionStorage.setItem('authToken', token);
+            // Clear from localStorage if it exists
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('rememberMe');
+          }
           state.token = token;
           state.isAuthenticated = true;
+          state.rememberMe = shouldRemember;
         }
         if (user) {
-          localStorage.setItem('user', JSON.stringify(user));
+          if (shouldRemember) {
+            localStorage.setItem('user', JSON.stringify(user));
+            sessionStorage.removeItem('user');
+          } else {
+            sessionStorage.setItem('user', JSON.stringify(user));
+            localStorage.removeItem('user');
+          }
           state.user = user;
         }
         state.error = null;
@@ -260,14 +308,20 @@ const authSlice = createSlice({
         const { data } = action.payload || {};
         const token = data?.token || null;
         const user = data?.user || null;
+        // OTP verification defaults to rememberMe = true (persistent storage)
+        const rememberMe = true;
         
         if (token) {
           localStorage.setItem('authToken', token);
+          localStorage.setItem('rememberMe', 'true');
+          sessionStorage.removeItem('authToken');
           state.token = token;
           state.isAuthenticated = true;
+          state.rememberMe = rememberMe;
         }
         if (user) {
           localStorage.setItem('user', JSON.stringify(user));
+          sessionStorage.removeItem('user');
           state.user = user;
         }
         state.success = true;

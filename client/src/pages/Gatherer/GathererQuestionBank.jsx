@@ -107,14 +107,19 @@ const GathererQuestionBank = () => {
           console.log('All questions from API:', questions.length);
           
           // Apply status filter if selected
-          if (statusFilter === 'rejected') {
-            questions = questions.filter(q => q.status === 'rejected');
-          } else if (statusFilter === 'flagged') {
+          if (statusFilter && statusFilter !== '') {
+            if (statusFilter === 'flagged') {
+              // Filter for flagged questions (isFlagged = true and flagStatus = 'approved')
             questions = questions.filter(q => {
               const flagStatus = q.flagStatus;
               return q.isFlagged === true && flagStatus === 'approved';
             });
+            } else {
+              // Filter by status for other statuses
+              questions = questions.filter(q => q.status === statusFilter);
+            }
           }
+          // If statusFilter is empty string, show all questions (no filtering)
           
           console.log('Questions after filter:', questions.length);
           
@@ -271,7 +276,7 @@ const GathererQuestionBank = () => {
   }, []);
 
   const statusFilterOptions = useMemo(() => [
-    { value: "", label: "All Statuses" },
+    { value: "", label: "All" },
     { value: "pending_processor", label: "Pending Review" },
     { value: "pending_creator", label: "Pending Creator" },
     { value: "pending_explainer", label: "Pending Explainer" },
