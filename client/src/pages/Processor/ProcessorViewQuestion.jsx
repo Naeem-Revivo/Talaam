@@ -96,12 +96,19 @@ const ProcessorViewQuestion = () => {
   const [loadingParent, setLoadingParent] = useState(false);
   
   // Check if question was updated after a flag (gatherer updated flagged question)
-  const wasUpdatedAfterFlag = question && 
-                               question.isFlagged === true && 
-                               question.flagStatus === 'approved' &&
+  // This can happen in two scenarios:
+  // 1. Flag is still active (isFlagged === true && flagStatus === 'approved')
+  // 2. Flag was cleared by gatherer update but flagType still exists (isFlagged === false but flagType exists)
+  const hasGathererUpdate = question && 
                                question.history && 
                                Array.isArray(question.history) &&
-                               question.history.some(h => h.role === 'gatherer' && h.action === 'updated');
+                             question.history.some(h => h.role === 'gatherer' && (h.action === 'updated' || h.action === 'update'));
+  
+  const wasUpdatedAfterFlag = question && 
+                               hasGathererUpdate &&
+                               question.flagType &&
+                               ((question.isFlagged === true && question.flagStatus === 'approved') ||
+                                (question.isFlagged === false && (question.flagType === 'creator' || question.flagType === 'student' || question.flagType === 'explainer')));
 
   // Determine if this is from creator submission
   // ONLY use source parameter - don't infer from question properties
@@ -151,14 +158,15 @@ const ProcessorViewQuestion = () => {
   // OR if flagged and flagStatus is not 'pending' (flag already reviewed)
   // OR if from gatherer submission but question has already been approved (moved to next stage)
   // Show buttons if gatherer rejected a flag (has flagRejectionReason) - ALWAYS show buttons for gatherer rejections
+  // Show buttons if gatherer updated after flag (wasUpdatedAfterFlag) - these need processor approval
   // For student flags from admin submission, show buttons even if flagStatus is 'approved' (processor can still review)
   const isStudentFlagFromAdmin = isFromAdminSubmission && flagType === 'student' && question.isFlagged;
   const canProcessQuestion = question && 
                              question.status === 'pending_processor' &&
-                             ((!isFlagged || (isFlagged && (question.flagStatus === 'pending' || (isStudentFlagFromAdmin && question.flagStatus !== 'rejected'))) || gathererRejectedFlag)) &&
-                             // If gatherer rejected flag, always show buttons (needs processor review)
+                             ((!isFlagged || (isFlagged && (question.flagStatus === 'pending' || (isStudentFlagFromAdmin && question.flagStatus !== 'rejected'))) || gathererRejectedFlag || wasUpdatedAfterFlag)) &&
+                             // If gatherer rejected flag or updated after flag, always show buttons (needs processor review)
                              // Otherwise, if from gatherer submission, only show buttons if question hasn't been approved yet
-                             (gathererRejectedFlag || !isFromGathererSubmission || !question.approvedBy);
+                             (gathererRejectedFlag || wasUpdatedAfterFlag || !isFromGathererSubmission || !question.approvedBy);
 
   // Determine next destination based on flag type if updated after flag
   // OR based on source page and question state (which indicates the workflow stage)
@@ -181,6 +189,24 @@ const ProcessorViewQuestion = () => {
     // Check both pending_processor and pending_explainer status (in case status wasn't updated yet)
     if (hasExplanation && (question.status === 'pending_processor' || question.status === 'pending_explainer')) {
       return 'completed';
+    }
+    
+    // CRITICAL: Check if question was actually submitted by creator (regardless of source page)
+    // This ensures correct routing even if question appears in wrong submission page
+    const isVariant = question?.isVariant === true || question?.isVariant === 'true';
+    const hasVariants = question?.variants && Array.isArray(question.variants) && question.variants.length > 0;
+    const hasCreatorHistory = question?.history && Array.isArray(question.history) &&
+      question.history.some(h => h.role === 'creator' && (h.action === 'approved' || h.action === 'variant_created'));
+    const wasModifiedByCreator = question?.lastModifiedById && 
+      question?.history && Array.isArray(question.history) &&
+      question.history.some(h => h.role === 'creator' && h.action === 'updated');
+    const isCreatorSubmitted = question?.status === 'pending_processor' && 
+      question?.approvedById && 
+      wasModifiedByCreator;
+    
+    // If question was submitted by creator (variant, has variants, or creator modified), route to explainer
+    if (isVariant || hasVariants || hasCreatorHistory || wasModifiedByCreator || isCreatorSubmitted) {
+      return 'explainer';
     }
     
     // Use source to determine next destination (more reliable than inferring from question)
