@@ -5,6 +5,7 @@ import paymentAPI from '../api/payment';
 import subscriptionAPI from '../api/subscription';
 import plansAPI from '../api/plans';
 import { showSuccessToast, showErrorToast } from '../utils/toastConfig';
+import Loader from '../components/common/Loader';
 
 const MoyassarPaymentPage = () => {
   const { t } = useLanguage();
@@ -228,14 +229,12 @@ const MoyassarPaymentPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F5F7FB] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ED4122] mx-auto mb-4"></div>
-          <p className="text-oxford-blue font-roboto text-[16px]">
-            {t('payment.loading') || 'Processing your subscription...'}
-          </p>
-        </div>
-      </div>
+      <Loader 
+        fullScreen={true}
+        size="lg" 
+        color="red" 
+        text={t('payment.loading') || 'Processing your subscription...'}
+      />
     );
   }
 

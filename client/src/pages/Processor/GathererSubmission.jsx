@@ -7,6 +7,7 @@ import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
 import questionsAPI from "../../api/questions";
 import subjectsAPI from "../../api/subjects";
+import Loader from "../../components/common/Loader";
 
 
 const GathererSubmission = () => {
@@ -314,11 +315,12 @@ const GathererSubmission = () => {
       />
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="text-oxford-blue text-lg font-roboto">
-            {t("processor.gathererSubmission.loading") || "Loading..."}
-          </div>
-        </div>
+        <Loader 
+          size="lg" 
+          color="oxford-blue" 
+          text={t("processor.gathererSubmission.loading") || "Loading..."}
+          className="py-20"
+        />
       ) : (
         <Table
           items={gathererSubmissionData.slice((currentPage - 1) * pageSize, currentPage * pageSize)}

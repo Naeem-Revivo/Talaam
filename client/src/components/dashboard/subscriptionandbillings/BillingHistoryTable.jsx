@@ -3,6 +3,7 @@ import { useLanguage } from '../../../context/LanguageContext';
 import { Table } from '../../common/TableComponent';
 import subscriptionAPI from '../../../api/subscription';
 import { showErrorToast } from '../../../utils/toastConfig';
+import Loader from '../../common/Loader';
 
 const BillingHistoryTable = () => {
   const { t } = useLanguage();
@@ -54,9 +55,11 @@ const BillingHistoryTable = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ED4122]"></div>
-      </div>
+      <Loader 
+        size="md" 
+        color="red" 
+        className="py-8"
+      />
     );
   }
 

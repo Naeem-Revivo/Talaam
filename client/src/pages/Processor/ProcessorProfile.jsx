@@ -5,6 +5,7 @@ import Dropdown from "../../components/shared/Dropdown";
 import profileAPI from "../../api/profile";
 import authAPI from "../../api/auth";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
+import Loader from "../../components/common/Loader";
 
 const ProcessorProfile = () => {
   const { t, language, changeLanguage } = useLanguage();
@@ -99,7 +100,7 @@ const ProcessorProfile = () => {
         // Only show error if we don't have cached data
         const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
         if (!storedUser.email && !storedUser.fullName) {
-          showErrorToast(error.message || "Failed to load profile data");
+          showErrorToast(error.message || t("processor.profile.errors.failedToLoad"));
         }
       } finally {
         setLoading(false);
@@ -120,7 +121,7 @@ const ProcessorProfile = () => {
       
       const response = await profileAPI.updateProfile(updateData);
       if (response.success) {
-        showSuccessToast(response.message || "Profile updated successfully");
+        showSuccessToast(response.message || t("processor.profile.success.profileUpdated"));
         // Update local storage if user data is returned
         if (response.data?.profile) {
           const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -133,7 +134,7 @@ const ProcessorProfile = () => {
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      showErrorToast(error.message || "Failed to update profile");
+      showErrorToast(error.message || t("processor.profile.errors.failedToUpdate"));
     } finally {
       setLoading(false);
     }
@@ -141,7 +142,7 @@ const ProcessorProfile = () => {
 
   const handleSendCode = async () => {
     if (!passwordData.email) {
-      showErrorToast("Please enter your email address");
+      showErrorToast(t("processor.profile.errors.enterEmail"));
       return;
     }
 
@@ -149,11 +150,11 @@ const ProcessorProfile = () => {
       setLoading(true);
       const response = await authAPI.forgotPasswordOTP({ email: passwordData.email });
       if (response.success) {
-        showSuccessToast(response.message || "OTP code sent to your email");
+        showSuccessToast(response.message || t("processor.profile.success.otpSent"));
       }
     } catch (error) {
       console.error("Error sending OTP:", error);
-      showErrorToast(error.message || "Failed to send OTP code");
+      showErrorToast(error.message || t("processor.profile.errors.failedToSendOTP"));
     } finally {
       setLoading(false);
     }
@@ -161,12 +162,12 @@ const ProcessorProfile = () => {
 
   const handleUpdatePassword = async () => {
     if (!passwordData.email || !passwordData.code || !passwordData.newPassword || !passwordData.confirmPassword) {
-      showErrorToast("Please fill in all required fields");
+      showErrorToast(t("processor.profile.errors.fillAllFields"));
       return;
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      showErrorToast("New password and confirm password do not match");
+      showErrorToast(t("processor.profile.errors.passwordMismatch"));
       return;
     }
 
@@ -179,7 +180,7 @@ const ProcessorProfile = () => {
       });
       
       if (response.success) {
-        showSuccessToast(response.message || "Password updated successfully");
+        showSuccessToast(response.message || t("processor.profile.success.passwordUpdated"));
         // Reset password form
         setPasswordData({
           currentPassword: "",
@@ -191,7 +192,7 @@ const ProcessorProfile = () => {
       }
     } catch (error) {
       console.error("Error updating password:", error);
-      showErrorToast(error.message || "Failed to update password");
+      showErrorToast(error.message || t("processor.profile.errors.failedToUpdatePassword"));
     } finally {
       setLoading(false);
     }
@@ -214,11 +215,11 @@ const ProcessorProfile = () => {
       
       const response = await profileAPI.updateProfile(updateData);
       if (response.success) {
-        showSuccessToast("Language updated successfully");
+        showSuccessToast(t("processor.profile.success.languageUpdated"));
       }
     } catch (error) {
       console.error("Error updating language:", error);
-      showErrorToast(error.message || "Failed to update language");
+      showErrorToast(error.message || t("processor.profile.errors.failedToUpdateLanguage"));
       // Revert language change on error
       const previousLanguage = selectedLanguage === "ar" ? "en" : "ar";
       if (changeLanguage) {
@@ -242,7 +243,7 @@ const ProcessorProfile = () => {
       
       const response = await profileAPI.updateProfile(updateData);
       if (response.success) {
-        showSuccessToast("Application settings saved successfully");
+        showSuccessToast(t("processor.profile.success.settingsSaved"));
         // Update language context if needed
         if (islanguage !== language && changeLanguage) {
           changeLanguage(islanguage);
@@ -250,7 +251,7 @@ const ProcessorProfile = () => {
       }
     } catch (error) {
       console.error("Error saving settings:", error);
-      showErrorToast(error.message || "Failed to save application settings");
+      showErrorToast(error.message || t("processor.profile.errors.failedToSaveSettings"));
     } finally {
       setLoading(false);
     }
@@ -271,8 +272,21 @@ const ProcessorProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6">
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-10">
+    <>
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 shadow-xl">
+            <Loader 
+              size="lg" 
+              color="oxford-blue" 
+              text={t("processor.profile.processing") || "Processing..."}
+              className="py-4"
+            />
+          </div>
+        </div>
+      )}
+      <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6">
+        <div className="mx-auto flex max-w-[1200px] flex-col gap-10">
         <header className="flex gap-4">
           <div>
             <h1 className="font-archivo text-[36px] mb-2 leading-[40px] font-bold text-oxford-blue">
@@ -518,6 +532,7 @@ const ProcessorProfile = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

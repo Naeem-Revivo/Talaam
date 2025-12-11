@@ -1239,6 +1239,43 @@ const updateExplanationByExplainer = async (questionId, explanation, userId) => 
 };
 
 /**
+ * Save draft explanation by Explainer (keeps status as pending_explainer)
+ * @param {string} questionId - Question ID
+ * @param {string} explanation - Draft explanation text
+ * @param {string} userId - Explainer user ID
+ */
+const saveDraftExplanationByExplainer = async (questionId, explanation, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (question.status !== 'pending_explainer') {
+    throw new Error('Question is not in pending_explainer status');
+  }
+
+  // Save explanation but keep status as pending_explainer (draft)
+  const updatedQuestion = await Question.update(questionId, {
+    explanation: explanation ? explanation.trim() : '',
+    lastModifiedBy: userId,
+    // Keep status as pending_explainer for drafts
+  });
+
+  // Add history entry separately to ensure it's appended
+  await Question.addHistory(questionId, {
+    action: 'updated',
+    performedById: userId,
+    role: 'explainer',
+    timestamp: new Date(),
+    notes: 'Draft explanation saved by explainer',
+  });
+
+  // Fetch the updated question to return
+  return await Question.findById(questionId);
+};
+
+/**
  * Approve question by Processor
  * @param {string} questionId - Question ID
  * @param {string} userId - Processor user ID
@@ -3202,6 +3239,7 @@ module.exports = {
   updateQuestionByCreator,
   createQuestionVariant,
   updateExplanationByExplainer,
+  saveDraftExplanationByExplainer,
   approveQuestion,
   rejectQuestion,
   getTopicsBySubject,

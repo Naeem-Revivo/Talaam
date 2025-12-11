@@ -554,6 +554,21 @@ const questionsAPI = {
     }
   },
 
+  // Save draft explanation (Explainer) - saves explanation but keeps status as pending_explainer
+  saveDraftExplanation: async (questionId, explanation) => {
+    try {
+      const apiData = {
+        explanation: explanation || '',
+      };
+
+      const response = await axiosClient.put(`/admin/questions/explainer/${questionId}/explanation/draft`, apiData);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to save draft explanation' };
+    }
+  },
+
   // Flag question or variant (Explainer)
   flagQuestionByExplainer: async (questionId, flagReason) => {
     try {

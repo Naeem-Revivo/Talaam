@@ -3,6 +3,7 @@ import AdminMetricCard from "../../components/admin/AdminMetricCard";
 import { useLanguage } from "../../context/LanguageContext";
 import Dropdown from "../../components/shared/Dropdown";
 import adminAPI from "../../api/admin";
+import Loader from "../../components/common/Loader";
 
 const SubscriptionTrendsPage = () => {
   const { t } = useLanguage();
@@ -163,12 +164,13 @@ const SubscriptionTrendsPage = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px] flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-oxford-blue"></div>
-          <p className="mt-4 text-oxford-blue font-roboto">Loading subscription data...</p>
-        </div>
-      </div>
+      <Loader 
+        fullScreen={true}
+        size="lg" 
+        color="oxford-blue" 
+        text="Loading subscription data..."
+        className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]"
+      />
     );
   }
 

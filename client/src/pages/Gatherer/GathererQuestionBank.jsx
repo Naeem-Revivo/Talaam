@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { UploadFileModal } from "../../components/gatherer/UploadFileModal";
 import questionsAPI from "../../api/questions";
 import Dropdown from "../../components/shared/Dropdown";
+import Loader from "../../components/common/Loader";
 
 const GathererQuestionBank = () => {
   const { t } = useLanguage();
@@ -139,7 +140,7 @@ const GathererQuestionBank = () => {
             
             return {
               id: question.id,
-              questionTitle: question.questionText?.substring(0, 50) + (question.questionText?.length > 50 ? "..." : "") || "—",
+              questionTitle: question.questionText || "—",
               processor: processorName,
               lastUpdate: formatDate(question.updatedAt || question.createdAt),
               status: formatStatus(question.status, isFlagged, flagStatus),
@@ -333,11 +334,14 @@ const GathererQuestionBank = () => {
               />
             </div>
           </div>
-          {/* {loading ? (
-            <div className="text-center py-10">
-              <p className="text-[16px] text-gray-600">{t("gatherer.questionBank.loading") || "Loading questions..."}</p>
-            </div>
-          ) : ( */}
+          {loading ? (
+            <Loader 
+              size="lg" 
+              color="oxford-blue" 
+              text={t("gatherer.questionBank.loading") || "Loading questions..."}
+              className="py-10"
+            />
+          ) : (
             <Table
               items={gathererData}
               columns={gathererColumns}
@@ -352,7 +356,7 @@ const GathererQuestionBank = () => {
               onShowRejectionReason={handleShowRejectionReason}
               onShowFlagReason={handleShowFlagReason}
             />
-          {/* )} */}
+          )}
         </div>
 
         <div className="">
@@ -381,7 +385,7 @@ const GathererQuestionBank = () => {
             </div>
 
             {/* Right Column - Recent Activity */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 pt-[54px]">
               <div className="bg-white rounded-lg p-6 border border-[#E5E7EB]">
                 <h2 className="text-[20px] leading-[28px] font-semibold font-archivo text-blue-dark mb-4">
                   {t("gatherer.questionBank.recentActivity")}

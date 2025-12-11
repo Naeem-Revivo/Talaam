@@ -169,6 +169,26 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
           );
         }
 
+        // Special rendering for questionTitle to support HTML content
+        if (column.key === "questionTitle" && typeof value === "string" && value.includes("<")) {
+          // Strip HTML tags to get text length for truncation
+          const textOnly = value.replace(/<[^>]*>/g, '');
+          const shouldTruncate = textOnly.length > 50;
+          
+          // Simple truncation: if HTML is long, show first 200 chars (may cut HTML tags, but will still render)
+          const displayHTML = shouldTruncate && value.length > 200 
+            ? value.substring(0, 200) + "..." 
+            : value;
+          
+          return (
+            <td
+              key={column.key}
+              className="px-6 py-8 font-normal font-roboto text-center text-[14px] leading-[16px] text-blue-dark"
+              dangerouslySetInnerHTML={{ __html: displayHTML }}
+            />
+          );
+        }
+
         return (
           <td
             key={column.key}
@@ -505,6 +525,30 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
                     </button>
                   )}
                 </div>
+              </div>
+            );
+          }
+
+          // Special rendering for questionTitle to support HTML content in mobile view
+          if (column.key === "questionTitle" && typeof value === "string" && value.includes("<")) {
+            // Strip HTML tags to get text length for truncation
+            const textOnly = value.replace(/<[^>]*>/g, '');
+            const shouldTruncate = textOnly.length > 50;
+            
+            // Simple truncation: if HTML is long, show first 200 chars
+            const displayHTML = shouldTruncate && value.length > 200 
+              ? value.substring(0, 200) + "..." 
+              : value;
+            
+            return (
+              <div key={column.key} className="flex items-center gap-2">
+                <span className="text-[14px] font-normal text-oxford-blue">
+                  {column.label}:
+                </span>
+                <span 
+                  className="text-[14px] font-normal text-dark-gray"
+                  dangerouslySetInnerHTML={{ __html: displayHTML }}
+                />
               </div>
             );
           }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import adminAPI from "../../api/admin";
+import Loader from "../../components/common/Loader";
 
 // Reusable KPI Card Component
 const KPICard = ({
@@ -245,12 +246,13 @@ const ReportsAndAnalyticsPage = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 2xl:px-0 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-oxford-blue"></div>
-          <p className="mt-4 text-oxford-blue font-roboto">Loading analytics data...</p>
-        </div>
-      </div>
+      <Loader 
+        fullScreen={true}
+        size="lg" 
+        color="oxford-blue" 
+        text="Loading analytics data..."
+        className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 2xl:px-0"
+      />
     );
   }
 
