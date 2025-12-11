@@ -8,6 +8,7 @@ import subjectsAPI from "../../api/subjects";
 import examsAPI from "../../api/exams";
 import topicsAPI from "../../api/topics";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
+import Loader from "../../components/common/Loader";
 
 const ApprovedQuestions = () => {
   const { t } = useLanguage();
@@ -240,9 +241,12 @@ const ApprovedQuestions = () => {
         />
 
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-oxford-blue">Loading...</div>
-        </div>
+        <Loader 
+          size="lg" 
+          color="oxford-blue" 
+          text="Loading..."
+          className="py-12"
+        />
       ) : (
       <Table
           items={questions}

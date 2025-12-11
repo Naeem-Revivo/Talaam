@@ -39,6 +39,11 @@ const subjectsAPI = {
         description: subjectData.description?.trim() || '',
       };
 
+      // Include examId if provided
+      if (subjectData.examId) {
+        apiData.examId = subjectData.examId;
+      }
+
       const response = await axiosClient.post('/admin/subjects', apiData);
       return response.data;
     } catch (error) {

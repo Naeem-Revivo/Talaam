@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
 import questionsAPI from "../../api/questions";
+import Loader from "../../components/common/Loader";
 
 const ExplainerQuestionBank = () => {
   const { t } = useLanguage();
@@ -46,35 +47,41 @@ const ExplainerQuestionBank = () => {
 
   // Transform API response to table format
   const transformQuestionData = (questions) => {
-    return questions.map((question) => {
-      // Get processor name from approvedBy or assignedProcessor
-      const processorName = question.approvedBy?.name || question.assignedProcessor?.name || "—";
-      
-      // Get difficulty from question data or default
-      const difficulty = question.difficulty || question.metadata?.difficulty || "—";
-      
-      // Extract question title from questionText (first 50 characters)
-      // Add prefix for variants
-      const isVariant = question.isVariant === true || question.isVariant === 'true';
-      const questionTitlePrefix = isVariant ? "  └─ Variant: " : "";
-      const questionTitle = question.questionText 
-        ? (question.questionText.length > 50 
-            ? questionTitlePrefix + question.questionText.substring(0, 50) + "..." 
-            : questionTitlePrefix + question.questionText)
-        : "—";
+    return questions
+      .filter(question => {
+        // Exclude questions that have explanations (drafts) - they should only show in draft page
+        const hasExplanation = question.explanation && question.explanation.trim().length > 0;
+        return !hasExplanation; // Only show questions without explanations in pending
+      })
+      .map((question) => {
+        // Get processor name from approvedBy or assignedProcessor
+        const processorName = question.approvedBy?.name || question.assignedProcessor?.name || "—";
+        
+        // Get difficulty from question data or default
+        const difficulty = question.difficulty || question.metadata?.difficulty || "—";
+        
+        // Extract question title from questionText (first 50 characters)
+        // Add prefix for variants
+        const isVariant = question.isVariant === true || question.isVariant === 'true';
+        const questionTitlePrefix = isVariant ? "  └─ Variant: " : "";
+        const questionTitle = question.questionText 
+          ? (question.questionText.length > 50 
+              ? questionTitlePrefix + question.questionText.substring(0, 50) + "..." 
+              : questionTitlePrefix + question.questionText)
+          : "—";
 
-      return {
-        id: question.id || question._id,
-        questionTitle: questionTitle,
-        fromProcessor: processorName,
-        difficulty: difficulty,
-        finalUpdate: formatDate(question.updatedAt || question.createdAt),
-        actionType: "addExplanation",
-        isVariant: isVariant,
-        originalQuestionId: question.originalQuestionId || null,
-        originalData: question // Store original data for navigation
-      };
-    });
+        return {
+          id: question.id || question._id,
+          questionTitle: questionTitle,
+          fromProcessor: processorName,
+          difficulty: difficulty,
+          finalUpdate: formatDate(question.updatedAt || question.createdAt),
+          actionType: "addExplanation",
+          isVariant: isVariant,
+          originalQuestionId: question.originalQuestionId || null,
+          originalData: question // Store original data for navigation
+        };
+      });
   };
 
   // Fetch explainer questions from API
@@ -190,10 +197,6 @@ const ExplainerQuestionBank = () => {
     return () => clearInterval(statsInterval);
   }, []);
 
-  const handleAddExplanationButton = () => {
-    navigate("/explainer/question-bank/add-explanation");
-  };
-
   const handleCompletedExplanation = () => {
     navigate("/explainer/question-bank/completed-explanation");
   };
@@ -226,12 +229,6 @@ const ExplainerQuestionBank = () => {
                 onClick={handleCompletedExplanation}
               className="py-[10px] px-6"
             />
-
-            <PrimaryButton
-              text={t("explainer.questionBank.addExplanation")}
-              className="py-[10px] px-8"
-                onClick={handleAddExplanationButton}
-            />
           </div>
         </header>
 
@@ -242,9 +239,12 @@ const ExplainerQuestionBank = () => {
             {t("explainer.questionBank.pendingExplanations")}
           </div>
           {loading ? (
-            <div className="flex items-center justify-center py-10">
-              <p className="text-dark-gray">{t("common.loading") || "Loading..."}</p>
-            </div>
+            <Loader 
+              size="lg" 
+              color="oxford-blue" 
+              text={t("common.loading") || "Loading..."}
+              className="py-10"
+            />
           ) : error ? (
             <div className="flex items-center justify-center py-10">
               <p className="text-red-600">{error}</p>

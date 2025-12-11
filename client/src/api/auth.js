@@ -128,10 +128,36 @@ const authAPI = {
     }
   },
 
-  // Reset password
+  // Reset password (using token from link)
   resetPassword: async (payload) => {
     try {
       const response = await axiosClient.post('/auth/reset-password', payload);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'Reset password failed';
+      throw { ...apiError, message: errorMessage };
+    }
+  },
+
+  // Forgot password OTP (sends OTP for profile page)
+  forgotPasswordOTP: async (payload) => {
+    try {
+      const response = await axiosClient.post('/auth/forgot-password-otp', payload);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'Failed to send OTP';
+      throw { ...apiError, message: errorMessage };
+    }
+  },
+
+  // Reset password OTP (using OTP from profile page)
+  resetPasswordOTP: async (payload) => {
+    try {
+      const response = await axiosClient.post('/auth/reset-password-otp', payload);
       return response.data;
     } catch (error) {
       const apiError = error.response?.data;

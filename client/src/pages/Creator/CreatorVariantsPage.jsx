@@ -124,7 +124,6 @@ const CreatorVariantsPage = () => {
   const [subjectName, setSubjectName] = useState(originalQuestion?.subject?.name || "");
   const [topicId, setTopicId] = useState("");
   const [topicName, setTopicName] = useState(originalQuestion?.topic?.name || "");
-  const [cognitiveLevel, setCognitiveLevel] = useState("");
   const [source, setSource] = useState("");
   const [explanation, setExplanation] = useState(originalQuestion?.explanation || "");
 
@@ -248,6 +247,12 @@ const CreatorVariantsPage = () => {
         correctAnswer: "Option A",
       },
     ]);
+    showSuccessToast("Variant created");
+  };
+
+  const handleDeleteVariant = (variantId) => {
+    setVariants((prev) => prev.filter((v) => v.id !== variantId));
+    showSuccessToast("Variant deleted");
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -344,7 +349,7 @@ const CreatorVariantsPage = () => {
           setIsSubmitting(false);
           return;
         }
-
+        
         // Convert question type from display format to API format
         const questionTypeMap = {
           "Multiple Choice (MCQ)": "MCQ",
@@ -399,7 +404,7 @@ const CreatorVariantsPage = () => {
     }
 
     let shouldRedirect = false;
-    let redirectPath = "/creator/question-bank/assigned-question";
+    let redirectPath = "/creator/question-bank";
     try {
       setIsSubmitting(true);
       const idToUse = questionId || originalQuestion?.id;
@@ -901,64 +906,64 @@ const CreatorVariantsPage = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                            {t("creator.createVariants.fields.optionA")}
-                          </label>
-                          <input
-                            type="text"
-                            value={options.A}
-                            onChange={(e) =>
-                              handleOptionChange("A", e.target.value)
-                            }
-                            className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                            {t("creator.createVariants.fields.optionC")}
-                          </label>
-                          <input
-                            type="text"
-                            value={options.C}
-                            onChange={(e) =>
-                              handleOptionChange("C", e.target.value)
-                            }
-                            className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                          />
-                        </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          {t("creator.createVariants.fields.optionA")}
+                        </label>
+                        <input
+                          type="text"
+                          value={options.A}
+                          onChange={(e) =>
+                            handleOptionChange("A", e.target.value)
+                          }
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        />
                       </div>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                            {t("creator.createVariants.fields.optionB")}
-                          </label>
-                          <input
-                            type="text"
-                            value={options.B}
-                            onChange={(e) =>
-                              handleOptionChange("B", e.target.value)
-                            }
-                            className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                            {t("creator.createVariants.fields.optionD")}
-                          </label>
-                          <input
-                            type="text"
-                            value={options.D}
-                            onChange={(e) =>
-                              handleOptionChange("D", e.target.value)
-                            }
-                            className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                          />
-                        </div>
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          {t("creator.createVariants.fields.optionC")}
+                        </label>
+                        <input
+                          type="text"
+                          value={options.C}
+                          onChange={(e) =>
+                            handleOptionChange("C", e.target.value)
+                          }
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        />
                       </div>
                     </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          {t("creator.createVariants.fields.optionB")}
+                        </label>
+                        <input
+                          type="text"
+                          value={options.B}
+                          onChange={(e) =>
+                            handleOptionChange("B", e.target.value)
+                          }
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          {t("creator.createVariants.fields.optionD")}
+                        </label>
+                        <input
+                          type="text"
+                          value={options.D}
+                          onChange={(e) =>
+                            handleOptionChange("D", e.target.value)
+                          }
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
                   )}
 
                   {/* Correct Answer */}
@@ -973,16 +978,16 @@ const CreatorVariantsPage = () => {
                         options={["True", "False"]}
                       />
                     ) : (
-                      <Dropdown
-                        value={correctAnswer}
-                        onChange={setCorrectAnswer}
-                        options={[
-                          t("creator.createVariants.correctAnswerOptions.optionA"),
-                          t("creator.createVariants.correctAnswerOptions.optionB"),
-                          t("creator.createVariants.correctAnswerOptions.optionC"),
-                          t("creator.createVariants.correctAnswerOptions.optionD"),
-                        ]}
-                      />
+                    <Dropdown
+                      value={correctAnswer}
+                      onChange={setCorrectAnswer}
+                      options={[
+                        t("creator.createVariants.correctAnswerOptions.optionA"),
+                        t("creator.createVariants.correctAnswerOptions.optionB"),
+                        t("creator.createVariants.correctAnswerOptions.optionC"),
+                        t("creator.createVariants.correctAnswerOptions.optionD"),
+                      ]}
+                    />
                     )}
                   </div>
                 </div>
@@ -992,9 +997,33 @@ const CreatorVariantsPage = () => {
               {/* Variants - Dynamically rendered */}
               {variants.map((variant, index) => (
                 <div key={variant.id} className=" bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
-                  <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark mb-[30px]">
+                  <div className="flex items-center justify-between mb-[30px]">
+                    <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark">
                     Variant # {index + 1}
                   </h2>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteVariant(variant.id)}
+                      className="flex items-center justify-center text-red-600 hover:text-red-700 transition-colors"
+                      title="Delete variant"
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M3.33334 5.83333H16.6667M7.50001 5.83333V4.16667C7.50001 3.50362 8.00362 2.99999 8.66667 2.99999H11.3333C11.9964 2.99999 12.5 3.50362 12.5 4.16667V5.83333M7.50001 5.83333H12.5M7.50001 5.83333H4.16667M12.5 5.83333H15.8333M4.16667 5.83333L4.58334 15.8333C4.58334 16.4964 5.08695 17 5.75 17H14.25C14.9131 17 15.4167 16.4964 15.4167 15.8333L15.8333 5.83333M8.33334 9.16667V13.3333M11.6667 9.16667V13.3333"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
 
                   <div className="space-y-6">
                     {/* Question Text */}
@@ -1054,64 +1083,64 @@ const CreatorVariantsPage = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                              {t("creator.createVariants.fields.optionA")}
-                            </label>
-                            <input
-                              type="text"
-                              value={variant.options.A}
-                              onChange={(e) =>
-                                handleVariantOptionChange(variant.id, "A", e.target.value)
-                              }
-                              className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                              {t("creator.createVariants.fields.optionC")}
-                            </label>
-                            <input
-                              type="text"
-                              value={variant.options.C}
-                              onChange={(e) =>
-                                handleVariantOptionChange(variant.id, "C", e.target.value)
-                              }
-                              className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                            />
-                          </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                            {t("creator.createVariants.fields.optionA")}
+                          </label>
+                          <input
+                            type="text"
+                            value={variant.options.A}
+                            onChange={(e) =>
+                              handleVariantOptionChange(variant.id, "A", e.target.value)
+                            }
+                            className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                          />
                         </div>
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                              {t("creator.createVariants.fields.optionB")}
-                            </label>
-                            <input
-                              type="text"
-                              value={variant.options.B}
-                              onChange={(e) =>
-                                handleVariantOptionChange(variant.id, "B", e.target.value)
-                              }
-                              className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                              {t("creator.createVariants.fields.optionD")}
-                            </label>
-                            <input
-                              type="text"
-                              value={variant.options.D}
-                              onChange={(e) =>
-                                handleVariantOptionChange(variant.id, "D", e.target.value)
-                              }
-                              className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                            />
-                          </div>
+                        <div>
+                          <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                            {t("creator.createVariants.fields.optionC")}
+                          </label>
+                          <input
+                            type="text"
+                            value={variant.options.C}
+                            onChange={(e) =>
+                              handleVariantOptionChange(variant.id, "C", e.target.value)
+                            }
+                            className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                          />
                         </div>
                       </div>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                            {t("creator.createVariants.fields.optionB")}
+                          </label>
+                          <input
+                            type="text"
+                            value={variant.options.B}
+                            onChange={(e) =>
+                              handleVariantOptionChange(variant.id, "B", e.target.value)
+                            }
+                            className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                            {t("creator.createVariants.fields.optionD")}
+                          </label>
+                          <input
+                            type="text"
+                            value={variant.options.D}
+                            onChange={(e) =>
+                              handleVariantOptionChange(variant.id, "D", e.target.value)
+                            }
+                            className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
                     )}
 
                     {/* Correct Answer */}
@@ -1126,16 +1155,16 @@ const CreatorVariantsPage = () => {
                           options={["True", "False"]}
                         />
                       ) : (
-                        <Dropdown
-                          value={variant.correctAnswer}
-                          onChange={(value) => handleVariantCorrectAnswerChange(variant.id, value)}
-                          options={[
-                            t("creator.createVariants.correctAnswerOptions.optionA"),
-                            t("creator.createVariants.correctAnswerOptions.optionB"),
-                            t("creator.createVariants.correctAnswerOptions.optionC"),
-                            t("creator.createVariants.correctAnswerOptions.optionD"),
-                          ]}
-                        />
+                      <Dropdown
+                        value={variant.correctAnswer}
+                        onChange={(value) => handleVariantCorrectAnswerChange(variant.id, value)}
+                        options={[
+                          t("creator.createVariants.correctAnswerOptions.optionA"),
+                          t("creator.createVariants.correctAnswerOptions.optionB"),
+                          t("creator.createVariants.correctAnswerOptions.optionC"),
+                          t("creator.createVariants.correctAnswerOptions.optionD"),
+                        ]}
+                      />
                       )}
                     </div>
                   </div>
@@ -1208,26 +1237,6 @@ const CreatorVariantsPage = () => {
                         ? topics.map((topic) => topic.name || "Unnamed Topic").filter(Boolean)
                         : [t('gatherer.addNewQuestion.messages.noTopicsAvailable')]
                     }
-                  />
-                </div>
-
-                {/* Cognitive Level */}
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t("creator.createVariants.fields.cognitiveLevel")}
-                  </label>
-                  <Dropdown
-                    value={cognitiveLevel}
-                    onChange={setCognitiveLevel}
-                    options={[
-                      t("creator.createVariants.placeholders.selectLevel"),
-                      t("creator.createVariants.cognitiveLevels.remember"),
-                      t("creator.createVariants.cognitiveLevels.understand"),
-                      t("creator.createVariants.cognitiveLevels.apply"),
-                      t("creator.createVariants.cognitiveLevels.analyze"),
-                      t("creator.createVariants.cognitiveLevels.evaluate"),
-                      t("creator.createVariants.cognitiveLevels.create"),
-                    ]}
                   />
                 </div>
 

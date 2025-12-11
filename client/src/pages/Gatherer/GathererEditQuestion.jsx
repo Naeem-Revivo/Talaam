@@ -254,7 +254,20 @@ const GathererEditQuestionPage = () => {
       try {
         const response = await subjectsAPI.getAllSubjects();
         if (response.success && response.data?.subjects) {
-          setSubjects(response.data.subjects);
+          // Filter subjects by the selected exam
+          const filteredSubjects = response.data.subjects.filter(
+            (subject) => subject.examId === examId
+          );
+          setSubjects(filteredSubjects);
+          
+          // Reset subject selection if current subject doesn't belong to selected exam
+          if (subjectId && !filteredSubjects.find(s => s.id === subjectId)) {
+            setSubjectId("");
+            setSubjectName("");
+            setTopics([]);
+            setTopicId("");
+            setTopicName("");
+          }
         }
       } catch (error) {
         showErrorToast(
@@ -353,6 +366,16 @@ const GathererEditQuestionPage = () => {
 
   // Handle subject selection
   const handleSubjectChange = (selectedSubjectName) => {
+    // If "Select the subject" is selected, clear the selection
+    if (selectedSubjectName === "Select the subject") {
+      setSubjectId("");
+      setSubjectName("");
+      // Reset topic
+      setTopicId("");
+      setTopicName("");
+      return;
+    }
+    
     const selectedSubject = subjects.find((s) => s.name === selectedSubjectName);
     if (selectedSubject) {
       setSubjectId(selectedSubject.id);
@@ -367,6 +390,13 @@ const GathererEditQuestionPage = () => {
 
   // Handle topic selection
   const handleTopicChange = (selectedTopicName) => {
+    // If "Select the topic" is selected, clear the selection
+    if (selectedTopicName === "Select the topic") {
+      setTopicId("");
+      setTopicName("");
+      return;
+    }
+    
     const selectedTopic = topics.find((t) => t.name === selectedTopicName);
     if (selectedTopic) {
       setTopicId(selectedTopic.id);
@@ -857,7 +887,10 @@ const GathererEditQuestionPage = () => {
                         : loadingSubjects
                         ? [t('gatherer.addNewQuestion.messages.loading')]
                         : subjects.length > 0
-                        ? subjects.map((subject) => subject.name || "Unnamed Subject").filter(Boolean)
+                        ? [
+                            "Select the subject",
+                            ...subjects.map((subject) => subject.name || "Unnamed Subject").filter(Boolean)
+                          ]
                         : [t('gatherer.addNewQuestion.messages.noSubjectsAvailable')]
                     }
                   />
@@ -877,7 +910,10 @@ const GathererEditQuestionPage = () => {
                         : loadingTopics
                         ? [t('gatherer.addNewQuestion.messages.loading')]
                         : topics.length > 0
-                        ? topics.map((topic) => topic.name || "Unnamed Topic").filter(Boolean)
+                        ? [
+                            "Select the topic",
+                            ...topics.map((topic) => topic.name || "Unnamed Topic").filter(Boolean)
+                          ]
                         : [t('gatherer.addNewQuestion.messages.noTopicsAvailable')]
                     }
                   />

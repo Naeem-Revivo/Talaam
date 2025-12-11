@@ -1,4 +1,5 @@
 const subjectService = require('../../services/admin');
+const examService = require('../../services/admin/exam/exam.service');
 
 /**
  * Create subject
@@ -36,11 +37,33 @@ const createSubject = async (req, res, next) => {
       });
     }
 
+    // Validate examId if provided
+    if (req.body.examId) {
+      const exam = await examService.findExamById(req.body.examId);
+      if (!exam) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: [
+            {
+              field: 'examId',
+              message: 'Invalid exam ID. Exam not found',
+            },
+          ],
+        });
+      }
+    }
+
     // Create subject
     const subjectData = {
       name: name.trim(),
       description: req.body.description ? req.body.description.trim() : '',
     };
+
+    // Include examId if provided
+    if (req.body.examId) {
+      subjectData.examId = req.body.examId;
+    }
 
     const subject = await subjectService.createSubject(subjectData);
 
@@ -93,6 +116,7 @@ const getAllSubjects = async (req, res, next) => {
           id: subject.id,
           name: subject.name,
           description: subject.description || '',
+          examId: subject.examId || null,
           createdAt: subject.createdAt,
           updatedAt: subject.updatedAt,
         })),
@@ -136,6 +160,7 @@ const getSubjectById = async (req, res, next) => {
           id: subject.id,
           name: subject.name,
           description: subject.description || '',
+          examId: subject.examId || null,
           createdAt: subject.createdAt,
           updatedAt: subject.updatedAt,
         },
@@ -223,6 +248,7 @@ const updateSubject = async (req, res, next) => {
           id: updatedSubject.id,
           name: updatedSubject.name,
           description: updatedSubject.description || '',
+          examId: updatedSubject.examId || null,
           createdAt: updatedSubject.createdAt,
           updatedAt: updatedSubject.updatedAt,
         },

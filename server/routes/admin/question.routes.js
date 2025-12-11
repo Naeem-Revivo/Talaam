@@ -179,6 +179,13 @@ router.put(
   questionController.updateExplanation
 );
 
+router.put(
+  '/explainer/:questionId/explanation/draft',
+  authMiddleware,
+  explainerMiddleware,
+  questionController.saveDraftExplanation
+);
+
 router.post(
   '/explainer/:questionId/flag',
   authMiddleware,

@@ -6,6 +6,7 @@ import ProfileDropdown from "../../components/common/ProfileDropdown";
 import questionsAPI from "../../api/questions";
 import usersAPI from "../../api/users";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig.jsx";
+import Loader from "../../components/common/Loader";
 
 const Attachments = ({ files, t }) => {
   return (
@@ -725,11 +726,13 @@ const ProcessorViewQuestion = () => {
 
   if (loading) {
     return (
-      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px] flex items-center justify-center">
-        <div className="text-oxford-blue text-lg font-roboto">
-          {t("processor.viewQuestion.loading") || "Loading question..."}
-        </div>
-      </div>
+      <Loader 
+        fullScreen={true}
+        size="lg" 
+        color="oxford-blue" 
+        text={t("processor.viewQuestion.loading") || "Loading question..."}
+        className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]"
+      />
     );
   }
 
@@ -738,6 +741,19 @@ const ProcessorViewQuestion = () => {
   }
 
   return (
+    <>
+      {processing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 shadow-xl">
+            <Loader 
+              size="lg" 
+              color="oxford-blue" 
+              text={t("processor.viewQuestion.processing") || "Processing..."}
+              className="py-4"
+            />
+          </div>
+        </div>
+      )}
     <div
       className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]"
       dir={dir}
@@ -882,11 +898,6 @@ const ProcessorViewQuestion = () => {
               <h2 className="mb-2 font-archivo text-[20px] font-bold leading-[32px] text-oxford-blue">
                 {t("processor.viewQuestion.questionInfo")}
               </h2>
-              <div className="flex items-center justify-between">
-                <span className="font-roboto text-[16px] font-normal leading-[100%] text-[#6B7280]">
-                  ID: {question.id || "N/A"}
-                </span>
-              </div>
               <p
                 className="font-roboto text-[16px] font-normal leading-[100%] text-oxford-blue pt-[30px]"
                 dir="ltr"
@@ -1200,9 +1211,12 @@ const ProcessorViewQuestion = () => {
               Please select a creator to assign this question to:
             </p>
             {loadingUsers ? (
-              <div className="text-center py-4">
-                <p className="text-dark-gray">Loading creators...</p>
-              </div>
+              <Loader 
+                size="md" 
+                color="oxford-blue" 
+                text="Loading creators..."
+                className="py-4"
+              />
             ) : creators.length === 0 ? (
               <div className="text-center py-4">
                 <p className="text-dark-gray">No creators available</p>
@@ -1253,9 +1267,12 @@ const ProcessorViewQuestion = () => {
               Please select an explainer to assign this question to:
             </p>
             {loadingUsers ? (
-              <div className="text-center py-4">
-                <p className="text-dark-gray">Loading explainers...</p>
-              </div>
+              <Loader 
+                size="md" 
+                color="oxford-blue" 
+                text="Loading explainers..."
+                className="py-4"
+              />
             ) : explainers.length === 0 ? (
               <div className="text-center py-4">
                 <p className="text-dark-gray">No explainers available</p>
@@ -1295,6 +1312,7 @@ const ProcessorViewQuestion = () => {
         </div>
       )}
     </div>
+    </>
   );
 };
 

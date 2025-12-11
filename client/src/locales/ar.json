@@ -2198,14 +2198,21 @@
         "createSubject": "إنشاء موضوع"
       },
       "fields": {
+        "exam": "الامتحان",
         "subjectName": "اسم الموضوع",
         "description": "الوصف",
         "code": "الكود (اختياري)"
       },
       "placeholders": {
+        "selectExam": "اختر امتحان",
+        "loadingExams": "جاري تحميل الامتحانات...",
+        "noExams": "لا توجد امتحانات متاحة",
         "subjectName": "أدخل اسم الموضوع",
         "description": "وصف موجز للموضوع",
         "code": "أدخل كود الموضوع"
+      },
+      "validation": {
+        "selectExam": "يرجى اختيار امتحان"
       },
       "buttons": {
         "cancel": "إلغاء",
@@ -2773,7 +2780,7 @@
       },
       "filter": {
         "search": "ابحث عن الأسئلة، المادة، الموضوع",
-        "subject": "المادة",
+        "subject": "جميع المواد",
         "exam": "الامتحان",
         "topic": "الموضوع"
       },
@@ -3028,6 +3035,7 @@
       "sentBackByProcessor": "تم إرجاعه من قبل المعالج",
       "workflowProgress": "تقدم سير العمل",
       "recentActivity": "النشاط الأخير",
+      "noActivity": "لا يوجد نشاط حديث",
       "stats": {
         "questionsAssigned": "الأسئلة المخصصة",
         "variantsPending": "المتغيرات المعلقة",
@@ -3513,13 +3521,42 @@
       "language": "اللغة",
       "notifications": "الإشعارات",
       "notificationsDescription": "تفعيل أو تعطيل إشعارات البريد الإلكتروني للتحديثات المهمة.",
-      "saveSettings": "حفظ الإعدادات"
+      "saveSettings": "حفظ الإعدادات",
+      "placeholders": {
+        "currentPassword": "أدخل كلمة المرور الحالية",
+        "email": "أدخل عنوان بريدك الإلكتروني",
+        "code": "رمز مكون من 6 أرقام",
+        "newPassword": "أدخل كلمة المرور الجديدة",
+        "confirmPassword": "أكد كلمة المرور الجديدة"
+      },
+      "languageOptions": {
+        "english": "الإنجليزية (الولايات المتحدة)",
+        "arabic": "العربية"
+      },
+      "errors": {
+        "failedToLoad": "فشل تحميل بيانات الملف الشخصي",
+        "failedToUpdate": "فشل تحديث الملف الشخصي",
+        "enterEmail": "يرجى إدخال عنوان بريدك الإلكتروني",
+        "failedToSendOTP": "فشل إرسال رمز OTP",
+        "fillAllFields": "يرجى ملء جميع الحقول المطلوبة",
+        "passwordMismatch": "كلمة المرور الجديدة وتأكيد كلمة المرور غير متطابقتين",
+        "failedToUpdatePassword": "فشل تحديث كلمة المرور",
+        "failedToUpdateLanguage": "فشل تحديث اللغة",
+        "failedToSaveSettings": "فشل حفظ إعدادات التطبيق"
+      },
+      "success": {
+        "profileUpdated": "تم تحديث الملف الشخصي بنجاح",
+        "otpSent": "تم إرسال رمز OTP إلى بريدك الإلكتروني",
+        "passwordUpdated": "تم تحديث كلمة المرور بنجاح",
+        "languageUpdated": "تم تحديث اللغة بنجاح",
+        "settingsSaved": "تم حفظ إعدادات التطبيق بنجاح"
+      }
     }
   },
   "filter": {
-    "subject": "المادة",
+    "subject": "جميع المواد",
     "role": "الدور",
-    "status": "الحالة"
+    "status": "جميع الحالات"
   },
   "payment": {
     "title": "دفع مويسر",

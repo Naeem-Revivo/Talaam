@@ -6,6 +6,14 @@ const getProfile = async (req, res, next) => {
     console.log('[PROFILE] GET /profile → requested', { userId: req.user && req.user.id });
     const user = await profileService.getProfile(req.user.id);
 
+    // Normalize language from database format to frontend format
+    let normalizedLanguage = user.language;
+    if (user.language === 'English') {
+      normalizedLanguage = 'en';
+    } else if (user.language === 'العربية') {
+      normalizedLanguage = 'ar';
+    }
+
     const response = {
       success: true,
       data: {
@@ -14,7 +22,7 @@ const getProfile = async (req, res, next) => {
           dateOfBirth: user.dateOfBirth,
           country: user.country,
           timezone: user.timezone,
-          language: user.language,
+          language: normalizedLanguage,
           email: user.email,
         },
       },
@@ -47,6 +55,14 @@ const updateProfile = async (req, res, next) => {
       language,
     });
 
+    // Normalize language from database format to frontend format
+    let normalizedLanguage = user.language;
+    if (user.language === 'English') {
+      normalizedLanguage = 'en';
+    } else if (user.language === 'العربية') {
+      normalizedLanguage = 'ar';
+    }
+
     const response = {
       success: true,
       message: 'Profile updated successfully',
@@ -56,7 +72,7 @@ const updateProfile = async (req, res, next) => {
           dateOfBirth: user.dateOfBirth,
           country: user.country,
           timezone: user.timezone,
-          language: user.language,
+          language: normalizedLanguage,
           email: user.email,
         },
       },
@@ -89,6 +105,14 @@ const completeProfile = async (req, res, next) => {
       language,
     });
 
+    // Normalize language from database format to frontend format
+    let normalizedLanguage = user.language;
+    if (user.language === 'English') {
+      normalizedLanguage = 'en';
+    } else if (user.language === 'العربية') {
+      normalizedLanguage = 'ar';
+    }
+
     const response = {
       success: true,
       message: 'Profile completed successfully',
@@ -98,7 +122,7 @@ const completeProfile = async (req, res, next) => {
           dateOfBirth: user.dateOfBirth,
           country: user.country,
           timezone: user.timezone,
-          language: user.language,
+          language: normalizedLanguage,
           email: user.email,
         },
       },
