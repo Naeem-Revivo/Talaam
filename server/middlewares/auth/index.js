@@ -10,6 +10,7 @@ const {
   validateResendOTP,
   validateForgotPassword,
   validateResetPassword,
+  validateResetPasswordOTP,
 } = require('./validation.middleware');
 const {
   gathererMiddleware,
@@ -31,6 +32,7 @@ module.exports = {
   validateResendOTP,
   validateForgotPassword,
   validateResetPassword,
+  validateResetPasswordOTP,
   gathererMiddleware,
   creatorMiddleware,
   explainerMiddleware,

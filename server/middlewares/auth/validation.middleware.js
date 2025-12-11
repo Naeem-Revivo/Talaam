@@ -58,9 +58,24 @@ const validateForgotPassword = [
     .customSanitizer(normalizeEmailPreserveAliases),
 ];
 
-// Validation middleware for reset password
+// Validation middleware for reset password (using token)
 const validateResetPassword = [
   body('token').notEmpty().withMessage('Reset token is required'),
+  body('password')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long'),
+];
+
+// Validation middleware for reset password OTP (using OTP)
+const validateResetPasswordOTP = [
+  body('email')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .customSanitizer(normalizeEmailPreserveAliases),
+  body('otp')
+    .isLength({ min: 6, max: 6 })
+    .isNumeric()
+    .withMessage('OTP must be a 6-digit number'),
   body('password')
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long'),
@@ -73,5 +88,6 @@ module.exports = {
   validateResendOTP,
   validateForgotPassword,
   validateResetPassword,
+  validateResetPasswordOTP,
 };
 
