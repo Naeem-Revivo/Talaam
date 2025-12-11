@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import questionsAPI from "../../api/questions";
 import { toast } from "react-toastify";
+import Loader from "../../components/common/Loader";
 
 const ContentDetailsPage = () => {
   const navigate = useNavigate();
@@ -116,9 +117,13 @@ const ContentDetailsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-3 sm:p-4 md:p-6 flex items-center justify-center">
-        <div className="text-oxford-blue text-[18px] font-roboto">Loading...</div>
-      </div>
+      <Loader 
+        fullScreen={true}
+        size="lg" 
+        color="oxford-blue" 
+        text="Loading..."
+        className="min-h-screen bg-gray-50 p-3 sm:p-4 md:p-6"
+      />
     );
   }
 

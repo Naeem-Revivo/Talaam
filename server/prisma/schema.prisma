@@ -109,6 +109,7 @@ model Exam {
   questions       Question[]
   classifications Classification[]
   studentAnswers  StudentAnswer[]
+  subjects        Subject[]
 
   @@map("exams")
 }
@@ -117,15 +118,18 @@ model Subject {
   id          String         @id @default(uuid())
   name        String
   description String         @default("")
+  examId      String?        @map("exam_id")
   createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
+  exam            Exam?       @relation(fields: [examId], references: [id], onDelete: SetNull)
   topics          Topic[]
   questions       Question[]
   classifications Classification[]
   studentAnswers  StudentAnswer[]
 
+  @@index([examId])
   @@map("subjects")
 }
 

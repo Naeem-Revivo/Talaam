@@ -1,71 +1,292 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLanguage } from "../../context/LanguageContext";
 import { PrimaryButton } from "../../components/common/Button";
 import Dropdown from "../../components/shared/Dropdown";
-import { useLanguage } from "../../context/LanguageContext";
+import profileAPI from "../../api/profile";
+import authAPI from "../../api/auth";
+import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
+import Loader from "../../components/common/Loader";
 
 const ProcessorProfile = () => {
-  const { t, language } = useLanguage();
+  const { t, language, changeLanguage } = useLanguage();
+  const [loading, setLoading] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [islanguage, setIsLanguage] = useState("English (US)");
+  const [islanguage, setIsLanguage] = useState("en");
   const [profileData, setProfileData] = useState({
-    name: "John Doe",
-    email: "johndoe@gmail.com",
-    phone: "+1 (555) 123-4567"
+    name: "",
+    email: "",
+    phone: "",
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     email: "",
     code: "",
     newPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
-  const dir = language === 'ar' ? 'rtl' : 'ltr'
+  const dir = language === "ar" ? "rtl" : "ltr";
 
   const isRTL = dir === "rtl";
 
   const languageOptions = [
-    { value: "English (US)", label: "English (US)" },
-    { value: "Arabic", label: "Arabic" },
+    {
+      value: "en",
+      label: t("processor.profile.languageOptions.english"),
+    },
+    {
+      value: "ar",
+      label: t("processor.profile.languageOptions.arabic"),
+    },
   ];
 
-  const handleSaveChanges = () => {
-    // Handle profile save logic
-    console.log("Saving profile changes...", profileData);
+  // Fetch profile data on component mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        // Try to get user from localStorage first for faster initial load
+        const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        if (storedUser.email || storedUser.fullName) {
+          setProfileData({
+            name: storedUser.fullName || storedUser.name || "",
+            email: storedUser.email || "",
+            phone: storedUser.phone || "",
+          });
+          setPasswordData(prev => ({
+            ...prev,
+            email: storedUser.email || "",
+          }));
+        }
+
+        // Then fetch fresh data from API
+        const response = await profileAPI.getProfile();
+        if (response.success && response.data?.profile) {
+          const profile = response.data.profile;
+          setProfileData({
+            name: profile.fullName || profile.name || "",
+            email: profile.email || "",
+            phone: profile.phone || "",
+          });
+          setPasswordData(prev => ({
+            ...prev,
+            email: profile.email || "",
+          }));
+          // Set language preference if available
+          // Only update if localStorage doesn't have a more recent language preference
+          const savedLanguage = localStorage.getItem('talaam-language');
+          if (profile.language) {
+            const profileLanguage = profile.language === "ar" ? "ar" : "en";
+            // Use localStorage language if it exists and is different from profile (user just changed it)
+            const languageToUse = savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ar') 
+              ? savedLanguage 
+              : profileLanguage;
+            
+            setIsLanguage(languageToUse);
+            // Only update context if it's different from current language
+            if (changeLanguage && languageToUse !== language) {
+              changeLanguage(languageToUse);
+            }
+          } else if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ar')) {
+            // If no profile language but localStorage has one, use that
+            setIsLanguage(savedLanguage);
+            if (changeLanguage && savedLanguage !== language) {
+              changeLanguage(savedLanguage);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        // Only show error if we don't have cached data
+        const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        if (!storedUser.email && !storedUser.fullName) {
+          showErrorToast(error.message || t("processor.profile.errors.failedToLoad"));
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [t, changeLanguage, language]);
+
+  const handleSaveChanges = async () => {
+    try {
+      setLoading(true);
+      const updateData = {
+        fullName: profileData.name,
+        // Note: email and phone might not be updatable via profile API
+        // Adjust based on your API requirements
+      };
+      
+      const response = await profileAPI.updateProfile(updateData);
+      if (response.success) {
+        showSuccessToast(response.message || t("processor.profile.success.profileUpdated"));
+        // Update local storage if user data is returned
+        if (response.data?.profile) {
+          const user = JSON.parse(localStorage.getItem("user") || "{}");
+          localStorage.setItem("user", JSON.stringify({
+            ...user,
+            fullName: response.data.profile.fullName,
+            name: response.data.profile.fullName,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      showErrorToast(error.message || t("processor.profile.errors.failedToUpdate"));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleUpdatePassword = () => {
-    // Handle password update logic
-    console.log("Updating password...", passwordData);
+  const handleSendCode = async () => {
+    if (!passwordData.email) {
+      showErrorToast(t("processor.profile.errors.enterEmail"));
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await authAPI.forgotPasswordOTP({ email: passwordData.email });
+      if (response.success) {
+        showSuccessToast(response.message || t("processor.profile.success.otpSent"));
+      }
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      showErrorToast(error.message || t("processor.profile.errors.failedToSendOTP"));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSendCode = () => {
-    // Handle send code logic
-    console.log("Sending verification code...");
+  const handleUpdatePassword = async () => {
+    if (!passwordData.email || !passwordData.code || !passwordData.newPassword || !passwordData.confirmPassword) {
+      showErrorToast(t("processor.profile.errors.fillAllFields"));
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      showErrorToast(t("processor.profile.errors.passwordMismatch"));
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await authAPI.resetPasswordOTP({
+        email: passwordData.email,
+        otp: passwordData.code,
+        password: passwordData.newPassword,
+      });
+      
+      if (response.success) {
+        showSuccessToast(response.message || t("processor.profile.success.passwordUpdated"));
+        // Reset password form
+        setPasswordData({
+          currentPassword: "",
+          email: "",
+          code: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      }
+    } catch (error) {
+      console.error("Error updating password:", error);
+      showErrorToast(error.message || t("processor.profile.errors.failedToUpdatePassword"));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSaveApplicationSettings = () => {
-    // Handle application settings save logic
-    console.log("Saving application settings...");
+  const handleLanguageChange = async (selectedLanguage) => {
+    setIsLanguage(selectedLanguage);
+    
+    // Immediately change the language in the context
+    if (changeLanguage) {
+      changeLanguage(selectedLanguage);
+    }
+    
+    // Save to backend
+    try {
+      setLoading(true);
+      const updateData = {
+        language: selectedLanguage,
+      };
+      
+      const response = await profileAPI.updateProfile(updateData);
+      if (response.success) {
+        showSuccessToast(t("processor.profile.success.languageUpdated"));
+      }
+    } catch (error) {
+      console.error("Error updating language:", error);
+      showErrorToast(error.message || t("processor.profile.errors.failedToUpdateLanguage"));
+      // Revert language change on error
+      const previousLanguage = selectedLanguage === "ar" ? "en" : "ar";
+      if (changeLanguage) {
+        changeLanguage(previousLanguage);
+      }
+      // Revert dropdown selection
+      setIsLanguage(previousLanguage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveApplicationSettings = async () => {
+    try {
+      setLoading(true);
+      const updateData = {
+        language: islanguage,
+        // Note: notifications might need a separate API endpoint
+        // Adjust based on your API requirements
+      };
+      
+      const response = await profileAPI.updateProfile(updateData);
+      if (response.success) {
+        showSuccessToast(t("processor.profile.success.settingsSaved"));
+        // Update language context if needed
+        if (islanguage !== language && changeLanguage) {
+          changeLanguage(islanguage);
+        }
+      }
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      showErrorToast(error.message || t("processor.profile.errors.failedToSaveSettings"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleProfileChange = (field, value) => {
-    setProfileData(prev => ({
+    setProfileData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handlePasswordChange = (field, value) => {
-    setPasswordData(prev => ({
+    setPasswordData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6">
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-10">
+    <>
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 shadow-xl">
+            <Loader 
+              size="lg" 
+              color="oxford-blue" 
+              text={t("processor.profile.processing") || "Processing..."}
+              className="py-4"
+            />
+          </div>
+        </div>
+      )}
+      <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6">
+        <div className="mx-auto flex max-w-[1200px] flex-col gap-10">
         <header className="flex gap-4">
           <div>
             <h1 className="font-archivo text-[36px] mb-2 leading-[40px] font-bold text-oxford-blue">
@@ -85,7 +306,7 @@ const ProcessorProfile = () => {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-[50px] pb-[35px] px-[65px]">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-[50px] pb-[35px] px-[65px]">
             {/* Name */}
             <div>
               <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
@@ -94,21 +315,9 @@ const ProcessorProfile = () => {
               <input
                 type="text"
                 value={profileData.name}
-                onChange={(e) => handleProfileChange('name', e.target.value)}
+                onChange={(e) => handleProfileChange("name", e.target.value)}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] font-normal rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
-            </div>
-
-            {/* Current Plan */}
-            <div>
-              <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
-                {t("processor.profile.currentPlan")}
-              </label>
-              <div className="p-3 rounded-[12px] shadow-sm border border-[#03274633]">
-                <span className="font-roboto text-[14px] text-[#6B7280] font-normal">
-                  Professional Plan
-                </span>
-              </div>
             </div>
 
             {/* Email */}
@@ -119,7 +328,7 @@ const ProcessorProfile = () => {
               <input
                 type="email"
                 value={profileData.email}
-                onChange={(e) => handleProfileChange('email', e.target.value)}
+                onChange={(e) => handleProfileChange("email", e.target.value)}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
             </div>
@@ -132,16 +341,17 @@ const ProcessorProfile = () => {
               <input
                 type="tel"
                 value={profileData.phone}
-                onChange={(e) => handleProfileChange('phone', e.target.value)}
+                onChange={(e) => handleProfileChange("phone", e.target.value)}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
             </div>
 
-            <div className="mt-[70px] w-full flex justify-end col-span-2">
+            <div className="mt-[10px] w-full flex justify-end col-span-3">
               <PrimaryButton
                 text={t("processor.profile.saveChanges")}
                 className="py-[10px] px-7 text-nowrap"
                 onClick={handleSaveChanges}
+                disabled={loading}
               />
             </div>
           </div>
@@ -164,32 +374,34 @@ const ProcessorProfile = () => {
               <input
                 type="password"
                 value={passwordData.currentPassword}
-                onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
-                placeholder="Enter your current password"
+                onChange={(e) =>
+                  handlePasswordChange("currentPassword", e.target.value)
+                }
+                placeholder={t("processor.profile.placeholders.currentPassword")}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
             </div>
 
             <div>
-                <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
-                  {t("processor.profile.enterEmail")}
-                </label>
-                <input
-                  type="email"
-                  value={passwordData.email}
-                  onChange={(e) => handlePasswordChange('email', e.target.value)}
-                  placeholder={t("processor.profile.enterEmailPlaceholder")}
-                  className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
-                />
-              </div>
-              <div className="flex justify-end">
-                <PrimaryButton
-                  text={t("processor.profile.sendCode")}
-                  className="py-[10px] px-7 text-nowrap"
-                  onClick={handleSendCode}
-                />
-              </div>
-
+              <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
+                {t("processor.profile.enterEmail")}
+              </label>
+              <input
+                type="email"
+                value={passwordData.email}
+                onChange={(e) => handlePasswordChange("email", e.target.value)}
+                placeholder={t("processor.profile.placeholders.email")}
+                className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
+              />
+            </div>
+            <div className="flex justify-end">
+              <PrimaryButton
+                text={t("processor.profile.sendCode")}
+                className="py-[10px] px-7 text-nowrap"
+                onClick={handleSendCode}
+                disabled={loading}
+              />
+            </div>
 
             {/* Verification Code */}
             <div>
@@ -199,8 +411,8 @@ const ProcessorProfile = () => {
               <input
                 type="text"
                 value={passwordData.code}
-                onChange={(e) => handlePasswordChange('code', e.target.value)}
-                placeholder={t("processor.profile.enterCodePlaceholder")}
+                onChange={(e) => handlePasswordChange("code", e.target.value)}
+                placeholder={t("processor.profile.placeholders.code")}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
             </div>
@@ -214,8 +426,10 @@ const ProcessorProfile = () => {
                 <input
                   type="password"
                   value={passwordData.newPassword}
-                  onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
-                  placeholder={t("processor.profile.newPasswordPlaceholder")}
+                  onChange={(e) =>
+                    handlePasswordChange("newPassword", e.target.value)
+                  }
+                  placeholder={t("processor.profile.placeholders.newPassword")}
                   className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
                 />
               </div>
@@ -227,8 +441,10 @@ const ProcessorProfile = () => {
                 <input
                   type="password"
                   value={passwordData.confirmPassword}
-                  onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
-                  placeholder={t("processor.profile.confirmNewPasswordPlaceholder")}
+                  onChange={(e) =>
+                    handlePasswordChange("confirmPassword", e.target.value)
+                  }
+                  placeholder={t("processor.profile.placeholders.confirmPassword")}
                   className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
                 />
               </div>
@@ -239,6 +455,7 @@ const ProcessorProfile = () => {
                 text={t("processor.profile.updatePassword")}
                 className="py-[10px] px-7 text-nowrap"
                 onClick={handleUpdatePassword}
+                disabled={loading}
               />
             </div>
           </div>
@@ -264,7 +481,7 @@ const ProcessorProfile = () => {
                 <Dropdown
                   value={islanguage}
                   options={languageOptions}
-                  onChange={setIsLanguage}
+                  onChange={handleLanguageChange}
                   height="h-[50px]"
                   textClassName="font-roboto text-[16px] text-oxford-blue"
                 />
@@ -308,12 +525,14 @@ const ProcessorProfile = () => {
                 text={t("processor.profile.saveSettings")}
                 className="py-[10px] px-7 text-nowrap"
                 onClick={handleSaveApplicationSettings}
+                disabled={loading}
               />
             </div>
           </div>
         </div>
       </div>
     </div>
+    </>
   );
 };
 

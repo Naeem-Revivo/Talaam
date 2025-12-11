@@ -4,6 +4,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import Dropdown from "../../components/shared/Dropdown";
 import questionsAPI from "../../api/questions";
 import { toast } from "react-toastify";
+import Loader from "../../components/common/Loader";
 
 const ContentModerationPage = () => {
   const navigate = useNavigate();
@@ -392,8 +393,8 @@ const ContentModerationPage = () => {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="px-6 py-4 text-center text-oxford-blue">
-                      Loading...
+                    <td colSpan="7" className="px-6 py-4 text-center">
+                      <Loader size="md" color="oxford-blue" />
                     </td>
                   </tr>
                 ) : flaggedContent.length === 0 ? (
@@ -478,7 +479,7 @@ const ContentModerationPage = () => {
         {/* Content Cards - Mobile/Tablet View */}
         <div className="lg:hidden space-y-4">
           {loading ? (
-            <div className="text-center py-8 text-oxford-blue">Loading...</div>
+            <Loader size="lg" color="oxford-blue" className="py-8" />
           ) : flaggedContent.length === 0 ? (
             <div className="text-center py-8 text-oxford-blue">No flagged questions found</div>
           ) : (

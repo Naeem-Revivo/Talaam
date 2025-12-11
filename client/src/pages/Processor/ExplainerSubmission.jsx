@@ -6,6 +6,7 @@ import ProcessorFilter from "../../components/Processor/ProcessorFilter";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
 import questionsAPI from "../../api/questions";
+import Loader from "../../components/common/Loader";
 
 
 const ExplainerSubmission = () => {
@@ -403,9 +404,12 @@ const ExplainerSubmission = () => {
       />
 
       {loading ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="text-oxford-blue font-roboto text-lg">Loading...</div>
-        </div>
+        <Loader 
+          size="lg" 
+          color="oxford-blue" 
+          text="Loading..."
+          className="py-12"
+        />
       ) : (
         <Table
           items={submissions}

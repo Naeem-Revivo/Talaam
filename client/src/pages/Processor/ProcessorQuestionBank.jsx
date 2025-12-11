@@ -9,6 +9,7 @@ import RecentActivity from "../../components/gatherer/RecentActiveity";
 import SearchFilter from "../../components/common/SearchFilter";
 import questionsAPI from "../../api/questions";
 import subjectsAPI from "../../api/subjects";
+import Loader from "../../components/common/Loader";
 
 const ProcessorQuestionBank = () => {
   const { t } = useLanguage();
@@ -429,11 +430,12 @@ const ProcessorQuestionBank = () => {
             {t("processor.questionBank.allSubmissions")}
           </div>
           {loading ? (
-            <div className="flex justify-center items-center py-12 min-h-[300px]">
-              <div className="text-oxford-blue font-roboto text-lg">
-                {t("processor.questionBank.loading")}
-              </div>
-            </div>
+            <Loader 
+              size="lg" 
+              color="oxford-blue" 
+              text={t("processor.questionBank.loading") || "Loading questions..."}
+              className="py-10"
+            />
           ) : (
             <Table
               items={filteredSubmissions.slice((currentPage - 1) * 10, currentPage * 10)}

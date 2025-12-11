@@ -4,6 +4,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import adminAPI from "../../api/admin";
 import paymentAPI from "../../api/payment";
 import { showErrorToast, showSuccessToast } from "../../utils/toastConfig";
+import Loader from "../../components/common/Loader";
 
 const SubscriptionDetailsPage = () => {
   const navigate = useNavigate();
@@ -200,14 +201,13 @@ const SubscriptionDetailsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-full bg-[#F5F7FB] px-4 xl:px-6 py-6 sm:px-6 2xl:px-[66px] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ED4122] mx-auto mb-4"></div>
-          <p className="text-oxford-blue font-roboto text-[16px]">
-            {t('admin.subscriptionDetails.loading') || 'Loading subscription details...'}
-          </p>
-        </div>
-      </div>
+      <Loader 
+        fullScreen={true}
+        size="lg" 
+        color="red" 
+        text={t('admin.subscriptionDetails.loading') || 'Loading subscription details...'}
+        className="min-h-full bg-[#F5F7FB] px-4 xl:px-6 py-6 sm:px-6 2xl:px-[66px]"
+      />
     );
   }
 

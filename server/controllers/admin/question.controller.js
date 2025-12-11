@@ -1463,6 +1463,69 @@ const reviewCreatorFlag = async (req, res, next) => {
 };
 
 /**
+ * Save draft explanation by Explainer
+ * PUT /admin/questions/explainer/:questionId/explanation/draft
+ * Saves explanation but keeps status as pending_explainer
+ */
+const saveDraftExplanation = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const { explanation } = req.body;
+
+    console.log('[QUESTION] PUT /admin/questions/explainer/:questionId/explanation/draft → requested', {
+      questionId,
+      requestedBy: req.user.id,
+      requesterRole: req.user.adminRole,
+    });
+
+    // Allow empty explanation for drafts (user might want to save partial work)
+    const question = await questionService.saveDraftExplanationByExplainer(
+      questionId,
+      explanation || '',
+      req.user.id
+    );
+
+    const response = {
+      success: true,
+      message: 'Draft explanation saved successfully',
+      data: {
+        question: {
+          id: question._id || question.id,
+          explanation: question.explanation,
+          status: question.status,
+          updatedAt: question.updatedAt,
+        },
+      },
+    };
+
+    console.log('[QUESTION] PUT /admin/questions/explainer/:questionId/explanation/draft → 200 (saved)', {
+      questionId: question._id || question.id,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[QUESTION] PUT /admin/questions/explainer/:questionId/explanation/draft → error', error);
+    if (
+      error.message === 'Question not found' ||
+      error.message === 'Question is not in pending_explainer status'
+    ) {
+      return res.status(
+        error.message === 'Question not found' ? 404 : 400
+      ).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid question ID',
+      });
+    }
+    next(error);
+  }
+};
+
+/**
  * Flag question or variant by Explainer
  * POST /admin/questions/explainer/:questionId/flag
  * Can flag both regular questions and question variants
@@ -2579,6 +2642,7 @@ module.exports = {
   updateQuestion,
   createQuestionVariant,
   updateExplanation,
+  saveDraftExplanation,
   approveQuestion,
   rejectQuestion,
   getTopicsBySubject,

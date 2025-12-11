@@ -2188,14 +2188,21 @@
         "createSubject": "Create Subject"
       },
       "fields": {
+        "exam": "Exam",
         "subjectName": "Subject Name",
         "description": "Description",
         "code": "Code (optional)"
       },
       "placeholders": {
+        "selectExam": "Select an exam",
+        "loadingExams": "Loading exams...",
+        "noExams": "No exams available",
         "subjectName": "Enter subject name",
         "description": "A brief description of the subject",
         "code": "Enter subject code"
+      },
+      "validation": {
+        "selectExam": "Please select an exam"
       },
       "buttons": {
         "cancel": "Cancel",
@@ -3511,7 +3518,36 @@
       "language": "Language",
       "notifications": "Notifications",
       "notificationsDescription": "Enable or disable email notifications for important updates.",
-      "saveSettings": "Save Settings"
+      "saveSettings": "Save Settings",
+      "placeholders": {
+        "currentPassword": "Enter your current password",
+        "email": "Enter your email address",
+        "code": "6-digit Code",
+        "newPassword": "Enter new password",
+        "confirmPassword": "Confirm new password"
+      },
+      "languageOptions": {
+        "english": "English (US)",
+        "arabic": "Arabic"
+      },
+      "errors": {
+        "failedToLoad": "Failed to load profile data",
+        "failedToUpdate": "Failed to update profile",
+        "enterEmail": "Please enter your email address",
+        "failedToSendOTP": "Failed to send OTP code",
+        "fillAllFields": "Please fill in all required fields",
+        "passwordMismatch": "New password and confirm password do not match",
+        "failedToUpdatePassword": "Failed to update password",
+        "failedToUpdateLanguage": "Failed to update language",
+        "failedToSaveSettings": "Failed to save application settings"
+      },
+      "success": {
+        "profileUpdated": "Profile updated successfully",
+        "otpSent": "OTP code sent to your email",
+        "passwordUpdated": "Password updated successfully",
+        "languageUpdated": "Language updated successfully",
+        "settingsSaved": "Application settings saved successfully"
+      }
     }
   },
   "filter": {

@@ -52,7 +52,16 @@ const updateProfile = async (userId, profileData) => {
   
   if (country !== undefined) updateData.country = country;
   if (timezone !== undefined) updateData.timezone = timezone;
-  if (language !== undefined) updateData.language = language;
+  if (language !== undefined) {
+    // Normalize language codes to full names for database storage
+    if (language === 'en') {
+      updateData.language = 'English';
+    } else if (language === 'ar') {
+      updateData.language = 'العربية';
+    } else {
+      updateData.language = language;
+    }
+  }
 
   const updatedUser = await User.update(userId, updateData);
   return updatedUser;
@@ -97,7 +106,16 @@ const completeProfile = async (userId, profileData) => {
   
   if (country) updateData.country = country;
   if (timezone) updateData.timezone = timezone;
-  if (language) updateData.language = language;
+  if (language) {
+    // Normalize language codes to full names for database storage
+    if (language === 'en') {
+      updateData.language = 'English';
+    } else if (language === 'ar') {
+      updateData.language = 'العربية';
+    } else {
+      updateData.language = language;
+    }
+  }
 
   const updatedUser = await User.update(userId, updateData);
   return updatedUser;

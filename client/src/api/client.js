@@ -2,9 +2,8 @@
 import axios from 'axios';
 import { showErrorToast, showLogoutToast } from '../utils/toastConfig';
 
-// const API_URL ='https://many-flannelly-shatteringly.ngrok-free.dev/api';
+const API_URL ='https://many-flannelly-shatteringly.ngrok-free.dev/api';
 // const API_URL ='http://192.168.1.128:5000/api';
-const API_URL ='http://localhost:5000/api';
 
 // Create an Axios instance
 const axiosClient = axios.create({

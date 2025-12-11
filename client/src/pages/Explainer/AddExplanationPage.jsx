@@ -465,20 +465,57 @@ export default function AddExplanationPage() {
 
     try {
       setIsSavingDraft(true);
-      // Note: The API might not have a draft endpoint, so we might need to store locally
-      // or use a different approach. For now, we'll just show a message.
-      // In the future, we could save to localStorage or use a draft API endpoint
-      const draftData = {
-        questionId,
-        isVariant,
-        explanations,
-        timestamp: new Date().toISOString()
-      };
-      localStorage.setItem(`explainer_draft_${questionId}`, JSON.stringify(draftData));
-      showSuccessToast("Draft saved locally");
+      
+      // Save all explanations as drafts
+      const explanationsToSave = [];
+      
+      // If viewing original question with variants, save original + variants
+      if (!isVariant && hasVariants) {
+        // Save original question explanation
+        if (explanations[questionId]?.trim()) {
+          explanationsToSave.push({ questionId, explanation: explanations[questionId] });
+        }
+        // Save variant explanations
+        variants.forEach(variant => {
+          const variantId = variant.id || variant._id;
+          if (explanations[variantId]?.trim()) {
+            explanationsToSave.push({ questionId: variantId, explanation: explanations[variantId] });
+          }
+        });
+      } 
+      // If viewing a variant, save variant explanation only
+      else if (isVariant) {
+        if (explanations[questionId]?.trim()) {
+          explanationsToSave.push({ questionId, explanation: explanations[questionId] });
+        }
+      }
+      // If viewing original without variants, save original only
+      else {
+        if (explanations[questionId]?.trim()) {
+          explanationsToSave.push({ questionId, explanation: explanations[questionId] });
+        }
+      }
+
+      // Save all explanations as drafts
+      await Promise.all(
+        explanationsToSave.map(({ questionId: id, explanation: exp }) =>
+          questionsAPI.saveDraftExplanation(id, exp)
+        )
+      );
+      
+      // Clear saved draft from localStorage after successful API save
+      const draftKey = `explainer_draft_${questionId}`;
+      localStorage.removeItem(draftKey);
+      
+      showSuccessToast("Draft saved successfully! Question moved to draft explanations.");
+      
+      // Navigate to draft explanation page
+      setTimeout(() => {
+        navigate("/explainer/question-bank/draft-explanation");
+      }, 1000);
     } catch (err) {
       console.error("Error saving draft:", err);
-      showErrorToast("Failed to save draft");
+      showErrorToast(err.message || "Failed to save draft");
     } finally {
       setIsSavingDraft(false);
     }

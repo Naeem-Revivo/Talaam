@@ -47,6 +47,19 @@ const GathererQuestionDetailsPage = () => {
     navigate("/gatherer/question-bank");
   };
 
+  // Map status to display label
+  const getStatusLabel = (status) => {
+    const statusMap = {
+      'pending_processor': 'Pending Review',
+      'pending_creator': 'Pending Creator',
+      'pending_explainer': 'Pending Explainer',
+      'completed': 'Completed',
+      'rejected': 'Rejected',
+      'pending_gatherer': 'Pending Gatherer',
+    };
+    return statusMap[status] || status;
+  };
+
   // Rich Text Editor Component using contentEditable (React 19 compatible)
   const RichTextEditor = ({
     value,
@@ -856,7 +869,7 @@ const GathererQuestionDetailsPage = () => {
                         {t("admin.questionDetails.fields.status")}:
                       </span>
                       <span className="font-roboto text-[18px] font-normal leading-[20px] text-[#ED4122]">
-                        {question.status || "N/A"}
+                        {getStatusLabel(question.status) || "N/A"}
                       </span>
                     </div>
                   </div>

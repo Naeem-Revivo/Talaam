@@ -9,6 +9,7 @@ import RecentActivity from "../../components/gatherer/RecentActiveity";
 import { useNavigate } from "react-router-dom";
 import questionsAPI from "../../api/questions";
 import { showErrorToast } from "../../utils/toastConfig";
+import Loader from "../../components/common/Loader";
 
 const CreatorQuestionBank = () => {
   const { t } = useLanguage();
@@ -554,9 +555,12 @@ const CreatorQuestionBank = () => {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-oxford-blue text-lg font-roboto">Loading questions...</div>
-            </div>
+            <Loader 
+              size="lg" 
+              color="oxford-blue" 
+              text="Loading questions..."
+              className="py-12"
+            />
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="text-cinnebar-red text-lg font-roboto mb-4">{error}</div>

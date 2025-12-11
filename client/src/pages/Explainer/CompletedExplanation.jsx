@@ -6,6 +6,7 @@ import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
 import questionsAPI from "../../api/questions";
 import subjectsAPI from "../../api/subjects";
+import Loader from "../../components/common/Loader";
 
 const CompletedExplanationPage = () => {
   const { t } = useLanguage();
@@ -252,11 +253,12 @@ const CompletedExplanationPage = () => {
         />
 
       {loading ? (
-        <div className="flex justify-center items-center py-12 min-h-[300px]">
-          <div className="text-oxford-blue font-roboto text-lg">
-            {t("explainer.completedExplanation.loading") || "Loading..."}
-          </div>
-        </div>
+        <Loader 
+          size="lg" 
+          color="oxford-blue" 
+          text={t("explainer.completedExplanation.loading") || "Loading..."}
+          className="py-12 min-h-[300px]"
+        />
       ) : (
         <>
           {console.log('Rendering table - filteredData length:', filteredData.length, 'items:', filteredData)}

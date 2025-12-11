@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useLanguage } from "../../context/LanguageContext";
 import { createSubject, clearError, clearSuccess } from "../../store/slices/subjectsSlice";
+import { fetchExams } from "../../store/slices/examsSlice";
 import { showErrorToast, showSuccessToast } from "../../utils/toastConfig";
 
 export default function AddSubjectPage() {
@@ -10,10 +11,17 @@ export default function AddSubjectPage() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { loading, error, success } = useSelector((state) => state.subjects);
+    const { exams, loading: examsLoading } = useSelector((state) => state.exams);
     
     const [subjectName, setSubjectName] = useState("");
     const [description, setDescription] = useState("");
     const [code, setCode] = useState("");
+    const [selectedExamId, setSelectedExamId] = useState("");
+
+    // Fetch exams on component mount
+    useEffect(() => {
+        dispatch(fetchExams({ status: "active" }));
+    }, [dispatch]);
 
     // Handle success
     useEffect(() => {
@@ -34,9 +42,14 @@ export default function AddSubjectPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!selectedExamId) {
+            showErrorToast(t('admin.addSubject.validation.selectExam') || 'Please select an exam');
+            return;
+        }
         const subjectData = {
             name: subjectName,
             description: description,
+            examId: selectedExamId,
         };
         dispatch(createSubject(subjectData));
     };
@@ -57,6 +70,39 @@ export default function AddSubjectPage() {
                         {t('admin.addSubject.sections.createSubject')}
                     </h3>
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Exam Dropdown */}
+                        <div>
+                            <label className="block text-base font-normal text-blue-dark mb-3">
+                                {t('admin.addSubject.fields.exam')}
+                            </label>
+                            <select
+                                value={selectedExamId}
+                                onChange={(e) => setSelectedExamId(e.target.value)}
+                                className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark bg-white"
+                                required
+                                disabled={examsLoading}
+                            >
+                                <option value="">
+                                    {examsLoading 
+                                        ? t('admin.addSubject.placeholders.loadingExams')
+                                        : t('admin.addSubject.placeholders.selectExam')}
+                                </option>
+                                {exams && exams.length > 0 ? (
+                                    exams.map((exam) => (
+                                        <option key={exam.id} value={exam.id}>
+                                            {exam.name}
+                                        </option>
+                                    ))
+                                ) : (
+                                    !examsLoading && (
+                                        <option value="" disabled>
+                                            {t('admin.addSubject.placeholders.noExams')}
+                                        </option>
+                                    )
+                                )}
+                            </select>
+                        </div>
+
                         {/* Subject Name */}
                         <div>
                             <label className="block text-base font-normal text-blue-dark mb-3">

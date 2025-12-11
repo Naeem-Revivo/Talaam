@@ -8,6 +8,7 @@ import topicsAPI from "../../api/topics";
 import usersAPI from "../../api/users";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 import RichTextEditor from "../../components/common/RichTextEditor";
+import Loader from "../../components/common/Loader";
 
 const Dropdown = ({ label, value, options, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -155,8 +156,20 @@ const GathererAddNewQuestionPage = () => {
       try {
         const response = await subjectsAPI.getAllSubjects();
         if (response.success && response.data?.subjects) {
-          // Filter subjects by exam if needed, or use all subjects
-          setSubjects(response.data.subjects);
+          // Filter subjects by the selected exam
+          const filteredSubjects = response.data.subjects.filter(
+            (subject) => subject.examId === examId
+          );
+          setSubjects(filteredSubjects);
+          
+          // Reset subject selection if current subject doesn't belong to selected exam
+          if (subjectId && !filteredSubjects.find(s => s.id === subjectId)) {
+            setSubjectId("");
+            setSubjectName("");
+            setTopics([]);
+            setTopicId("");
+            setTopicName("");
+          }
         }
       } catch (error) {
         showErrorToast(
@@ -261,6 +274,16 @@ const GathererAddNewQuestionPage = () => {
 
   // Handle subject selection
   const handleSubjectChange = (selectedSubjectName) => {
+    // If "Select the subject" is selected, clear the selection
+    if (selectedSubjectName === "Select the subject") {
+      setSubjectId("");
+      setSubjectName("");
+      // Reset topic
+      setTopicId("");
+      setTopicName("");
+      return;
+    }
+    
     const selectedSubject = subjects.find((s) => s.name === selectedSubjectName);
     if (selectedSubject) {
       setSubjectId(selectedSubject.id);
@@ -276,6 +299,13 @@ const GathererAddNewQuestionPage = () => {
 
   // Handle topic selection
   const handleTopicChange = (selectedTopicName) => {
+    // If "Select the topic" is selected, clear the selection
+    if (selectedTopicName === "Select the topic") {
+      setTopicId("");
+      setTopicName("");
+      return;
+    }
+    
     const selectedTopic = topics.find((t) => t.name === selectedTopicName);
     if (selectedTopic) {
       setTopicId(selectedTopic.id);
@@ -470,6 +500,18 @@ const GathererAddNewQuestionPage = () => {
 
   return (
     <>
+      {submitting && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 shadow-xl">
+            <Loader 
+              size="lg" 
+              color="oxford-blue" 
+              text="Creating question..."
+              className="py-4"
+            />
+          </div>
+        </div>
+      )}
       <style>{`
         .rich-text-editor .ql-container {
           font-family: 'Roboto', sans-serif;
@@ -728,7 +770,10 @@ const GathererAddNewQuestionPage = () => {
                         : loadingSubjects
                         ? [t('gatherer.addNewQuestion.messages.loading')]
                         : subjects.length > 0
-                        ? subjects.map((subject) => subject.name || "Unnamed Subject").filter(Boolean)
+                        ? [
+                            "Select the subject",
+                            ...subjects.map((subject) => subject.name || "Unnamed Subject").filter(Boolean)
+                          ]
                         : [t('gatherer.addNewQuestion.messages.noSubjectsAvailable')]
                     }
                   />
@@ -748,7 +793,10 @@ const GathererAddNewQuestionPage = () => {
                         : loadingTopics
                         ? [t('gatherer.addNewQuestion.messages.loading')]
                         : topics.length > 0
-                        ? topics.map((topic) => topic.name || "Unnamed Topic").filter(Boolean)
+                        ? [
+                            "Select the topic",
+                            ...topics.map((topic) => topic.name || "Unnamed Topic").filter(Boolean)
+                          ]
                         : [t('gatherer.addNewQuestion.messages.noTopicsAvailable')]
                     }
                   />
