@@ -85,6 +85,20 @@ const GathererAddNewQuestionPage = () => {
   const [questionType, setQuestionType] = useState("Multiple Choice (MCQ)");
   const [options, setOptions] = useState({ A: "", B: "", C: "", D: "" });
   const [correctAnswer, setCorrectAnswer] = useState("Option A");
+  
+  // Handle question type change - reset options and correct answer for True/False
+  const handleQuestionTypeChange = (newType) => {
+    setQuestionType(newType);
+    if (newType === "True/False") {
+      // Set True/False options
+      setOptions({ A: "True", B: "False", C: "", D: "" });
+      setCorrectAnswer("True");
+    } else {
+      // Reset to empty for other types
+      setOptions({ A: "", B: "", C: "", D: "" });
+      setCorrectAnswer("Option A");
+    }
+  };
   const [source, setSource] = useState("");
   const [explanation, setExplanation] = useState("");
 
@@ -382,6 +396,14 @@ const GathererAddNewQuestionPage = () => {
         return;
       }
     }
+    
+    // Validate True/False fields
+    if (questionType === "True/False") {
+      if (!correctAnswer || (correctAnswer !== "True" && correctAnswer !== "False")) {
+        showErrorToast("Please select True or False as the correct answer", { title: "Validation Error" });
+        return;
+      }
+    }
 
     setSubmitting(true);
     try {
@@ -393,9 +415,6 @@ const GathererAddNewQuestionPage = () => {
         "Essay": "ESSAY",
       };
       const apiQuestionType = questionTypeMap[questionType] || "MCQ";
-
-      // Map correct answer from "Option A" to "A"
-      const correctAnswerLetter = correctAnswer.replace("Option ", "");
 
       // Prepare question data
       const questionData = {
@@ -419,6 +438,8 @@ const GathererAddNewQuestionPage = () => {
 
       // Add MCQ-specific fields
       if (apiQuestionType === "MCQ") {
+        // Map correct answer from "Option A" to "A"
+        const correctAnswerLetter = correctAnswer.replace("Option ", "");
         questionData.options = {
           A: options.A.trim(),
           B: options.B.trim(),
@@ -426,6 +447,16 @@ const GathererAddNewQuestionPage = () => {
           D: options.D.trim(),
         };
         questionData.correctAnswer = correctAnswerLetter;
+      }
+      
+      // Add True/False-specific fields
+      if (apiQuestionType === "TRUE_FALSE") {
+        questionData.options = {
+          A: "True",
+          B: "False",
+        };
+        // Map "True" to "A" and "False" to "B"
+        questionData.correctAnswer = correctAnswer === "True" ? "A" : "B";
       }
 
       // Call the API
@@ -592,83 +623,116 @@ const GathererAddNewQuestionPage = () => {
                   </label>
                   <Dropdown
                     value={questionType}
-                    onChange={setQuestionType}
+                    onChange={handleQuestionTypeChange}
                     options={[
                       t('admin.addNewQuestion.questionTypes.multipleChoice'),
-                      t('admin.addNewQuestion.questionTypes.trueFalse'),
-                      t('admin.addNewQuestion.questionTypes.shortAnswer'),
-                      t('admin.addNewQuestion.questionTypes.essay')
+                      t('admin.addNewQuestion.questionTypes.trueFalse')
                     ]}
                   />
                 </div>
 
-                {/* Options Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-4">
+                {/* Options Grid - Show 4 options for MCQ, 2 options for True/False */}
+                {questionType === "True/False" ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('gatherer.addNewQuestion.options.optionA')}
+                        True
                       </label>
                       <input
                         type="text"
                         value={options.A}
-                        onChange={(e) => handleOptionChange("A", e.target.value)}
-                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        disabled
+                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-gray-100 px-4 py-3 text-blue-dark cursor-not-allowed"
                       />
                     </div>
                     <div>
                       <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('gatherer.addNewQuestion.options.optionC')}
-                      </label>
-                      <input
-                        type="text"
-                        value={options.C}
-                        onChange={(e) => handleOptionChange("C", e.target.value)}
-                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('gatherer.addNewQuestion.options.optionB')}
+                        False
                       </label>
                       <input
                         type="text"
                         value={options.B}
-                        onChange={(e) => handleOptionChange("B", e.target.value)}
-                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('gatherer.addNewQuestion.options.optionD')}
-                      </label>
-                      <input
-                        type="text"
-                        value={options.D}
-                        onChange={(e) => handleOptionChange("D", e.target.value)}
-                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        disabled
+                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-gray-100 px-4 py-3 text-blue-dark cursor-not-allowed"
                       />
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          {t('gatherer.addNewQuestion.options.optionA')}
+                        </label>
+                        <input
+                          type="text"
+                          value={options.A}
+                          onChange={(e) => handleOptionChange("A", e.target.value)}
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          {t('gatherer.addNewQuestion.options.optionC')}
+                        </label>
+                        <input
+                          type="text"
+                          value={options.C}
+                          onChange={(e) => handleOptionChange("C", e.target.value)}
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          {t('gatherer.addNewQuestion.options.optionB')}
+                        </label>
+                        <input
+                          type="text"
+                          value={options.B}
+                          onChange={(e) => handleOptionChange("B", e.target.value)}
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          {t('gatherer.addNewQuestion.options.optionD')}
+                        </label>
+                        <input
+                          type="text"
+                          value={options.D}
+                          onChange={(e) => handleOptionChange("D", e.target.value)}
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Correct Answer */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                     {t('gatherer.addNewQuestion.correctAnswer')}
                   </label>
-                  <Dropdown
-                    value={correctAnswer}
-                    onChange={setCorrectAnswer}
-                    options={[
-                      t('admin.addNewQuestion.correctAnswerOptions.optionA'),
-                      t('admin.addNewQuestion.correctAnswerOptions.optionB'),
-                      t('admin.addNewQuestion.correctAnswerOptions.optionC'),
-                      t('admin.addNewQuestion.correctAnswerOptions.optionD')
-                    ]}
-                  />
+                  {questionType === "True/False" ? (
+                    <Dropdown
+                      value={correctAnswer}
+                      onChange={setCorrectAnswer}
+                      options={["True", "False"]}
+                    />
+                  ) : (
+                    <Dropdown
+                      value={correctAnswer}
+                      onChange={setCorrectAnswer}
+                      options={[
+                        t('admin.addNewQuestion.correctAnswerOptions.optionA'),
+                        t('admin.addNewQuestion.correctAnswerOptions.optionB'),
+                        t('admin.addNewQuestion.correctAnswerOptions.optionC'),
+                        t('admin.addNewQuestion.correctAnswerOptions.optionD')
+                      ]}
+                    />
+                  )}
                 </div>
 
                 {/* Explanation (Optional) */}
