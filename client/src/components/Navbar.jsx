@@ -138,10 +138,10 @@ const Navbar = () => {
                 {t('navbar.signUp')}
               </Link>
 
-              {/* Log In Button */}
+              {/* Log In Button - Hidden on small screens, shown on large screens */}
               <Link 
                 to="/login"
-                className="bg-gradient-to-r from-blue-dark to-moonstone-blue w-[90px] md:w-[105px] h-[40px] text-white py-2 rounded-md text-xs md:text-sm font-medium text-center flex items-center justify-center"
+                className="hidden lg:flex bg-gradient-to-r from-blue-dark to-moonstone-blue w-[90px] md:w-[105px] h-[40px] text-white py-2 rounded-md text-xs md:text-sm font-medium text-center items-center justify-center"
               >
                 {t('navbar.logIn')}
               </Link>
@@ -215,9 +215,13 @@ const Navbar = () => {
               >
                 {t('navbar.signUp')}
               </Link>
-              <button className="bg-gradient-to-r from-blue-dark to-moonstone-blue text-white px-4 py-2 rounded-md text-sm font-medium">
+              <Link 
+                to="/login"
+                className="bg-gradient-to-r from-blue-dark to-moonstone-blue text-white px-4 py-2 rounded-md text-sm font-medium text-center"
+                onClick={toggleMenu}
+              >
                 {t('navbar.logIn')}
-              </button>
+              </Link>
             </div>
           </div>
         </div>

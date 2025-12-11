@@ -2324,9 +2324,9 @@ const handleGathererUpdateAfterFlag = async (questionId, updateData, userId) => 
 
 /**
  * Handle Creator's updated question variant after flag approval
- * When creator updates a question variant that was flagged by explainer and approved by processor
+ * When creator updates a question variant that was flagged by explainer/student and approved by processor
  */
-const handleCreatorUpdateVariantAfterFlag = async (questionId, updateData, userId) => {
+const handleCreatorUpdateVariantAfterFlag = async (questionId, updateData, userId, flagType = null) => {
   const question = await Question.findById(questionId);
 
   if (!question) {
@@ -2337,8 +2337,11 @@ const handleCreatorUpdateVariantAfterFlag = async (questionId, updateData, userI
     throw new Error('Question is not in pending_creator status');
   }
 
-  if (!question.isFlagged || question.flagStatus !== 'approved' || question.flagType !== 'explainer') {
-    throw new Error('Question variant was not flagged by explainer and approved by processor');
+  // Accept both explainer and student flag types
+  const expectedFlagType = flagType || question.flagType;
+  if (!question.isFlagged || question.flagStatus !== 'approved' || 
+      (expectedFlagType !== 'explainer' && expectedFlagType !== 'student')) {
+    throw new Error('Question variant was not flagged by explainer/student and approved by processor');
   }
 
   // Build update data object for Prisma
@@ -2356,7 +2359,7 @@ const handleCreatorUpdateVariantAfterFlag = async (questionId, updateData, userI
       performedBy: userId,
       role: 'creator',
       timestamp: new Date(),
-      notes: 'Question variant updated by creator after flag approval. Flag resolved and sent to processor for review.',
+      notes: `Question variant updated by creator after ${expectedFlagType} flag approval. Flag resolved and sent to processor for review.`,
     }],
   };
 
@@ -2739,9 +2742,10 @@ const updateFlaggedVariantByCreator = async (questionId, updateData, userId) => 
   }
 
   // Route to appropriate handler based on who flagged it
-  if (question.flagType === 'explainer') {
-    // Explainer flagged variant - use handleCreatorUpdateVariantAfterFlag
-    return await handleCreatorUpdateVariantAfterFlag(questionId, updateData, userId);
+  if (question.flagType === 'explainer' || question.flagType === 'student') {
+    // Explainer or student flagged variant - use handleCreatorUpdateVariantAfterFlag
+    // Both follow the same flow: creator updates and sends back to processor
+    return await handleCreatorUpdateVariantAfterFlag(questionId, updateData, userId, question.flagType);
   } else {
     throw new Error('Unknown flag type. Cannot determine update handler.');
   }

@@ -24,7 +24,8 @@ const Profile = () => {
   })
 
   const [errors, setErrors] = useState({
-    fullName: ''
+    fullName: '',
+    dateOfBirth: ''
   })
 
   // Initialize from current user/profile if available
@@ -73,16 +74,46 @@ const Profile = () => {
     return ''
   }
 
+  // Validate date of birth
+  const validateDateOfBirth = (date) => {
+    if (!date) {
+      return '' // Date of birth is optional, no error if empty
+    }
+    
+    const selectedDate = new Date(date)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0) // Reset time to compare dates only
+    
+    if (selectedDate > today) {
+      return t('profile.validation.dateOfBirthFuture') || 'Date of birth cannot be in the future'
+    }
+    
+    return ''
+  }
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
+    
+    // For dateOfBirth, validate immediately to prevent future dates
+    if (name === 'dateOfBirth' && value) {
+      const error = validateDateOfBirth(value)
+      if (error) {
+        setErrors({
+          ...errors,
+          [name]: error
+        })
+        return // Don't update formData if validation fails
+      }
+    }
+    
     setFormData({
       ...formData,
       [name]: value
     })
 
-    // Clear error when user starts typing
-    if (errors[name]) {
+    // Clear error when user starts typing (if no validation error)
+    if (errors[name] && (name !== 'dateOfBirth' || !value || !validateDateOfBirth(value))) {
       setErrors({
         ...errors,
         [name]: ''
@@ -97,6 +128,8 @@ const Profile = () => {
     
     if (name === 'fullName') {
       error = validateFullName(value)
+    } else if (name === 'dateOfBirth') {
+      error = validateDateOfBirth(value)
     }
     
     setErrors({
@@ -108,7 +141,8 @@ const Profile = () => {
   // Validate all fields before submission
   const validateForm = () => {
     const newErrors = {
-      fullName: validateFullName(formData.fullName)
+      fullName: validateFullName(formData.fullName),
+      dateOfBirth: validateDateOfBirth(formData.dateOfBirth)
     }
     
     setErrors(newErrors)
@@ -210,8 +244,15 @@ const Profile = () => {
                 name="dateOfBirth"
                 value={formData.dateOfBirth}
                 onChange={handleInputChange}
-                className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input"
+                onBlur={handleBlur}
+                max={new Date().toISOString().split('T')[0]} // Prevent future dates in date picker
+                className={`px-4 py-3 border ${errors.dateOfBirth ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input`}
               />
+              {errors.dateOfBirth && (
+                <p className="mt-1 text-sm text-red-500 font-roboto">
+                  {errors.dateOfBirth}
+                </p>
+              )}
             </div>
 
             {/* Country Dropdown */}
