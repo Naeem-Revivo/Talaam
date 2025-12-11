@@ -391,8 +391,40 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
         }
       });
       
-      // Note: Excluding flagged questions from creator's view until they're resolved and come back
-      // Flagged questions will only appear again when they're back in pending_creator status without the flag
+      // CRITICAL: Include questions in pending_processor that were submitted by creator
+      // These are questions where creator approved/created variants and sent back to processor
+      // They have: status=pending_processor, approvedBy (from processor), lastModifiedBy=creator
+      roleConditions.push({
+        AND: [
+          {
+            status: 'pending_processor'
+          },
+          {
+            approvedById: {
+              not: null
+            }
+          },
+          {
+            lastModifiedById: {
+              in: userIdsWithRole
+            }
+          }
+        ]
+      });
+      
+      // Include variant questions created by creator (they have isVariant=true and createdBy=creator)
+      roleConditions.push({
+        AND: [
+          {
+            isVariant: true
+          },
+          {
+            createdById: {
+              in: userIdsWithRole
+            }
+          }
+        ]
+      });
       
       // Include questions in pending_explainer or completed that have approvedBy
       // These went through creator workflow, then processor approved and sent to explainer
@@ -495,29 +527,9 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
     where.AND = [];
   }
   
-  // CRITICAL: Exclude gatherer-updated questions after flags from creator's view
-  // When gatherer updates a flagged question, it has:
-  // - status: 'pending_processor'
-  // - flagType: 'creator' or 'student' (preserved)
-  // - isFlagged: false (cleared by gatherer)
-  // These should NOT show in creator's view until processor approves them
-  if (submittedByRole === 'creator' && status === 'pending_processor') {
-    // Exclude questions that were updated by gatherer after flag (flagType exists but isFlagged=false)
-    where.AND.push({
-      NOT: {
-        AND: [
-          {
-            flagType: {
-              in: ['creator', 'student']
-            }
-          },
-          {
-            isFlagged: false
-          }
-        ]
-      }
-    });
-  }
+  // Note: We don't exclude gatherer-updated questions here because this function is used by processor
+  // Processor needs to see ALL creator-submitted questions (including gatherer-updated ones) for review
+  // The exclusion for creator's own view is handled in getQuestionsByStatus function
   
   if (flagType === 'student') {
     // Only fetch student-flagged questions (all statuses for admin submission page)
@@ -583,6 +595,8 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
                            (question.flagStatus === 'pending' || question.flagStatus === null || question.flagStatus === undefined);
 
     // For gatherer: check createdBy (gatherer creates questions)
+    // Note: We don't exclude creator-submitted questions here - they can appear in gatherer submission
+    // The button logic in ProcessorViewQuestion will handle showing correct options
     if (submittedByRole === 'gatherer') {
       const createdByGatherer = question.createdById && userIdsWithRole && userIdsWithRole.includes(question.createdById);
       const createdByRole = question.createdBy?.adminRole === 'gatherer' || 
@@ -595,12 +609,27 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
       // Check if creator modified it (lastModifiedBy is creator)
       const lastModifiedByCreator = question.lastModifiedById && userIdsWithRole && userIdsWithRole.includes(question.lastModifiedById);
       
+      // Check if it's a variant created by creator
+      const isVariant = question.isVariant === true || question.isVariant === 'true';
+      const isVariantByCreator = isVariant && question.createdById && userIdsWithRole && userIdsWithRole.includes(question.createdById);
+      
+      // Check if question has variants created by creator
+      const hasVariants = question.variants && Array.isArray(question.variants) && question.variants.length > 0;
+      const hasCreatorVariants = hasVariants && question.history && Array.isArray(question.history) &&
+        question.history.some(h => h.role === 'creator' && h.action === 'variant_created');
+      
+      // Check if creator submitted question back to processor (pending_processor with approvedBy and lastModifiedBy=creator)
+      const isCreatorSubmitted = question.status === 'pending_processor' && 
+        question.approvedById && 
+        lastModifiedByCreator;
+      
       // Check if went through creator workflow (approved by processor and sent to creator, then to explainer/completed)
       const wentThroughCreatorWorkflow = question.approvedBy !== null || 
                                         question.status === 'pending_explainer' ||
                                         question.status === 'completed';
       
-      return hasRoleHistory || hasRoleApproval || isFlaggedByRole || lastModifiedByCreator || wentThroughCreatorWorkflow;
+      return hasRoleHistory || hasRoleApproval || isFlaggedByRole || lastModifiedByCreator || 
+             isVariantByCreator || hasCreatorVariants || isCreatorSubmitted || wentThroughCreatorWorkflow;
     }
 
     // For explainer: check if explainer worked on it

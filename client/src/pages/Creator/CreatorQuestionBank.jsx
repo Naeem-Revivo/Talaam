@@ -506,11 +506,11 @@ const CreatorQuestionBank = () => {
               />
             </div>
           ) : (
-            <Table
+          <Table
               items={questionsData.slice((currentPage - 1) * 10, currentPage * 10)}
               columns={QuestionsColumns}
               page={currentPage}
-              pageSize={10}
+            pageSize={10}
               total={totalQuestions}
               onPageChange={setCurrentPage}
               onView={handleView}
@@ -525,7 +525,7 @@ const CreatorQuestionBank = () => {
               emptyMessage={t("creator.assignedQuestionPage.emptyMessage")}
               onShowFlagReason={handleShowFlagReason}
               onShowRejectionReason={handleShowRejectionReason}
-            />
+          />
           )}
         </div>
 
@@ -547,14 +547,14 @@ const CreatorQuestionBank = () => {
                 <div className="space-y-3">
                   {activityData.length > 0 ? (
                     activityData.map((activity, index) => (
-                      <RecentActivity
-                        key={index}
-                        icon={activity.icon}
-                        title={activity.title}
-                        subtitle={activity.subtitle}
-                        timestamp={activity.timestamp}
-                        variant={activity.variant}
-                      />
+                    <RecentActivity
+                      key={index}
+                      icon={activity.icon}
+                      title={activity.title}
+                      subtitle={activity.subtitle}
+                      timestamp={activity.timestamp}
+                      variant={activity.variant}
+                    />
                     ))
                   ) : (
                     <p className="text-[14px] leading-5 font-normal font-roboto text-[#6B7280]">
