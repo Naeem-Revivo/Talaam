@@ -1311,10 +1311,20 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
     });
   }
   
+  // PRIORITY 0 (HIGHEST): Check if question has explanation - this is the FINAL STEP
+  // If explainer added explanation, question must be marked as completed when processor approves
+  // This check must come FIRST to ensure completion takes priority over all other routing logic
+  const hasExplanation = question.explanation && question.explanation.trim() !== '';
+  
+  if (hasExplanation) {
+    // Question has explanation - this is the final step, mark as completed
+    nextStatus = 'completed';
+  }
   // PRIORITY 1: If question was updated after flag approval, route based on who flagged it
   // This ensures explainer-flagged questions go back to explainer, not creator
   // Student-flagged questions follow the same flow as creator-flagged questions after gatherer updates
-  if (wasUpdatedAfterFlag && question.flagType) {
+  // BUT: Skip this if question has explanation (handled by PRIORITY 0)
+  else if (wasUpdatedAfterFlag && question.flagType) {
     if (question.flagType === 'student' || question.flagType === 'creator') {
       // Student or creator flagged - after gatherer updates, send to creator
       // Student flags follow the same flow as creator flags after gatherer updates
@@ -1390,15 +1400,8 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
       nextStatus = 'pending_creator';
     }
   } 
-  // PRIORITY 5: Check if question has explanation (regardless of last action role)
-  // This ensures that if explainer added explanation, question is marked complete when processor approves
-  // This is the FINAL STEP - after explanation is added, approval should mark as completed
-  // This check must come BEFORE creator/explainer role checks to ensure completion takes priority
-  else if (question.explanation && question.explanation.trim() !== '') {
-    // Question has explanation - this is the final step, mark as completed
-    nextStatus = 'completed';
-  } 
   // PRIORITY 6: Normal workflow based on last action role (only if no explanation exists)
+  // Note: Explanation check is now PRIORITY 0 (highest) - handled above
   else if (lastAction && lastAction.role === 'creator') {
     // After creator submission/update, check if it was an accept or flag
     // If creator accepted (status was set to pending_processor), move to explainer
