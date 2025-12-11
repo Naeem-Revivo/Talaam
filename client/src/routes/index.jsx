@@ -121,7 +121,6 @@ export const AppRoutes = () => {
       <Route element={<PublicRoute />}>
         <Route path="/signupfree" element={<SignUpFreePage />} />
         <Route path="/create-account" element={<CreateAccountPage />} />
-        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/forgot-modal" element={<ForgotModalPage />} />
@@ -130,6 +129,7 @@ export const AppRoutes = () => {
       </Route>
       
       {/* Profile page - can be accessed by authenticated users or during signup flow */}
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/moyassar-payment" element={<MoyassarPaymentPage />} />

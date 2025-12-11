@@ -439,8 +439,8 @@ const CreatorVariantsPage = () => {
         // Show success message
         showSuccessToast(`Successfully created ${validVariants.length} variant(s)!`);
         shouldRedirect = true;
-        // Redirect to assigned question page after creating variants
-        redirectPath = "/creator/question-bank/assigned-question";
+        // Redirect to question bank page after creating variants
+        redirectPath = "/creator/question-bank";
       } else {
         // No variants created - submit the question explicitly
         try {
@@ -689,8 +689,8 @@ const CreatorVariantsPage = () => {
       // Close modal and reset
       handleFlagClose();
       
-      // Navigate to assigned question page
-      navigate("/creator/question-bank/assigned-question");
+      // Navigate to question bank page
+      navigate("/creator/question-bank");
     } catch (error) {
       console.error("Error flagging question:", error);
       showErrorToast(error.message || "Failed to flag question. Please try again.");

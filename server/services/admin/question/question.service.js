@@ -119,19 +119,53 @@ const getQuestionsByStatus = async (status, userId, role, flagType = null) => {
     // They should only appear after processor approves them
     // Exclude: questions with flagType (creator/student) that are NOT flagged and in pending_processor
     // This means gatherer updated them and they're waiting for processor approval
+    // BUT: Include questions where creator has performed operations (created variants, last modified, etc.)
     if (status === 'pending_processor') {
-      where.NOT = {
-        AND: [
-          {
-            flagType: {
-              in: ['creator', 'student']
+      // Use OR to include questions where creator performed operations
+      // This ensures questions where creator created variants or last modified are NOT excluded
+      where.OR = [
+        // Always include if creator last modified this question (creator performed operation)
+        {
+          lastModifiedById: userId
+        },
+        // Always include if creator created variants for this question
+        {
+          variants: {
+            some: {
+              createdById: userId,
+              isVariant: true
             }
-          },
-          {
-            isFlagged: false
           }
-        ]
-      };
+        },
+        // Include questions that don't match the exclusion criteria (not gatherer-updated)
+        {
+          NOT: {
+            AND: [
+              {
+                flagType: {
+                  in: ['creator', 'student']
+                }
+              },
+              {
+                isFlagged: false
+              },
+              {
+                lastModifiedById: {
+                  not: userId
+                }
+              },
+              {
+                variants: {
+                  none: {
+                    createdById: userId,
+                    isVariant: true
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ];
     }
   }
   
@@ -1267,7 +1301,7 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
   const lastAction = question.history && question.history.length > 0 
     ? question.history[0] 
     : null;
-
+  
   // Check if question was updated after a flag was approved
   // This can happen in two scenarios:
   // 1. Flag is still active (isFlagged && flagStatus === 'approved')
