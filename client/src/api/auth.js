@@ -51,15 +51,7 @@ const authAPI = {
     try {
       const response = await axiosClient.post('/auth/signup', userData);
       const payload = response.data;
-      const token = payload?.data?.token;
-      const user = payload?.data?.user;
-
-      if (token) {
-        localStorage.setItem('authToken', token);
-      }
-      if (user) {
-        localStorage.setItem('user', JSON.stringify(user));
-      }
+      // Don't set storage here - let Redux slice handle it based on rememberMe
       return payload;
     } catch (error) {
       const apiError = error.response?.data;
@@ -74,15 +66,7 @@ const authAPI = {
     try {
       const response = await axiosClient.post('/auth/login', credentials);
       const payload = response.data;
-      const token = payload?.data?.token;
-      const user = payload?.data?.user;
-
-      if (token) {
-        localStorage.setItem('authToken', token);
-      }
-      if (user) {
-        localStorage.setItem('user', JSON.stringify(user));
-      }
+      // Don't set storage here - let Redux slice handle it based on rememberMe
       return payload;
     } catch (error) {
       const apiError = error.response?.data;
@@ -108,15 +92,7 @@ const authAPI = {
     try {
       const response = await axiosClient.post('/auth/verify-otp', payload);
       const data = response.data;
-      const token = data?.data?.token;
-      const user = data?.data?.user;
-
-      if (token) {
-        localStorage.setItem('authToken', token);
-      }
-      if (user) {
-        localStorage.setItem('user', JSON.stringify(user));
-      }
+      // Don't set storage here - let Redux slice handle it (OTP defaults to rememberMe = true)
       return data;
     } catch (error) {
       const apiError = error.response?.data;
@@ -198,10 +174,13 @@ const authAPI = {
     }
   },
 
-  // Simple logout (remove from localStorage)
+  // Simple logout (remove from both localStorage and sessionStorage)
   logout: () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    localStorage.removeItem('rememberMe');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('user');
   },
 };
 

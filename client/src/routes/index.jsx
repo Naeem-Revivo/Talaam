@@ -32,6 +32,7 @@ import AddUserPage from '../pages/admin/AddUserPage';
 import EditUserPage from '../pages/admin/EditUserPage';
 import UserDetailPage from '../pages/admin/UserDetailPage';
 import { RoleRoute } from './ProtectedRoute';
+import { PublicRoute } from './PublicRoute';
 import ClassificationManagement from '../pages/admin/ClassificationManagementPage';
 import AdminQuestionBankPage from '../pages/admin/QuestionBankPage';
 import QuestionManagementPage from '../pages/admin/QuestionManagementPage';
@@ -116,16 +117,21 @@ export const AppRoutes = () => {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/question-banks" element={<QuestionBankPage />} />
-      <Route path="/signupfree" element={<SignUpFreePage />} />
-      <Route path="/create-account" element={<CreateAccountPage />} />
+      {/* Public Auth Routes - Redirect authenticated users to dashboard */}
+      <Route element={<PublicRoute />}>
+        <Route path="/signupfree" element={<SignUpFreePage />} />
+        <Route path="/create-account" element={<CreateAccountPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/forgot-modal" element={<ForgotModalPage />} />
+        <Route path="/set-new-password" element={<SetNewPasswordPage />} />
+        <Route path="/password-reset" element={<PasswordResetPage />} />
+      </Route>
+      
+      {/* Profile page - can be accessed by authenticated users or during signup flow */}
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/login" element={<LoginPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/forgot-modal" element={<ForgotModalPage />} />
-      <Route path="/set-new-password" element={<SetNewPasswordPage />} />
-      <Route path="/password-reset" element={<PasswordResetPage />} />
       <Route path="/moyassar-payment" element={<MoyassarPaymentPage />} />
       
       {/* Dashboard Routes (User) */}

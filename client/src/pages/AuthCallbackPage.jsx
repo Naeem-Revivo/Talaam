@@ -32,8 +32,12 @@ const AuthCallbackPage = () => {
     }
 
     if (token) {
-      // Store token
+      // OAuth logins default to rememberMe = true (persistent storage)
       localStorage.setItem('authToken', token);
+      localStorage.setItem('rememberMe', 'true');
+      // Clear from sessionStorage if it exists
+      sessionStorage.removeItem('authToken');
+      sessionStorage.removeItem('user');
       
       // Fetch user data
       dispatch(fetchCurrentUser())
@@ -41,7 +45,7 @@ const AuthCallbackPage = () => {
           if (fetchCurrentUser.fulfilled.match(result)) {
             const user = result.payload?.data?.user;
             
-            // Store user in localStorage
+            // Store user in localStorage (OAuth logins are persistent)
             if (user) {
               localStorage.setItem('user', JSON.stringify(user));
             }
