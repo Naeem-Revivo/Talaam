@@ -33,6 +33,7 @@ const CreateAccount = () => {
   const checkPasswordRequirements = (password) => {
     return {
       minLength: password.length >= 8,
+      maxLength: password.length <= 25,
       hasUppercase: /[A-Z]/.test(password),
       hasSpecial: /[^A-Za-z0-9]/.test(password),
       hasLowercase: /[a-z]/.test(password),
@@ -57,6 +58,8 @@ const CreateAccount = () => {
       case 'email':
         if (!value.trim()) {
           newErrors.email = t('createAccount.validation.emailRequired')
+        } else if (value.length > 50) {
+          newErrors.email = t('createAccount.validation.emailMaxLength') || 'Email must not exceed 50 characters'
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
           newErrors.email = t('createAccount.validation.emailInvalid')
         } else {
@@ -72,6 +75,9 @@ const CreateAccount = () => {
         if (!value.trim()) {
           newErrors.password = t('createAccount.validation.passwordRequired')
           newErrors.passwordRequirements = t('createAccount.validation.passwordRequirements')
+        } else if (value.length > 25) {
+          newErrors.password = t('createAccount.validation.passwordMaxLength') || 'Password must not exceed 25 characters'
+          newErrors.passwordRequirements = ''
         } else if (!currentPasswordValid) {
           newErrors.password = ''
           newErrors.passwordRequirements = t('createAccount.validation.passwordRequirements')
@@ -94,6 +100,8 @@ const CreateAccount = () => {
       case 'confirmPassword':
         if (!value.trim()) {
           newErrors.confirmPassword = t('createAccount.validation.confirmPasswordRequired')
+        } else if (value.length > 25) {
+          newErrors.confirmPassword = t('createAccount.validation.passwordMaxLength') || 'Password must not exceed 25 characters'
         } else if (value !== formData.password) {
           newErrors.confirmPassword = t('createAccount.validation.passwordsMismatch')
         } else {
@@ -134,6 +142,9 @@ const CreateAccount = () => {
     if (!formData.email.trim()) {
       newErrors.email = t('createAccount.validation.emailRequired')
       isValid = false
+    } else if (formData.email.length > 50) {
+      newErrors.email = t('createAccount.validation.emailMaxLength') || 'Email must not exceed 50 characters'
+      isValid = false
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = t('createAccount.validation.emailInvalid')
       isValid = false
@@ -145,6 +156,10 @@ const CreateAccount = () => {
     if (!formData.password.trim()) {
       newErrors.password = t('createAccount.validation.passwordRequired')
       newErrors.passwordRequirements = t('createAccount.validation.passwordRequirements')
+      isValid = false
+    } else if (formData.password.length > 25) {
+      newErrors.password = t('createAccount.validation.passwordMaxLength') || 'Password must not exceed 25 characters'
+      newErrors.passwordRequirements = ''
       isValid = false
     } else if (!isPasswordValid()) {
       newErrors.password = ''
@@ -158,6 +173,9 @@ const CreateAccount = () => {
     // Confirm password validation
     if (!formData.confirmPassword.trim()) {
       newErrors.confirmPassword = t('createAccount.validation.confirmPasswordRequired')
+      isValid = false
+    } else if (formData.confirmPassword.length > 25) {
+      newErrors.confirmPassword = t('createAccount.validation.passwordMaxLength') || 'Password must not exceed 25 characters'
       isValid = false
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = t('createAccount.validation.passwordsMismatch')
@@ -246,6 +264,7 @@ const CreateAccount = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
+                maxLength={50}
                 placeholder={t('createAccount.emailPlaceholder')}
                 className={`px-4 py-3 border ${errors.email ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray`}
               />
@@ -268,6 +287,7 @@ const CreateAccount = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   onBlur={handleBlur}
+                  maxLength={25}
                   placeholder={t('createAccount.passwordPlaceholder')}
                   className={`px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray`}
                 />
@@ -339,6 +359,7 @@ const CreateAccount = () => {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   onBlur={handleBlur}
+                  maxLength={25}
                   placeholder={t('createAccount.confirmPasswordPlaceholder')}
                   className={`px-4 py-3 border ${errors.confirmPassword ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none pr-12 w-full lg:w-[423px] h-[59px] shadow-input font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray`}
                 />
