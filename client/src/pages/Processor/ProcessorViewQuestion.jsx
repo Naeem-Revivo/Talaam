@@ -96,12 +96,19 @@ const ProcessorViewQuestion = () => {
   const [loadingParent, setLoadingParent] = useState(false);
   
   // Check if question was updated after a flag (gatherer updated flagged question)
+  // This can happen in two scenarios:
+  // 1. Flag is still active (isFlagged === true && flagStatus === 'approved')
+  // 2. Flag was cleared by gatherer update but flagType still exists (isFlagged === false but flagType exists)
+  const hasGathererUpdate = question && 
+                             question.history && 
+                             Array.isArray(question.history) &&
+                             question.history.some(h => h.role === 'gatherer' && (h.action === 'updated' || h.action === 'update'));
+  
   const wasUpdatedAfterFlag = question && 
-                               question.isFlagged === true && 
-                               question.flagStatus === 'approved' &&
-                               question.history && 
-                               Array.isArray(question.history) &&
-                               question.history.some(h => h.role === 'gatherer' && h.action === 'updated');
+                               hasGathererUpdate &&
+                               question.flagType &&
+                               ((question.isFlagged === true && question.flagStatus === 'approved') ||
+                                (question.isFlagged === false && (question.flagType === 'creator' || question.flagType === 'student' || question.flagType === 'explainer')));
 
   // Determine if this is from creator submission
   // ONLY use source parameter - don't infer from question properties
@@ -151,14 +158,15 @@ const ProcessorViewQuestion = () => {
   // OR if flagged and flagStatus is not 'pending' (flag already reviewed)
   // OR if from gatherer submission but question has already been approved (moved to next stage)
   // Show buttons if gatherer rejected a flag (has flagRejectionReason) - ALWAYS show buttons for gatherer rejections
+  // Show buttons if gatherer updated after flag (wasUpdatedAfterFlag) - these need processor approval
   // For student flags from admin submission, show buttons even if flagStatus is 'approved' (processor can still review)
   const isStudentFlagFromAdmin = isFromAdminSubmission && flagType === 'student' && question.isFlagged;
   const canProcessQuestion = question && 
                              question.status === 'pending_processor' &&
-                             ((!isFlagged || (isFlagged && (question.flagStatus === 'pending' || (isStudentFlagFromAdmin && question.flagStatus !== 'rejected'))) || gathererRejectedFlag)) &&
-                             // If gatherer rejected flag, always show buttons (needs processor review)
+                             ((!isFlagged || (isFlagged && (question.flagStatus === 'pending' || (isStudentFlagFromAdmin && question.flagStatus !== 'rejected'))) || gathererRejectedFlag || wasUpdatedAfterFlag)) &&
+                             // If gatherer rejected flag or updated after flag, always show buttons (needs processor review)
                              // Otherwise, if from gatherer submission, only show buttons if question hasn't been approved yet
-                             (gathererRejectedFlag || !isFromGathererSubmission || !question.approvedBy);
+                             (gathererRejectedFlag || wasUpdatedAfterFlag || !isFromGathererSubmission || !question.approvedBy);
 
   // Determine next destination based on flag type if updated after flag
   // OR based on source page and question state (which indicates the workflow stage)

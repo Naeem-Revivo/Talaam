@@ -113,6 +113,26 @@ const getQuestionsByStatus = async (status, userId, role, flagType = null) => {
   // Creator can only see questions assigned to them
   if (role === 'creator') {
     where.assignedCreatorId = userId;
+    
+    // CRITICAL: Exclude gatherer-updated questions after flags from creator's view
+    // These questions have flagType but isFlagged=false and status=pending_processor
+    // They should only appear after processor approves them
+    // Exclude: questions with flagType (creator/student) that are NOT flagged and in pending_processor
+    // This means gatherer updated them and they're waiting for processor approval
+    if (status === 'pending_processor') {
+      where.NOT = {
+        AND: [
+          {
+            flagType: {
+              in: ['creator', 'student']
+            }
+          },
+          {
+            isFlagged: false
+          }
+        ]
+      };
+    }
   }
   
   // Explainer can only see questions assigned to them
@@ -473,6 +493,30 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
   // Student-flagged questions should only appear in other pages after flag is accepted
   if (!where.AND) {
     where.AND = [];
+  }
+  
+  // CRITICAL: Exclude gatherer-updated questions after flags from creator's view
+  // When gatherer updates a flagged question, it has:
+  // - status: 'pending_processor'
+  // - flagType: 'creator' or 'student' (preserved)
+  // - isFlagged: false (cleared by gatherer)
+  // These should NOT show in creator's view until processor approves them
+  if (submittedByRole === 'creator' && status === 'pending_processor') {
+    // Exclude questions that were updated by gatherer after flag (flagType exists but isFlagged=false)
+    where.AND.push({
+      NOT: {
+        AND: [
+          {
+            flagType: {
+              in: ['creator', 'student']
+            }
+          },
+          {
+            isFlagged: false
+          }
+        ]
+      }
+    });
   }
   
   if (flagType === 'student') {
@@ -1188,19 +1232,55 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
     throw new Error('Access denied. This question is not assigned to you.');
   }
 
-  // Check if question was updated after a flag was approved
-  const wasUpdatedAfterFlag = question.isFlagged && 
-    question.flagStatus === 'approved' && 
-    (question.history.some(h => h.role === 'gatherer' && h.action === 'updated') ||
-     question.history.some(h => h.role === 'creator' && h.action === 'updated') ||
-     question.history.some(h => h.role === 'explainer' && h.action === 'updated'));
-
   // Determine next status based on current workflow
   let nextStatus;
   // History is ordered by timestamp desc, so the most recent entry is at index 0
   const lastAction = question.history && question.history.length > 0 
     ? question.history[0] 
     : null;
+
+  // Check if question was updated after a flag was approved
+  // This can happen in two scenarios:
+  // 1. Flag is still active (isFlagged && flagStatus === 'approved')
+  // 2. Flag was cleared by gatherer/creator/explainer update but flagType still exists
+  //    (This happens when gatherer updates after flag approval - flag is cleared but flagType preserved)
+  const hasActiveFlag = question.isFlagged && question.flagStatus === 'approved';
+  const hasRecentUpdate = question.history.some(h => 
+    (h.role === 'gatherer' || h.role === 'creator' || h.role === 'explainer') && 
+    (h.action === 'updated' || h.action === 'update')
+  );
+  // Detect gatherer update after flag: flagType exists, flag is cleared, and last action is gatherer update
+  // This is CRITICAL for the workflow: gatherer updates after flag should go to processor first, then creator
+  // Check both lastAction and history array to be more robust
+  const hasGathererUpdate = question.history && question.history.some(h => 
+    h.role === 'gatherer' && (h.action === 'updated' || h.action === 'update')
+  );
+  const isGathererUpdateAfterFlag = question.flagType && 
+    !question.isFlagged && 
+    hasGathererUpdate &&
+    lastAction && 
+    lastAction.role === 'gatherer' && 
+    (lastAction.action === 'updated' || lastAction.action === 'update');
+  
+  const wasUpdatedAfterFlag = (hasActiveFlag && hasRecentUpdate) || isGathererUpdateAfterFlag;
+  
+  // Debug logging for gatherer update detection
+  if (question.flagType && !question.isFlagged) {
+    console.log('[APPROVE QUESTION] Checking for gatherer update after flag', {
+      questionId,
+      flagType: question.flagType,
+      isFlagged: question.isFlagged,
+      hasGathererUpdate,
+      lastAction: lastAction ? {
+        role: lastAction.role,
+        action: lastAction.action,
+        timestamp: lastAction.timestamp
+      } : null,
+      isGathererUpdateAfterFlag,
+      wasUpdatedAfterFlag,
+      historyLength: question.history?.length || 0
+    });
+  }
   
   // PRIORITY 1: If question was updated after flag approval, route based on who flagged it
   // This ensures explainer-flagged questions go back to explainer, not creator
@@ -1242,8 +1322,11 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
     }
   } 
   // PRIORITY 3: Check if question has flagType even if flag was cleared (for edge cases)
-  else if (question.flagType && !question.isFlagged) {
+  // BUT: Exclude gatherer updates after flags (those are handled by PRIORITY 1)
+  // This only handles cases where flag was cleared without an update
+  else if (question.flagType && !question.isFlagged && !isGathererUpdateAfterFlag) {
     // Question had a flag that was resolved, route based on original flagType
+    // This should not catch gatherer updates - those are handled by PRIORITY 1
     if (question.flagType === 'student') {
       // Student flagged - route based on whether it's a variant or original question
       if (question.isVariant || question.originalQuestionId) {
@@ -1264,10 +1347,11 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
     }
   }
   // PRIORITY 4: Normal workflow based on last action role
+  // BUT: Exclude gatherer updates after flags (those are handled by PRIORITY 1)
   // BUT: Check flagType first to ensure explainer-flagged questions don't go to creator
   // Student-flagged questions follow the same flow as creator-flagged questions
-  else if (lastAction && lastAction.role === 'gatherer') {
-    // After gatherer submission/update
+  else if (lastAction && lastAction.role === 'gatherer' && !isGathererUpdateAfterFlag) {
+    // After gatherer submission/update (but NOT after flag updates - those go to PRIORITY 1)
     // CRITICAL: If question was flagged by explainer, route to explainer, not creator
     // Student flags follow creator flow (go to creator)
     if (question.flagType === 'explainer') {
@@ -2141,11 +2225,13 @@ const handleGathererUpdateAfterFlag = async (questionId, updateData, userId) => 
     lastModifiedBy: userId,
     status: 'pending_processor', // Send back to processor for review
     // Resolve the flag when gatherer updates the question
+    // IMPORTANT: Keep flagType so processor knows who originally flagged it for proper routing
     isFlagged: false,
     flagStatus: null,
     flaggedBy: null,
     flagReason: null,
     flagReviewedBy: null,
+    // flagType is preserved (not cleared) so processor can route correctly
     history: [{
       action: 'updated',
       performedBy: userId,
@@ -2183,7 +2269,25 @@ const handleGathererUpdateAfterFlag = async (questionId, updateData, userId) => 
     prismaUpdateData.topic = updateData.topic;
   }
 
-  return await Question.update(questionId, prismaUpdateData);
+  // CRITICAL: Ensure status is always set to pending_processor for gatherer updates after flag
+  // This ensures the question goes to processor first, not directly to creator
+  prismaUpdateData.status = 'pending_processor';
+
+  const updatedQuestion = await Question.update(questionId, prismaUpdateData);
+  
+  // Verify the status was set correctly
+  if (updatedQuestion.status !== 'pending_processor') {
+    console.error('[ERROR] Question status was not set to pending_processor after gatherer update', {
+      questionId,
+      expectedStatus: 'pending_processor',
+      actualStatus: updatedQuestion.status
+    });
+    // Force update the status if it wasn't set correctly
+    await Question.update(questionId, { status: 'pending_processor' });
+    updatedQuestion.status = 'pending_processor';
+  }
+  
+  return updatedQuestion;
 };
 
 /**
@@ -2319,7 +2423,25 @@ const handleGathererUpdateAfterExplainerFlag = async (questionId, updateData, us
     prismaUpdateData.topic = updateData.topic;
   }
 
-  return await Question.update(questionId, prismaUpdateData);
+  // CRITICAL: Ensure status is always set to pending_processor for gatherer updates after flag
+  // This ensures the question goes to processor first, not directly to creator/explainer
+  prismaUpdateData.status = 'pending_processor';
+
+  const updatedQuestion = await Question.update(questionId, prismaUpdateData);
+  
+  // Verify the status was set correctly
+  if (updatedQuestion.status !== 'pending_processor') {
+    console.error('[ERROR] Question status was not set to pending_processor after gatherer update (explainer flag)', {
+      questionId,
+      expectedStatus: 'pending_processor',
+      actualStatus: updatedQuestion.status
+    });
+    // Force update the status if it wasn't set correctly
+    await Question.update(questionId, { status: 'pending_processor' });
+    updatedQuestion.status = 'pending_processor';
+  }
+  
+  return updatedQuestion;
 };
 
 /**
@@ -2337,19 +2459,31 @@ const approveUpdatedFlaggedQuestion = async (questionId, userId) => {
     throw new Error('Question is not in pending_processor status');
   }
 
-  // Check if question was updated after a flag was approved
-  const wasUpdatedAfterFlag = question.isFlagged && 
-    question.flagStatus === 'approved' && 
-    (question.history.some(h => h.role === 'gatherer' && h.action === 'updated') ||
-     question.history.some(h => h.role === 'creator' && h.action === 'updated') ||
-     question.history.some(h => h.role === 'explainer' && h.action === 'updated'));
-
   // Determine next status and remove flag
   let nextStatus;
   // History is ordered by timestamp desc, so the most recent entry is at index 0
   const lastAction = question.history && question.history.length > 0 
     ? question.history[0] 
     : null;
+
+  // Check if question was updated after a flag was approved
+  // This can happen in two scenarios:
+  // 1. Flag is still active (isFlagged && flagStatus === 'approved')
+  // 2. Flag was cleared by gatherer/creator/explainer update but flagType still exists
+  //    (This happens when gatherer updates after flag approval - flag is cleared but flagType preserved)
+  const hasActiveFlag = question.isFlagged && question.flagStatus === 'approved';
+  const hasRecentUpdate = question.history.some(h => 
+    (h.role === 'gatherer' || h.role === 'creator' || h.role === 'explainer') && 
+    h.action === 'updated'
+  );
+  // Detect gatherer update after flag: flagType exists, flag is cleared, and last action is gatherer update
+  const isGathererUpdateAfterFlag = question.flagType && 
+    !question.isFlagged && 
+    lastAction && 
+    lastAction.role === 'gatherer' && 
+    lastAction.action === 'updated';
+  
+  const wasUpdatedAfterFlag = (hasActiveFlag && hasRecentUpdate) || isGathererUpdateAfterFlag;
   
   // PRIORITY 1: If question was updated after flag approval, route based on who flagged it
   // This ensures explainer-flagged questions go back to explainer, not creator
