@@ -119,13 +119,13 @@ export const AppRoutes = () => {
       <Route path="/question-banks" element={<QuestionBankPage />} />
       {/* Public Auth Routes - Redirect authenticated users to dashboard */}
       <Route element={<PublicRoute />}>
-        <Route path="/signupfree" element={<SignUpFreePage />} />
-        <Route path="/create-account" element={<CreateAccountPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/forgot-modal" element={<ForgotModalPage />} />
-        <Route path="/set-new-password" element={<SetNewPasswordPage />} />
-        <Route path="/password-reset" element={<PasswordResetPage />} />
+      <Route path="/signupfree" element={<SignUpFreePage />} />
+      <Route path="/create-account" element={<CreateAccountPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/forgot-modal" element={<ForgotModalPage />} />
+      <Route path="/set-new-password" element={<SetNewPasswordPage />} />
+      <Route path="/password-reset" element={<PasswordResetPage />} />
       </Route>
       
       {/* Profile page - can be accessed by authenticated users or during signup flow */}
@@ -242,7 +242,7 @@ export const AppRoutes = () => {
           <Route index element={<CreatorDashboard />} />
           <Route path="profile" element={<CreatorProfile />} />
           <Route path="question-bank" element={<CreatorQuestionBank />} />
-          <Route path="question-bank/assigned-question" element={<AssignedQuestionPage />} />
+          {/* <Route path="question-bank/assigned-question" element={<AssignedQuestionPage />} /> */}
           <Route path="question-bank/completed-question" element={<CompletedQuestionPage />} />
           <Route path="question-bank/create-variants" element={<CreatorVariantsPage />} />
           <Route path="question-bank/edit-variant" element={<CreatorVariantsPage />} />

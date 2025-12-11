@@ -238,7 +238,9 @@ const Header = ({ onToggleSidebar }) => {
                 {authUser?.name || 'User'}
               </p>
               <p className="text-[12px] leading-[100%] tracking-[0px] text-left pt-1 pl-1 font-roboto font-[400] text-dark-gray">
-                {authUser?.role
+                {authUser?.role === 'admin' && authUser?.adminRole
+                  ? authUser.adminRole.charAt(0).toUpperCase() + authUser.adminRole.slice(1)
+                  : authUser?.role
                   ? authUser.role.charAt(0).toUpperCase() + authUser.role.slice(1)
                   : 'User'}
               </p>

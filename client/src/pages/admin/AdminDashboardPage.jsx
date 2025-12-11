@@ -4,7 +4,6 @@ import {
   headcard2,
   headcard3,
   headcard4,
-  threebar,
   alert,
   sclock,
   blacktick,
@@ -33,6 +32,7 @@ const AdminDashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
+  const [timeFilter, setTimeFilter] = useState('all'); // 'all', 'week', 'month', 'year'
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -112,16 +112,21 @@ const AdminDashboardPage = () => {
     ];
   }, [dashboardData, t]);
 
-  // Prepare subscription segments from API data
+  // Prepare subscription segments from API data - filter to only Free and Standard
   const subscriptionSegments = useMemo(() => {
     if (!dashboardData?.subscriptionPlanBreakdown) return [];
     
-    return dashboardData.subscriptionPlanBreakdown.map((segment) => ({
-      label: t(`admin.dashboard.charts.planLabels.${segment.label.toLowerCase()}`),
-      value: segment.value,
-      color: segment.color,
-      isBase: segment.isBase || false,
-    }));
+    return dashboardData.subscriptionPlanBreakdown
+      .filter((segment) => {
+        const label = segment.label.toLowerCase();
+        return label === 'free' || label === 'standard';
+      })
+      .map((segment) => ({
+        label: t(`admin.dashboard.charts.planLabels.${segment.label.toLowerCase()}`),
+        value: segment.value,
+        color: segment.color,
+        isBase: segment.isBase || false,
+      }));
   }, [dashboardData, t]);
 
   // Prepare latest signups from API data
@@ -184,10 +189,47 @@ const AdminDashboardPage = () => {
       timeClass: "text-[8px] leading-[14px]",
     },
   ];
-  // Prepare growth chart data from API
-  const { linePath, points, growthMonths, growthValues } = useMemo(() => {
+  // Filter user growth data based on time filter
+  const filteredGrowthData = useMemo(() => {
     if (!dashboardData?.userGrowthData || dashboardData.userGrowthData.length === 0) {
-      return { linePath: '', points: [], growthMonths: [], growthValues: [] };
+      return [];
+    }
+
+    const now = new Date();
+    let filteredData = [...dashboardData.userGrowthData];
+
+    switch (timeFilter) {
+      case 'week': {
+        // Show last 4 weeks (approximately 1 month of data)
+        // Since we have monthly data, we'll show the most recent month
+        filteredData = filteredData.slice(-1);
+        break;
+      }
+      case 'month': {
+        // Show last month
+        filteredData = filteredData.slice(-1);
+        break;
+      }
+      case 'year': {
+        // Show last 12 months (all available data)
+        filteredData = filteredData.slice(-12);
+        break;
+      }
+      case 'all':
+      default: {
+        // Show all data
+        filteredData = dashboardData.userGrowthData;
+        break;
+      }
+    }
+
+    return filteredData;
+  }, [dashboardData, timeFilter]);
+
+  // Prepare growth chart data from filtered data
+  const { linePath, points, growthMonths, growthValues, maxValue } = useMemo(() => {
+    if (!filteredGrowthData || filteredGrowthData.length === 0) {
+      return { linePath: '', points: [], growthMonths: [], growthValues: [], maxValue: 15 };
     }
 
     const chartWidth = 460;
@@ -199,15 +241,16 @@ const AdminDashboardPage = () => {
     const usableWidth = chartWidth - leftPadding - rightPadding;
     const usableHeight = chartHeight - topPadding - bottomPadding;
 
-    // Extract months and cumulative counts from API data
-    const months = dashboardData.userGrowthData.map(item => item.month);
-    const values = dashboardData.userGrowthData.map(item => item.cumulativeCount / 1000); // Convert to thousands
+    // Extract months and cumulative counts from filtered data
+    const months = filteredGrowthData.map(item => item.month);
+    const values = filteredGrowthData.map(item => item.cumulativeCount / 1000); // Convert to thousands
     
-    // Find max value for scaling
-    const maxValue = Math.max(...values, 15); // At least 15k for proper scaling
+    // Find max value for scaling - round up to nearest 2.5k for better Y-axis labels
+    const rawMax = Math.max(...values, 15);
+    const maxValue = Math.ceil(rawMax / 2.5) * 2.5; // Round up to nearest 2.5k
 
     const pointCoords = values.map((value, index) => {
-      const x = leftPadding + (usableWidth / (values.length - 1)) * index;
+      const x = leftPadding + (usableWidth / Math.max(values.length - 1, 1)) * index;
       const y = topPadding + usableHeight - (value / maxValue) * usableHeight;
       return { x, y, value };
     });
@@ -221,8 +264,8 @@ const AdminDashboardPage = () => {
       )
       .join(" ");
 
-    return { linePath: d, points: pointCoords, growthMonths: months, growthValues: values };
-  }, [dashboardData]);
+    return { linePath: d, points: pointCoords, growthMonths: months, growthValues: values, maxValue };
+  }, [filteredGrowthData]);
 
   const donutData = useMemo(() => {
     const radius = 90;
@@ -332,10 +375,39 @@ const AdminDashboardPage = () => {
                   {t('admin.dashboard.charts.userGrowthTrend.subtitle')}
                 </p> */}
               </div>
-              <button className="w-10 h-10 flex items-center justify-center rounded-xl transition">
-                <span className="sr-only">More</span>
-                <img src={threebar} alt="menu" />
-              </button>
+              {/* Time Filter */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setTimeFilter('all')}
+                  className={`px-3 py-1.5 text-sm font-roboto rounded-lg transition ${
+                    timeFilter === 'all'
+                      ? 'bg-oxford-blue text-white'
+                      : 'bg-gray-100 text-dark-gray hover:bg-gray-200'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setTimeFilter('month')}
+                  className={`px-3 py-1.5 text-sm font-roboto rounded-lg transition ${
+                    timeFilter === 'month'
+                      ? 'bg-oxford-blue text-white'
+                      : 'bg-gray-100 text-dark-gray hover:bg-gray-200'
+                  }`}
+                >
+                  This month
+                </button>
+                <button
+                  onClick={() => setTimeFilter('year')}
+                  className={`px-3 py-1.5 text-sm font-roboto rounded-lg transition ${
+                    timeFilter === 'year'
+                      ? 'bg-oxford-blue text-white'
+                      : 'bg-gray-100 text-dark-gray hover:bg-gray-200'
+                  }`}
+                >
+                  This year
+                </button>
+              </div>
             </div>
             <div className="mt-6 sm:mt-8">
               <div className="relative h-[300px] sm:h-[348px]">
@@ -359,40 +431,50 @@ const AdminDashboardPage = () => {
                       <stop offset="100%" stopColor="#1D4ED8" stopOpacity="0" />
                     </linearGradient>
                   </defs>
-                  {/* Grid lines */}
-                  {growthYAxis.map((value) => {
+                  {/* Grid lines - dynamically generate based on maxValue */}
+                  {(() => {
                     const chartHeight = 240;
                     const topPadding = 20;
                     const bottomPadding = 30;
-                    const usableHeight =
-                      chartHeight - topPadding - bottomPadding;
-                    const y =
-                      topPadding + usableHeight - (value / 15) * usableHeight;
-                    return (
-                      <g key={value}>
-                        <line
-                          x1={50}
-                          x2={440}
-                          y1={y}
-                          y2={y}
-                          stroke="#E5E7EB"
-                          strokeWidth="1"
-                          strokeDasharray="4 4"
-                          opacity="0.8"
-                        />
-                        <text
-                          x={30}
-                          y={y + 4}
-                          fill="#9CA3AF"
-                          fontSize="12"
-                          fontFamily="Roboto"
-                          textAnchor="end"
-                        >
-                          {value === 0 ? "0" : `${value}k`}
-                        </text>
-                      </g>
-                    );
-                  })}
+                    const usableHeight = chartHeight - topPadding - bottomPadding;
+                    
+                    // Generate Y-axis labels based on maxValue
+                    const steps = 6; // Number of grid lines
+                    const stepValue = maxValue / (steps - 1);
+                    const yAxisValues = [];
+                    
+                    for (let i = 0; i < steps; i++) {
+                      yAxisValues.push(i * stepValue);
+                    }
+                    
+                    return yAxisValues.map((value) => {
+                      const y = topPadding + usableHeight - (value / maxValue) * usableHeight;
+                      return (
+                        <g key={value}>
+                          <line
+                            x1={50}
+                            x2={440}
+                            y1={y}
+                            y2={y}
+                            stroke="#E5E7EB"
+                            strokeWidth="1"
+                            strokeDasharray="4 4"
+                            opacity="0.8"
+                          />
+                          <text
+                            x={30}
+                            y={y + 4}
+                            fill="#9CA3AF"
+                            fontSize="12"
+                            fontFamily="Roboto"
+                            textAnchor="end"
+                          >
+                            {value === 0 ? "0" : `${value.toFixed(1)}k`}
+                          </text>
+                        </g>
+                      );
+                    });
+                  })()}
 
                   {/* Area */}
                   {points.length > 0 && (
@@ -456,10 +538,6 @@ const AdminDashboardPage = () => {
                   {t('admin.dashboard.charts.subscriptionPlans.subtitle')}
                 </p> */}
               </div>
-              <button className="w-10 h-10 flex items-center justify-center rounded-xl transition">
-                <span className="sr-only">More</span>
-                <img src={threebar} alt="menu" />
-              </button>
             </div>
             <div className="flex flex-1 items-center justify-center">
               <div className="relative">

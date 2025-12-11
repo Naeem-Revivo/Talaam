@@ -197,10 +197,6 @@ const ExplainerQuestionBank = () => {
     return () => clearInterval(statsInterval);
   }, []);
 
-  const handleAddExplanationButton = () => {
-    navigate("/explainer/question-bank/add-explanation");
-  };
-
   const handleCompletedExplanation = () => {
     navigate("/explainer/question-bank/completed-explanation");
   };
@@ -232,12 +228,6 @@ const ExplainerQuestionBank = () => {
               text={t("explainer.questionBank.completed")}
                 onClick={handleCompletedExplanation}
               className="py-[10px] px-6"
-            />
-
-            <PrimaryButton
-              text={t("explainer.questionBank.addExplanation")}
-              className="py-[10px] px-8"
-                onClick={handleAddExplanationButton}
             />
           </div>
         </header>

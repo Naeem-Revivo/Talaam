@@ -2780,7 +2780,7 @@
       },
       "filter": {
         "search": "ابحث عن الأسئلة، المادة، الموضوع",
-        "subject": "المادة",
+        "subject": "جميع المواد",
         "exam": "الامتحان",
         "topic": "الموضوع"
       },
@@ -3035,6 +3035,7 @@
       "sentBackByProcessor": "تم إرجاعه من قبل المعالج",
       "workflowProgress": "تقدم سير العمل",
       "recentActivity": "النشاط الأخير",
+      "noActivity": "لا يوجد نشاط حديث",
       "stats": {
         "questionsAssigned": "الأسئلة المخصصة",
         "variantsPending": "المتغيرات المعلقة",
@@ -3553,9 +3554,9 @@
     }
   },
   "filter": {
-    "subject": "المادة",
+    "subject": "جميع المواد",
     "role": "الدور",
-    "status": "الحالة"
+    "status": "جميع الحالات"
   },
   "payment": {
     "title": "دفع مويسر",

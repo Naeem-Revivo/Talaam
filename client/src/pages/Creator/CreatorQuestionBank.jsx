@@ -350,14 +350,14 @@ const CreatorQuestionBank = () => {
       );
     }
 
-    if (subject && subject !== "Subject") {
+    if (subject && subject !== "All Subject") {
       filtered = filtered.filter((item) => {
         const questionSubject = item.originalData?.subject?.name || "";
         return questionSubject.toLowerCase() === subject.toLowerCase();
       });
     }
 
-    if (subtopic && subtopic !== "Status") {
+    if (subtopic && subtopic !== "All Status") {
       filtered = filtered.filter((item) => {
         if (subtopic.toLowerCase() === "flag") {
           return item.status?.toLowerCase() === "flag" ||
@@ -457,11 +457,11 @@ const CreatorQuestionBank = () => {
         subjects.add(subjectName);
       }
     });
-    return ["Subject", ...Array.from(subjects).sort()];
+    return ["All Subject", ...Array.from(subjects).sort()];
   };
 
   const subjectOptions = getSubjectOptions();
-  const subtopicOptions = ["Status", "Approved", "Pending", "Reject", "Flag"];
+  const subtopicOptions = ["All Status", "Approved", "Pending", "Reject", "Flag"];
 
   const workflowSteps = [
     t("gatherer.questionBank.workflowSteps.gatherer"),
@@ -476,33 +476,72 @@ const CreatorQuestionBank = () => {
     if (!allQuestionsData.length) return [];
     
     const activities = [];
-    allQuestionsData.slice(0, 3).forEach((q) => {
+    
+    // Collect all activities from all questions
+    allQuestionsData.forEach((q) => {
       const question = q.originalData;
       if (question?.history && Array.isArray(question.history)) {
-        const recentHistory = question.history[0];
-        if (recentHistory) {
-          let icon = "submit";
-          let variant = "default";
-          
-          if (recentHistory.action === 'approved') {
-            icon = "approve";
-            variant = "approved";
-          } else if (recentHistory.action === 'rejected') {
-            icon = "reject";
-            variant = "default";
+        // Process all history entries, not just the first one
+        question.history.forEach((historyEntry) => {
+          // Only include activities where creator was involved
+          if (historyEntry.role === 'creator' || 
+              (historyEntry.action && ['approved', 'rejected', 'variant_created', 'flagged', 'submitted'].includes(historyEntry.action))) {
+            
+            let icon = "submit";
+            let variant = "default";
+            let title = "";
+            
+            // Determine icon and variant based on action
+            if (historyEntry.action === 'approved' || historyEntry.action === 'approve') {
+              icon = "approve";
+              variant = "approved";
+              title = `Question approved: ${q.questionTitle?.substring(0, 50) || 'Question'}${q.questionTitle?.length > 50 ? '...' : ''}`;
+            } else if (historyEntry.action === 'rejected' || historyEntry.action === 'reject') {
+              icon = "reject";
+              variant = "default";
+              title = `Question rejected: ${q.questionTitle?.substring(0, 50) || 'Question'}${q.questionTitle?.length > 50 ? '...' : ''}`;
+            } else if (historyEntry.action === 'variant_created' || historyEntry.action === 'create_variant') {
+              icon = "submit";
+              variant = "default";
+              title = `Variant created: ${q.questionTitle?.substring(0, 50) || 'Question'}${q.questionTitle?.length > 50 ? '...' : ''}`;
+            } else if (historyEntry.action === 'flagged' || historyEntry.action === 'flag') {
+              icon = "submit";
+              variant = "default";
+              title = `Question flagged: ${q.questionTitle?.substring(0, 50) || 'Question'}${q.questionTitle?.length > 50 ? '...' : ''}`;
+            } else if (historyEntry.action === 'submitted' || historyEntry.action === 'submit') {
+              icon = "submit";
+              variant = "default";
+              title = `Question submitted: ${q.questionTitle?.substring(0, 50) || 'Question'}${q.questionTitle?.length > 50 ? '...' : ''}`;
+            } else {
+              // Default for other actions
+              title = `${historyEntry.action || 'Updated'}: ${q.questionTitle?.substring(0, 50) || 'Question'}${q.questionTitle?.length > 50 ? '...' : ''}`;
+            }
+            
+            const rawTimestamp = historyEntry.timestamp || historyEntry.date || question.updatedAt || question.createdAt;
+            activities.push({
+              icon,
+              title,
+              timestamp: rawTimestamp, // Store raw timestamp for sorting
+              formattedTimestamp: formatDate(rawTimestamp), // Store formatted for display
+              variant
+            });
           }
-          
-          activities.push({
-            icon,
-            title: `${recentHistory.action} - ${q.questionTitle}`,
-            timestamp: formatDate(recentHistory.timestamp),
-            variant
-          });
-        }
+        });
       }
     });
     
-    return activities;
+    // Sort activities by timestamp (most recent first)
+    activities.sort((a, b) => {
+      const dateA = new Date(a.timestamp);
+      const dateB = new Date(b.timestamp);
+      return dateB - dateA;
+    });
+    
+    // Return 4-5 most recent activities and format timestamps
+    return activities.slice(0, 5).map(activity => ({
+      ...activity,
+      timestamp: activity.formattedTimestamp
+    }));
   };
 
   const activityData = getRecentActivity();
@@ -623,7 +662,7 @@ const CreatorQuestionBank = () => {
                     ))
                   ) : (
                     <p className="text-[14px] leading-5 font-normal font-roboto text-[#6B7280]">
-                      {t("creator.questionBank.noActivity") || "No recent activity"}
+                      {t("creator.questionBank.noActivity")}
                     </p>
                   )}
                 </div>

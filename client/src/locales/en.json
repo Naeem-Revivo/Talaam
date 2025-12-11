@@ -2770,7 +2770,7 @@
     },
     "filter": {
         "search": "Search by Questions, subject, topic",
-        "subject": "Subject",
+        "subject": "All Subject",
         "exam": "Exam",
         "topic": "Topic"
       },
@@ -3025,6 +3025,7 @@
       "sentBackByProcessor": "Sent Back by Processor",
       "workflowProgress": "Workflow Progress",
       "recentActivity": "Recent Activity",
+      "noActivity": "No recent activity",
       "stats": {
         "questionsAssigned": "Questions Assigned",
         "variantsPending": "Variants Pending",
@@ -3551,9 +3552,9 @@
     }
   },
   "filter": {
-    "subject": "Subject",
+    "subject": "All Subject",
     "role": "Role",
-    "status": "Status"
+    "status": "All Status"
   },
   "payment": {
     "title": "Moyassar Payment",

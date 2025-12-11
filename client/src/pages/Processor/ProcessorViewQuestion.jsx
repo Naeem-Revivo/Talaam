@@ -754,10 +754,10 @@ const ProcessorViewQuestion = () => {
           </div>
         </div>
       )}
-      <div
-        className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]"
-        dir={dir}
-      >
+    <div
+      className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 xl:px-6 2xl:px-[66px]"
+      dir={dir}
+    >
       <div className="mx-auto flex max-w-[1200px] flex-col gap-6">
         {/* Header */}
         <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -898,11 +898,6 @@ const ProcessorViewQuestion = () => {
               <h2 className="mb-2 font-archivo text-[20px] font-bold leading-[32px] text-oxford-blue">
                 {t("processor.viewQuestion.questionInfo")}
               </h2>
-              <div className="flex items-center justify-between">
-                <span className="font-roboto text-[16px] font-normal leading-[100%] text-[#6B7280]">
-                  ID: {question.id || "N/A"}
-                </span>
-              </div>
               <p
                 className="font-roboto text-[16px] font-normal leading-[100%] text-oxford-blue pt-[30px]"
                 dir="ltr"
@@ -1316,7 +1311,7 @@ const ProcessorViewQuestion = () => {
           </div>
         </div>
       )}
-      </div>
+    </div>
     </>
   );
 };

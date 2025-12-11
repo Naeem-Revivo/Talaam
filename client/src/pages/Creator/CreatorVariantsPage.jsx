@@ -124,7 +124,6 @@ const CreatorVariantsPage = () => {
   const [subjectName, setSubjectName] = useState(originalQuestion?.subject?.name || "");
   const [topicId, setTopicId] = useState("");
   const [topicName, setTopicName] = useState(originalQuestion?.topic?.name || "");
-  const [cognitiveLevel, setCognitiveLevel] = useState("");
   const [source, setSource] = useState("");
   const [explanation, setExplanation] = useState(originalQuestion?.explanation || "");
 
@@ -196,10 +195,36 @@ const CreatorVariantsPage = () => {
 
   const handleVariantQuestionTypeChange = (variantId, value) => {
     setVariants((prev) =>
-      prev.map((variant) =>
-        variant.id === variantId ? { ...variant, questionType: value } : variant
-      )
+      prev.map((variant) => {
+        if (variant.id === variantId) {
+          // If True/False is selected, reset options and correct answer
+          if (value === "True/False") {
+            return {
+              ...variant,
+              questionType: value,
+              options: { A: "True", B: "False", C: "", D: "" },
+              correctAnswer: "True"
+            };
+          }
+          return { ...variant, questionType: value };
+        }
+        return variant;
+      })
     );
+  };
+  
+  // Handle question type change for original question
+  const handleQuestionTypeChange = (newType) => {
+    setQuestionType(newType);
+    if (newType === "True/False") {
+      // Set True/False options
+      setOptions({ A: "True", B: "False", C: "", D: "" });
+      setCorrectAnswer("True");
+    } else {
+      // Reset to empty for other types
+      setOptions({ A: "", B: "", C: "", D: "" });
+      setCorrectAnswer("Option A");
+    }
   };
 
   const handleVariantCorrectAnswerChange = (variantId, value) => {
@@ -222,6 +247,12 @@ const CreatorVariantsPage = () => {
         correctAnswer: "Option A",
       },
     ]);
+    showSuccessToast("Variant created");
+  };
+
+  const handleDeleteVariant = (variantId) => {
+    setVariants((prev) => prev.filter((v) => v.id !== variantId));
+    showSuccessToast("Variant deleted");
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -318,25 +349,30 @@ const CreatorVariantsPage = () => {
           setIsSubmitting(false);
           return;
         }
-
-        // Extract correct answer letter from "Option A" format
-        const correctAnswerLetter = validVariant.correctAnswer.replace("Option ", "").trim();
         
         // Convert question type from display format to API format
         const questionTypeMap = {
           "Multiple Choice (MCQ)": "MCQ",
           "True/False": "TRUE_FALSE",
-          "Short Answer": "SHORT_ANSWER",
-          "Essay": "ESSAY",
         };
         const apiQuestionType = questionTypeMap[validVariant.questionType] || "MCQ";
+        
+        // Extract correct answer - handle True/False differently
+        let correctAnswerLetter;
+        if (apiQuestionType === "TRUE_FALSE") {
+          // Map "True" to "A" and "False" to "B"
+          correctAnswerLetter = validVariant.correctAnswer === "True" ? "A" : "B";
+        } else {
+          // Extract correct answer letter from "Option A" format
+          correctAnswerLetter = validVariant.correctAnswer.replace("Option ", "").trim();
+        }
 
         const variantData = {
           questionText: validVariant.questionText.trim(),
           questionType: apiQuestionType,
           options: {
-            A: validVariant.options.A?.trim() || "",
-            B: validVariant.options.B?.trim() || "",
+            A: validVariant.options.A?.trim() || (apiQuestionType === "TRUE_FALSE" ? "True" : ""),
+            B: validVariant.options.B?.trim() || (apiQuestionType === "TRUE_FALSE" ? "False" : ""),
             C: validVariant.options.C?.trim() || "",
             D: validVariant.options.D?.trim() || "",
           },
@@ -368,7 +404,7 @@ const CreatorVariantsPage = () => {
     }
 
     let shouldRedirect = false;
-    let redirectPath = "/creator/question-bank/assigned-question";
+    let redirectPath = "/creator/question-bank";
     try {
       setIsSubmitting(true);
       const idToUse = questionId || originalQuestion?.id;
@@ -383,17 +419,22 @@ const CreatorVariantsPage = () => {
       if (validVariants.length > 0) {
         // Create all variants
         const variantPromises = validVariants.map((variant) => {
-          // Extract correct answer letter from "Option A" format
-          const correctAnswerLetter = variant.correctAnswer.replace("Option ", "").trim();
-          
           // Convert question type from display format to API format
           const questionTypeMap = {
             "Multiple Choice (MCQ)": "MCQ",
-            "True/False": "TrueFalse",
-            "Short Answer": "ShortAnswer",
-            "Essay": "Essay",
+            "True/False": "TRUE_FALSE",
           };
           const apiQuestionType = questionTypeMap[variant.questionType] || "MCQ";
+          
+          // Extract correct answer - handle True/False differently
+          let correctAnswerLetter;
+          if (apiQuestionType === "TRUE_FALSE") {
+            // Map "True" to "A" and "False" to "B"
+            correctAnswerLetter = variant.correctAnswer === "True" ? "A" : "B";
+          } else {
+            // Extract correct answer letter from "Option A" format
+            correctAnswerLetter = variant.correctAnswer.replace("Option ", "").trim();
+          }
 
           // Use classification IDs from state (or fallback to original question)
           const variantExamId = examId || (typeof originalQuestion?.exam === 'string' 
@@ -410,8 +451,8 @@ const CreatorVariantsPage = () => {
             questionText: variant.questionText.trim(),
             questionType: apiQuestionType,
             options: {
-              A: variant.options.A?.trim() || "",
-              B: variant.options.B?.trim() || "",
+              A: variant.options.A?.trim() || (apiQuestionType === "TRUE_FALSE" ? "True" : ""),
+              B: variant.options.B?.trim() || (apiQuestionType === "TRUE_FALSE" ? "False" : ""),
               C: variant.options.C?.trim() || "",
               D: variant.options.D?.trim() || "",
             },
@@ -830,17 +871,41 @@ const CreatorVariantsPage = () => {
                     </label>
                     <Dropdown
                       value={questionType}
-                      onChange={setQuestionType}
+                      onChange={handleQuestionTypeChange}
                       options={[
                         t("creator.createVariants.questionTypes.multipleChoice"),
                         t("creator.createVariants.questionTypes.trueFalse"),
-                        t("creator.createVariants.questionTypes.shortAnswer"),
-                        t("creator.createVariants.questionTypes.essay"),
                       ]}
                     />
                   </div>
 
-                  {/* Options Grid */}
+                  {/* Options Grid - Show 2 options for True/False, 4 for MCQ */}
+                  {questionType === "True/False" ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          True
+                        </label>
+                        <input
+                          type="text"
+                          value={options.A}
+                          disabled
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-gray-100 px-4 py-3 text-blue-dark cursor-not-allowed"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          False
+                        </label>
+                        <input
+                          type="text"
+                          value={options.B}
+                          disabled
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-gray-100 px-4 py-3 text-blue-dark cursor-not-allowed"
+                        />
+                      </div>
+                    </div>
+                  ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-4">
                       <div>
@@ -899,12 +964,20 @@ const CreatorVariantsPage = () => {
                       </div>
                     </div>
                   </div>
+                  )}
 
                   {/* Correct Answer */}
                   <div>
                     <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                       {t("creator.createVariants.fields.correctAnswer")}
                     </label>
+                    {questionType === "True/False" ? (
+                      <Dropdown
+                        value={correctAnswer}
+                        onChange={setCorrectAnswer}
+                        options={["True", "False"]}
+                      />
+                    ) : (
                     <Dropdown
                       value={correctAnswer}
                       onChange={setCorrectAnswer}
@@ -915,6 +988,7 @@ const CreatorVariantsPage = () => {
                         t("creator.createVariants.correctAnswerOptions.optionD"),
                       ]}
                     />
+                    )}
                   </div>
                 </div>
               </div>
@@ -923,9 +997,33 @@ const CreatorVariantsPage = () => {
               {/* Variants - Dynamically rendered */}
               {variants.map((variant, index) => (
                 <div key={variant.id} className=" bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
-                  <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark mb-[30px]">
+                  <div className="flex items-center justify-between mb-[30px]">
+                    <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark">
                     Variant # {index + 1}
                   </h2>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteVariant(variant.id)}
+                      className="flex items-center justify-center text-red-600 hover:text-red-700 transition-colors"
+                      title="Delete variant"
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M3.33334 5.83333H16.6667M7.50001 5.83333V4.16667C7.50001 3.50362 8.00362 2.99999 8.66667 2.99999H11.3333C11.9964 2.99999 12.5 3.50362 12.5 4.16667V5.83333M7.50001 5.83333H12.5M7.50001 5.83333H4.16667M12.5 5.83333H15.8333M4.16667 5.83333L4.58334 15.8333C4.58334 16.4964 5.08695 17 5.75 17H14.25C14.9131 17 15.4167 16.4964 15.4167 15.8333L15.8333 5.83333M8.33334 9.16667V13.3333M11.6667 9.16667V13.3333"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
 
                   <div className="space-y-6">
                     {/* Question Text */}
@@ -954,13 +1052,37 @@ const CreatorVariantsPage = () => {
                         options={[
                           t("creator.createVariants.questionTypes.multipleChoice"),
                           t("creator.createVariants.questionTypes.trueFalse"),
-                          t("creator.createVariants.questionTypes.shortAnswer"),
-                          t("creator.createVariants.questionTypes.essay"),
                         ]}
                       />
                     </div>
 
-                    {/* Options Grid */}
+                    {/* Options Grid - Show 2 options for True/False, 4 for MCQ */}
+                    {variant.questionType === "True/False" ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                            True
+                          </label>
+                          <input
+                            type="text"
+                            value={variant.options.A}
+                            disabled
+                            className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-gray-100 px-4 py-3 text-blue-dark cursor-not-allowed"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                            False
+                          </label>
+                          <input
+                            type="text"
+                            value={variant.options.B}
+                            disabled
+                            className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-gray-100 px-4 py-3 text-blue-dark cursor-not-allowed"
+                          />
+                        </div>
+                      </div>
+                    ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-4">
                         <div>
@@ -1019,12 +1141,20 @@ const CreatorVariantsPage = () => {
                         </div>
                       </div>
                     </div>
+                    )}
 
                     {/* Correct Answer */}
                     <div>
                       <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                         {t("creator.createVariants.fields.correctAnswer")}
                       </label>
+                      {variant.questionType === "True/False" ? (
+                        <Dropdown
+                          value={variant.correctAnswer}
+                          onChange={(value) => handleVariantCorrectAnswerChange(variant.id, value)}
+                          options={["True", "False"]}
+                        />
+                      ) : (
                       <Dropdown
                         value={variant.correctAnswer}
                         onChange={(value) => handleVariantCorrectAnswerChange(variant.id, value)}
@@ -1035,6 +1165,7 @@ const CreatorVariantsPage = () => {
                           t("creator.createVariants.correctAnswerOptions.optionD"),
                         ]}
                       />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1106,26 +1237,6 @@ const CreatorVariantsPage = () => {
                         ? topics.map((topic) => topic.name || "Unnamed Topic").filter(Boolean)
                         : [t('gatherer.addNewQuestion.messages.noTopicsAvailable')]
                     }
-                  />
-                </div>
-
-                {/* Cognitive Level */}
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t("creator.createVariants.fields.cognitiveLevel")}
-                  </label>
-                  <Dropdown
-                    value={cognitiveLevel}
-                    onChange={setCognitiveLevel}
-                    options={[
-                      t("creator.createVariants.placeholders.selectLevel"),
-                      t("creator.createVariants.cognitiveLevels.remember"),
-                      t("creator.createVariants.cognitiveLevels.understand"),
-                      t("creator.createVariants.cognitiveLevels.apply"),
-                      t("creator.createVariants.cognitiveLevels.analyze"),
-                      t("creator.createVariants.cognitiveLevels.evaluate"),
-                      t("creator.createVariants.cognitiveLevels.create"),
-                    ]}
                   />
                 </div>
 
