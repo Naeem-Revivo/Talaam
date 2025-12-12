@@ -37,6 +37,7 @@
         "emailTemplate": "Email Templates",
         "rolesPermissions": "Admin Roles & Permissions",
         "userManagement": "User Management",
+        "studentManagement": "Student Management",
         "questionBank": "Question Bank",
         "questionManagement": "Question Management",
         "addQuestion": "Add New Question",
@@ -1068,6 +1069,7 @@
     "sidebar": {
       "dashboard": "Dashboard",
       "userManagement": "User Management",
+      "studentManagement": "Student Management",
       "questionBank": "Question Bank",
       "classification": "Classification",
       "subscriptions": "Subscriptions",
@@ -1194,6 +1196,133 @@
           "status": "Status"
         },
         "fileName": "user-management.csv"
+      }
+    },
+    "studentManagement": {
+      "hero": {
+        "title": "Student Management",
+        "subtitle": "Manage student accounts, subscription, and activity analytics."
+      },
+      "summary": {
+        "totalStudents": "Total Students",
+        "activeStudents": "Active Students",
+        "suspended": "Suspended",
+        "verifiedUnverified": "Verified / Unverified"
+      },
+      "status": {
+        "active": "Active",
+        "suspended": "Suspended"
+      },
+      "subscription": {
+        "free": "Free",
+        "trial": "Trial",
+        "premium": "Premium"
+      },
+      "filters": {
+        "searchPlaceholder": "Search by name, email or ID",
+        "filter": "Filter",
+        "plan": "Plan",
+        "status": "Status",
+        "date": "Date",
+        "all": "All",
+        "refresh": "Refresh",
+        "applyFilters": "Apply Filters",
+        "plans": {
+          "free": "Free",
+          "trial": "Trial",
+          "premium": "Premium"
+        },
+        "dateOptions": {
+          "today": "Today",
+          "thisWeek": "This Week",
+          "thisMonth": "This Month",
+          "thisYear": "This Year"
+        }
+      },
+      "table": {
+        "headers": {
+          "studentId": "STUDENT ID",
+          "name": "NAME",
+          "email": "EMAIL",
+          "subscription": "SUBSCRIPTION",
+          "progress": "PROGRESS",
+          "signUpDate": "SIGN UP DATE",
+          "status": "STATUS",
+          "actions": "ACTIONS"
+        },
+        "emptyState": "No students match the current filters.",
+        "pagination": {
+          "showing": "Showing {{first}} to {{last}} of {{total}} results",
+          "previous": "Previous",
+          "next": "Next"
+        },
+        "ariaLabels": {
+          "view": "View {{name}}",
+          "edit": "Edit {{name}}",
+          "delete": "Delete {{name}}",
+          "suspend": "Suspend {{name}}",
+          "activate": "Activate {{name}}"
+        },
+        "actions": {
+          "suspend": "Suspend",
+          "activate": "Activate"
+        }
+      }
+    },
+    "studentDetail": {
+      "hero": {
+        "title": "Student Profile",
+        "subtitle": "View complete account and activity information"
+      },
+      "studentId": "Student ID",
+      "emailAddress": "Email Address",
+      "subscriptionPlan": "Subscription Plan",
+      "exp": "Exp",
+      "signupDate": "Signup Date",
+      "manageSubscription": "Manage Subscription",
+      "activityOverview": {
+        "title": "Activity Overview",
+        "avgScore": "Avg Score",
+        "totalTest": "Total Test",
+        "correctAnswer": "Correct Answer",
+        "incorrect": "incorrect"
+      },
+      "activityTrend": {
+        "title": "Activity Trend (Last 7 Days)",
+        "lastActive": "Last Active",
+        "averageScore": "Average Score",
+        "good": "Good",
+        "activityLevel": "ACTIVITY LEVEL"
+      },
+      "flaggedIssues": {
+        "title": "Flag / Reported Issues",
+        "reportedAndFlagged": "Reported and Flagged Questions",
+        "flaggedOn": "Flagged on",
+        "severity": "Severity",
+        "reason": "Reason",
+        "status": "Status",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "pending": "Pending",
+        "noIssues": "No reported issues"
+      },
+      "progressBreakdown": {
+        "title": "Progress Breakdown",
+        "testName": "Test Name",
+        "date": "Date",
+        "score": "Score",
+        "result": "Result",
+        "action": "Action",
+        "passed": "Passed",
+        "failed": "Failed",
+        "viewTest": "View {{test}}",
+        "noData": "No progress data available"
+      },
+      "actions": {
+        "editStudent": "Edit Student",
+        "back": "Back",
+        "suspendAccount": "Suspend Account",
+        "activateAccount": "Activate Account"
       }
     },
     "addUser": {
@@ -3220,6 +3349,7 @@
       "subtitle": "Add explanations, diagrams, and supporting notes to finalized Questions.",
       "draft": "Draft",
       "completed": "Completed",
+      "assignedQuestions": "Assigned Questions",
       "addExplanation": "+ Add Explanation",
       "pendingExplanations": "Pending Explanations",
       "workflowProgress": "Workflow Progress",
@@ -3275,6 +3405,34 @@
         "action": "ACTION"
       },
       "emptyMessage": "No completed explanations found"
+    },
+    "assignedQuestions": {
+      "title": "Assigned Questions",
+      "subtitle": "View all questions assigned to you with their current status.",
+      "back": "Back",
+      "searchPlaceholder": "Search questions...",
+      "loading": "Loading...",
+      "viewTitle": "View Question",
+      "viewSubtitle": "View question details and status",
+      "questionDetails": "Question Details",
+      "status": "Status",
+      "questionText": "Question Text",
+      "questionType": "Question Type",
+      "options": "Options",
+      "correctAnswer": "Correct Answer",
+      "explanation": "Explanation",
+      "subject": "Subject",
+      "topic": "Topic",
+      "processor": "Processor",
+      "table": {
+        "question": "QUESTION",
+        "subject": "SUBJECT",
+        "processor": "PROCESSOR",
+        "status": "STATUS",
+        "updatedOn": "UPDATED ON",
+        "actions": "ACTIONS"
+      },
+      "emptyMessage": "No assigned questions found"
     },
     "profile": {
       "title": "Account Settings",
@@ -3401,6 +3559,7 @@
     "explainerSubmission": {
       "title": "Explainer Submission",
       "back": "Back",
+      "searchPlaceholder": "Search questions...",
       "table": {
         "question": "QUESTION",
         "explainer": "EXPLAINER",

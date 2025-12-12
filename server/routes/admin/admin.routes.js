@@ -13,6 +13,12 @@ router.get('/dashboard/statistics', authMiddleware, superadminMiddleware, adminC
 router.get('/users/management', authMiddleware, superadminMiddleware, adminController.getUserManagementStatistics);
 // Allow all admin roles to get users (for processor selection, etc.)
 router.get('/users', authMiddleware, adminController.getAllAdmins);
+
+// Student Management Routes (all require superadmin access)
+router.get('/students/management', authMiddleware, superadminMiddleware, adminController.getStudentManagementStatistics);
+router.get('/students', authMiddleware, superadminMiddleware, adminController.getAllStudents);
+router.get('/students/:id', authMiddleware, superadminMiddleware, adminController.getStudentById);
+router.put('/students/:id/status', authMiddleware, superadminMiddleware, adminController.updateStudentStatus);
 router.post(
   '/create',
   authMiddleware,

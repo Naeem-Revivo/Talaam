@@ -72,7 +72,7 @@ passport.use(
 
         // Check if user is suspended
         if (user.status === 'suspended') {
-          return done(new Error('Your account has been suspended. Please contact administrator.'), null);
+          return done(new Error('Account suspended. Please contact support team.'), null);
         }
 
         // Pass user and isNewUser flag through info parameter
@@ -143,7 +143,7 @@ passport.use(
 
         // Check if user is suspended
         if (user.status === 'suspended') {
-          return done(new Error('Your account has been suspended. Please contact administrator.'), null);
+          return done(new Error('Account suspended. Please contact support team.'), null);
         }
 
         // Pass user and isNewUser flag through info parameter

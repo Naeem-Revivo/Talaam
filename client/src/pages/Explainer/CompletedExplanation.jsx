@@ -207,7 +207,7 @@ const CompletedExplanationPage = () => {
   // Handler for view action
   const handleView = (item) => {
     if (item.originalData?.id) {
-      navigate(`/explainer/question-bank/add-explanation?questionId=${item.originalData.id}&view=true`);
+      navigate(`/explainer/question-bank/question/${item.originalData.id}`);
     }
   };
 

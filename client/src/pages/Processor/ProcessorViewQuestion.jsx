@@ -700,6 +700,16 @@ const ProcessorViewQuestion = () => {
     });
   };
 
+  // Strip HTML tags and return plain text
+  const stripHtmlTags = (html) => {
+    if (!html) return "—";
+    // Create a temporary div element to parse HTML
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    // Get text content which automatically strips HTML tags
+    return tmp.textContent || tmp.innerText || "—";
+  };
+
   // Build history from question data
   const getHistory = () => {
     if (!question) return [];
@@ -854,7 +864,7 @@ const ProcessorViewQuestion = () => {
                       className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue mt-2"
                       dir="ltr"
                     >
-                      {parentQuestion.questionText || "—"}
+                      {stripHtmlTags(parentQuestion.questionText)}
                     </p>
                   </div>
                   
@@ -902,7 +912,7 @@ const ProcessorViewQuestion = () => {
                 className="font-roboto text-[16px] font-normal leading-[100%] text-oxford-blue pt-[30px]"
                 dir="ltr"
               >
-                {question.questionText || "—"}
+                {stripHtmlTags(question.questionText)}
               </p>
             </div>
             <div

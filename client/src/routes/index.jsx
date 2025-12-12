@@ -92,6 +92,8 @@ import ExplainerQuestionBank from '../pages/Explainer/ExplainerQuestionBank';
 import AddExplanationPage from '../pages/Explainer/AddExplanationPage';
 import CompletedExplanationPage from '../pages/Explainer/CompletedExplanation';
 import DraftExplanationPage from '../pages/Explainer/DraftExplanation';
+import ExplainerAssignedQuestions from '../pages/Explainer/ExplainerAssignedQuestions';
+import ExplainerViewQuestion from '../pages/Explainer/ExplainerViewQuestion';
 import AccountSettingPage from '../pages/dashboard/AccountSettingPage';
 import ProcessorQuestionBank from '../pages/Processor/ProcessorQuestionBank';
 import SubscriptionBillingPage from '../pages/dashboard/SubscriptionBillingPage';
@@ -107,6 +109,8 @@ import CreatorViewVariant from '../pages/Creator/CreatorViewVariant';
 import CreatorVariantsListPage from '../pages/Creator/CreatorVariantsListPage';
 import CreatorViewQuestion from '../pages/Creator/CreatorViewQuestion';
 import ApprovedQuestions from '../pages/admin/ApprovedQuestions';
+import StudentManagementPage from '../pages/admin/StudentManagementPage';
+import StudentDetailPage from '../pages/admin/StudentDetailPage';
 
 export const AppRoutes = () => {
   return (
@@ -204,6 +208,8 @@ export const AppRoutes = () => {
           <Route path="security/view-logs" element={<ViewLogDetails />} />
           <Route path="security/roles-permissions" element={<RolesPermissionsPage />} />
           <Route path="approved-questions" element={<ApprovedQuestions />} />
+          <Route path="students" element={<StudentManagementPage />} />
+          <Route path="students/:id" element={<StudentDetailPage />} />
         </Route>
       </Route>
 
@@ -261,6 +267,8 @@ export const AppRoutes = () => {
           <Route path="question-bank/add-explanation" element={<AddExplanationPage />} />
           <Route path="question-bank/completed-explanation" element={<CompletedExplanationPage />} />
           <Route path="question-bank/draft-explanation" element={<DraftExplanationPage />} />
+          <Route path="question-bank/assigned-questions" element={<ExplainerAssignedQuestions />} />
+          <Route path="question-bank/question/:questionId" element={<ExplainerViewQuestion />} />
         </Route>
       </Route>
       

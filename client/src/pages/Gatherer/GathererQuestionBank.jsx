@@ -303,11 +303,11 @@ const GathererQuestionBank = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-3 justify-end">
-            <OutlineButton
+            {/* <OutlineButton
               text={t("gatherer.questionBank.bulkUpload")}
               onClick={() => setIsModalOpen(true)}
               className="py-[10px] px-[14px]"
-            />
+            /> */}
 
             <PrimaryButton
               text={t("gatherer.questionBank.addNewQuestions")}

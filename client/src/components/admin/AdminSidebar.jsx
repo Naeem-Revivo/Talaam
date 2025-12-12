@@ -285,6 +285,31 @@ const ApprovedQuestionsIcon = ({ active }) => {
   );
 };
 
+const StudentManagementIcon = ({ active }) => {
+  const fill = active ? "#032746" : "white";
+
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d="M10 10C12.7614 10 15 7.76142 15 5C15 2.23858 12.7614 0 10 0C7.23858 0 5 2.23858 5 5C5 7.76142 7.23858 10 10 10Z"
+        fill={fill}
+      />
+      <path
+        d="M10.0002 12.5C4.99016 12.5 0.910156 15.86 0.910156 20C0.910156 20.28 1.13016 20.5 1.41016 20.5H18.5902C18.8702 20.5 19.0902 20.28 19.0902 20C19.0902 15.86 15.0102 12.5 10.0002 12.5Z"
+        fill={fill}
+      />
+    </svg>
+  );
+};
+
 const AdminSidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -334,6 +359,11 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       path: "/admin/users",
       labelKey: "admin.sidebar.userManagement",
       icon: UserManagementIcon,
+    },
+    {
+      path: "/admin/students",
+      labelKey: "admin.sidebar.studentManagement",
+      icon: StudentManagementIcon,
     },
     {
       path: "/admin/classification",

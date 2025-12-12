@@ -198,6 +198,7 @@ const CreaterSubmission = () => {
                   variants: detailedQuestion?.variants || question.variants || [],
                   history: detailedQuestion?.history || question.history || [],
                   approvedBy: detailedQuestion?.approvedBy || question.approvedBy || null,
+                  assignedCreator: detailedQuestion?.assignedCreator || question.assignedCreator || null,
                   isVariant: detailedQuestion?.isVariant || question.isVariant || false
                   };
                 }
@@ -227,12 +228,46 @@ const CreaterSubmission = () => {
 
         // Transform API data to match table structure
         const transformedData = filteredQuestions.map((question) => {
-          // Get creator name (lastModifiedBy would be the creator who submitted)
-          const creatorName = question.lastModifiedBy?.name || 
-                             question.lastModifiedBy?.username || 
-                             question.createdBy?.name || 
-                             question.createdBy?.username || 
-                             'Unknown';
+          // Get creator name from assignedCreator (the creator who performed operations on the question)
+          // Priority: assignedCreator > creator from history > lastModifiedBy > createdBy
+          let creatorName = null;
+          
+          // First, try to get from assignedCreator (the creator assigned to work on this question)
+          if (question.assignedCreator) {
+            creatorName = question.assignedCreator.name || 
+                         question.assignedCreator.username ||
+                         question.assignedCreator.fullName ||
+                         null;
+          }
+          
+          // If not found, try to get from history (creator who performed actions)
+          if (!creatorName && question.history && Array.isArray(question.history)) {
+            // Find the most recent creator action
+            const creatorHistory = question.history
+              .filter(h => h.role === 'creator' && (h.action === 'approved' || h.action === 'variant_created' || h.action === 'updated'))
+              .sort((a, b) => {
+                const timeA = new Date(a.timestamp || a.createdAt || 0);
+                const timeB = new Date(b.timestamp || b.createdAt || 0);
+                return timeB - timeA; // Most recent first
+              });
+            
+            if (creatorHistory.length > 0) {
+              const latestCreatorAction = creatorHistory[0];
+              creatorName = latestCreatorAction.performedBy?.name || 
+                           latestCreatorAction.performedBy?.username ||
+                           latestCreatorAction.performedBy?.fullName ||
+                           null;
+            }
+          }
+          
+          // Fallback to lastModifiedBy or createdBy
+          if (!creatorName) {
+            creatorName = question.lastModifiedBy?.name || 
+                         question.lastModifiedBy?.username || 
+                         question.createdBy?.name || 
+                         question.createdBy?.username || 
+                         'Unknown';
+          }
 
           // Check if question has a flag reason (for display purposes)
           const hasFlagReason = question.flagReason !== null && 
@@ -281,17 +316,16 @@ const CreaterSubmission = () => {
           const isVariant = question.isVariant === true || question.isVariant === 'true';
 
           // Get creator status with proper mapping
-          // Priority: Flag > Variant Created > Approved (if submitted/completed) > Other statuses
-          let creatorStatus = mapCreatorStatus(question.status, isFlagged, hasVariants, isSubmittedByCreator, isCompleted);
-          
-          // If this is a variant question, append "Variant" to the status
-          // Format: "Status - Variant" or just "Variant" if status is empty
+          // For variants: show "Variant"
+          // For questions with variants: show "Variant Created"
+          let creatorStatus;
           if (isVariant) {
-            if (creatorStatus && creatorStatus !== '—') {
-              creatorStatus = `${creatorStatus} - Variant`;
-            } else {
-              creatorStatus = 'Variant';
-            }
+            creatorStatus = 'Variant';
+          } else if (hasVariants) {
+            creatorStatus = 'Variant Created';
+          } else {
+            // Priority: Flag > Approved (if submitted/completed) > Other statuses
+            creatorStatus = mapCreatorStatus(question.status, isFlagged, false, isSubmittedByCreator, isCompleted);
           }
 
           // Get flag reason
