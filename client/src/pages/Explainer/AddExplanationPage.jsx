@@ -5,6 +5,16 @@ import { useNavigate, useLocation } from "react-router-dom";
 import questionsAPI from "../../api/questions";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig.jsx";
 
+// Strip HTML tags and return plain text
+const stripHtmlTags = (html) => {
+  if (!html) return "—";
+  // Create a temporary div element to parse HTML
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  // Get text content which automatically strips HTML tags
+  return tmp.textContent || tmp.innerText || "—";
+};
+
 // QuestionDetails Component - displays full question
 const QuestionDetails = ({
   question,
@@ -20,8 +30,9 @@ const QuestionDetails = ({
     : "—";
   
   const subject = question.subject?.name || question.subject || "—";
+  const topic = question.topic?.name || question.topic || "—";
   const difficulty = question.difficulty || question.metadata?.difficulty || "—";
-  const questionText = question.questionText || "—";
+  const questionText = stripHtmlTags(question.questionText);
   const options = question.options || {};
 
   return (
@@ -66,15 +77,20 @@ const QuestionDetails = ({
           <span className="text-[#6B7280]">Correct Answer:</span> {correctAnswer}
         </p>
         
-        <div className="flex gap-6 text-[16px] leading-[100%] font-normal font-roboto text-[#6B7280]">
-          <span>
-            Subject: <span className="text-blue-dark">{subject}</span>
-          </span>
-          {difficulty !== "—" && (
+        <div className="flex flex-col gap-2 text-[16px] leading-[100%] font-normal font-roboto text-[#6B7280]">
+          <div className="flex gap-6">
             <span>
-              Difficulty: <span className="text-blue-dark">{difficulty}</span>
+              Subject: <span className="text-blue-dark">{subject}</span>
             </span>
-          )}
+            {difficulty !== "—" && (
+              <span>
+                Difficulty: <span className="text-blue-dark">{difficulty}</span>
+              </span>
+            )}
+          </div>
+          <span>
+            Topic: <span className="text-blue-dark">{topic}</span>
+          </span>
         </div>
       </div>
     </div>
@@ -671,7 +687,7 @@ export default function AddExplanationPage() {
                   className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue mt-2"
                   dir="ltr"
                 >
-                  {originalQuestion.questionText || "—"}
+                  {stripHtmlTags(originalQuestion.questionText)}
                 </p>
               </div>
               
@@ -810,12 +826,6 @@ export default function AddExplanationPage() {
             />
           </div>
         )}
-
-        <SupportingMaterial
-          file={file}
-          onFileChange={handleFileChange}
-          onRemove={handleRemoveFile}
-        />
 
         <div className="flex flex-col sm:flex-row sm:justify-end gap-3 px-5 pb-6 pt-2">
           <OutlineButton

@@ -108,6 +108,7 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
           const isVisible = baseValue.toLowerCase() === "visible";
           const isHidden = baseValue.toLowerCase() === "hidden";
           const isVariantCreated = baseValue.toLowerCase() === "variant created";
+          const isVariant = baseValue.toLowerCase() === "variant";
           const isFlagged = item.indicators?.flag === true;
           // Show reason button for status, creatorStatus, explainerStatus, or adminStatus column when flagged
           const showReasonButton = (column.key === "status" || column.key === "creatorStatus" || column.key === "explainerStatus" || column.key === "adminStatus") && isFlagged && onShowFlagReason && item.flagReason;
@@ -119,7 +120,7 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
                   className={`inline-block px-[12px] py-[5px] rounded-md text-[12px] leading-[100%] font-normal ${
                     isFlag
                       ? "bg-red-100 text-red-700"
-                      : isVariantCreated
+                      : isVariantCreated || isVariant
                       ? "bg-blue-100 text-blue-700"
                       : isApproved
                       ? "bg-[#FDF0D5] text-[#ED4122]"
@@ -470,6 +471,7 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
             const isVisible = baseValue.toLowerCase() === "visible";
             const isHidden = baseValue.toLowerCase() === "hidden";
             const isVariantCreated = baseValue.toLowerCase() === "variant created";
+            const isVariant = baseValue.toLowerCase() === "variant";
             const isFlagged = item.indicators?.flag === true;
             // Show reason button for status, creatorStatus, explainerStatus, or adminStatus column when flagged
             const showReasonButton = (column.key === "status" || column.key === "creatorStatus" || column.key === "explainerStatus" || column.key === "adminStatus") && isFlagged && onShowFlagReason && item.flagReason;
@@ -483,7 +485,7 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
                     className={`inline-block px-[12px] py-[5px] rounded-md text-[12px] leading-[100%] font-normal ${
                       isFlag
                         ? "bg-red-100 text-red-700"
-                        : isVariantCreated
+                        : isVariantCreated || isVariant
                         ? "bg-blue-100 text-blue-700"
                         : isApproved
                         ? "bg-[#FDF0D5] text-[#ED4122]"

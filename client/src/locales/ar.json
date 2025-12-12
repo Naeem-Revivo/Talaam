@@ -37,6 +37,7 @@
         "emailTemplate": "قوالب البريد الإلكتروني",
         "rolesPermissions": "أدوار المسؤولين والصلاحيات",
         "userManagement": "إدارة المستخدمين",
+        "studentManagement": "إدارة الطلاب",
         "questionBank": "بنك الأسئلة",
         "questionManagement": "إدارة الأسئلة",
         "addQuestion": "إضافة سؤال جديد",
@@ -1078,6 +1079,7 @@
     "sidebar": {
       "dashboard": "لوحة التحكم",
       "userManagement": "إدارة المستخدمين",
+      "studentManagement": "إدارة الطلاب",
       "questionBank": "بنك الأسئلة",
       "classification": "التصنيف",
       "subscriptions": "الاشتراكات والفوترة",
@@ -1203,10 +1205,137 @@
           "systemRole": "دور النظام",
           "status": "الحالة"
         },
-        "fileName": "إدارة-المستخدمين.csv"
-      }
-    },
-    "addUser": {
+          "fileName": "إدارة-المستخدمين.csv"
+        }
+      },
+      "studentManagement": {
+        "hero": {
+          "title": "إدارة الطلاب",
+          "subtitle": "إدارة حسابات الطلاب والاشتراكات وتحليلات النشاط."
+        },
+        "summary": {
+          "totalStudents": "إجمالي الطلاب",
+          "activeStudents": "الطلاب النشطون",
+          "suspended": "المعلقون",
+          "verifiedUnverified": "الموثقون / غير الموثقين"
+        },
+        "status": {
+          "active": "نشط",
+          "suspended": "معلق"
+        },
+        "subscription": {
+          "free": "مجاني",
+          "trial": "تجريبي",
+          "premium": "مميز"
+        },
+        "filters": {
+          "searchPlaceholder": "البحث بالاسم أو البريد الإلكتروني أو المعرف",
+          "filter": "تصفية",
+          "plan": "الخطة",
+          "status": "الحالة",
+          "date": "التاريخ",
+          "all": "الكل",
+          "refresh": "تحديث",
+          "applyFilters": "تطبيق التصفية",
+          "plans": {
+            "free": "مجاني",
+            "trial": "تجريبي",
+            "premium": "مميز"
+          },
+          "dateOptions": {
+            "today": "اليوم",
+            "thisWeek": "هذا الأسبوع",
+            "thisMonth": "هذا الشهر",
+            "thisYear": "هذا العام"
+          }
+        },
+        "table": {
+          "headers": {
+            "studentId": "معرف الطالب",
+            "name": "الاسم",
+            "email": "البريد الإلكتروني",
+            "subscription": "الاشتراك",
+            "progress": "التقدم",
+            "signUpDate": "تاريخ التسجيل",
+            "status": "الحالة",
+            "actions": "الإجراءات"
+          },
+          "emptyState": "لا يوجد طلاب يطابقون التصفية الحالية.",
+          "pagination": {
+            "showing": "عرض {{first}} إلى {{last}} من {{total}} نتيجة",
+            "previous": "السابق",
+            "next": "التالي"
+          },
+          "ariaLabels": {
+            "view": "عرض {{name}}",
+            "edit": "تعديل {{name}}",
+            "delete": "حذف {{name}}",
+            "suspend": "تعليق {{name}}",
+            "activate": "تفعيل {{name}}"
+          },
+          "actions": {
+            "suspend": "تعليق",
+            "activate": "تفعيل"
+          }
+        }
+      },
+      "studentDetail": {
+        "hero": {
+          "title": "الملف الشخصي للطالب",
+          "subtitle": "عرض معلومات الحساب والنشاط الكاملة"
+        },
+        "studentId": "معرف الطالب",
+        "emailAddress": "عنوان البريد الإلكتروني",
+        "subscriptionPlan": "خطة الاشتراك",
+        "exp": "ينتهي",
+        "signupDate": "تاريخ التسجيل",
+        "manageSubscription": "إدارة الاشتراك",
+        "activityOverview": {
+          "title": "نظرة عامة على النشاط",
+          "avgScore": "متوسط النقاط",
+          "totalTest": "إجمالي الاختبارات",
+          "correctAnswer": "الإجابات الصحيحة",
+          "incorrect": "الإجابات الخاطئة"
+        },
+        "activityTrend": {
+          "title": "اتجاه النشاط (آخر 7 أيام)",
+          "lastActive": "آخر نشاط",
+          "averageScore": "متوسط النقاط",
+          "good": "جيد",
+          "activityLevel": "مستوى النشاط"
+        },
+        "flaggedIssues": {
+          "title": "المشاكل المبلغ عنها",
+          "reportedAndFlagged": "الأسئلة المبلغ عنها والمميزة",
+          "flaggedOn": "تم الإبلاغ في",
+          "severity": "الشدة",
+          "reason": "السبب",
+          "status": "الحالة",
+          "approved": "موافق عليه",
+          "rejected": "مرفوض",
+          "pending": "قيد الانتظار",
+          "noIssues": "لا توجد مشاكل مبلغ عنها"
+        },
+        "progressBreakdown": {
+          "title": "تفصيل التقدم",
+          "testName": "اسم الاختبار",
+          "date": "التاريخ",
+          "score": "النقاط",
+          "result": "النتيجة",
+          "action": "الإجراء",
+          "passed": "نجح",
+          "failed": "فشل",
+          "viewTest": "عرض {{test}}",
+          "noData": "لا توجد بيانات تقدم متاحة"
+        },
+        "actions": {
+          "editStudent": "تعديل الطالب",
+          "back": "رجوع",
+          "suspendAccount": "تعليق الحساب",
+          "activateAccount": "تفعيل الحساب"
+        }
+      },
+      "addUser": {
       "hero": {
         "title": "إضافة مستخدم جديد",
         "subtitle": "إنشاء حساب مستخدم جديد بالتفاصيل اللازمة."
@@ -3222,6 +3351,7 @@
       "subtitle": "إضافة شروحات ورسوم بيانية وملاحظات داعمة للأسئلة النهائية.",
       "draft": "مسودة",
       "completed": "مكتمل",
+      "assignedQuestions": "الأسئلة المخصصة",
       "addExplanation": "+ إضافة شرح",
       "pendingExplanations": "الشروحات المعلقة",
       "workflowProgress": "تقدم سير العمل",
@@ -3277,6 +3407,34 @@
         "action": "الإجراء"
       },
       "emptyMessage": "لم يتم العثور على شروحات مكتملة"
+    },
+    "assignedQuestions": {
+      "title": "الأسئلة المخصصة",
+      "subtitle": "عرض جميع الأسئلة المخصصة لك مع حالتها الحالية.",
+      "back": "رجوع",
+      "searchPlaceholder": "البحث عن الأسئلة...",
+      "loading": "جاري التحميل...",
+      "viewTitle": "عرض السؤال",
+      "viewSubtitle": "عرض تفاصيل السؤال وحالته",
+      "questionDetails": "تفاصيل السؤال",
+      "status": "الحالة",
+      "questionText": "نص السؤال",
+      "questionType": "نوع السؤال",
+      "options": "الخيارات",
+      "correctAnswer": "الإجابة الصحيحة",
+      "explanation": "الشرح",
+      "subject": "المادة",
+      "topic": "الموضوع",
+      "processor": "المعالج",
+      "table": {
+        "question": "السؤال",
+        "subject": "المادة",
+        "processor": "المعالج",
+        "status": "الحالة",
+        "updatedOn": "تم التحديث في",
+        "actions": "الإجراءات"
+      },
+      "emptyMessage": "لم يتم العثور على أسئلة مخصصة"
     },
     "profile": {
       "title": "إعدادات الحساب",
@@ -3403,6 +3561,7 @@
     "explainerSubmission": {
       "title": "تقديم المشرح",
       "back": "رجوع",
+      "searchPlaceholder": "البحث عن الأسئلة...",
       "table": {
         "question": "السؤال",
         "explainer": "المشرح",

@@ -1,4 +1,5 @@
 const adminService = require('../../services/admin');
+const studentService = require('../../services/admin/student.service');
 const subjectService = require('../../services/admin/subject');
 const topicService = require('../../services/admin/topic');
 
@@ -2289,6 +2290,243 @@ const getPlanWiseBreakdown = async (req, res, next) => {
   }
 };
 
+/**
+ * Get all students with filtering and pagination
+ * Only superadmin can access this
+ */
+const getAllStudents = async (req, res, next) => {
+  try {
+    const { page, limit, status, plan, date, search } = req.query;
+
+    console.log('[ADMIN] GET /admin/students → requested', {
+      requestedBy: req.user.id,
+      page,
+      limit,
+      status,
+      plan,
+      date,
+      search,
+    });
+
+    // Ensure only superadmin can access this endpoint
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Superadmin privileges required.',
+      });
+    }
+
+    // Parse pagination parameters
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 5;
+
+    // Validate pagination
+    if (pageNum < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Page number must be greater than 0',
+      });
+    }
+
+    if (limitNum < 1 || limitNum > 100) {
+      return res.status(400).json({
+        success: false,
+        message: 'Limit must be between 1 and 100',
+      });
+    }
+
+    // Build filters
+    const filters = {
+      status,
+      plan,
+      date,
+      search,
+    };
+
+    // Build pagination
+    const pagination = {
+      page: pageNum,
+      limit: limitNum,
+    };
+
+    // Get paginated students
+    const result = await studentService.getAllStudents(filters, pagination);
+
+    const response = {
+      success: true,
+      message: 'Students retrieved successfully',
+      data: {
+        students: result.students,
+        pagination: result.pagination,
+        filters: result.filters,
+      },
+    };
+
+    console.log('[ADMIN] GET /admin/students → 200 (ok)', {
+      count: result.students.length,
+      totalItems: result.pagination.totalItems,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[ADMIN] GET /admin/students → error', error);
+    next(error);
+  }
+};
+
+/**
+ * Get student management statistics
+ * Only superadmin can access this
+ */
+const getStudentManagementStatistics = async (req, res, next) => {
+  try {
+    console.log('[ADMIN] GET /admin/students/management → requested', {
+      requestedBy: req.user.id,
+    });
+
+    // Ensure only superadmin can access this endpoint
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Superadmin privileges required.',
+      });
+    }
+
+    // Get statistics
+    const statistics = await studentService.getStudentManagementStatistics();
+
+    const response = {
+      success: true,
+      message: 'Student management statistics retrieved successfully',
+      data: {
+        statistics,
+      },
+    };
+
+    console.log('[ADMIN] GET /admin/students/management → 200 (ok)', statistics);
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[ADMIN] GET /admin/students/management → error', error);
+    next(error);
+  }
+};
+
+/**
+ * Get student details by ID
+ * Only superadmin can access this
+ */
+const getStudentById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    console.log('[ADMIN] GET /admin/students/:id → requested', {
+      requestedBy: req.user.id,
+      studentId: id,
+    });
+
+    // Ensure only superadmin can access this endpoint
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Superadmin privileges required.',
+      });
+    }
+
+    // Get student details
+    const student = await studentService.getStudentById(id);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found',
+      });
+    }
+
+    const response = {
+      success: true,
+      message: 'Student details retrieved successfully',
+      data: {
+        student,
+      },
+    };
+
+    console.log('[ADMIN] GET /admin/students/:id → 200 (ok)', { studentId: id });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[ADMIN] GET /admin/students/:id → error', error);
+    next(error);
+  }
+};
+
+/**
+ * Update student status (suspend/activate)
+ * Only superadmin can access this
+ */
+const updateStudentStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    console.log('[ADMIN] PUT /admin/students/:id/status → requested', {
+      studentId: id,
+      status,
+      requestedBy: req.user.id,
+    });
+
+    // Ensure only superadmin can access this endpoint
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Superadmin privileges required.',
+      });
+    }
+
+    // Validate status
+    if (!status || !['active', 'suspended'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'status',
+            message: 'Status must be either active or suspended',
+          },
+        ],
+      });
+    }
+
+    // Update student status
+    const updatedStudent = await studentService.updateStudentStatus(id, status);
+
+    const response = {
+      success: true,
+      message: `Student status updated to ${status} successfully`,
+      data: {
+        student: {
+          id: updatedStudent.id,
+          name: updatedStudent.fullName || updatedStudent.name,
+          email: updatedStudent.email,
+          status: updatedStudent.status,
+        },
+      },
+    };
+
+    console.log('[ADMIN] PUT /admin/students/:id/status → 200 (updated)', { 
+      studentId: id, 
+      status 
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[ADMIN] PUT /admin/students/:id/status → error', error);
+    if (error.message === 'Student not found' || error.message === 'User is not a student') {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
 module.exports = {
   createAdmin,
   updateUserStatus,
@@ -2319,5 +2557,9 @@ module.exports = {
   getPlanWiseBreakdown,
   getPracticeDistribution,
   getPlanDistribution,
+  getAllStudents,
+  getStudentManagementStatistics,
+  getStudentById,
+  updateStudentStatus,
 };
 

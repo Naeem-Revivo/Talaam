@@ -229,6 +229,12 @@ const ExplainerQuestionBank = () => {
                 onClick={handleCompletedExplanation}
               className="py-[10px] px-6"
             />
+
+            <PrimaryButton
+              text={t("explainer.questionBank.assignedQuestions")}
+              className="py-[10px] px-8"
+              onClick={() => navigate("/explainer/question-bank/assigned-questions")}
+            />
           </div>
         </header>
 

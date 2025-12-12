@@ -30,7 +30,7 @@ const authMiddleware = async (req, res, next) => {
     if (user.status === 'suspended') {
       return res.status(403).json({
         success: false,
-        message: 'Your account has been suspended. Please contact administrator.',
+        message: 'Account suspended. Please contact support team.',
       });
     }
 
