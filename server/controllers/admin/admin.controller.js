@@ -369,13 +369,23 @@ const getAllAdmins = async (req, res, next) => {
           workflowRole: admin.adminRole || null,
           adminRole: admin.adminRole || null,
           status: admin.status,
+          // Use updatedAt as proxy for lastLogin (like dashboard services do)
+          lastLogin: admin.updatedAt || admin.createdAt || null,
+          createdAt: admin.createdAt || null,
+          updatedAt: admin.updatedAt || null,
         })),
         admins: result.admins.map((admin) => ({
           id: admin.id,
           username: admin.fullName || admin.name || 'N/A',
+          name: admin.fullName || admin.name || 'N/A',
           email: admin.email,
           workflowRole: admin.adminRole || null,
+          adminRole: admin.adminRole || null,
           status: admin.status,
+          // Use updatedAt as proxy for lastLogin (like dashboard services do)
+          lastLogin: admin.updatedAt || admin.createdAt || null,
+          createdAt: admin.createdAt || null,
+          updatedAt: admin.updatedAt || null,
         })),
         pagination: {
           ...result.pagination,
@@ -433,6 +443,7 @@ const getDashboardStatistics = async (req, res, next) => {
         userGrowthData: statistics.userGrowthData,
         latestSignups: statistics.latestSignups,
         subscriptionPlanBreakdown: statistics.subscriptionPlanBreakdown,
+        subscriptionNotifications: statistics.subscriptionNotifications,
       },
     };
 
@@ -1583,8 +1594,8 @@ const getAllUserSubscriptions = async (req, res, next) => {
             id: sub.planId?.id || sub.planId?._id,
             name: sub.planName || sub.planId?.name,
           },
-          startDate: adminService.formatDateDDMMYYYY(sub.startDate),
-          expiryDate: adminService.formatDateDDMMYYYY(sub.expiryDate),
+          startDate: adminService.formatDateDDMMYYYY(sub.startDate) || null,
+          expiryDate: adminService.formatDateDDMMYYYY(sub.expiryDate) || null,
           paymentStatus: sub.paymentStatus,
           isActive: sub.isActive,
         })),

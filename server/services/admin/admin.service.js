@@ -308,6 +308,233 @@ const getLatestSignups = async (limit = 3) => {
 };
 
 /**
+ * Get subscription notifications for dashboard
+ * Returns notifications about expiring and expired subscriptions
+ */
+const getSubscriptionNotifications = async () => {
+  try {
+    const { prisma } = require('../../config/db/prisma');
+    const now = new Date();
+    
+    // Calculate dates for notifications
+    const threeDaysFromNow = new Date(now);
+    threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+    
+    const sevenDaysFromNow = new Date(now);
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+    
+    // Get subscriptions expiring in the next 3 days
+    const expiringSoon = await prisma.subscription.count({
+      where: {
+        isActive: true,
+        paymentStatus: 'Paid',
+        expiryDate: {
+          gte: now,
+          lte: threeDaysFromNow,
+        },
+      },
+    });
+    
+    // Get subscriptions expiring in the next 7 days (but not in next 3 days)
+    const expiringThisWeek = await prisma.subscription.count({
+      where: {
+        isActive: true,
+        paymentStatus: 'Paid',
+        expiryDate: {
+          gt: threeDaysFromNow,
+          lte: sevenDaysFromNow,
+        },
+      },
+    });
+    
+    // Get expired subscriptions that are still marked as active (should be updated by cron)
+    const expiredStillActive = await prisma.subscription.count({
+      where: {
+        isActive: true,
+        paymentStatus: 'Paid',
+        expiryDate: {
+          lt: now,
+        },
+      },
+    });
+    
+    // Get pending subscriptions
+    const pendingSubscriptions = await prisma.subscription.count({
+      where: {
+        paymentStatus: 'Pending',
+      },
+    });
+    
+    // Get cancelled subscriptions
+    const cancelledSubscriptions = await prisma.subscription.count({
+      where: {
+        paymentStatus: 'Cancelled',
+      },
+    });
+    
+    // Get total active subscriptions
+    const totalActive = await prisma.subscription.count({
+      where: {
+        isActive: true,
+        paymentStatus: 'Paid',
+      },
+    });
+    
+    // Calculate next cron run time (daily at 00:00)
+    const nextCronRun = new Date(now);
+    nextCronRun.setHours(24, 0, 0, 0); // Next midnight
+    if (nextCronRun <= now) {
+      nextCronRun.setDate(nextCronRun.getDate() + 1);
+    }
+    
+    // Format next cron run time
+    const cronRunTime = nextCronRun.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    
+    const notifications = [];
+    
+    // Add notification for expired subscriptions that need attention
+    if (expiredStillActive > 0) {
+      notifications.push({
+        type: 'error',
+        title: 'Expired Subscriptions',
+        description: `${expiredStillActive} subscription${expiredStillActive > 1 ? 's' : ''} expired but still marked as active. Please review.`,
+        time: 'Action required',
+        bg: 'bg-[#FEF2F2]',
+        border: 'border-[#ED4122]',
+        iconBg: 'bg-[#EF4444]',
+        titleColor: 'text-[#EF4444]',
+        descriptionColor: 'text-[#EF4444]',
+        timeColor: 'text-[#EF4444]',
+        count: expiredStillActive,
+      });
+    }
+    
+    // Add notification for subscriptions expiring soon (within 3 days)
+    if (expiringSoon > 0) {
+      notifications.push({
+        type: 'warning',
+        title: 'Subscriptions Expiring Soon',
+        description: `${expiringSoon} subscription${expiringSoon > 1 ? 's' : ''} expiring within 3 days.`,
+        time: 'Urgent',
+        bg: 'bg-[#FEF2F2]',
+        border: 'border-[#ED4122]',
+        iconBg: 'bg-[#FBBF24]',
+        titleColor: 'text-[#ED4122]',
+        descriptionColor: 'text-[#ED4122]',
+        timeColor: 'text-[#ED4122]',
+        count: expiringSoon,
+      });
+    }
+    
+    // Add notification for subscriptions expiring this week
+    if (expiringThisWeek > 0) {
+      notifications.push({
+        type: 'info',
+        title: 'Subscriptions Expiring This Week',
+        description: `${expiringThisWeek} subscription${expiringThisWeek > 1 ? 's' : ''} expiring within 7 days.`,
+        time: 'Upcoming',
+        bg: 'bg-[#FEFCE8]',
+        border: 'border-[#FAFF70]',
+        iconBg: 'bg-[#60A5FA]',
+        titleColor: 'text-[#6CA6C1]',
+        descriptionColor: 'text-[#6CA6C1]',
+        timeColor: 'text-[#6CA6C1]',
+        count: expiringThisWeek,
+      });
+    }
+    
+    // Add notification for pending subscriptions
+    if (pendingSubscriptions > 0) {
+      notifications.push({
+        type: 'info',
+        title: 'Pending Subscriptions',
+        description: `${pendingSubscriptions} subscription${pendingSubscriptions > 1 ? 's' : ''} pending payment confirmation.`,
+        time: 'Awaiting payment',
+        bg: 'bg-[#FEFCE8]',
+        border: 'border-[#FAFF70]',
+        iconBg: 'bg-[#60A5FA]',
+        titleColor: 'text-[#6CA6C1]',
+        descriptionColor: 'text-[#6CA6C1]',
+        timeColor: 'text-[#6CA6C1]',
+        count: pendingSubscriptions,
+      });
+    }
+    
+    // Add notification for cancelled subscriptions
+    if (cancelledSubscriptions > 0) {
+      notifications.push({
+        type: 'warning',
+        title: 'Cancelled Subscriptions',
+        description: `${cancelledSubscriptions} subscription${cancelledSubscriptions > 1 ? 's' : ''} have been cancelled.`,
+        time: 'Review needed',
+        bg: 'bg-[#FEF2F2]',
+        border: 'border-[#ED4122]',
+        iconBg: 'bg-[#FBBF24]',
+        titleColor: 'text-[#ED4122]',
+        descriptionColor: 'text-[#ED4122]',
+        timeColor: 'text-[#ED4122]',
+        count: cancelledSubscriptions,
+      });
+    }
+    
+    // Add cron job schedule notification
+    notifications.push({
+      type: 'info',
+      title: 'Subscription Check Schedule',
+      description: `Next automatic subscription check scheduled for ${cronRunTime}.`,
+      time: 'Daily at 00:00',
+      bg: 'bg-[#FEFCE8]',
+      border: 'border-[#FAFF70]',
+      iconBg: 'bg-[#10B981]',
+      titleColor: 'text-[#6CA6C1]',
+      descriptionColor: 'text-[#6CA6C1]',
+      timeColor: 'text-[#6CA6C1]',
+      count: 0,
+    });
+    
+    // If no issues, add success notification at the end
+    if (expiredStillActive === 0 && expiringSoon === 0 && expiringThisWeek === 0 && pendingSubscriptions === 0) {
+      notifications.unshift({
+        type: 'success',
+        title: 'All Subscriptions Active',
+        description: `${totalActive} active subscription${totalActive > 1 ? 's' : ''} are up to date.`,
+        time: 'System healthy',
+        bg: 'bg-[#F0FDF4]',
+        border: 'border-[#10B981]',
+        iconBg: 'bg-[#10B981]',
+        titleColor: 'text-[#032746]',
+        descriptionColor: 'text-[#032746]',
+        timeColor: 'text-[#032746]',
+        count: totalActive,
+      });
+    }
+    
+    return notifications;
+  } catch (error) {
+    console.error('Error getting subscription notifications:', error);
+    // Return a default error notification
+    return [{
+      type: 'error',
+      title: 'Error Loading Notifications',
+      description: 'Unable to load subscription notifications. Please try again later.',
+      time: 'System error',
+      bg: 'bg-[#FEF2F2]',
+      border: 'border-[#ED4122]',
+      iconBg: 'bg-[#EF4444]',
+      titleColor: 'text-[#EF4444]',
+      descriptionColor: 'text-[#EF4444]',
+      timeColor: 'text-[#EF4444]',
+      count: 0,
+    }];
+  }
+};
+
+/**
  * Get subscription plan breakdown for dashboard
  * Returns percentage distribution of subscription plans
  */
@@ -330,12 +557,33 @@ const getSubscriptionPlanBreakdown = async () => {
     });
 
     // Count subscriptions by plan type
-    const planCounts = {};
+    // Normalize plan names to categories (premium, organization, free)
+    const planCategories = {
+      premium: 0,
+      organization: 0,
+      other: 0,
+    };
     const usersWithPaidSubscriptions = new Set();
     
     subscriptions.forEach((sub) => {
-      const planName = sub.plan?.name?.toLowerCase() || 'free';
-      planCounts[planName] = (planCounts[planName] || 0) + 1;
+      // Use planName from subscription table first, fallback to plan.name
+      const planName = (sub.planName || sub.plan?.name || '').toLowerCase();
+      
+      if (!planName) {
+        // Skip if no plan name
+        return;
+      }
+      
+      // Categorize plans - check if plan name contains keywords
+      if (planName.includes('premium')) {
+        planCategories.premium += 1;
+      } else if (planName.includes('organization') || planName.includes('organisation')) {
+        planCategories.organization += 1;
+      } else {
+        // Any other paid plan (not free)
+        planCategories.other += 1;
+      }
+      
       usersWithPaidSubscriptions.add(sub.userId);
     });
 
@@ -357,23 +605,13 @@ const getSubscriptionPlanBreakdown = async () => {
       isBase: true,
     });
 
-    // Premium plan
-    const premiumCount = planCounts['premium'] || 0;
-    const premiumPercentage = totalUsers > 0 ? (premiumCount / totalUsers) * 100 : 0;
+    // Premium plan - represents ALL users with paid subscriptions (total paid percentage)
+    // Use unique user count, not subscription count, to ensure percentages add up to 100%
+    const premiumPercentage = totalUsers > 0 ? (usersWithPaidCount / totalUsers) * 100 : 0;
     breakdown.push({
       label: 'Premium',
       value: premiumPercentage,
       color: '#ED4122',
-      isBase: false,
-    });
-
-    // Organization plan
-    const orgCount = planCounts['organization'] || planCounts['organisation'] || 0;
-    const orgPercentage = totalUsers > 0 ? (orgCount / totalUsers) * 100 : 0;
-    breakdown.push({
-      label: 'Organization',
-      value: orgPercentage,
-      color: '#6CA6C1',
       isBase: false,
     });
 
@@ -440,6 +678,9 @@ const getDashboardStatistics = async () => {
     // Get subscription plan breakdown
     const subscriptionPlanBreakdown = await getSubscriptionPlanBreakdown();
 
+    // Get subscription notifications
+    const subscriptionNotifications = await getSubscriptionNotifications();
+
     return {
       totalStudents,
       verifiedEmailStudents,
@@ -448,6 +689,7 @@ const getDashboardStatistics = async () => {
       userGrowthData,
       latestSignups,
       subscriptionPlanBreakdown,
+      subscriptionNotifications,
     };
   } catch (error) {
     console.error('Error getting dashboard statistics:', error);
@@ -508,11 +750,22 @@ const getUserManagementStatistics = async () => {
  * Helper function to format date as DD-MM-YYYY
  */
 const formatDateDDMMYYYY = (date) => {
-  const d = new Date(date);
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const year = d.getFullYear();
-  return `${day}-${month}-${year}`;
+  if (!date) return null;
+  
+  try {
+    const d = new Date(date);
+    // Check if date is valid
+    if (isNaN(d.getTime())) {
+      return null;
+    }
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  } catch (error) {
+    console.error('Error formatting date:', date, error);
+    return null;
+  }
 };
 
 /**

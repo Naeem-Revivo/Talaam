@@ -218,11 +218,11 @@ const ExplainerQuestionBank = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-3 justify-start lg:justify-end">
-            <OutlineButton
+            {/* <OutlineButton
               text={t("explainer.questionBank.draft")}
                 onClick={handleDraftExplanation}
               className="py-[10px] px-9"
-            />
+            /> */}
 
             <OutlineButton
               text={t("explainer.questionBank.completed")}

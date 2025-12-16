@@ -119,15 +119,91 @@ const ManageUserSubscriptionsPage = () => {
       const response = await adminAPI.getAllUserSubscriptions(params);
       
       if (response.success && response.data) {
+        // Helper function to format date safely
+        const formatDate = (dateValue) => {
+          // Handle null, undefined, or empty strings
+          if (!dateValue || dateValue === 'null' || dateValue === 'undefined') {
+            return 'N/A';
+          }
+          
+          // If it's already a formatted string (DD-MM-YYYY or DD/MM/YYYY), validate and use it
+          if (typeof dateValue === 'string') {
+            // Check for invalid date strings from backend (like "NaN-NaN-NaN" or "Invalid Date")
+            if (dateValue.includes('NaN') || dateValue.includes('Invalid')) {
+              return 'N/A';
+            }
+            
+            // Check if it's already in DD-MM-YYYY or DD/MM/YYYY format
+            const datePattern = /^\d{2}[-\/]\d{2}[-\/]\d{4}$/;
+            if (datePattern.test(dateValue)) {
+              // Convert DD-MM-YYYY to DD/MM/YYYY for consistency
+              return dateValue.replace(/-/g, '/');
+            }
+          }
+          
+          try {
+            // Try to parse as Date object or ISO string
+            const date = new Date(dateValue);
+            // Check if date is valid
+            if (isNaN(date.getTime())) {
+              console.warn('Invalid date value:', dateValue);
+              return 'N/A';
+            }
+            // Format as DD/MM/YYYY
+            return date.toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric'
+            });
+          } catch (error) {
+            console.error('Error formatting date:', dateValue, error);
+            return 'N/A';
+          }
+        };
+
+        // Helper function to extract name from email
+        const getNameFromEmail = (email) => {
+          if (!email || typeof email !== 'string') return null;
+          const emailPart = email.split('@')[0];
+          // Capitalize first letter of each word
+          return emailPart
+            .split(/[._-]/)
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+        };
+
         // Transform API data to match table format
-        const transformed = response.data.subscriptions?.map((sub) => {
-          const startDate = sub.startDate ? new Date(sub.startDate).toLocaleDateString('en-GB') : 'N/A';
-          const expiryDate = sub.expiryDate ? new Date(sub.expiryDate).toLocaleDateString('en-GB') : 'N/A';
+        const transformed = response.data.subscriptions?.map((sub, index) => {
+          // Try multiple possible field names (backend might use different casing)
+          const startDateValue = sub.startDate || sub.start_date;
+          const expiryDateValue = sub.expiryDate || sub.expiry_date;
+          
+          // Debug logging for first item to see what we're receiving
+          if (index === 0) {
+            console.log('Sample subscription data:', {
+              startDate: sub.startDate,
+              expiryDate: sub.expiryDate,
+              start_date: sub.start_date,
+              expiry_date: sub.expiry_date,
+              startDateType: typeof sub.startDate,
+              expiryDateType: typeof sub.expiryDate,
+            });
+          }
+          
+          const startDate = formatDate(startDateValue);
+          const expiryDate = formatDate(expiryDateValue);
+          
+          // Get user name with fallback to email-derived name
+          const userName = sub.userName || sub.user?.name || sub.user?.fullName;
+          const userEmail = sub.user?.email;
+          const user = userName && userName !== 'N/A' 
+            ? userName 
+            : (getNameFromEmail(userEmail) || userEmail || 'N/A');
           
           return {
             id: sub.id,
-            user: sub.userName || sub.user?.name || 'N/A',
-            email: sub.user?.email || 'N/A',
+            user: user,
+            email: userEmail || 'N/A',
             plan: sub.planName || sub.plan?.name || 'N/A',
             startdate: startDate,
             expirydate: expiryDate,

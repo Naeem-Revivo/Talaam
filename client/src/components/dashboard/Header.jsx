@@ -120,6 +120,7 @@ const Header = ({ onToggleSidebar }) => {
   // Admin routes
   if (pathname.startsWith('/admin')) {
     if (pathname === '/admin') return t('header.titles.admin.dashboard');
+    if (pathname.startsWith('/admin/students')) return t('header.titles.admin.studentManagement');
     if (pathname.includes('add-announcements')) return t('header.titles.admin.addAnnouncements');
     if (pathname.includes('announcements')) return t('header.titles.admin.announcements');
     if (pathname.includes('language-management')) return t('header.titles.admin.languageManagement');

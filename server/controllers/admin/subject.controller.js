@@ -117,6 +117,10 @@ const getAllSubjects = async (req, res, next) => {
           name: subject.name,
           description: subject.description || '',
           examId: subject.examId || null,
+          exam: subject.exam ? {
+            id: subject.exam.id,
+            name: subject.exam.name,
+          } : null,
           createdAt: subject.createdAt,
           updatedAt: subject.updatedAt,
         })),

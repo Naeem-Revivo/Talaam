@@ -1,5 +1,5 @@
 import { useLanguage } from "../../context/LanguageContext";
-import { OutlineButton, PrimaryButton } from "../../components/common/Button";
+import { PrimaryButton } from "../../components/common/Button";
 import StatsCards from "../../components/common/StatsCards";
 import { Table } from "../../components/common/TableComponent";
 import { useState, useEffect, useMemo, useCallback } from "react";

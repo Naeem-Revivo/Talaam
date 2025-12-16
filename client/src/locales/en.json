@@ -716,15 +716,29 @@
         "title": "Your Current Plan",
         "planName": "Professional Plan",
         "statusActive": "Active",
+        "statusPending": "Pending",
+        "statusCancelled": "Cancelled",
+        "statusInactive": "Inactive",
         "cancelSubscription": "Cancel Subscription",
         "upgradePlan": "Upgrade Plan",
+        "renewPlan": "Renew Plan",
         "plan": "Plan:",
         "renewsOn": "Renews on:",
         "access": "Access:",
         "autoRenew": "Auto-Renew:",
         "monthly": "Monthly",
+        "quarterly": "Quarterly",
+        "semiAnnual": "Semi-Annual",
+        "annual": "Annual",
         "questionBankAccess": "Question Bank Access",
-        "on": "On"
+        "on": "On",
+        "off": "Off",
+        "cancelModalTitle": "Cancel Subscription",
+        "cancelModalMessage": "Are you sure you want to cancel your subscription?",
+        "cancelModalSubMessage": "This action cannot be undone. Your subscription will remain active until the end of the current billing period.",
+        "cancelConfirm": "Cancel Subscription",
+        "cancelCancel": "Keep Subscription",
+        "noPlanAvailable": "No subscription plan available"
       },
       "pricingPlans": {
         "title": "Choose the Right Plan for You",
@@ -1095,7 +1109,7 @@
         "activeSubscriptions": "Active Subscriptions",
         "revenue": "Revenue",
         "fromLastMonth": "+12% from last month",
-        "verificationRate": "72% verification rate",
+        "verificationRate": "verification rate",
         "thisWeek": "+8% this week",
         "thisMonth": "+15% this month"
       },
@@ -2222,7 +2236,7 @@
     "classificationManagement": {
       "hero": {
         "title": "Classification Management",
-        "subtitle": "Organize questions by subject, topic, subtopic, and concept"
+        "subtitle": "Organize questions by subject, topic, Exam"
       },
       "actions": {
         "export": "Export",
@@ -2283,9 +2297,11 @@
         "selectSubject": "Select Subject",
         "selectTopic": "Select Topic",
         "selectSubtopic": "Select Subtopic",
+        "selectExam": "Select Exam",
         "allSubjects": "All Subjects",
         "allTopics": "All Topics",
-        "allSubtopics": "All Subtopics"
+        "allSubtopics": "All Subtopics",
+        "allExams": "All Exams"
       },
       "headings": {
         "subject": "Classification Management",
@@ -2829,6 +2845,7 @@
       "table": {
         "columns": {
           "number": "#",
+          "questionTitle": "QUESTION TITLE",
           "contentType": "CONTENT TYPE",
           "submittedBy": "SUBMITTED BY",
           "flagReason": "FLAG REASON",

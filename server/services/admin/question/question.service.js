@@ -3162,6 +3162,8 @@ const getFlaggedQuestionsForModeration = async (filters = {}) => {
       dateReported: q.createdAt,
       status: q.flagStatus || 'pending',
       question: q.questionText,
+      questionText: q.questionText,
+      questionType: q.questionType,
       options: q.options,
       correctAnswer: q.correctAnswer,
       explanation: q.explanation,

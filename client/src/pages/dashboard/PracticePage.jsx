@@ -234,7 +234,7 @@ const PracticePage = () => {
       {/* Session Mode and Question Status Cards - Flexed */}
       <div className="flex flex-col xl:flex-row justify-start gap-2 mb-6">
         {/* Session Mode Card */}
-        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:h-[266px]">
+        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:h-full">
         <h2 className="font-archivo font-bold text-lg md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-4">
           {t('dashboard.practice.sessionMode.title')}
         </h2>
@@ -311,7 +311,7 @@ const PracticePage = () => {
         </div>
 
         {/* Question Status Card */}
-        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:h-[266px]">
+        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:h-auto">
         <h2 className="font-archivo font-bold text-[18px] md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-4">
           {t('dashboard.practice.questionStatus.title')}
         </h2>

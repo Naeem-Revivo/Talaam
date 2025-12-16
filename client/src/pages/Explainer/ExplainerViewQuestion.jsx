@@ -141,18 +141,31 @@ const ExplainerViewQuestion = () => {
                       </p>
                     </div>
                   )}
-                  {question.options && (
+                  {question.options && (question.questionType === "MCQ" || question.questionType === "TRUE_FALSE") && (
                     <div>
                       <label className="block font-roboto text-[14px] font-semibold text-dark-gray mb-2">
                         {t("explainer.assignedQuestions.options") || "Options"}
                       </label>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {Object.entries(question.options).map(([key, value]) => (
-                          <div key={key} className="p-3 rounded border border-[#E5E7EB] bg-[#F9FAFB]">
-                            <span className="font-roboto text-[14px] font-semibold text-oxford-blue">{key}: </span>
-                            <span className="font-roboto text-[14px] text-dark-gray">{value || "—"}</span>
-                          </div>
-                        ))}
+                        {question.questionType === "TRUE_FALSE" ? (
+                          <>
+                            <div className="p-3 rounded border border-[#E5E7EB] bg-[#F9FAFB]">
+                              <span className="font-roboto text-[14px] font-semibold text-oxford-blue">A: </span>
+                              <span className="font-roboto text-[14px] text-dark-gray">{question.options.A || "True"}</span>
+                            </div>
+                            <div className="p-3 rounded border border-[#E5E7EB] bg-[#F9FAFB]">
+                              <span className="font-roboto text-[14px] font-semibold text-oxford-blue">B: </span>
+                              <span className="font-roboto text-[14px] text-dark-gray">{question.options.B || "False"}</span>
+                            </div>
+                          </>
+                        ) : (
+                          Object.entries(question.options).map(([key, value]) => (
+                            <div key={key} className="p-3 rounded border border-[#E5E7EB] bg-[#F9FAFB]">
+                              <span className="font-roboto text-[14px] font-semibold text-oxford-blue">{key}: </span>
+                              <span className="font-roboto text-[14px] text-dark-gray">{value || "—"}</span>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
                   )}
@@ -162,7 +175,12 @@ const ExplainerViewQuestion = () => {
                         {t("explainer.assignedQuestions.correctAnswer") || "Correct Answer"}
                       </label>
                       <p className="font-roboto text-[16px] font-normal text-[#ED4122]">
-                        {question.correctAnswer}
+                        {question.questionType === "TRUE_FALSE" 
+                          ? (question.correctAnswer === "A" ? "True" : "False")
+                          : question.correctAnswer.length === 1
+                          ? `Option ${question.correctAnswer}`
+                          : question.correctAnswer
+                        }
                       </p>
                     </div>
                   )}

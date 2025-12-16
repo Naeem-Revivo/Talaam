@@ -35,7 +35,8 @@ const mapApiUserToFrontend = (apiUser) => {
     status: apiUser.status ? apiUser.status.charAt(0).toUpperCase() + apiUser.status.slice(1) : null,
     // Only include fields that come from the API
     notes: apiUser.notes || null,
-    lastLogin: apiUser.lastLogin || null,
+    // Backend uses updatedAt as proxy for lastLogin (like dashboard services)
+    lastLogin: apiUser.lastLogin || apiUser.updatedAt || null,
     dateCreated: apiUser.dateCreated || apiUser.createdAt || null,
     activityLog: apiUser.activityLog || null,
   };

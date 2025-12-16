@@ -22,6 +22,10 @@ const getTabConfig = (subjects, topics, subtopics, exams, t) => ({
         key: "name",
       },
       {
+        label: t("admin.classificationManagement.table.columns.examName") || "Exam",
+        key: "exam",
+      },
+      {
         label: t("admin.classificationManagement.table.columns.description"),
         key: "description",
       },
@@ -151,22 +155,35 @@ const formatExamsForTable = (exams) => {
 };
 
 // Helper function to format subject data for table display
-const formatSubjectsForTable = (subjects) => {
+const formatSubjectsForTable = (subjects, exams = []) => {
   if (!subjects || !Array.isArray(subjects)) return [];
   
-  return subjects.map((subject) => ({
-    id: subject.id,
-    name: subject.name || "",
-    description: subject.description || "",
-    date: subject.createdAt 
-      ? new Date(subject.createdAt).toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        })
-      : "",
-    createdAt: subject.createdAt,
-  }));
+  return subjects.map((subject) => {
+    // Get exam name from subject.exam relation (preferred) or from exams array
+    let examName = null;
+    if (subject.exam?.name) {
+      examName = subject.exam.name;
+    } else if (subject.examId && exams.length > 0) {
+      const exam = exams.find(e => e.id === subject.examId);
+      examName = exam?.name || null;
+    }
+    
+    return {
+      id: subject.id,
+      name: subject.name || "",
+      description: subject.description || "",
+      exam: examName || "N/A",
+      examId: subject.examId || subject.exam?.id || null,
+      date: subject.createdAt 
+        ? new Date(subject.createdAt).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          })
+        : "",
+      createdAt: subject.createdAt,
+    };
+  });
 };
 
 // Helper function to format topic data for table display
@@ -207,18 +224,27 @@ const ClassificationManagement = () => {
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
   const [subtopic, setSubtopic] = useState("");
+  const [exam, setExam] = useState("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   
   // Format data for table display
   const exams = useMemo(() => formatExamsForTable(examsData), [examsData]);
-  const subjects = useMemo(() => formatSubjectsForTable(subjectsData), [subjectsData]);
+  const subjects = useMemo(() => formatSubjectsForTable(subjectsData, exams), [subjectsData, exams]);
   const topics = useMemo(() => formatTopicsForTable(topicsData), [topicsData]);
   
   // Determine loading state based on active tab
   const loading = activeTab === "Exams" ? examsLoading : activeTab === "Subject" ? subjectsLoading : topicsLoading;
   
-  // Fetch data when tab changes
+  // Fetch all data on initial load and when tab changes
+  useEffect(() => {
+    // Always fetch exams, subjects, and topics to keep stats accurate
+    dispatch(fetchExams());
+    dispatch(fetchSubjects());
+    dispatch(fetchTopics());
+  }, [dispatch]);
+  
+  // Also fetch data when tab changes to ensure fresh data
   useEffect(() => {
     if (activeTab === "Exams") {
       dispatch(fetchExams());
@@ -229,24 +255,22 @@ const ClassificationManagement = () => {
     }
   }, [dispatch, activeTab]);
   
-  // Handle success messages
+  // Handle success messages - only refresh data, no generic toast
+  // Specific success messages are handled in individual action handlers
   useEffect(() => {
     if (examsSuccess) {
-      showSuccessToast("Operation completed successfully");
       dispatch(clearExamSuccess());
       if (activeTab === "Exams") {
         dispatch(fetchExams());
       }
     }
     if (subjectsSuccess) {
-      showSuccessToast("Operation completed successfully");
       dispatch(clearSubjectSuccess());
       if (activeTab === "Subject") {
         dispatch(fetchSubjects());
       }
     }
     if (topicsSuccess) {
-      showSuccessToast("Operation completed successfully");
       dispatch(clearTopicSuccess());
       if (activeTab === "Topics") {
         dispatch(fetchTopics());
@@ -275,19 +299,30 @@ const ClassificationManagement = () => {
 
   const pageSize = 5;
 
-  // Filter data based on search
+  // Filter data based on search and exam filter (for Subject tab)
   const filteredData = useMemo(() => {
-    return currentConfig.data.filter((item) => {
+    let filtered = currentConfig.data.filter((item) => {
       const searchLower = search.toLowerCase();
-      return (
+      const matchesSearch = (
         item.name.toLowerCase().includes(searchLower) ||
         item.description.toLowerCase().includes(searchLower) ||
         (item.createdby &&
           item.createdby.toLowerCase().includes(searchLower)) ||
         (item.date && item.date.toLowerCase().includes(searchLower))
       );
+      
+      // Apply exam filter for Subject tab
+      if (activeTab === "Subject" && exam && exam !== "ALL") {
+        // Match by examId (preferred) or exam name
+        const matchesExam = item.examId === exam || item.exam?.id === exam || item.exam === exam;
+        return matchesSearch && matchesExam;
+      }
+      
+      return matchesSearch;
     });
-  }, [currentConfig.data, search]);
+    
+    return filtered;
+  }, [currentConfig.data, search, exam, activeTab]);
 
   // Paginate filtered data
   const paginatedData = useMemo(() => {
@@ -298,7 +333,7 @@ const ClassificationManagement = () => {
   // Reset page when filters or tab change
   useEffect(() => {
     setPage(1);
-  }, [search, activeTab]);
+  }, [search, activeTab, exam]);
 
   const handleDeleteClick = (item) => {
     // Show delete modal for Exams, Subject, and Topics tabs
@@ -317,14 +352,20 @@ const ClassificationManagement = () => {
     try {
       if (activeTab === "Exams") {
         await dispatch(deleteExam(itemToDelete.id)).unwrap();
+        // Clear success state immediately to prevent duplicate toast from success effect
+        dispatch(clearExamSuccess());
         showSuccessToast(`Exam "${itemToDelete.name}" deleted successfully`);
         dispatch(fetchExams());
       } else if (activeTab === "Subject") {
         await dispatch(deleteSubject(itemToDelete.id)).unwrap();
+        // Clear success state immediately to prevent duplicate toast from success effect
+        dispatch(clearSubjectSuccess());
         showSuccessToast(`Subject "${itemToDelete.name}" deleted successfully`);
         dispatch(fetchSubjects());
       } else if (activeTab === "Topics") {
         await dispatch(deleteTopic(itemToDelete.id)).unwrap();
+        // Clear success state immediately to prevent duplicate toast from success effect
+        dispatch(clearTopicSuccess());
         showSuccessToast(`Topic "${itemToDelete.name}" deleted successfully`);
         dispatch(fetchTopics());
       }
@@ -517,9 +558,13 @@ const ClassificationManagement = () => {
           subjectValue={subject}
           topicValue={topic}
           subtopicValue={subtopic}
+          examValue={exam}
           onSubjectChange={setSubject}
           onTopicChange={setTopic}
           onSubtopicChange={setSubtopic}
+          onExamChange={setExam}
+          activeTab={activeTab}
+          exams={exams}
         />
 
         <Tabs activeTab={activeTab} onTabChange={setActiveTab} />

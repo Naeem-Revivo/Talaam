@@ -726,15 +726,29 @@
         "title": "خطتك الحالية",
         "planName": "الخطة الاحترافية",
         "statusActive": "نشط",
+        "statusPending": "قيد الانتظار",
+        "statusCancelled": "ملغى",
+        "statusInactive": "غير نشط",
         "cancelSubscription": "إلغاء الاشتراك",
         "upgradePlan": "ترقية الخطة",
+        "renewPlan": "تجديد الخطة",
         "plan": "الخطة:",
         "renewsOn": "تجديد في:",
         "access": "الوصول:",
         "autoRenew": "التجديد التلقائي:",
         "monthly": "شهري",
+        "quarterly": "ربع سنوي",
+        "semiAnnual": "نصف سنوي",
+        "annual": "سنوي",
         "questionBankAccess": "الوصول إلى بنك الأسئلة",
-        "on": "تشغيل"
+        "on": "تشغيل",
+        "off": "إيقاف",
+        "cancelModalTitle": "إلغاء الاشتراك",
+        "cancelModalMessage": "هل أنت متأكد أنك تريد إلغاء اشتراكك؟",
+        "cancelModalSubMessage": "لا يمكن التراجع عن هذا الإجراء. سيبقى اشتراكك نشطًا حتى نهاية فترة الفوترة الحالية.",
+        "cancelConfirm": "إلغاء الاشتراك",
+        "cancelCancel": "الاحتفاظ بالاشتراك",
+        "noPlanAvailable": "لا يوجد خطة اشتراك متاحة"
       },
       "pricingPlans": {
         "title": "اختر الخطة المناسبة لك",
@@ -1105,7 +1119,7 @@
         "activeSubscriptions": "الاشتراكات النشطة",
         "revenue": "الإيرادات",
         "fromLastMonth": "+12% من الشهر الماضي",
-        "verificationRate": "معدل التحقق 72%",
+        "verificationRate": "معدل التحقق",
         "thisWeek": "+8% هذا الأسبوع",
         "thisMonth": "+15% هذا الشهر"
       },
@@ -1205,9 +1219,9 @@
           "systemRole": "دور النظام",
           "status": "الحالة"
         },
-          "fileName": "إدارة-المستخدمين.csv"
-        }
-      },
+        "fileName": "إدارة-المستخدمين.csv"
+      }
+    },
       "studentManagement": {
         "hero": {
           "title": "إدارة الطلاب",
@@ -1335,7 +1349,7 @@
           "activateAccount": "تفعيل الحساب"
         }
       },
-      "addUser": {
+    "addUser": {
       "hero": {
         "title": "إضافة مستخدم جديد",
         "subtitle": "إنشاء حساب مستخدم جديد بالتفاصيل اللازمة."
@@ -2232,7 +2246,7 @@
     "classificationManagement": {
       "hero": {
         "title": "إدارة التصنيف",
-        "subtitle": "تنظيم الأسئلة حسب الموضوع والموضوع والموضوع الفرعي والمفهوم"
+       "subtitle": "تنظيم الأسئلة حسب المادة، الموضوع، والاختبار"
       },
       "actions": {
         "export": "تصدير",
@@ -2292,10 +2306,12 @@
         "searchPlaceholder": "البحث...",
         "selectSubject": "اختر الموضوع",
         "selectTopic": "اختر الموضوع",
+        "selectExam": "اختر الامتحان",
         "selectSubtopic": "اختر الموضوع الفرعي",
         "allSubjects": "جميع المواضيع",
         "allTopics": "جميع المواضيع",
-        "allSubtopics": "جميع المواضيع الفرعية"
+        "allSubtopics": "جميع المواضيع الفرعية",
+        "allExams": "جميع الامتحانات"
       },
       "headings": {
         "subject": "إدارة التصنيف",
@@ -2839,6 +2855,7 @@
       "table": {
         "columns": {
           "number": "#",
+          "questionTitle": "عنوان السؤال",
           "contentType": "نوع المحتوى",
           "submittedBy": "تم الإرسال بواسطة",
           "flagReason": "سبب الإبلاغ",

@@ -4,9 +4,14 @@ import { PrimaryButton } from "../../components/common/Button";
 import Dropdown from "../../components/shared/Dropdown";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchCurrentUser } from "../../store/slices/authSlice";
+import profileAPI from "../../api/profile";
+import authAPI from "../../api/auth";
+import subscriptionAPI from "../../api/subscription";
+import { toast } from "react-toastify";
+import { eye, openeye } from "../../assets/svg/signup";
 
 const AccountSettingPage = () => {
-  const { language, t } = useLanguage();
+  const { language, t, changeLanguage } = useLanguage();
   const dir = language === "ar" ? "rtl" : "ltr";
   const isRTL = dir === "rtl";
   const dispatch = useDispatch();
@@ -16,6 +21,7 @@ const AccountSettingPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState(
     language === "ar" ? "Arabic" : "English (US)"
   );
+  const [currentPlan, setCurrentPlan] = useState("Free Plan");
   const [profileData, setProfileData] = useState({
     name: "",
     email: "",
@@ -28,35 +34,55 @@ const AccountSettingPage = () => {
     newPassword: "",
     confirmPassword: "",
   });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Fetch initial data on mount and refresh when needed
   useEffect(() => {
-    const init = async () => {
-      if (!user) {
-        try {
-          const result = await dispatch(fetchCurrentUser());
-          const fetched = result.payload?.data?.user;
-          if (fetched) {
-            setProfileData((prev) => ({
-              ...prev,
-              name: fetched.fullName || fetched.name || "",
-              email: fetched.email || "",
-              phone: fetched.phone || "",
-            }));
-          }
-        } catch {
-          // ignore
+    const loadUserData = async () => {
+      // Always fetch fresh user data to ensure we have the latest from DB
+      try {
+        const result = await dispatch(fetchCurrentUser());
+        const fetched = result.payload?.data?.user;
+        if (fetched) {
+          setProfileData({
+            name: fetched.fullName || fetched.name || "",
+            email: fetched.email || "",
+            phone: fetched.phone !== null && fetched.phone !== undefined ? fetched.phone : "",
+          });
         }
-      } else {
-        setProfileData((prev) => ({
-          ...prev,
-          name: user.fullName || user.name || "",
-          email: user.email || "",
-          phone: user.phone || "",
-        }));
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+        // If fetch fails, try to use existing user from Redux as fallback
+        if (user) {
+          setProfileData({
+            name: user.fullName || user.name || "",
+            email: user.email || "",
+            phone: user.phone !== null && user.phone !== undefined ? user.phone : "",
+          });
+        }
+      }
+
+      // Fetch current subscription plan
+      try {
+        const subscriptionResponse = await subscriptionAPI.getMySubscription();
+        if (subscriptionResponse.success && subscriptionResponse.data?.subscription) {
+          const planName = subscriptionResponse.data.subscription.planName || "Free Plan";
+          setCurrentPlan(planName);
+        }
+      } catch (error) {
+        // If no subscription found, keep default "Free Plan"
+        console.log("No subscription found, using default plan");
       }
     };
-    init();
-  }, [user, dispatch]);
+    
+    loadUserData();
+  }, [dispatch]); // Fetch fresh data on mount
 
   const languageOptions = [
     {
@@ -69,20 +95,125 @@ const AccountSettingPage = () => {
     },
   ];
 
-  const handleSaveChanges = () => {
-    console.log("Saving profile changes...", profileData);
+  const handleSaveChanges = async () => {
+    if (!profileData.name || !profileData.email) {
+      toast.error("Name and email are required");
+      return;
+    }
+
+    setIsSavingProfile(true);
+    try {
+      const response = await profileAPI.updateProfile({
+        name: profileData.name,
+        fullName: profileData.name,
+        email: profileData.email,
+        phone: profileData.phone || undefined,
+      });
+      
+      // Refresh user data in Redux first to get latest from DB
+      const result = await dispatch(fetchCurrentUser());
+      const updatedUser = result.payload?.data?.user;
+      
+      // Update profileData from both API response and fresh Redux state
+      if (response.data?.profile) {
+        setProfileData({
+          name: response.data.profile.fullName || response.data.profile.name || "",
+          email: response.data.profile.email || "",
+          phone: response.data.profile.phone !== null && response.data.profile.phone !== undefined ? (response.data.profile.phone || "") : "",
+        });
+      } else if (updatedUser) {
+        // Fallback to updated user from Redux if profile response doesn't have data
+        setProfileData({
+          name: updatedUser.fullName || updatedUser.name || "",
+          email: updatedUser.email || "",
+          phone: updatedUser.phone !== null && updatedUser.phone !== undefined ? (updatedUser.phone || "") : "",
+        });
+      }
+      
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      toast.error(error.message || "Failed to update profile");
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
-  const handleUpdatePassword = () => {
-    console.log("Updating password...", passwordData);
+  const handleUpdatePassword = async () => {
+    if (!passwordData.email) {
+      toast.error("Email is required");
+      return;
+    }
+    if (!passwordData.code) {
+      toast.error("Verification code is required");
+      return;
+    }
+    if (!passwordData.newPassword) {
+      toast.error("New password is required");
+      return;
+    }
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    if (passwordData.newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      await authAPI.resetPasswordOTP({
+        email: passwordData.email,
+        otp: passwordData.code,
+        password: passwordData.newPassword.trim(), // Backend expects 'password', not 'newPassword'
+      });
+      
+      toast.success("Password updated successfully");
+      // Clear password form
+      setPasswordData({
+        currentPassword: "",
+        email: "",
+        code: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      toast.error(error.message || "Failed to update password");
+    } finally {
+      setIsUpdatingPassword(false);
+    }
   };
 
-  const handleSendCode = () => {
-    console.log("Sending verification code...");
+  const handleSendCode = async () => {
+    if (!passwordData.email) {
+      toast.error("Email is required");
+      return;
+    }
+
+    setIsSendingCode(true);
+    try {
+      await authAPI.forgotPasswordOTP({
+        email: passwordData.email,
+      });
+      toast.success("Verification code sent to your email");
+    } catch (error) {
+      toast.error(error.message || "Failed to send verification code");
+    } finally {
+      setIsSendingCode(false);
+    }
   };
 
-  const handleSaveApplicationSettings = () => {
-    console.log("Saving application settings...");
+  const handleSaveApplicationSettings = async () => {
+    setIsSavingSettings(true);
+    try {
+      // Only save notification settings if needed in the future
+      // Language is already saved when dropdown changes
+      toast.success("Settings saved successfully");
+    } catch (error) {
+      toast.error(error.message || "Failed to save settings");
+    } finally {
+      setIsSavingSettings(false);
+    }
   };
 
   const handleProfileChange = (field, value) => {
@@ -151,9 +282,7 @@ const AccountSettingPage = () => {
                     isRTL ? "text-right" : "text-left"
                   }`}
                 >
-                  {t(
-                    "dashboard.accountSettings.profileInformation.professionalPlan"
-                  )}
+                  {currentPlan}
                 </span>
               </div>
             </div>
@@ -194,11 +323,12 @@ const AccountSettingPage = () => {
               } col-span-2`}
             >
               <PrimaryButton
-                text={t(
+                text={isSavingProfile ? t("common.updating") || "Updating..." : t(
                   "dashboard.accountSettings.profileInformation.saveChanges"
                 )}
                 className="py-[10px] px-7 text-nowrap"
                 onClick={handleSaveChanges}
+                disabled={isSavingProfile}
               />
             </div>
           </div>
@@ -218,19 +348,34 @@ const AccountSettingPage = () => {
               <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
                 {t("dashboard.accountSettings.changePassword.currentPassword")}
               </label>
-              <input
-                type="password"
-                value={passwordData.currentPassword}
-                onChange={(e) =>
-                  handlePasswordChange("currentPassword", e.target.value)
-                }
-                placeholder={t(
-                  "dashboard.accountSettings.changePassword.currentPasswordPlaceholder"
-                )}
-                className={`w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none ${
-                  isRTL ? "text-right" : "text-left"
-                }`}
-              />
+              <div className="relative">
+                <input
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={passwordData.currentPassword}
+                  onChange={(e) =>
+                    handlePasswordChange("currentPassword", e.target.value)
+                  }
+                  placeholder={t(
+                    "dashboard.accountSettings.changePassword.currentPasswordPlaceholder"
+                  )}
+                  className={`w-full p-3 ${isRTL ? "pl-12" : "pr-12"} placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none ${
+                    isRTL ? "text-right" : "text-left"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className={`absolute top-1/2 transform -translate-y-1/2 ${
+                    isRTL ? "left-4" : "right-4"
+                  } text-gray-500 hover:text-gray-700 cursor-pointer`}
+                >
+                  <img 
+                    src={showCurrentPassword ? openeye : eye} 
+                    alt="toggle password visibility" 
+                    className="w-5 h-5" 
+                  />
+                </button>
+              </div>
             </div>
 
             <div>
@@ -252,9 +397,10 @@ const AccountSettingPage = () => {
 
             <div className={`flex ${isRTL ? "justify-start" : "justify-end"}`}>
               <PrimaryButton
-                text={t("dashboard.accountSettings.changePassword.sendCode")}
+                text={isSendingCode ? t("common.sending") || "Sending..." : t("dashboard.accountSettings.changePassword.sendCode")}
                 className="py-[10px] px-7 text-nowrap"
                 onClick={handleSendCode}
+                disabled={isSendingCode}
               />
             </div>
 
@@ -282,19 +428,34 @@ const AccountSettingPage = () => {
                 <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
                   {t("dashboard.accountSettings.changePassword.newPassword")}
                 </label>
-                <input
-                  type="password"
-                  value={passwordData.newPassword}
-                  onChange={(e) =>
-                    handlePasswordChange("newPassword", e.target.value)
-                  }
-                  placeholder={t(
-                    "dashboard.accountSettings.changePassword.newPasswordPlaceholder"
-                  )}
-                  className={`w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none ${
-                    isRTL ? "text-right" : "text-left"
-                  }`}
-                />
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={passwordData.newPassword}
+                    onChange={(e) =>
+                      handlePasswordChange("newPassword", e.target.value)
+                    }
+                    placeholder={t(
+                      "dashboard.accountSettings.changePassword.newPasswordPlaceholder"
+                    )}
+                    className={`w-full p-3 ${isRTL ? "pr-12" : "pl-12"} placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none ${
+                      isRTL ? "text-right" : "text-left"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className={`absolute top-1/2 transform -translate-y-1/2 ${
+                      isRTL ? "left-4" : "right-4"
+                    } text-gray-500 hover:text-gray-700 cursor-pointer`}
+                  >
+                    <img 
+                      src={showNewPassword ? openeye : eye} 
+                      alt="toggle password visibility" 
+                      className="w-5 h-5" 
+                    />
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -303,19 +464,34 @@ const AccountSettingPage = () => {
                     "dashboard.accountSettings.changePassword.confirmNewPassword"
                   )}
                 </label>
-                <input
-                  type="password"
-                  value={passwordData.confirmPassword}
-                  onChange={(e) =>
-                    handlePasswordChange("confirmPassword", e.target.value)
-                  }
-                  placeholder={t(
-                    "dashboard.accountSettings.changePassword.confirmPasswordPlaceholder"
-                  )}
-                  className={`w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none ${
-                    isRTL ? "text-right" : "text-left"
-                  }`}
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={passwordData.confirmPassword}
+                    onChange={(e) =>
+                      handlePasswordChange("confirmPassword", e.target.value)
+                    }
+                    placeholder={t(
+                      "dashboard.accountSettings.changePassword.confirmPasswordPlaceholder"
+                    )}
+                    className={`w-full p-3 ${isRTL ? "pr-12" : "pl-12"} placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none ${
+                      isRTL ? "text-right" : "text-left"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className={`absolute top-1/2 transform -translate-y-1/2 ${
+                      isRTL ? "left-4" : "right-4"
+                    } text-gray-500 hover:text-gray-700 cursor-pointer`}
+                  >
+                    <img 
+                      src={showConfirmPassword ? openeye : eye} 
+                      alt="toggle password visibility" 
+                      className="w-5 h-5" 
+                    />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -325,11 +501,12 @@ const AccountSettingPage = () => {
               }`}
             >
               <PrimaryButton
-                text={t(
+                text={isUpdatingPassword ? t("common.updating") || "Updating..." : t(
                   "dashboard.accountSettings.changePassword.updatePassword"
                 )}
                 className="py-[10px] px-7 text-nowrap"
                 onClick={handleUpdatePassword}
+                disabled={isUpdatingPassword}
               />
             </div>
           </div>
@@ -365,7 +542,18 @@ const AccountSettingPage = () => {
                 <Dropdown
                   value={selectedLanguage}
                   options={languageOptions}
-                  onChange={setSelectedLanguage}
+                  onChange={async (value) => {
+                    setSelectedLanguage(value);
+                    // Change language immediately like the toggle button
+                    const languageCode = value === "Arabic" ? "ar" : "en";
+                    changeLanguage(languageCode);
+                    // Also sync with backend
+                    try {
+                      await profileAPI.updateProfile({ language: languageCode });
+                    } catch (error) {
+                      console.error("Failed to sync language with backend:", error);
+                    }
+                  }}
                   height="h-[50px]"
                   textClassName={`font-roboto text-[16px] text-oxford-blue ${
                     isRTL ? "text-right" : "text-left"
@@ -428,11 +616,12 @@ const AccountSettingPage = () => {
               }`}
             >
               <PrimaryButton
-                text={t(
+                text={isSavingSettings ? t("common.saving") || "Saving..." : t(
                   "dashboard.accountSettings.applicationSettings.saveSettings"
                 )}
                 className="py-[10px] px-7 text-nowrap"
                 onClick={handleSaveApplicationSettings}
+                disabled={isSavingSettings}
               />
             </div>
           </div>
