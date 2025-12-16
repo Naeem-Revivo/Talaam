@@ -7,7 +7,7 @@ const StudentSummaryCards = ({ summaries }) => {
   }
 
   return (
-    <section className="mt-4 flex flex-wrap gap-4 sm:mt-6 sm:gap-6 lg:gap-7 xl:w-full xl:justify-between w-full">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
       {summaries.map((item, index) => (
         <AdminMetricCard
           key={index}
@@ -15,11 +15,10 @@ const StudentSummaryCards = ({ summaries }) => {
           value={item.value}
           subtext={item.subtext}
           icon={item.icon}
-          iconWrapperClassName="flex h-10 w-10 items-center justify-center"
-          className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(50%-12px)] xl:w-[262px] lg:h-[130px]"
+          className="w-full h-[107px]"
         />
       ))}
-    </section>
+    </div>
   );
 };
 

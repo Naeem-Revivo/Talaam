@@ -4,18 +4,17 @@ import { useLanguage } from "../../context/LanguageContext";
 import questionsAPI from "../../api/questions";
 import examsAPI from "../../api/exams";
 import subjectsAPI from "../../api/subjects";
-import topicsAPI from "../../api/topics";
 import usersAPI from "../../api/users";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 import RichTextEditor from "../../components/common/RichTextEditor";
 import Loader from "../../components/common/Loader";
 
-const Dropdown = ({ label, value, options, onChange }) => {
+const Dropdown = ({ label, value, options, onChange, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Automatically show default if value is empty
-  const displayValue = value && value.trim() !== "" ? value : (options && options.length > 0 ? options[0] : "Select...");
+  // Show placeholder if no value, otherwise show the selected value
+  const displayValue = value && value.trim() !== "" ? value : (placeholder || "Select...");
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -29,13 +28,18 @@ const Dropdown = ({ label, value, options, onChange }) => {
 
   return (
     <div className="w-full" ref={dropdownRef}>
-      {/* Label only on small screens */}
-      <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3 block lg:hidden">{label}</p>
+      {/* Label - always visible */}
+      {label && (
+        <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3">
+          {label}
+        </p>
+      )}
 
       {/* Dropdown Box */}
       <div
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative flex h-[50px] cursor-pointer items-center justify-between rounded-lg bg-white px-4 text-[16px] leading-[100%] font-normal text-oxford-blue border border-[#03274633]"
+        className="relative flex h-[50px] cursor-pointer items-center justify-between rounded-lg bg-white px-4 text-[16px] leading-[100%] font-normal border border-[#03274633]"
+        style={{ color: value && value.trim() !== "" ? "#032746" : "#9CA3AF" }}
       >
         <span>{displayValue}</span>
         <svg
@@ -54,18 +58,18 @@ const Dropdown = ({ label, value, options, onChange }) => {
         </svg>
 
         {/* Dropdown Menu */}
-        {isOpen && (
-          <ul className="absolute left-0 top-full z-10 mt-1 w-full rounded-lg border border-gray-100 bg-white shadow-lg">
-            {options.map((option) => (
+        {isOpen && options && options.length > 0 && (
+          <ul className="absolute left-0 top-full z-10 mt-1 w-full rounded-lg border border-gray-100 bg-white shadow-lg max-h-60 overflow-y-auto">
+            {options.map((option, index) => (
               <li
-                key={option}
+                key={`${option}-${index}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   onChange(option);
                   setIsOpen(false);
                 }}
                 className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                  displayValue === option ? "font-semibold text-oxford-blue" : "text-gray-700"
+                  value === option ? "font-semibold text-oxford-blue bg-gray-50" : "text-gray-700"
                 }`}
               >
                 {option}
@@ -259,18 +263,6 @@ const GathererAddNewQuestionPage = () => {
 
   // Handle exam selection
   const handleExamChange = (selectedExamName) => {
-    // If "Select exam" is selected, clear the selection
-    if (selectedExamName === "Select exam") {
-      setExamId("");
-      setExamName("");
-      // Reset subject and topic
-      setSubjectId("");
-      setSubjectName("");
-      setTopicId("");
-      setTopicName("");
-      return;
-    }
-    
     const selectedExam = exams.find((e) => e.name === selectedExamName);
     if (selectedExam) {
       setExamId(selectedExam.id);
@@ -288,23 +280,13 @@ const GathererAddNewQuestionPage = () => {
 
   // Handle subject selection
   const handleSubjectChange = (selectedSubjectName) => {
-    // If "Select the subject" is selected, clear the selection
-    if (selectedSubjectName === "Select the subject") {
-      setSubjectId("");
-      setSubjectName("");
-      // Reset topic
-      setTopicId("");
-      setTopicName("");
-      return;
-    }
-    
     const selectedSubject = subjects.find((s) => s.name === selectedSubjectName);
     if (selectedSubject) {
       setSubjectId(selectedSubject.id);
       setSubjectName(selectedSubjectName);
     } else {
       setSubjectId("");
-      setSubjectName(selectedSubjectName);
+      setSubjectName("");
     }
     // Reset topic
     setTopicId("");
@@ -313,32 +295,18 @@ const GathererAddNewQuestionPage = () => {
 
   // Handle topic selection
   const handleTopicChange = (selectedTopicName) => {
-    // If "Select the topic" is selected, clear the selection
-    if (selectedTopicName === "Select the topic") {
-      setTopicId("");
-      setTopicName("");
-      return;
-    }
-    
     const selectedTopic = topics.find((t) => t.name === selectedTopicName);
     if (selectedTopic) {
       setTopicId(selectedTopic.id);
       setTopicName(selectedTopicName);
     } else {
       setTopicId("");
-      setTopicName(selectedTopicName);
+      setTopicName("");
     }
   };
 
   // Handle processor selection
   const handleProcessorChange = (selectedProcessorName) => {
-    // If "Select processor" is selected, clear the selection
-    if (selectedProcessorName === "Select processor") {
-      setProcessorId("");
-      setProcessorName("");
-      return;
-    }
-    
     // Find processor by matching name, fullName, or username
     const selectedProcessor = processors.find((p) => {
       const pName = p.name || p.fullName || p.username || "";
@@ -660,12 +628,13 @@ const GathererAddNewQuestionPage = () => {
 
                 {/* Question Type */}
                 <div>
-                  <label className="block  text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                     {t('gatherer.addNewQuestion.questionType')}
                   </label>
                   <Dropdown
                     value={questionType}
                     onChange={handleQuestionTypeChange}
+                    placeholder="Select question type"
                     options={[
                       t('admin.addNewQuestion.questionTypes.multipleChoice'),
                       t('admin.addNewQuestion.questionTypes.trueFalse')
@@ -761,12 +730,14 @@ const GathererAddNewQuestionPage = () => {
                     <Dropdown
                       value={correctAnswer}
                       onChange={setCorrectAnswer}
+                      placeholder="Select correct answer"
                       options={["True", "False"]}
                     />
                   ) : (
                     <Dropdown
                       value={correctAnswer}
                       onChange={setCorrectAnswer}
+                      placeholder="Select correct answer"
                       options={[
                         t('admin.addNewQuestion.correctAnswerOptions.optionA'),
                         t('admin.addNewQuestion.correctAnswerOptions.optionB'),
@@ -799,45 +770,37 @@ const GathererAddNewQuestionPage = () => {
               </h2>
 
               <div className="space-y-6">
-                {/* Subject */}
-
+                {/* Exam */}
                 <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.classification.exam')}
-                  </label>
                   <Dropdown
+                    label={t('gatherer.addNewQuestion.classification.exam')}
                     value={examName}
                     onChange={handleExamChange}
+                    placeholder="Select exam"
                     options={
                       loadingExams
                         ? [t('gatherer.addNewQuestion.messages.loading')]
                         : exams.length > 0
-                        ? [
-                            "Select exam",
-                            ...exams.map((exam) => exam.name || "Unnamed Exam").filter(Boolean)
-                          ]
+                        ? exams.map((exam) => exam.name || "Unnamed Exam").filter(Boolean)
                         : [t('gatherer.addNewQuestion.messages.noExamsAvailable')]
                     }
                   />
                 </div>
 
+                {/* Subject */}
                 <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.classification.subject')}
-                  </label>
                   <Dropdown
+                    label={t('gatherer.addNewQuestion.classification.subject')}
                     value={subjectName}
                     onChange={handleSubjectChange}
+                    placeholder="Select subject"
                     options={
                       !examId
                         ? [t('gatherer.addNewQuestion.messages.selectExamFirst')]
                         : loadingSubjects
                         ? [t('gatherer.addNewQuestion.messages.loading')]
                         : subjects.length > 0
-                        ? [
-                            "Select the subject",
-                            ...subjects.map((subject) => subject.name || "Unnamed Subject").filter(Boolean)
-                          ]
+                        ? subjects.map((subject) => subject.name || "Unnamed Subject").filter(Boolean)
                         : [t('gatherer.addNewQuestion.messages.noSubjectsAvailable')]
                     }
                   />
@@ -845,22 +808,18 @@ const GathererAddNewQuestionPage = () => {
 
                 {/* Topic */}
                 <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.classification.topic')}
-                  </label>
                   <Dropdown
+                    label={t('gatherer.addNewQuestion.classification.topic')}
                     value={topicName}
                     onChange={handleTopicChange}
+                    placeholder="Select topic"
                     options={
                       !subjectId
                         ? [t('gatherer.addNewQuestion.messages.selectSubjectFirst')]
                         : loadingTopics
                         ? [t('gatherer.addNewQuestion.messages.loading')]
                         : topics.length > 0
-                        ? [
-                            "Select the topic",
-                            ...topics.map((topic) => topic.name || "Unnamed Topic").filter(Boolean)
-                          ]
+                        ? topics.map((topic) => topic.name || "Unnamed Topic").filter(Boolean)
                         : [t('gatherer.addNewQuestion.messages.noTopicsAvailable')]
                     }
                   />
@@ -882,23 +841,23 @@ const GathererAddNewQuestionPage = () => {
 
                 {/* Processor Assignment */}
                 <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.classification.processor')} <span className="text-red-500 text-sm">*</span>
-                  </label>
                   <Dropdown
-                    value={processorId ? processorName : ""}
+                    label={
+                      <>
+                        {t('gatherer.addNewQuestion.classification.processor')} <span className="text-red-500 text-sm">*</span>
+                      </>
+                    }
+                    value={processorName}
                     onChange={handleProcessorChange}
+                    placeholder="Select processor"
                     options={
                       loadingProcessors
                         ? [t('gatherer.addNewQuestion.messages.loading')]
                         : processors.length > 0
-                        ? [
-                            "Select processor",
-                            ...processors.map((processor) => {
-                              const displayName = processor.name || processor.fullName || processor.username || "Unnamed Processor";
-                              return displayName;
-                            }).filter(Boolean)
-                          ]
+                        ? processors.map((processor) => {
+                            const displayName = processor.name || processor.fullName || processor.username || "Unnamed Processor";
+                            return displayName;
+                          }).filter(Boolean)
                         : [t('gatherer.addNewQuestion.messages.noProcessorsAvailable')]
                     }
                   />
@@ -912,4 +871,4 @@ const GathererAddNewQuestionPage = () => {
   );
 };
 
-export default GathererAddNewQuestionPage;
+export default GathererAddNewQuestionPage

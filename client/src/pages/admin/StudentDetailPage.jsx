@@ -138,7 +138,7 @@ const StudentDetailPage = () => {
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
             <div className="flex items-start gap-4 flex-1">
               {/* Profile Picture */}
-              <div className="w-20 h-20 rounded-full bg-[#F0F4FA] flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <div className="w-[60px] h-[60px] rounded-full bg-[#F0F4FA] flex items-center justify-center flex-shrink-0 overflow-hidden">
                 <img
                   src={student.profilePicture || getInitialsAvatar(student.name)}
                   alt={student.name}
@@ -152,7 +152,7 @@ const StudentDetailPage = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <h2 className="font-archivo text-[28px] leading-[32px] font-bold text-oxford-blue break-words">
+                    <h2 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue break-words">
                       {student.name}
                     </h2>
                     <p className="font-roboto text-[16px] leading-[24px] text-dark-gray mt-1">
@@ -168,9 +168,9 @@ const StudentDetailPage = () => {
           </div>
 
           {/* Student Details Grid */}
-          <div className="mt-6 pt-6 border-t border-[#E5E7EB] grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="mt-6 pt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <p className="font-roboto text-[14px] leading-[20px] text-dark-gray mb-1">
+              <p className="font-roboto text-[16px] leading-[20px] text-dark-gray mb-1">
                 {t('admin.studentDetail.emailAddress')}
               </p>
               <p className="font-roboto text-[16px] leading-[24px] text-oxford-blue">
@@ -178,16 +178,16 @@ const StudentDetailPage = () => {
               </p>
             </div>
             <div>
-              <p className="font-roboto text-[14px] leading-[20px] text-dark-gray mb-1">
+              <p className="font-roboto text-[16px] leading-[20px] text-dark-gray mb-1">
                 {t('admin.studentDetail.subscriptionPlan')}
               </p>
               <p className="font-roboto text-[16px] leading-[24px] text-oxford-blue">
                 <span className="font-semibold">{student.subscription}</span>
-                <span className="text-dark-gray ml-1">({t('admin.studentDetail.exp')}: {student.subscriptionExpiry})</span>
+                <span className="ml-1">({t('admin.studentDetail.exp')}: {student.subscriptionExpiry})</span>
               </p>
             </div>
             <div>
-              <p className="font-roboto text-[14px] leading-[20px] text-dark-gray mb-1">
+              <p className="font-roboto text-[16px] leading-[20px] text-dark-gray mb-1">
                 {t('admin.studentDetail.signupDate')}
               </p>
               <p className="font-roboto text-[16px] leading-[24px] text-oxford-blue">
@@ -202,39 +202,43 @@ const StudentDetailPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Activity Overview */}
           <section className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard p-6">
-            <h3 className="font-archivo text-[20px] leading-[24px] font-bold text-oxford-blue mb-4">
+            <h3 className="font-archivo text-[20px] leading-[100%] font-bold text-oxford-blue mb-4">
               {t('admin.studentDetail.activityOverview.title')}
             </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="font-roboto text-[14px] leading-[20px] text-dark-gray mb-1">
+            {/* Top two prominent cards */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-4">
+                <p className="font-roboto text-[16px] leading-[20px] text-dark-gray mb-1">
                   {t('admin.studentDetail.activityOverview.avgScore')}
                 </p>
-                <p className="font-archivo text-[32px] leading-[40px] font-bold text-oxford-blue">
+                <p className="font-archivo text-[30px] leading-[28px] font-semibold text-oxford-blue">
                   {student.avgScore}%
                 </p>
               </div>
-              <div>
-                <p className="font-roboto text-[14px] leading-[20px] text-dark-gray mb-1">
+              <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-4">
+                <p className="font-roboto text-[16px] leading-[20px] text-dark-gray mb-1">
                   {t('admin.studentDetail.activityOverview.totalTest')}
                 </p>
-                <p className="font-archivo text-[32px] leading-[40px] font-bold text-oxford-blue">
+                <p className="font-archivo text-[30px] leading-[28px] font-semibold text-oxford-blue">
                   {student.totalTest}
                 </p>
               </div>
-              <div>
-                <p className="font-roboto text-[14px] leading-[20px] text-dark-gray mb-1">
+            </div>
+            {/* Bottom two list items */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between rounded-[12px] border border-[#E5E7EB] bg-white px-5 py-4">
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
                   {t('admin.studentDetail.activityOverview.correctAnswer')}
                 </p>
-                <p className="font-archivo text-[24px] leading-[32px] font-bold text-[#10B981]">
+                <p className="font-archivo text-[16px] leading-[100%] font-normal text-[#22C55E]">
                   {student.correctAnswers}
                 </p>
               </div>
-              <div>
-                <p className="font-roboto text-[14px] leading-[20px] text-dark-gray mb-1">
+              <div className="flex items-center justify-between rounded-[12px] border border-[#E5E7EB] bg-white px-5 py-4">
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
                   {t('admin.studentDetail.activityOverview.incorrect')}
                 </p>
-                <p className="font-archivo text-[24px] leading-[32px] font-bold text-[#EF4444]">
+                <p className="font-archivo text-[16px] leading-[100%] font-normal text-[#FF3C31]">
                   {student.incorrectAnswers}
                 </p>
               </div>
@@ -242,37 +246,34 @@ const StudentDetailPage = () => {
           </section>
 
           {/* Activity Trend */}
-          <section className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard p-6">
-            {/* <h3 className="font-archivo text-[20px] leading-[24px] font-bold text-oxford-blue mb-4">
-              {t('admin.studentDetail.activityTrend.title')}
-            </h3> */}
+          <section className="rounded-[12px] border border-[#E5E7EB] flex flex-col justify-center items-center text-center bg-white shadow-dashboard p-6">
             <div className="space-y-4">
               <div>
-                <p className="font-roboto text-[14px] leading-[20px] text-dark-gray mb-1">
+                <p className="font-roboto text-[12px] leading-[20px] text-dark-gray mb-1">
                   {t('admin.studentDetail.activityTrend.lastActive')}
                 </p>
-                <p className="font-roboto text-[16px] leading-[24px] font-semibold text-oxford-blue">
+                <p className="font-roboto text-[16px] leading-[20px] font-normal text-oxford-blue">
                   {student.lastActive}
                 </p>
               </div>
               <div>
-                <p className="font-roboto text-[14px] leading-[20px] text-dark-gray mb-1">
+                <p className="font-roboto text-[12px] leading-[20px] text-dark-gray mb-1">
                   {t('admin.studentDetail.activityTrend.averageScore')}
                 </p>
                 <div className="flex items-center gap-2">
-                  <p className="font-archivo text-[32px] leading-[40px] font-bold text-oxford-blue">
+                  <p className="font-archivo text-[30px] leading-[28px] font-semibold text-oxford-blue">
                     {student.avgScore}%
                   </p>
-                  <span className="inline-flex h-[22px] font-roboto items-center justify-center rounded-md px-2 text-xs font-normal bg-[#FDF0D5] text-[#ED4122]">
+                  <span className="inline-flex h-[22px] font-roboto items-center justify-center rounded-full px-2 text-xs font-normal bg-[#FDF0D5] text-[#ED4122]">
                     {t('admin.studentDetail.activityTrend.good')}
                   </span>
                 </div>
               </div>
               <div>
-                <p className="font-roboto text-[14px] leading-[20px] text-dark-gray mb-1">
+                <p className="font-roboto text-[12px] leading-[20px] text-dark-gray mb-1">
                   {t('admin.studentDetail.activityTrend.activityLevel')}
                 </p>
-                <p className="font-roboto text-[16px] leading-[24px] font-semibold text-[#EF4444]">
+                <p className="font-roboto text-[16px] leading-[20px] font-normal text-[#ED4122]">
                   {student.activityLevel}
                 </p>
               </div>
@@ -280,8 +281,8 @@ const StudentDetailPage = () => {
           </section>
 
           {/* Activity Trend Chart */}
-          <section className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard p-6">
-            <h3 className="font-archivo text-[20px] leading-[24px] font-bold text-oxford-blue mb-4">
+          <section className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard flex flex-col justify-between p-6">
+            <h3 className="font-archivo text-[16px] leading-[20px] font-normal text-oxford-blue mb-4">
               {t('admin.studentDetail.activityTrend.title')}
             </h3>
             {/* Bar Chart */}
@@ -336,7 +337,7 @@ const StudentDetailPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Progress Breakdown Table */}
           <section className="lg:col-span-2 w-full">
-            <div className="p-6 pb-0">
+            <div className="">
               <h3 className="font-archivo text-[20px] leading-[24px] font-bold text-oxford-blue mb-4">
                 {t('admin.studentDetail.progressBreakdown.title')}
               </h3>
@@ -444,7 +445,7 @@ const StudentDetailPage = () => {
 
           {/* Reported and Flagged Questions */}
           <section className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard p-6">
-            <h3 className="font-archivo text-[20px] leading-[24px] font-bold text-oxford-blue mb-4">
+            <h3 className="font-archivo text-[20px] leading-[100%] font-bold text-oxford-blue mb-4">
               {t('admin.studentDetail.flaggedIssues.reportedAndFlagged')}
             </h3>
             {student.flags && student.flags.length > 0 ? (
@@ -513,31 +514,46 @@ const StudentDetailPage = () => {
           <button
             type="button"
             onClick={handleBack}
-            className="h-[44px] w-full sm:w-[120px] rounded-[12px] border border-[#E5E7EB] bg-white text-[16px] font-archivo font-semibold text-oxford-blue transition hover:bg-[#F3F4F6]"
+            className="h-[36px] w-full sm:w-[113px] rounded-[8px] border border-[#E5E7EB] bg-white text-[16px] font-normal font-semibold text-oxford-blue transition hover:bg-[#F3F4F6]"
           >
             {t('admin.studentDetail.actions.back')}
           </button>
           <button
             type="button"
             onClick={handleSuspend}
-            className={`h-[44px] w-full sm:w-[180px] rounded-[12px] text-[16px] font-archivo font-semibold text-white transition flex items-center justify-center gap-2 ${
+            className={`h-[36px] w-full sm:w-[247px] rounded-[8px] text-[16px] font-roboto font-normal text-white transition flex items-center justify-center gap-2 ${
               student.status === "Active"
-                ? "bg-[#EF4444] hover:bg-[#DC2626]"
+                ? "bg-[#ED4122] hover:bg-[#DC2626]"
                 : "bg-[#10B981] hover:bg-[#059669]"
             }`}
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M8 0C3.58 0 0 3.58 0 8C0 12.42 3.58 16 8 16C12.42 16 16 12.42 16 8C16 3.58 12.42 0 8 0ZM8 14C4.69 14 2 11.31 2 8C2 4.69 4.69 2 8 2C11.31 2 14 4.69 14 8C14 11.31 11.31 14 8 14ZM5 7H11V9H5V7Z"
-                fill="white"
-              />
-            </svg>
+            {student.status === "Active" ? (
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M7 0C3.14045 0 0 3.14045 0 7C0 10.8595 3.14045 14 7 14C10.8595 14 14 10.8595 14 7C14 3.14045 10.8595 0 7 0ZM1.27273 7C1.27273 3.84236 3.84173 1.27273 7 1.27273C8.35036 1.27273 9.59069 1.74497 10.5707 2.52961L2.52961 10.5707C1.74497 9.59069 1.27273 8.35036 1.27273 7ZM7 12.7273C5.64964 12.7273 4.40931 12.255 3.42931 11.4704L11.4704 3.42931C12.255 4.40995 12.7273 5.65027 12.7273 7C12.7273 10.1576 10.1583 12.7273 7 12.7273Z"
+                  fill="white"
+                />
+              </svg>
+            ) : (
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8 0C3.58 0 0 3.58 0 8C0 12.42 3.58 16 8 16C12.42 16 16 12.42 16 8C16 3.58 12.42 0 8 0ZM8 14C4.69 14 2 11.31 2 8C2 4.69 4.69 2 8 2C11.31 2 14 4.69 14 8C14 11.31 11.31 14 8 14ZM11 7H5V9H11V7Z"
+                  fill="white"
+                />
+              </svg>
+            )}
             {student.status === "Active" 
               ? t('admin.studentDetail.actions.suspendAccount')
               : t('admin.studentDetail.actions.activateAccount')

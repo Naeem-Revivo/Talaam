@@ -307,6 +307,7 @@ const getCurrentUser = async (req, res, next) => {
           isEmailVerified: user.isEmailVerified,
           fullName: user.fullName,
           dateOfBirth: user.dateOfBirth,
+          phone: user.phone,
           country: user.country,
           timezone: user.timezone,
           language: user.language,

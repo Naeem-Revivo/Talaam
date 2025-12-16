@@ -173,7 +173,13 @@ const UserDetailPage = () => {
       // First try to get from context
       const contextUser = getUserById(id);
       if (contextUser) {
-        setUser(contextUser);
+        // Ensure lastLogin is checked from multiple possible field names
+        // Backend uses updatedAt as proxy for lastLogin (like dashboard services)
+        const userWithLastLogin = {
+          ...contextUser,
+          lastLogin: contextUser.lastLogin || contextUser.updatedAt || contextUser.lastLoginAt || contextUser.lastLoginDate || contextUser.last_login || null,
+        };
+        setUser(userWithLastLogin);
         setLoading(false);
         return;
       }
@@ -207,7 +213,9 @@ const UserDetailPage = () => {
                 workflowRole: workflowRole ? roleMap[workflowRole] || workflowRole : null,
                 status: foundUser.status ? foundUser.status.charAt(0).toUpperCase() + foundUser.status.slice(1) : null,
                 notes: foundUser.notes || null,
-                lastLogin: foundUser.lastLogin || null,
+                // Check multiple possible field names for lastLogin
+                // Backend uses updatedAt as proxy for lastLogin (like dashboard services)
+                lastLogin: foundUser.lastLogin || foundUser.updatedAt || foundUser.lastLoginAt || foundUser.lastLoginDate || foundUser.last_login || null,
                 dateCreated: foundUser.dateCreated || foundUser.createdAt || null,
                 activityLog: foundUser.activityLog || null,
               };
@@ -249,6 +257,44 @@ const UserDetailPage = () => {
     return roleMap[role] || role;
   };
   
+  // Format lastLogin date similar to gatherer dashboard
+  const formatLastLogin = (dateString) => {
+    if (!dateString) return "Never";
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "Never";
+      
+      const now = new Date();
+      const diffInMs = now - date;
+      const diffInHours = diffInMs / (1000 * 60 * 60);
+      const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+      if (diffInHours < 1) {
+        const minutes = Math.floor(diffInMs / (1000 * 60));
+        return minutes <= 1 ? "Just now" : `${minutes} minutes ago`;
+      } else if (diffInHours < 24) {
+        const hours = Math.floor(diffInHours);
+        return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
+      } else if (diffInDays < 2) {
+        return "Yesterday";
+      } else if (diffInDays < 7) {
+        const days = Math.floor(diffInDays);
+        return `${days} days ago`;
+      } else {
+        // Format as "DD/MM/YYYY at HH:MM"
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${day}/${month}/${year} at ${hours}:${minutes}`;
+      }
+    } catch (error) {
+      console.error("Error formatting lastLogin:", error);
+      return "Never";
+    }
+  };
 
   if (loading) {
     return (
@@ -286,9 +332,33 @@ const UserDetailPage = () => {
 
   const badgeClass = user.status ? (statusBadgeStyles[user.status] ?? statusBadgeStyles.Active) : statusBadgeStyles.Active;
 
-  const activityLog = user.activityLog && Array.isArray(user.activityLog) && user.activityLog.length > 0
-    ? user.activityLog
-    : [];
+  // Build activity log - include lastLogin if it exists
+  const buildActivityLog = () => {
+    const log = [];
+    
+    // Add lastLogin to activity log if it exists
+    if (user.lastLogin) {
+      const formattedLastLogin = formatLastLogin(user.lastLogin);
+      log.push({
+        description: `Logged in ${formattedLastLogin}`,
+        timestamp: user.lastLogin,
+      });
+    }
+    
+    // Add existing activity log items
+    if (user.activityLog && Array.isArray(user.activityLog) && user.activityLog.length > 0) {
+      log.push(...user.activityLog);
+    }
+    
+    // Sort by timestamp (most recent first)
+    return log.sort((a, b) => {
+      const dateA = new Date(a.timestamp || 0);
+      const dateB = new Date(b.timestamp || 0);
+      return dateB - dateA;
+    });
+  };
+
+  const activityLog = buildActivityLog();
 
   return (
     <div className="min-h-full bg-[#F5F7FB] px-4 py-8 lg:px-10">
@@ -371,7 +441,7 @@ const UserDetailPage = () => {
                   <div className="mt-8 grid gap-6 sm:grid-cols-2">
                     <InfoField label={t('admin.viewUser.fields.workflowRole')} value={user.workflowRole ? getRoleLabel(user.workflowRole) : null} />
                     <InfoField label={t('admin.viewUser.fields.status')} value={user.status ? getStatusLabel(user.status) : null} />
-                    <InfoField label={t('admin.viewUser.fields.lastLogin')} value={user.lastLogin} />
+                    <InfoField label={t('admin.viewUser.fields.lastLogin')} value={user.lastLogin ? formatLastLogin(user.lastLogin) : "Never"} />
                     <InfoField label={t('admin.viewUser.fields.dateCreated')} value={user.dateCreated} />
                   </div>
                 )}
@@ -386,18 +456,41 @@ const UserDetailPage = () => {
               <div className="mt-6 px-8 flex flex-col gap-4">
                 {activityLog.map((item, index) => {
                   const visuals = resolveActivityVisuals(item.description);
+                  // Format timestamp for display
+                  const formatTimestamp = (timestamp) => {
+                    if (!timestamp) return "";
+                    try {
+                      const date = new Date(timestamp);
+                      if (isNaN(date.getTime())) return "";
+                      return date.toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      });
+                    } catch (error) {
+                      return timestamp;
+                    }
+                  };
                   return (
                     <ActivityItem
                       key={`${item.description}-${index}`}
                       icon={visuals.icon}
                       title={item.description}
-                      timestamp={item.timestamp}
+                      timestamp={formatTimestamp(item.timestamp)}
                       accent={visuals.color}
                     />
                   );
                 })}
               </div>
-            ) : null}
+            ) : (
+              <div className="mt-6 px-8">
+                <p className="text-[16px] font-roboto text-dark-gray text-center py-4">
+                  {t('admin.viewUser.noActivity') || "No activity log available"}
+                </p>
+              </div>
+            )}
           </div>
         </section>
       </div>

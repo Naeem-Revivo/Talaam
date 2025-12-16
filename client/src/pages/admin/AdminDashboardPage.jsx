@@ -28,11 +28,13 @@ const avatarColors = [
 const AdminDashboardPage = () => {
   const { t, language } = useLanguage();
   const dir = language === 'ar' ? 'rtl' : 'ltr';
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
   const [timeFilter, setTimeFilter] = useState('all'); // 'all', 'week', 'month', 'year'
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -76,10 +78,10 @@ const AdminDashboardPage = () => {
   // Prepare stats from API data
   const stats = useMemo(() => {
     if (!dashboardData?.statistics) return [];
-    
+
     const { totalStudents, verifiedEmailStudents, activeSubscriptions, totalRevenue } = dashboardData.statistics;
     const verificationRate = totalStudents > 0 ? ((verifiedEmailStudents / totalStudents) * 100).toFixed(0) : 0;
-    
+
     return [
       {
         title: t('admin.dashboard.stats.totalUsers'),
@@ -112,14 +114,14 @@ const AdminDashboardPage = () => {
     ];
   }, [dashboardData, t]);
 
-  // Prepare subscription segments from API data - filter to only Free and Standard
+  // Prepare subscription segments from API data - filter to show Free and Premium
   const subscriptionSegments = useMemo(() => {
     if (!dashboardData?.subscriptionPlanBreakdown) return [];
-    
+
     return dashboardData.subscriptionPlanBreakdown
       .filter((segment) => {
         const label = segment.label.toLowerCase();
-        return label === 'free' || label === 'standard';
+        return label === 'free' || label === 'premium';
       })
       .map((segment) => ({
         label: t(`admin.dashboard.charts.planLabels.${segment.label.toLowerCase()}`),
@@ -132,7 +134,7 @@ const AdminDashboardPage = () => {
   // Prepare latest signups from API data
   const latestSignups = useMemo(() => {
     if (!dashboardData?.latestSignups) return [];
-    
+
     return dashboardData.latestSignups.map((user, index) => ({
       name: user.name,
       email: user.email,
@@ -141,54 +143,72 @@ const AdminDashboardPage = () => {
     }));
   }, [dashboardData]);
 
-  // Static notifications (can be made dynamic later)
-  const notifications = [
-    {
-      title: t('admin.dashboard.notifications.highServerLoad.title'),
-      description: t('admin.dashboard.notifications.highServerLoad.description'),
-      time: t('admin.dashboard.notifications.highServerLoad.description'),
-      bg: "bg-[#FEF2F2]",
-      border: "border-[#F97316]",
-      iconBg: "bg-[#EF4444]",
-      titleColor: "text-[#EF4444]",
-      descriptionColor: "text-[#EF4444]",
-      timeColor: "text-[#EF4444]",
-      icon: alert,
-      titleClass: "text-[16px] leading-[16px]",
-      descriptionClass: "text-[12px] leading-[16px]",
-      timeClass: "text-[8px] leading-[12px]",
-    },
-    {
-      title: t('admin.dashboard.notifications.scheduledMaintenance.title'),
-      description: t('admin.dashboard.notifications.scheduledMaintenance.description'),
-      time: t('admin.dashboard.notifications.scheduledMaintenance.time'),
-      bg: "bg-[#FEFCE8]",
-      border: "border-[#FAFF70]",
-      iconBg: "bg-[#60A5FA]",
-      titleColor: "text-[#6CA6C1]",
-      descriptionColor: "text-[#6CA6C1]",
-      timeColor: "text-[#6CA6C1]",
-      icon: sclock,
-      titleClass: "text-[16px] leading-[16px]",
-      descriptionClass: "text-[12px] leading-[16px]",
-      timeClass: "text-[8px] leading-[14px]",
-    },
-    {
-      title: t('admin.dashboard.notifications.backupCompleted.title'),
-      description: t('admin.dashboard.notifications.backupCompleted.description'),
-      time: t('admin.dashboard.notifications.backupCompleted.time'),
-      bg: "bg-[#F0FDF4]",
-      border: "border-[#BAFFCB]",
-      iconBg: "bg-[#0F172A]",
-      titleColor: "text-oxford-blue",
-      descriptionColor: "text-oxford-blue",
-      timeColor: "text-oxford-blue",
-      icon: blacktick,
-      titleClass: "text-[16px] leading-[16px]",
-      descriptionClass: "text-[12px] leading-[16px]",
-      timeClass: "text-[8px] leading-[14px]",
-    },
-  ];
+  // Prepare subscription notifications from API data
+  const notifications = useMemo(() => {
+    if (!dashboardData?.subscriptionNotifications || dashboardData.subscriptionNotifications.length === 0) {
+      // Return default success notification if no notifications
+      return [{
+        title: 'All Subscriptions Active',
+        description: 'All subscriptions are active and up to date.',
+        time: 'System healthy',
+        bg: "bg-[#F0FDF4]",
+        border: "border-[#10B981]",
+        iconBg: "bg-[#10B981]",
+        titleColor: "text-[#032746]",
+        descriptionColor: "text-[#032746]",
+        timeColor: "text-[#032746]",
+        icon: blacktick,
+        titleClass: "text-[16px] leading-[16px]",
+        descriptionClass: "text-[12px] leading-[16px]",
+        timeClass: "text-[8px] leading-[14px]",
+      }];
+    }
+
+    // Map API notifications to UI format
+    return dashboardData.subscriptionNotifications.map((notification) => {
+      // Select icon based on notification type
+      let icon = blacktick; // default
+      if (notification.type === 'error') {
+        icon = alert;
+      } else if (notification.type === 'warning') {
+        icon = sclock;
+      } else if (notification.type === 'info') {
+        icon = sclock;
+      } else if (notification.type === 'success') {
+        icon = blacktick;
+      }
+
+      return {
+        title: notification.title,
+        description: notification.description,
+        time: notification.time,
+        bg: notification.bg,
+        border: notification.border,
+        iconBg: notification.iconBg,
+        // Use the colors from API (already set correctly per type)
+        titleColor: notification.titleColor,
+        descriptionColor: notification.descriptionColor,
+        timeColor: notification.timeColor,
+        icon: icon,
+        titleClass: "text-[16px] leading-[16px]",
+        descriptionClass: "text-[12px] leading-[16px]",
+        timeClass: "text-[8px] leading-[14px]",
+      };
+    });
+  }, [dashboardData]);
+
+  useEffect(() => {
+    if (!isFilterOpen) return;
+    
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.relative')) {
+        setIsFilterOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isFilterOpen]);
   // Filter user growth data based on time filter
   const filteredGrowthData = useMemo(() => {
     if (!dashboardData?.userGrowthData || dashboardData.userGrowthData.length === 0) {
@@ -244,7 +264,7 @@ const AdminDashboardPage = () => {
     // Extract months and cumulative counts from filtered data
     const months = filteredGrowthData.map(item => item.month);
     const values = filteredGrowthData.map(item => item.cumulativeCount / 1000); // Convert to thousands
-    
+
     // Find max value for scaling - round up to nearest 2.5k for better Y-axis labels
     const rawMax = Math.max(...values, 15);
     const maxValue = Math.ceil(rawMax / 2.5) * 2.5; // Round up to nearest 2.5k
@@ -309,10 +329,10 @@ const AdminDashboardPage = () => {
   // Loading state
   if (loading) {
     return (
-      <Loader 
+      <Loader
         fullScreen={true}
-        size="lg" 
-        color="oxford-blue" 
+        size="lg"
+        color="oxford-blue"
         text="Loading dashboard data..."
       />
     );
@@ -376,37 +396,58 @@ const AdminDashboardPage = () => {
                 </p> */}
               </div>
               {/* Time Filter */}
-              <div className="flex items-center gap-2">
+              <div className="relative">
                 <button
-                  onClick={() => setTimeFilter('all')}
-                  className={`px-3 py-1.5 text-sm font-roboto rounded-lg transition ${
-                    timeFilter === 'all'
-                      ? 'bg-oxford-blue text-white'
-                      : 'bg-gray-100 text-dark-gray hover:bg-gray-200'
-                  }`}
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-roboto rounded-lg bg-white border border-[#E5E7EB] text-oxford-blue hover:bg-gray-50 transition"
                 >
-                  All
+                  <span>
+                    {timeFilter === 'all' ? 'All' : timeFilter === 'month' ? 'This month' : 'This year'}
+                  </span>
+                  <svg
+                    className={`w-4 h-4 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </button>
-                <button
-                  onClick={() => setTimeFilter('month')}
-                  className={`px-3 py-1.5 text-sm font-roboto rounded-lg transition ${
-                    timeFilter === 'month'
-                      ? 'bg-oxford-blue text-white'
-                      : 'bg-gray-100 text-dark-gray hover:bg-gray-200'
-                  }`}
-                >
-                  This month
-                </button>
-                <button
-                  onClick={() => setTimeFilter('year')}
-                  className={`px-3 py-1.5 text-sm font-roboto rounded-lg transition ${
-                    timeFilter === 'year'
-                      ? 'bg-oxford-blue text-white'
-                      : 'bg-gray-100 text-dark-gray hover:bg-gray-200'
-                  }`}
-                >
-                  This year
-                </button>
+
+                {isFilterOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-[150px] bg-white border border-[#E5E7EB] rounded-lg shadow-lg z-10">
+                    <button
+                      onClick={() => {
+                        setTimeFilter('all');
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 text-left text-sm font-roboto hover:bg-gray-50 transition first:rounded-t-lg ${timeFilter === 'all' ? 'bg-gray-50 text-oxford-blue font-medium' : 'text-dark-gray'
+                        }`}
+                    >
+                      All
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTimeFilter('month');
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 text-left text-sm font-roboto hover:bg-gray-50 transition ${timeFilter === 'month' ? 'bg-gray-50 text-oxford-blue font-medium' : 'text-dark-gray'
+                        }`}
+                    >
+                      This month
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTimeFilter('year');
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 text-left text-sm font-roboto hover:bg-gray-50 transition last:rounded-b-lg ${timeFilter === 'year' ? 'bg-gray-50 text-oxford-blue font-medium' : 'text-dark-gray'
+                        }`}
+                    >
+                      This year
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
             <div className="mt-6 sm:mt-8">
@@ -437,16 +478,16 @@ const AdminDashboardPage = () => {
                     const topPadding = 20;
                     const bottomPadding = 30;
                     const usableHeight = chartHeight - topPadding - bottomPadding;
-                    
+
                     // Generate Y-axis labels based on maxValue
                     const steps = 6; // Number of grid lines
                     const stepValue = maxValue / (steps - 1);
                     const yAxisValues = [];
-                    
+
                     for (let i = 0; i < steps; i++) {
                       yAxisValues.push(i * stepValue);
                     }
-                    
+
                     return yAxisValues.map((value) => {
                       const y = topPadding + usableHeight - (value / maxValue) * usableHeight;
                       return (
@@ -482,9 +523,8 @@ const AdminDashboardPage = () => {
                       <path
                         d={`M${points[0].x} ${points[0].y} ${points
                           .map((point) => `L${point.x} ${point.y}`)
-                          .join(" ")} L${points[points.length - 1].x} 230 L${
-                          points[0].x
-                        } 230 Z`}
+                          .join(" ")} L${points[points.length - 1].x} 230 L${points[0].x
+                          } 230 Z`}
                         fill="url(#growthGradient)"
                       />
                       {/* Line */}
@@ -561,9 +601,8 @@ const AdminDashboardPage = () => {
                       fill="none"
                       strokeLinecap="butt"
                       strokeDasharray={segment.dasharray}
-                      transform={`rotate(${
-                        segment.rotation * 360 - 90
-                      } 130 130)`}
+                      transform={`rotate(${segment.rotation * 360 - 90
+                        } 130 130)`}
                     />
                   ))}
                   <circle

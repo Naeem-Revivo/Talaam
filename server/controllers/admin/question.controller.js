@@ -428,6 +428,17 @@ const createQuestion = async (req, res, next) => {
       }
     }
 
+    // Validate TRUE_FALSE specific fields
+    if (questionType === 'TRUE_FALSE') {
+      // Correct answer is required for TRUE_FALSE questions (should be "A" for True or "B" for False)
+      if (!correctAnswer || !['A', 'B'].includes(correctAnswer)) {
+        errors.push({
+          field: 'correctAnswer',
+          message: 'Correct answer is required and must be A (True) or B (False) for True/False questions',
+        });
+      }
+    }
+
     if (errors.length > 0) {
       return res.status(400).json({
         success: false,
@@ -455,6 +466,16 @@ const createQuestion = async (req, res, next) => {
         D: options.D.trim(),
       };
       // Correct answer is required for MCQ questions
+      questionData.correctAnswer = correctAnswer;
+    }
+
+    if (questionType === 'TRUE_FALSE') {
+      // Set default options for True/False if not provided
+      questionData.options = options || {
+        A: "True",
+        B: "False",
+      };
+      // Correct answer is required for TRUE_FALSE questions (A for True, B for False)
       questionData.correctAnswer = correctAnswer;
     }
 
@@ -587,6 +608,7 @@ const getQuestions = async (req, res, next) => {
           flagStatus: q.flagStatus || null,
           isVariant: q.isVariant || false,
           originalQuestionId: q.originalQuestionId || null,
+          history: q.history || [],
           createdAt: q.createdAt,
           updatedAt: q.updatedAt,
         })),

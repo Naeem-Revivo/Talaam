@@ -7,18 +7,18 @@ const statusTone = {
     text: "text-[#ED4122]",
   },
   Suspended: {
-    wrapper: "bg-[#C6D8D3]",
-    text: "text-oxford-blue",
+    wrapper: "bg-orange-dark",
+    text: "text-white",
   },
 };
 
 const subscriptionTone = {
   Free: {
-    wrapper: "bg-[#D1FAE5]",
+    wrapper: "bg-[#C6D8D3]",
     text: "text-oxford-blue",
   },
   Trial: {
-    wrapper: "bg-[#FEF3C7]",
+    wrapper: "bg-[#FDF0D5]",
     text: "text-oxford-blue",
   },
   Premium: {
@@ -87,7 +87,7 @@ const TableRow = ({ student, onView, onSuspend }) => {
       </td>
       <td className="px-6 py-4 text-center">
         <span
-          className={`inline-flex h-[26px] min-w-[59px] font-roboto items-center justify-center rounded-full px-3 text-sm font-normal ${subscriptionToneStyle.wrapper} ${subscriptionToneStyle.text}`}
+          className={`inline-flex h-[26px] min-w-[59px] font-roboto items-center justify-center rounded-[6px] px-3 text-sm font-normal ${subscriptionToneStyle.wrapper} ${subscriptionToneStyle.text}`}
         >
           {getSubscriptionLabel(student.subscription)}
         </span>
@@ -165,14 +165,14 @@ const TableRow = ({ student, onView, onSuspend }) => {
               </svg>
             ) : (
               <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M8 0C3.58 0 0 3.58 0 8C0 12.42 3.58 16 8 16C12.42 16 16 12.42 16 8C16 3.58 12.42 0 8 0ZM8 14C4.69 14 2 11.31 2 8C2 4.69 4.69 2 8 2C11.31 2 14 4.69 14 8C14 11.31 11.31 14 8 14ZM5 7H11V9H5V7Z"
+                  d="M7 0C3.14045 0 0 3.14045 0 7C0 10.8595 3.14045 14 7 14C10.8595 14 14 10.8595 14 7C14 3.14045 10.8595 0 7 0ZM1.27273 7C1.27273 3.84236 3.84173 1.27273 7 1.27273C8.35036 1.27273 9.59069 1.74497 10.5707 2.52961L2.52961 10.5707C1.74497 9.59069 1.27273 8.35036 1.27273 7ZM7 12.7273C5.64964 12.7273 4.40931 12.255 3.42931 11.4704L11.4704 3.42931C12.255 4.40995 12.7273 5.65027 12.7273 7C12.7273 10.1576 10.1583 12.7273 7 12.7273Z"
                   fill="currentColor"
                 />
               </svg>

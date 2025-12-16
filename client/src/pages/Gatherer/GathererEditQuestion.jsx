@@ -4,17 +4,16 @@ import { useLanguage } from "../../context/LanguageContext";
 import questionsAPI from "../../api/questions";
 import examsAPI from "../../api/exams";
 import subjectsAPI from "../../api/subjects";
-import topicsAPI from "../../api/topics";
 import usersAPI from "../../api/users";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 import RichTextEditor from "../../components/common/RichTextEditor";
 
-const Dropdown = ({ label, value, options, onChange }) => {
+const Dropdown = ({ label, value, options, onChange, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Automatically show default if value is empty
-  const displayValue = value && value.trim() !== "" ? value : (options && options.length > 0 ? options[0] : "Select...");
+  // Show placeholder or value
+  const displayValue = value && value.trim() !== "" ? value : (placeholder || (options && options.length > 0 ? options[0] : "Select..."));
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -28,8 +27,12 @@ const Dropdown = ({ label, value, options, onChange }) => {
 
   return (
     <div className="w-full" ref={dropdownRef}>
-      {/* Label only on small screens */}
-      <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3 block lg:hidden">{label}</p>
+      {/* Label */}
+      {label && (
+        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+          {label}
+        </label>
+      )}
 
       {/* Dropdown Box */}
       <div
@@ -89,6 +92,22 @@ const GathererEditQuestionPage = () => {
   const [correctAnswer, setCorrectAnswer] = useState("Option A");
   const [source, setSource] = useState("");
   const [explanation, setExplanation] = useState("");
+
+  // Handle question type change - reset options and correct answer for True/False
+  const handleQuestionTypeChange = (newType) => {
+    setQuestionType(newType);
+    if (newType === "True/False") {
+      // Set True/False options
+      setOptions({ A: "True", B: "False", C: "", D: "" });
+      setCorrectAnswer("True");
+    } else {
+      // Reset to empty for MCQ (but keep existing values if editing)
+      if (options.A === "True" && options.B === "False") {
+        setOptions({ A: "", B: "", C: "", D: "" });
+        setCorrectAnswer("Option A");
+      }
+    }
+  };
 
   // Classification state - storing IDs and names
   const [examId, setExamId] = useState("");
@@ -155,15 +174,33 @@ const GathererEditQuestionPage = () => {
           
           // Set options and correct answer
           if (question.options) {
-            setOptions({
-              A: question.options.A || "",
-              B: question.options.B || "",
-              C: question.options.C || "",
-              D: question.options.D || "",
-            });
-          }
-          if (question.correctAnswer) {
-            setCorrectAnswer(`Option ${question.correctAnswer}`);
+            // Check if it's True/False question
+            if (question.questionType === "TRUE_FALSE") {
+              setOptions({
+                A: question.options.A || "True",
+                B: question.options.B || "False",
+                C: "",
+                D: "",
+              });
+              // Map correct answer: "A" -> "True", "B" -> "False"
+              if (question.correctAnswer === "A") {
+                setCorrectAnswer("True");
+              } else if (question.correctAnswer === "B") {
+                setCorrectAnswer("False");
+              } else {
+                setCorrectAnswer("True");
+              }
+            } else {
+              setOptions({
+                A: question.options.A || "",
+                B: question.options.B || "",
+                C: question.options.C || "",
+                D: question.options.D || "",
+              });
+              if (question.correctAnswer) {
+                setCorrectAnswer(`Option ${question.correctAnswer}`);
+              }
+            }
           }
           
           // Set classification
@@ -340,16 +377,6 @@ const GathererEditQuestionPage = () => {
 
   // Handle exam selection
   const handleExamChange = (selectedExamName) => {
-    if (selectedExamName === "Select exam") {
-      setExamId("");
-      setExamName("");
-      setSubjectId("");
-      setSubjectName("");
-      setTopicId("");
-      setTopicName("");
-      return;
-    }
-    
     const selectedExam = exams.find((e) => e.name === selectedExamName);
     if (selectedExam) {
       setExamId(selectedExam.id);
@@ -366,23 +393,13 @@ const GathererEditQuestionPage = () => {
 
   // Handle subject selection
   const handleSubjectChange = (selectedSubjectName) => {
-    // If "Select the subject" is selected, clear the selection
-    if (selectedSubjectName === "Select the subject") {
-      setSubjectId("");
-      setSubjectName("");
-      // Reset topic
-      setTopicId("");
-      setTopicName("");
-      return;
-    }
-    
     const selectedSubject = subjects.find((s) => s.name === selectedSubjectName);
     if (selectedSubject) {
       setSubjectId(selectedSubject.id);
       setSubjectName(selectedSubjectName);
     } else {
       setSubjectId("");
-      setSubjectName(selectedSubjectName);
+      setSubjectName("");
     }
     setTopicId("");
     setTopicName("");
@@ -390,31 +407,18 @@ const GathererEditQuestionPage = () => {
 
   // Handle topic selection
   const handleTopicChange = (selectedTopicName) => {
-    // If "Select the topic" is selected, clear the selection
-    if (selectedTopicName === "Select the topic") {
-      setTopicId("");
-      setTopicName("");
-      return;
-    }
-    
     const selectedTopic = topics.find((t) => t.name === selectedTopicName);
     if (selectedTopic) {
       setTopicId(selectedTopic.id);
       setTopicName(selectedTopicName);
     } else {
       setTopicId("");
-      setTopicName(selectedTopicName);
+      setTopicName("");
     }
   };
 
   // Handle processor selection
   const handleProcessorChange = (selectedProcessorName) => {
-    if (selectedProcessorName === "Select processor") {
-      setProcessorId("");
-      setProcessorName("");
-      return;
-    }
-    
     const selectedProcessor = processors.find((p) => {
       const pName = p.name || p.fullName || p.username || "";
       const normalizedSelected = selectedProcessorName.trim();
@@ -484,6 +488,14 @@ const GathererEditQuestionPage = () => {
         return;
       }
     }
+    
+    // Validate True/False fields
+    if (questionType === "True/False") {
+      if (!correctAnswer || (correctAnswer !== "True" && correctAnswer !== "False")) {
+        showErrorToast("Please select True or False as the correct answer", { title: "Validation Error" });
+        return;
+      }
+    }
 
     setSubmitting(true);
     try {
@@ -520,6 +532,16 @@ const GathererEditQuestionPage = () => {
           D: options.D.trim(),
         };
         questionData.correctAnswer = correctAnswerLetter;
+      }
+      
+      // Add True/False-specific fields
+      if (apiQuestionType === "TRUE_FALSE") {
+        questionData.options = {
+          A: "True",
+          B: "False",
+        };
+        // Map "True" to "A" and "False" to "B"
+        questionData.correctAnswer = correctAnswer === "True" ? "A" : "B";
       }
 
       // Call the API to update question
@@ -746,88 +768,124 @@ const GathererEditQuestionPage = () => {
 
                 {/* Question Type */}
                 <div>
-                  <label className="block  text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                     {t('gatherer.addNewQuestion.questionType')}
                   </label>
                   <Dropdown
                     value={questionType}
-                    onChange={setQuestionType}
+                    onChange={handleQuestionTypeChange}
+                    placeholder="Select question type"
                     options={[
                       t('admin.addNewQuestion.questionTypes.multipleChoice'),
-                      t('admin.addNewQuestion.questionTypes.trueFalse'),
-                      t('admin.addNewQuestion.questionTypes.shortAnswer'),
-                      t('admin.addNewQuestion.questionTypes.essay')
+                      t('admin.addNewQuestion.questionTypes.trueFalse')
                     ]}
                   />
                 </div>
 
-                {/* Options Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-4">
+                {/* Options Grid - Show 4 options for MCQ, 2 options for True/False */}
+                {questionType === "True/False" ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('gatherer.addNewQuestion.options.optionA')}
+                        True
                       </label>
                       <input
                         type="text"
                         value={options.A}
-                        onChange={(e) => handleOptionChange("A", e.target.value)}
-                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        disabled
+                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-gray-100 px-4 py-3 text-blue-dark cursor-not-allowed"
                       />
                     </div>
                     <div>
                       <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('gatherer.addNewQuestion.options.optionC')}
-                      </label>
-                      <input
-                        type="text"
-                        value={options.C}
-                        onChange={(e) => handleOptionChange("C", e.target.value)}
-                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('gatherer.addNewQuestion.options.optionB')}
+                        False
                       </label>
                       <input
                         type="text"
                         value={options.B}
-                        onChange={(e) => handleOptionChange("B", e.target.value)}
-                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        {t('gatherer.addNewQuestion.options.optionD')}
-                      </label>
-                      <input
-                        type="text"
-                        value={options.D}
-                        onChange={(e) => handleOptionChange("D", e.target.value)}
-                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        disabled
+                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-gray-100 px-4 py-3 text-blue-dark cursor-not-allowed"
                       />
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          {t('gatherer.addNewQuestion.options.optionA')}
+                        </label>
+                        <input
+                          type="text"
+                          value={options.A}
+                          onChange={(e) => handleOptionChange("A", e.target.value)}
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          {t('gatherer.addNewQuestion.options.optionC')}
+                        </label>
+                        <input
+                          type="text"
+                          value={options.C}
+                          onChange={(e) => handleOptionChange("C", e.target.value)}
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          {t('gatherer.addNewQuestion.options.optionB')}
+                        </label>
+                        <input
+                          type="text"
+                          value={options.B}
+                          onChange={(e) => handleOptionChange("B", e.target.value)}
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          {t('gatherer.addNewQuestion.options.optionD')}
+                        </label>
+                        <input
+                          type="text"
+                          value={options.D}
+                          onChange={(e) => handleOptionChange("D", e.target.value)}
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Correct Answer */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                     {t('gatherer.addNewQuestion.correctAnswer')}
                   </label>
-                  <Dropdown
-                    value={correctAnswer}
-                    onChange={setCorrectAnswer}
-                    options={[
-                      t('admin.addNewQuestion.correctAnswerOptions.optionA'),
-                      t('admin.addNewQuestion.correctAnswerOptions.optionB'),
-                      t('admin.addNewQuestion.correctAnswerOptions.optionC'),
-                      t('admin.addNewQuestion.correctAnswerOptions.optionD')
-                    ]}
-                  />
+                  {questionType === "True/False" ? (
+                    <Dropdown
+                      value={correctAnswer}
+                      onChange={setCorrectAnswer}
+                      placeholder="Select correct answer"
+                      options={["True", "False"]}
+                    />
+                  ) : (
+                    <Dropdown
+                      value={correctAnswer}
+                      onChange={setCorrectAnswer}
+                      placeholder="Select correct answer"
+                      options={[
+                        t('admin.addNewQuestion.correctAnswerOptions.optionA'),
+                        t('admin.addNewQuestion.correctAnswerOptions.optionB'),
+                        t('admin.addNewQuestion.correctAnswerOptions.optionC'),
+                        t('admin.addNewQuestion.correctAnswerOptions.optionD')
+                      ]}
+                    />
+                  )}
                 </div>
 
                 {/* Explanation (Optional) */}
@@ -854,20 +912,16 @@ const GathererEditQuestionPage = () => {
               <div className="space-y-6">
                 {/* Exam */}
                 <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.classification.exam')}
-                  </label>
                   <Dropdown
+                    label={t('gatherer.addNewQuestion.classification.exam')}
                     value={examName}
                     onChange={handleExamChange}
+                    placeholder="Select exam"
                     options={
                       loadingExams
                         ? [t('gatherer.addNewQuestion.messages.loading')]
                         : exams.length > 0
-                        ? [
-                            "Select exam",
-                            ...exams.map((exam) => exam.name || "Unnamed Exam").filter(Boolean)
-                          ]
+                        ? exams.map((exam) => exam.name || "Unnamed Exam").filter(Boolean)
                         : [t('gatherer.addNewQuestion.messages.noExamsAvailable')]
                     }
                   />
@@ -875,22 +929,18 @@ const GathererEditQuestionPage = () => {
 
                 {/* Subject */}
                 <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.classification.subject')}
-                  </label>
                   <Dropdown
+                    label={t('gatherer.addNewQuestion.classification.subject')}
                     value={subjectName}
                     onChange={handleSubjectChange}
+                    placeholder="Select subject"
                     options={
                       !examId
                         ? [t('gatherer.addNewQuestion.messages.selectExamFirst')]
                         : loadingSubjects
                         ? [t('gatherer.addNewQuestion.messages.loading')]
                         : subjects.length > 0
-                        ? [
-                            "Select the subject",
-                            ...subjects.map((subject) => subject.name || "Unnamed Subject").filter(Boolean)
-                          ]
+                        ? subjects.map((subject) => subject.name || "Unnamed Subject").filter(Boolean)
                         : [t('gatherer.addNewQuestion.messages.noSubjectsAvailable')]
                     }
                   />
@@ -898,22 +948,18 @@ const GathererEditQuestionPage = () => {
 
                 {/* Topic */}
                 <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.classification.topic')}
-                  </label>
                   <Dropdown
+                    label={t('gatherer.addNewQuestion.classification.topic')}
                     value={topicName}
                     onChange={handleTopicChange}
+                    placeholder="Select topic"
                     options={
                       !subjectId
                         ? [t('gatherer.addNewQuestion.messages.selectSubjectFirst')]
                         : loadingTopics
                         ? [t('gatherer.addNewQuestion.messages.loading')]
                         : topics.length > 0
-                        ? [
-                            "Select the topic",
-                            ...topics.map((topic) => topic.name || "Unnamed Topic").filter(Boolean)
-                          ]
+                        ? topics.map((topic) => topic.name || "Unnamed Topic").filter(Boolean)
                         : [t('gatherer.addNewQuestion.messages.noTopicsAvailable')]
                     }
                   />
@@ -935,23 +981,23 @@ const GathererEditQuestionPage = () => {
 
                 {/* Processor Assignment */}
                 <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.classification.processor')} <span className="text-red-500 text-sm">*</span>
-                  </label>
                   <Dropdown
-                    value={processorId ? processorName : ""}
+                    label={
+                      <>
+                        {t('gatherer.addNewQuestion.classification.processor')} <span className="text-red-500 text-sm">*</span>
+                      </>
+                    }
+                    value={processorName}
                     onChange={handleProcessorChange}
+                    placeholder="Select processor"
                     options={
                       loadingProcessors
                         ? [t('gatherer.addNewQuestion.messages.loading')]
                         : processors.length > 0
-                        ? [
-                            "Select processor",
-                            ...processors.map((processor) => {
-                              const displayName = processor.name || processor.fullName || processor.username || "Unnamed Processor";
-                              return displayName;
-                            }).filter(Boolean)
-                          ]
+                        ? processors.map((processor) => {
+                            const displayName = processor.name || processor.fullName || processor.username || "Unnamed Processor";
+                            return displayName;
+                          }).filter(Boolean)
                         : [t('gatherer.addNewQuestion.messages.noProcessorsAvailable')]
                     }
                   />

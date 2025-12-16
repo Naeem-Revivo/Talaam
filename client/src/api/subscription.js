@@ -62,6 +62,30 @@ const subscriptionAPI = {
       throw apiError || { message: 'Failed to fetch billing history' };
     }
   },
+
+  // Cancel subscription
+  // POST /api/subscription/cancel/:subscriptionId
+  cancelSubscription: async (subscriptionId) => {
+    try {
+      const response = await axiosClient.post(`/subscription/cancel/${subscriptionId}`);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to cancel subscription' };
+    }
+  },
+
+  // Renew subscription
+  // POST /api/subscription/renew/:subscriptionId
+  renewSubscription: async (subscriptionId) => {
+    try {
+      const response = await axiosClient.post(`/subscription/renew/${subscriptionId}`);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to renew subscription' };
+    }
+  },
 };
 
 export default subscriptionAPI;

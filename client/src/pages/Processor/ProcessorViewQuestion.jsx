@@ -924,24 +924,57 @@ const ProcessorViewQuestion = () => {
                   {t("processor.viewQuestion.options")}
                 </div>
                 {/* Options */}
-                {question.questionType === "MCQ" && question.options ? (
+                {(question.questionType === "MCQ" || question.questionType === "TRUE_FALSE") && question.options ? (
                   <>
                     <div className="space-y-5" dir="ltr">
-                      {Object.entries(question.options).map(([key, value]) => (
-                        <label key={key} className="flex items-center gap-3 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="option"
-                            value={key}
-                            checked={key === question.correctAnswer}
-                            className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
-                            disabled
-                          />
-                          <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                            {key}. {value}
-                          </span>
-                        </label>
-                      ))}
+                      {question.questionType === "TRUE_FALSE" ? (
+                        // True/False specific display
+                        <>
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="option"
+                              value="A"
+                              checked={question.correctAnswer === "A"}
+                              className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
+                              disabled
+                            />
+                            <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                              True
+                            </span>
+                          </label>
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="option"
+                              value="B"
+                              checked={question.correctAnswer === "B"}
+                              className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
+                              disabled
+                            />
+                            <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                              False
+                            </span>
+                          </label>
+                        </>
+                      ) : (
+                        // MCQ display
+                        Object.entries(question.options).map(([key, value]) => (
+                          <label key={key} className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="option"
+                              value={key}
+                              checked={key === question.correctAnswer}
+                              className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
+                              disabled
+                            />
+                            <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                              {key}. {value}
+                            </span>
+                          </label>
+                        ))
+                      )}
                     </div>
 
                     <div className="border-t border-[#E5E7EB] mt-10 pt-4">
@@ -961,7 +994,10 @@ const ProcessorViewQuestion = () => {
                           disabled
                         />
                         <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#ED4122]">
-                          {question.correctAnswer}. {question.options[question.correctAnswer]}
+                          {question.questionType === "TRUE_FALSE" 
+                            ? (question.correctAnswer === "A" ? "True" : "False")
+                            : `${question.correctAnswer}. ${question.options[question.correctAnswer]}`
+                          }
                         </span>
                       </label>
                     </div>

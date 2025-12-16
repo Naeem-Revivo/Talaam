@@ -25,6 +25,7 @@ model User {
   resetPasswordExpiry   DateTime? @map("reset_password_expiry") @db.Timestamptz
   fullName              String?   @map("full_name")
   dateOfBirth           DateTime? @map("date_of_birth") @db.Date
+  phone                 String?
   country               String?
   timezone              String?
   language              String    @default("English") // English, العربية

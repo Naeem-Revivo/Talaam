@@ -198,6 +198,15 @@ const questionsAPI = {
         apiData.correctAnswer = questionData.correctAnswer;
       }
 
+      // Add TRUE_FALSE-specific fields
+      if (questionData.questionType === 'TRUE_FALSE') {
+        apiData.options = questionData.options || {
+          A: "True",
+          B: "False",
+        };
+        apiData.correctAnswer = questionData.correctAnswer;
+      }
+
       console.log('API Request Data:', apiData);
       const response = await axiosClient.post('/admin/questions', apiData);
       return response.data;

@@ -18,19 +18,33 @@ const MoyassarPaymentPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const hasProcessedRef = useRef(false);
 
+  // Helper function to get value from either localStorage or sessionStorage
+  const getStorageValue = (key) => {
+    return localStorage.getItem(key) || sessionStorage.getItem(key);
+  };
+
   useEffect(() => {
     // Prevent duplicate processing
     if (hasProcessedRef.current) {
       return;
     }
 
-    // Check if user is logged in
-    const token = localStorage.getItem('authToken');
+    // Check if user is logged in - check both localStorage and sessionStorage
+    const token = getStorageValue('authToken');
     if (!token) {
+      // Store the intended destination in both storage locations
+      sessionStorage.setItem('redirectAfterLogin', '/moyassar-payment');
       localStorage.setItem('redirectAfterLogin', '/moyassar-payment');
       navigate('/login');
       return;
     }
+    
+    // Clear any redirectAfterLogin values since user is already logged in and on the payment page
+    localStorage.removeItem('redirectAfterLogin');
+    sessionStorage.removeItem('redirectAfterLogin');
+    
+    console.log("token in moyassar payment page", token);
+    // console.log("user in moyassar payment page", user);
 
     // Check if returning from payment (has subscriptionId in URL)
     const subscriptionId = searchParams.get('subscriptionId');

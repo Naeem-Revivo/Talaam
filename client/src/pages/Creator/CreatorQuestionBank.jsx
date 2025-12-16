@@ -480,64 +480,141 @@ const CreatorQuestionBank = () => {
     // Collect all activities from all questions
     allQuestionsData.forEach((q) => {
       const question = q.originalData;
-      if (question?.history && Array.isArray(question.history)) {
-        // Process all history entries, not just the first one
+      if (!question) return;
+      
+      // Check if question has history array
+      if (question.history && Array.isArray(question.history) && question.history.length > 0) {
+        // Process all history entries
         question.history.forEach((historyEntry) => {
+          if (!historyEntry) return;
+          
           // Only include activities where creator was involved
-          if (historyEntry.role === 'creator' || 
-              (historyEntry.action && ['approved', 'rejected', 'variant_created', 'flagged', 'submitted'].includes(historyEntry.action))) {
-            
+          const isCreatorAction = historyEntry.role === 'creator';
+          const isCreatorRelevantAction = historyEntry.action && [
+            'approved', 'approve', 
+            'rejected', 'reject', 
+            'variant_created', 'create_variant', 'variant_created',
+            'flagged', 'flag', 
+            'submitted', 'submit',
+            'updated', 'update',
+            'flag_rejected_by_creator'
+          ].includes(historyEntry.action);
+          
+          if (isCreatorAction || isCreatorRelevantAction) {
             let icon = "submit";
             let variant = "default";
             let title = "";
             
+            const questionTitle = q.questionTitle?.substring(0, 50) || 'Question';
+            const questionTitleSuffix = q.questionTitle?.length > 50 ? '...' : '';
+            
             // Determine icon and variant based on action
-            if (historyEntry.action === 'approved' || historyEntry.action === 'approve') {
+            const action = historyEntry.action?.toLowerCase() || '';
+            if (action === 'approved' || action === 'approve') {
               icon = "approve";
               variant = "approved";
-              title = `Question approved: ${q.questionTitle?.substring(0, 50) || 'Question'}${q.questionTitle?.length > 50 ? '...' : ''}`;
-            } else if (historyEntry.action === 'rejected' || historyEntry.action === 'reject') {
+              title = `Question approved: ${questionTitle}${questionTitleSuffix}`;
+            } else if (action === 'rejected' || action === 'reject') {
               icon = "reject";
               variant = "default";
-              title = `Question rejected: ${q.questionTitle?.substring(0, 50) || 'Question'}${q.questionTitle?.length > 50 ? '...' : ''}`;
-            } else if (historyEntry.action === 'variant_created' || historyEntry.action === 'create_variant') {
+              title = `Question rejected: ${questionTitle}${questionTitleSuffix}`;
+            } else if (action === 'variant_created' || action === 'create_variant' || action === 'variant_created') {
               icon = "submit";
               variant = "default";
-              title = `Variant created: ${q.questionTitle?.substring(0, 50) || 'Question'}${q.questionTitle?.length > 50 ? '...' : ''}`;
-            } else if (historyEntry.action === 'flagged' || historyEntry.action === 'flag') {
+              title = `Variant created: ${questionTitle}${questionTitleSuffix}`;
+            } else if (action === 'flagged' || action === 'flag') {
               icon = "submit";
               variant = "default";
-              title = `Question flagged: ${q.questionTitle?.substring(0, 50) || 'Question'}${q.questionTitle?.length > 50 ? '...' : ''}`;
-            } else if (historyEntry.action === 'submitted' || historyEntry.action === 'submit') {
+              title = `Question flagged: ${questionTitle}${questionTitleSuffix}`;
+            } else if (action === 'submitted' || action === 'submit') {
               icon = "submit";
               variant = "default";
-              title = `Question submitted: ${q.questionTitle?.substring(0, 50) || 'Question'}${q.questionTitle?.length > 50 ? '...' : ''}`;
+              title = `Question submitted: ${questionTitle}${questionTitleSuffix}`;
+            } else if (action === 'updated' || action === 'update') {
+              icon = "submit";
+              variant = "default";
+              title = `Question updated: ${questionTitle}${questionTitleSuffix}`;
+            } else if (action === 'flag_rejected_by_creator') {
+              icon = "submit";
+              variant = "default";
+              title = `Flag rejected: ${questionTitle}${questionTitleSuffix}`;
             } else {
               // Default for other actions
-              title = `${historyEntry.action || 'Updated'}: ${q.questionTitle?.substring(0, 50) || 'Question'}${q.questionTitle?.length > 50 ? '...' : ''}`;
+              const actionName = historyEntry.action || 'Updated';
+              title = `${actionName}: ${questionTitle}${questionTitleSuffix}`;
             }
             
-            const rawTimestamp = historyEntry.timestamp || historyEntry.date || question.updatedAt || question.createdAt;
-            activities.push({
-              icon,
-              title,
-              timestamp: rawTimestamp, // Store raw timestamp for sorting
-              formattedTimestamp: formatDate(rawTimestamp), // Store formatted for display
-              variant
-            });
+            // Get timestamp - try multiple possible fields
+            const rawTimestamp = historyEntry.timestamp || 
+                                historyEntry.date || 
+                                (historyEntry.time ? new Date(historyEntry.time) : null) ||
+                                question.updatedAt || 
+                                question.createdAt;
+            
+            if (rawTimestamp) {
+              activities.push({
+                icon,
+                title,
+                timestamp: rawTimestamp, // Store raw timestamp for sorting
+                formattedTimestamp: formatDate(rawTimestamp), // Store formatted for display
+                variant
+              });
+            }
           }
         });
+      } else {
+        // If no history, create activity from question status/updates
+        // Only for questions that were recently updated and have creator involvement
+        const isVariant = question.isVariant === true || question.isVariant === 'true';
+        const wasCreatedByCreator = question.createdById || question.createdBy;
+        
+        if (isVariant && wasCreatedByCreator && question.updatedAt) {
+          const questionTitle = q.questionTitle?.substring(0, 50) || 'Question';
+          const questionTitleSuffix = q.questionTitle?.length > 50 ? '...' : '';
+          
+          let icon = "submit";
+          let variant = "default";
+          let title = "";
+          
+          if (question.status === 'completed') {
+            icon = "approve";
+            variant = "approved";
+            title = `Variant completed: ${questionTitle}${questionTitleSuffix}`;
+          } else if (question.status === 'pending_processor') {
+            icon = "submit";
+            variant = "default";
+            title = `Variant submitted: ${questionTitle}${questionTitleSuffix}`;
+          } else {
+            return; // Skip if status doesn't indicate creator action
+          }
+          
+          activities.push({
+            icon,
+            title,
+            timestamp: question.updatedAt,
+            formattedTimestamp: formatDate(question.updatedAt),
+            variant
+          });
+        }
       }
     });
     
     // Sort activities by timestamp (most recent first)
     activities.sort((a, b) => {
-      const dateA = new Date(a.timestamp);
-      const dateB = new Date(b.timestamp);
-      return dateB - dateA;
+      try {
+        const dateA = new Date(a.timestamp);
+        const dateB = new Date(b.timestamp);
+        // Handle invalid dates
+        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+          return 0;
+        }
+        return dateB - dateA;
+      } catch (error) {
+        return 0;
+      }
     });
     
-    // Return 4-5 most recent activities and format timestamps
+    // Return 5 most recent activities and format timestamps
     return activities.slice(0, 5).map(activity => ({
       ...activity,
       timestamp: activity.formattedTimestamp

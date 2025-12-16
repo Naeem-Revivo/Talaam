@@ -125,10 +125,12 @@ const Login = () => {
           isAuth: true
         })
 
-        // Check if there's a redirect destination stored
-        const redirectAfterLogin = localStorage.getItem('redirectAfterLogin')
+        // Check if there's a redirect destination stored (check both localStorage and sessionStorage)
+        const redirectAfterLogin = localStorage.getItem('redirectAfterLogin') || sessionStorage.getItem('redirectAfterLogin')
         if (redirectAfterLogin) {
+          // Clear from both storage locations
           localStorage.removeItem('redirectAfterLogin')
+          sessionStorage.removeItem('redirectAfterLogin')
           navigate(redirectAfterLogin, { replace: true })
           return
         }

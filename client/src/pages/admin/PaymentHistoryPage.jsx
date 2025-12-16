@@ -86,16 +86,76 @@ const PaymentHistoryPage = () => {
       const response = await adminAPI.getPaymentHistory(params);
       
       if (response.success && response.data) {
+        // Helper function to format date safely
+        const formatDate = (dateValue) => {
+          // Handle null, undefined, or empty strings
+          if (!dateValue || dateValue === 'null' || dateValue === 'undefined') {
+            return 'N/A';
+          }
+          
+          // If it's already a formatted string (DD-MM-YYYY or DD/MM/YYYY), validate and use it
+          if (typeof dateValue === 'string') {
+            // Check for invalid date strings from backend (like "NaN-NaN-NaN" or "Invalid Date")
+            if (dateValue.includes('NaN') || dateValue.includes('Invalid')) {
+              return 'N/A';
+            }
+            
+            // Check if it's already in DD-MM-YYYY or DD/MM/YYYY format
+            const datePattern = /^\d{2}[-\/]\d{2}[-\/]\d{4}$/;
+            if (datePattern.test(dateValue)) {
+              // Convert DD-MM-YYYY to DD/MM/YYYY for consistency
+              return dateValue.replace(/-/g, '/');
+            }
+          }
+          
+          try {
+            // Try to parse as Date object or ISO string
+            const date = new Date(dateValue);
+            // Check if date is valid
+            if (isNaN(date.getTime())) {
+              console.warn('Invalid date value:', dateValue);
+              return 'N/A';
+            }
+            // Format as DD/MM/YYYY
+            return date.toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric'
+            });
+          } catch (error) {
+            console.error('Error formatting date:', dateValue, error);
+            return 'N/A';
+          }
+        };
+
+        // Helper function to extract name from email
+        const getNameFromEmail = (email) => {
+          if (!email || typeof email !== 'string') return null;
+          const emailPart = email.split('@')[0];
+          // Capitalize first letter of each word
+          return emailPart
+            .split(/[._-]/)
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+        };
+
         // Transform API data to match table format
         const transformed = response.data.payments?.map((payment) => {
-          const date = payment.date || payment.createdAt 
-            ? new Date(payment.date || payment.createdAt).toLocaleDateString('en-GB')
-            : 'N/A';
+          // Try multiple possible field names for date
+          const dateValue = payment.date || payment.createdAt;
+          const date = formatDate(dateValue);
+          
+          // Get user name with fallback to email-derived name
+          const userName = payment.userName || payment.user?.name || payment.user?.fullName;
+          const userEmail = payment.user?.email || payment.email;
+          const user = userName && userName !== 'N/A' 
+            ? userName 
+            : (getNameFromEmail(userEmail) || userEmail || 'N/A');
           
           return {
             id: payment.id,
             invoiceid: payment.invoiceId || payment.transactionId || `Inv-${String(payment.id).padStart(3, "0")}`,
-            user: payment.userName || payment.user?.name || 'N/A',
+            user: user,
             plan: payment.planName || payment.plan?.name || 'N/A',
             amount: payment.amount ? `$${parseFloat(payment.amount).toFixed(2)}` : '$0.00',
             date: date,

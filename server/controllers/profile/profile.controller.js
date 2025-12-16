@@ -20,6 +20,7 @@ const getProfile = async (req, res, next) => {
         profile: {
           fullName: user.fullName,
           dateOfBirth: user.dateOfBirth,
+          phone: user.phone,
           country: user.country,
           timezone: user.timezone,
           language: normalizedLanguage,
@@ -45,14 +46,17 @@ const getProfile = async (req, res, next) => {
 const updateProfile = async (req, res, next) => {
   try {
     console.log('[PROFILE] PUT /profile → requested', { userId: req.user && req.user.id });
-    const { fullName, dateOfBirth, country, timezone, language } = req.body;
+    const { fullName, name, dateOfBirth, phone, country, timezone, language, email } = req.body;
 
     const user = await profileService.updateProfile(req.user.id, {
       fullName,
+      name,
       dateOfBirth,
+      phone,
       country,
       timezone,
       language,
+      email,
     });
 
     // Normalize language from database format to frontend format
@@ -70,6 +74,7 @@ const updateProfile = async (req, res, next) => {
         profile: {
           fullName: user.fullName,
           dateOfBirth: user.dateOfBirth,
+          phone: user.phone,
           country: user.country,
           timezone: user.timezone,
           language: normalizedLanguage,
@@ -95,11 +100,12 @@ const updateProfile = async (req, res, next) => {
 const completeProfile = async (req, res, next) => {
   try {
     console.log('[PROFILE] POST /profile/complete → requested', { userId: req.user && req.user.id });
-    const { fullName, dateOfBirth, country, timezone, language } = req.body;
+    const { fullName, dateOfBirth, phone, country, timezone, language } = req.body;
 
     const user = await profileService.completeProfile(req.user.id, {
       fullName,
       dateOfBirth,
+      phone,
       country,
       timezone,
       language,
@@ -120,6 +126,7 @@ const completeProfile = async (req, res, next) => {
         profile: {
           fullName: user.fullName,
           dateOfBirth: user.dateOfBirth,
+          phone: user.phone,
           country: user.country,
           timezone: user.timezone,
           language: normalizedLanguage,

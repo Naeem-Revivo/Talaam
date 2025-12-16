@@ -51,6 +51,8 @@ const CreatorDashboard = () => {
         setLoading(true);
         setError(null);
         const response = await axiosClient.get('/creator/dashboard');
+
+        console.log(response.data.data, "`creator dashboard data`");
         
         if (response.data.success) {
           setDashboardData(response.data.data);

@@ -15,7 +15,7 @@ const getProfile = async (userId) => {
  * Update user profile
  */
 const updateProfile = async (userId, profileData) => {
-  const { fullName, dateOfBirth, country, timezone, language } = profileData;
+  const { fullName, name, dateOfBirth, phone, country, timezone, language, email } = profileData;
 
   const user = await User.findById(userId);
   if (!user) {
@@ -25,9 +25,18 @@ const updateProfile = async (userId, profileData) => {
   // Prepare update data
   const updateData = {};
 
-  if (fullName !== undefined) {
-    updateData.fullName = fullName;
-    updateData.name = fullName; // Also update name field for backward compatibility
+  if (fullName !== undefined || name !== undefined) {
+    const nameValue = fullName || name;
+    updateData.fullName = nameValue;
+    updateData.name = nameValue; // Also update name field for backward compatibility
+  }
+  
+  if (email !== undefined) {
+    updateData.email = email.trim().toLowerCase();
+  }
+  
+  if (phone !== undefined) {
+    updateData.phone = phone || null; // Allow empty string to be set to null
   }
   
   if (dateOfBirth !== undefined) {
@@ -71,7 +80,7 @@ const updateProfile = async (userId, profileData) => {
  * Complete user profile (for initial setup)
  */
 const completeProfile = async (userId, profileData) => {
-  const { fullName, dateOfBirth, country, timezone, language } = profileData;
+  const { fullName, dateOfBirth, phone, country, timezone, language } = profileData;
 
   const user = await User.findById(userId);
   if (!user) {
@@ -84,6 +93,10 @@ const completeProfile = async (userId, profileData) => {
   if (fullName) {
     updateData.fullName = fullName;
     updateData.name = fullName; // Also update name field
+  }
+  
+  if (phone !== undefined) {
+    updateData.phone = phone || null;
   }
   
   if (dateOfBirth) {
