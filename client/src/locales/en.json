@@ -1452,6 +1452,8 @@
           "topic": "Topic",
           "level": "Level",
           "createdBy": "Created By",
+          "flags": "Flags",
+          "lastAction": "Last Action",
           "status": "Status",
           "actions": "Actions"
         },

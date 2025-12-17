@@ -5,14 +5,8 @@ const subjectsAPI = {
   // Get all subjects
   getAllSubjects: async (params = {}) => {
     try {
-      // Try student endpoint first, fallback to admin endpoint
-      let response;
-      try {
-        response = await axiosClient.get('/student/subjects');
-      } catch (studentError) {
-        // Fallback to admin endpoint if student endpoint fails
-        response = await axiosClient.get('/admin/subjects');
-      }
+      // Use admin endpoint directly (accessible by admin and superadmin)
+      const response = await axiosClient.get('/admin/subjects');
       return response.data;
     } catch (error) {
       const apiError = error.response?.data;

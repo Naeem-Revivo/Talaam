@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const questionController = require('../../controllers/admin/question.controller');
-const { authMiddleware, superadminMiddleware } = require('../../middlewares/auth');
+const { authMiddleware, superadminMiddleware, adminOrSuperadminMiddleware } = require('../../middlewares/auth');
 const {
   gathererMiddleware,
   creatorMiddleware,
@@ -10,12 +10,12 @@ const {
   workflowRoleMiddleware,
 } = require('../../middlewares/auth/role.middleware');
 
-// Get topics by subject (accessible by all workflow roles)
+// Get topics by subject (accessible by all workflow roles and superadmin)
 // This must be before /:questionId route to avoid conflicts
 router.get(
   '/topics/:subjectId',
   authMiddleware,
-  workflowRoleMiddleware,
+  adminOrSuperadminMiddleware,
   questionController.getTopicsBySubject
 );
 
