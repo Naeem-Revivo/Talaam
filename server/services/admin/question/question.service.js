@@ -1847,14 +1847,15 @@ const getQuestionStatistics = async (userId = null, role = null) => {
  * Get questions count by status
  */
 const getQuestionsCountByStatus = async (status, userId = null, role = null) => {
+  const { prisma } = require('../../../config/db/prisma');
   const query = { status };
 
   // Gatherer can only see their own questions
   if (role === 'gatherer' && userId) {
-    query.createdBy = userId;
+    query.createdById = userId;
   }
 
-  return await Question.countDocuments(query);
+  return await prisma.question.count({ where: query });
 };
 
 /**
@@ -1897,7 +1898,7 @@ const getAllQuestionsForSuperadmin = async (filters = {}, searchTerm = '', pagin
   });
 
   // Get paginated questions with relations
-  const questions = await Question.findMany({
+  const questions = await prisma.question.findMany({
     where: query,
     orderBy: { createdAt: 'desc' },
     skip: skip,
@@ -1906,6 +1907,15 @@ const getAllQuestionsForSuperadmin = async (filters = {}, searchTerm = '', pagin
       exam: true,
       subject: true,
       topic: true,
+      createdBy: { select: { id: true, name: true, fullName: true, email: true } },
+      lastModifiedBy: { select: { id: true, name: true, fullName: true, email: true } },
+      history: {
+        include: {
+          performedBy: { select: { id: true, name: true, fullName: true, adminRole: true } }
+        },
+        orderBy: { timestamp: 'desc' },
+        take: 1, // Get only the most recent history entry
+      },
     },
   });
 
@@ -1929,6 +1939,7 @@ const getAllQuestionsForSuperadmin = async (filters = {}, searchTerm = '', pagin
  * By default respects filters/search, but can be forced to ignore them
  */
 const getQuestionCounts = async (filters = {}, searchTerm = '', applyFilters = true) => {
+  const { prisma } = require('../../../config/db/prisma');
   const baseFilters = applyFilters ? { ...filters } : {};
   const search = applyFilters ? searchTerm : '';
 
@@ -1942,17 +1953,17 @@ const getQuestionCounts = async (filters = {}, searchTerm = '', applyFilters = t
   const approvedQuery = buildSearchQuery(approvedFilters, search);
 
   const pendingStatuses = ['pending_processor', 'pending_creator', 'pending_explainer'];
-  const pendingFilters = { ...countFilters, status: { $in: pendingStatuses } };
+  const pendingFilters = { ...countFilters, status: { in: pendingStatuses } };
   const pendingQuery = buildSearchQuery(pendingFilters, search);
 
   const rejectedFilters = { ...countFilters, status: 'rejected' };
   const rejectedQuery = buildSearchQuery(rejectedFilters, search);
 
   const [total, approved, pending, rejected] = await Promise.all([
-    Question.countDocuments(totalQuery),
-    Question.countDocuments(approvedQuery),
-    Question.countDocuments(pendingQuery),
-    Question.countDocuments(rejectedQuery),
+    prisma.question.count({ where: totalQuery }),
+    prisma.question.count({ where: approvedQuery }),
+    prisma.question.count({ where: pendingQuery }),
+    prisma.question.count({ where: rejectedQuery }),
   ]);
 
   return {

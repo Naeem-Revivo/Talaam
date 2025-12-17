@@ -60,25 +60,25 @@ const getAllQuestionsForSuperadmin = async (req, res, next) => {
       });
     }
 
-    // Validate ObjectIds for exam, subject, topic
-    const mongoose = require('mongoose');
+    // Validate UUIDs for exam, subject, topic (Prisma uses UUIDs, not MongoDB ObjectIds)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     const errors = [];
     
-    if (exam && !mongoose.Types.ObjectId.isValid(exam)) {
+    if (exam && exam.trim() !== '' && !uuidRegex.test(exam)) {
       errors.push({
         field: 'exam',
         message: 'Invalid exam ID format',
       });
     }
     
-    if (subject && !mongoose.Types.ObjectId.isValid(subject)) {
+    if (subject && subject.trim() !== '' && !uuidRegex.test(subject)) {
       errors.push({
         field: 'subject',
         message: 'Invalid subject ID format',
       });
     }
     
-    if (topic && !mongoose.Types.ObjectId.isValid(topic)) {
+    if (topic && topic.trim() !== '' && !uuidRegex.test(topic)) {
       errors.push({
         field: 'topic',
         message: 'Invalid topic ID format',
@@ -187,6 +187,28 @@ const getAllQuestionsForSuperadmin = async (req, res, next) => {
             name: q.exam.name,
           } : null,
           status: q.status,
+          isFlagged: q.isFlagged || false,
+          flagReason: q.flagReason || null,
+          createdBy: q.createdBy ? {
+            id: q.createdBy.id || q.createdBy._id,
+            name: q.createdBy.name || q.createdBy.fullName || 'N/A',
+          } : null,
+          lastModifiedBy: q.lastModifiedBy ? {
+            id: q.lastModifiedBy.id || q.lastModifiedBy._id,
+            name: q.lastModifiedBy.name || q.lastModifiedBy.fullName || 'N/A',
+          } : null,
+          history: q.history && q.history.length > 0 ? q.history.map((h) => ({
+            action: h.action,
+            performedBy: h.performedBy ? {
+              id: h.performedBy.id || h.performedBy._id,
+              name: h.performedBy.name || h.performedBy.fullName || 'N/A',
+              role: h.performedBy.adminRole || 'N/A',
+            } : null,
+            timestamp: h.timestamp || h.createdAt,
+            createdAt: h.timestamp || h.createdAt, // Keep for backward compatibility
+          })) : [],
+          createdAt: q.createdAt,
+          updatedAt: q.updatedAt,
         })),
         pagination: {
           ...result.pagination,

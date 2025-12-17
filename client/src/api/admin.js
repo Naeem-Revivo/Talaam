@@ -144,6 +144,34 @@ const adminAPI = {
     }
   },
 
+  // Get all questions for superadmin
+  // GET /api/admin/questions/all
+  getAllQuestions: async (params = {}) => {
+    try {
+      const { tab, search, exam, subject, topic, status, page = 1, limit = 5 } = params;
+      const queryParams = new URLSearchParams();
+      
+      if (tab) queryParams.append('tab', tab);
+      if (search) queryParams.append('search', search);
+      if (exam) queryParams.append('exam', exam);
+      if (subject) queryParams.append('subject', subject);
+      if (topic) queryParams.append('topic', topic);
+      if (status) queryParams.append('status', status);
+      if (page) queryParams.append('page', page);
+      if (limit) queryParams.append('limit', limit);
+
+      const url = queryParams.toString()
+        ? `/admin/questions/all?${queryParams.toString()}`
+        : '/admin/questions/all';
+
+      const response = await axiosClient.get(url);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to fetch questions' };
+    }
+  },
+
   // Get plan distribution
   // GET /api/admin/analytics/subscription/plan-distribution
   getPlanDistribution: async () => {
