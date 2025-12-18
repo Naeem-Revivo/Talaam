@@ -172,6 +172,18 @@ const adminAPI = {
     }
   },
 
+  // Get question details by ID (Superadmin)
+  // GET /api/admin/questions/all/:questionId
+  getQuestionDetails: async (questionId) => {
+    try {
+      const response = await axiosClient.get(`/admin/questions/all/${questionId}`);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to fetch question details' };
+    }
+  },
+
   // Get plan distribution
   // GET /api/admin/analytics/subscription/plan-distribution
   getPlanDistribution: async () => {

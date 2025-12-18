@@ -252,7 +252,7 @@ export default function SubscriptionPlan() {
             {statusBadge && (
               <span className={`px-[10px] py-[5px] ${statusBadge.bg} ${statusBadge.text} text-[14px] leading-[100%] font-normal font-roboto rounded-md`}>
                 {statusBadge.label}
-              </span>
+            </span>
             )}
           </div>
           

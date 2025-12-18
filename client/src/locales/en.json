@@ -39,6 +39,14 @@
         "userManagement": "User Management",
         "studentManagement": "Student Management",
         "questionBank": "Question Bank",
+        "pendingProcessor": "Pending Processor",
+        "pendingProcessorView": "Review Pending Processor Question",
+        "pendingCreator": "Pending Creator",
+        "pendingCreatorView": "View Pending Creator Question",
+        "pendingExplainer": "Pending Explainer",
+        "pendingExplainerView": "View Pending Explainer Question",
+        "sentBackQuestions": "Sent Back Questions",
+        "sentBackQuestionsView": "View Sent Back Question",
         "questionManagement": "Question Management",
         "addQuestion": "Add New Question",
         "questionDetails": "View Question Details",
@@ -1085,6 +1093,10 @@
       "userManagement": "User Management",
       "studentManagement": "Student Management",
       "questionBank": "Question Bank",
+      "pendingProcessor": "Pending Processor",
+      "pendingCreator": "Pending Creator",
+      "pendingExplainer": "Pending Explainer",
+      "sentBackQuestions": "Sent Back Questions",
       "classification": "Classification",
       "subscriptions": "Subscriptions",
       "paymentHistory": "Payment History",
@@ -1418,10 +1430,37 @@
         "title": "Question Bank",
         "subtitle": "Manage filter and review all questions by subject topic or role."
       },
+      "pendingProcessor": {
+        "title": "Pending Processor",
+        "subtitle": "View and manage questions pending processor review."
+      },
+      "pendingCreator": {
+        "title": "Pending Creator",
+        "subtitle": "View and manage questions pending creator review.",
+        "viewQuestion": {
+          "title": "View Pending Creator Question"
+        }
+      },
+      "pendingExplainer": {
+        "title": "Pending Explainer",
+        "subtitle": "View and manage questions pending explainer review.",
+        "viewQuestion": {
+          "title": "Add Explanation"
+        }
+      },
+      "sentBackQuestions": {
+        "title": "Sent Back Questions",
+        "subtitle": "View and manage questions sent back to gatherer (flagged and rejected questions).",
+        "view": {
+          "title": "View Sent Back Question"
+        }
+      },
+      "loading": "Loading questions...",
       "actions": {
         "questionManagement": "Question Management",
         "users": "Users",
         "addNewQuestion": "+ Add New Question",
+        "sentBackQuestions": "Sent Back Questions",
         "import": "Import",
         "export": "Export"
       },
@@ -1497,7 +1536,8 @@
         "cognitiveLevel": "Cognitive Level",
         "source": "Source (Optional)",
         "exam": "Exam",
-        "reference": "Reference"
+        "reference": "Reference",
+        "processor": "Processor"
       },
       "placeholders": {
         "questionText": "Enter your question text here...",
@@ -1591,7 +1631,8 @@
         "delete": "Delete",
         "edit": "Edit",
         "createVariant": "+ Create Variant",
-        "addComment": "Add Comment"
+        "addComment": "Add Comment",
+        "back": "Back"
       },
       "sections": {
         "questionInfo": "Question Info",
@@ -1607,6 +1648,7 @@
         "correctAnswer": "Correct Answer",
         "subject": "Subject",
         "topic": "Topic",
+        "exam": "Exam",
         "cognitiveLevel": "Cognitive Level",
         "createdBy": "Created by",
         "submittedOn": "Submitted on",
@@ -1615,7 +1657,10 @@
         "createdByVariant": "Created By"
       },
       "status": {
-        "inReview": "In Review"
+        "inReview": "In Review",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
       },
       "placeholders": {
         "addComments": "add comments"
@@ -3297,7 +3342,23 @@
         "textbook": "Textbook",
         "pastExam": "Past Exam",
         "custom": "Custom"
-      }
+      },
+      "updateVariant": "Update Variant"
+    },
+    "flaggedVariant": {
+      "title": "Flagged Variant",
+      "description": "This variant has been flagged with the following reason:",
+      "descriptionStudent": "This variant has been flagged by a student with the following reason:",
+      "descriptionExplainer": "This variant has been flagged by an explainer with the following reason:",
+      "rejectFlag": "Reject Flag",
+      "updateHint": "Update the variant below and click 'Update Variant' to fix the issue.",
+      "rejectFlagTitle": "Reject Flag",
+      "rejectFlagDescription": "Please provide a reason for rejecting this flag. The question will be sent back to the processor for review.",
+      "rejectionReason": "Reason for Rejecting Flag",
+      "rejectionReasonPlaceholder": "Enter the reason for rejecting this flag...",
+      "cancel": "Cancel",
+      "rejecting": "Rejecting...",
+      "submitRejection": "Submit Rejection"
     },
     "profile": {
       "title": "Account Settings",
@@ -3398,6 +3459,10 @@
         "actions": "ACTIONS"
       },
       "emptyMessage": "No questions found"
+    },
+    "addExplanation": {
+      "saveDraft": "Save Draft",
+      "submit": "Submit explanation"
     },
     "draftExplanation": {
       "title": "Draft Explanations",
@@ -3655,7 +3720,12 @@
       "rejectReasonButton": "Reject Reason",
       "flagReason": "Flag Reason",
       "flagReasonDescription": "The creator has flagged this question with the following reason:",
+      "flagReasonDescriptionStudent": "The student has flagged this question with the following reason:",
       "flagReasonDescriptionExplainer": "The explainer has flagged this question with the following reason:",
+      "flagReasonDescriptionRejected": "The creator flagged this question (rejected by processor) with the following reason:",
+      "flagReasonDescriptionStudentRejected": "The student flagged this question (rejected by processor) with the following reason:",
+      "flagReasonDescriptionExplainerRejected": "The explainer flagged this question (rejected by processor) with the following reason:",
+      "flagRejectedNote": "Note: This flag was previously rejected by the processor, but you can still review and process the question.",
       "rejectFlagReason": "Reject Flag Reason",
       "rejectFlagReasonDescription": "Please provide a reason for rejecting the creator's flag. The flag will be resolved and the question will be sent back to the creator.",
       "rejectFlagReasonDescriptionExplainer": "Please provide a reason for rejecting the explainer's flag. The flag will be resolved and the question will be sent back to the explainer.",

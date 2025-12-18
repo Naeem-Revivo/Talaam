@@ -1,12 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
 import ProfileDropdown from "../../components/common/ProfileDropdown";
 import questionsAPI from "../../api/questions";
+import adminAPI from "../../api/admin";
 import usersAPI from "../../api/users";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig.jsx";
 import Loader from "../../components/common/Loader";
+
+// Helper function to extract option text (handles both string and object formats)
+const getOptionText = (optionValue) => {
+  if (!optionValue) return "—";
+  if (typeof optionValue === 'string') return optionValue;
+  if (typeof optionValue === 'object') {
+    // Handle object format like {option: 'A', text: 'Some text'}
+    return optionValue.text || optionValue.option || String(optionValue);
+  }
+  return String(optionValue);
+};
+
+// Helper function to extract correct answer letter (handles both string and object formats)
+const getCorrectAnswerLetter = (correctAnswerValue) => {
+  if (!correctAnswerValue) return null;
+  if (typeof correctAnswerValue === 'string') return correctAnswerValue;
+  if (typeof correctAnswerValue === 'object') {
+    // Handle object format like {option: 'A', text: 'Some text'}
+    return correctAnswerValue.option || correctAnswerValue.text || null;
+  }
+  return String(correctAnswerValue);
+};
 
 const Attachments = ({ files, t }) => {
   return (
@@ -67,13 +91,16 @@ const QuestionHistory = ({ historyItems, t }) => {
   );
 };
 
-const ProcessorViewQuestion = () => {
+const AdminPendingProcessorViewQuestion = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const dir = language === "ar" ? "rtl" : "ltr";
   const [searchParams] = useSearchParams();
   const questionId = searchParams.get("questionId");
-  const source = searchParams.get("source"); // Check if coming from creator submission or explainer submission
+  
+  // Get current user from Redux
+  const { user } = useSelector((state) => state.auth || {});
+  const isSuperAdmin = user?.role === 'superadmin';
   
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -96,10 +123,7 @@ const ProcessorViewQuestion = () => {
   const [parentQuestion, setParentQuestion] = useState(null);
   const [loadingParent, setLoadingParent] = useState(false);
   
-  // Check if question was updated after a flag (gatherer updated flagged question)
-  // This can happen in two scenarios:
-  // 1. Flag is still active (isFlagged === true && flagStatus === 'approved')
-  // 2. Flag was cleared by gatherer update but flagType still exists (isFlagged === false but flagType exists)
+  // Check if question was updated after a flag
   const hasGathererUpdate = question && 
                                question.history && 
                                Array.isArray(question.history) &&
@@ -111,31 +135,15 @@ const ProcessorViewQuestion = () => {
                                ((question.isFlagged === true && question.flagStatus === 'approved') ||
                                 (question.isFlagged === false && (question.flagType === 'creator' || question.flagType === 'student' || question.flagType === 'explainer')));
 
-  // Determine if this is from creator submission
-  // ONLY use source parameter - don't infer from question properties
-  // This ensures correct behavior when opened from different pages
-  const isFromCreatorSubmission = source === "creator-submission";
-  
-  // Determine if this is from explainer submission
-  // ONLY use source parameter - don't infer from question properties
-  const isFromExplainerSubmission = source === "explainer-submission";
-  
-  // Determine if this is from admin submission
-  const isFromAdminSubmission = source === "admin-submission";
-  
-  // Determine if this is from all processed questions
-  const isFromAllProcessedQuestions = source === "all-processed-questions";
-  
-  // Determine if this is from gatherer submission (default if no source specified)
-  const isFromGathererSubmission = !source || source === "gatherer-submission";
-
   // Determine if question is flagged (pending review) - for any flag type
-  // For admin submission, show all student-flagged questions regardless of flagStatus
+  // Admin should see all flagged questions regardless of flagStatus (especially student flags)
+  // This matches processor logic: show all flags for admin (like student flags from admin submission)
+  // For admin, we treat all flagged questions like processor treats student flags from admin submission
   const isFlagged = question && 
                     question.isFlagged === true && 
-                    (isFromAdminSubmission && question.flagType === 'student'
-                      ? true // Show all student flags in admin submission
-                      : (question.flagStatus === 'pending' || !question.flagStatus));
+                    // Admin can see all flagged questions regardless of flagStatus (like student flags from admin submission)
+                    // But still respect rejected status - don't show if explicitly rejected
+                    (question.flagStatus === 'pending' || !question.flagStatus || question.flagStatus === 'approved');
   
   // Check if gatherer/admin rejected a flag (has flagRejectionReason AND was rejected by gatherer/admin)
   // This should only be true when a gatherer/admin rejected a flag, not when creator/explainer flags were rejected
@@ -157,23 +165,27 @@ const ProcessorViewQuestion = () => {
   console.log('flagType', flagType);
   console.log('isFlagged', isFlagged);
 
-  // Check if processor has already made a decision (approved or rejected)
-  // Hide buttons if status is not pending_processor (already processed)
-  // OR if flagged and flagStatus is not 'pending' (flag already reviewed)
-  // OR if from gatherer submission but question has already been approved (moved to next stage)
-  // Show buttons if gatherer rejected a flag (has flagRejectionReason) - ALWAYS show buttons for gatherer rejections
-  // Show buttons if gatherer updated after flag (wasUpdatedAfterFlag) - these need processor approval
-  // For student flags from admin submission, show buttons even if flagStatus is 'approved' (processor can still review)
-  const isStudentFlagFromAdmin = isFromAdminSubmission && flagType === 'student' && question.isFlagged;
+  // Check if question can be processed
+  // Admin should be able to process all pending_processor questions, including:
+  // - Non-flagged questions
+  // - Flagged questions (pending or approved status - admin can review even if previously approved)
+  // - Gatherer rejected flags
+  // - Questions updated after flag
+  // - Questions with rejected flags (flagStatus === 'rejected') - admin can still process these
+  // This matches processor logic for student flags from admin submission
+  // For admin, we allow processing flagged questions even if flagStatus is 'approved' or 'rejected'
+  // But exclude questions where flagStatus is explicitly 'rejected' and question is not in pending_processor
   const canProcessQuestion = question && 
                              question.status === 'pending_processor' &&
-                             ((!isFlagged || (isFlagged && (question.flagStatus === 'pending' || (isStudentFlagFromAdmin && question.flagStatus !== 'rejected'))) || gathererRejectedFlag || wasUpdatedAfterFlag)) &&
-                             // If gatherer rejected flag or updated after flag, always show buttons (needs processor review)
-                             // Otherwise, if from gatherer submission, only show buttons if question hasn't been approved yet
-                             (gathererRejectedFlag || wasUpdatedAfterFlag || !isFromGathererSubmission || !question.approvedBy);
+                             ((!isFlagged || 
+                               (isFlagged && (question.flagStatus === 'pending' || !question.flagStatus || question.flagStatus === 'approved' || question.flagStatus === 'rejected')) || 
+                               gathererRejectedFlag || 
+                               wasUpdatedAfterFlag)) &&
+                             // If gatherer rejected flag or updated after flag, always show buttons (needs admin review)
+                             // Otherwise, show buttons for all pending_processor questions
+                             (gathererRejectedFlag || wasUpdatedAfterFlag || true);
 
-  // Determine next destination based on flag type if updated after flag
-  // OR based on source page and question state (which indicates the workflow stage)
+  // Determine next destination
   const getNextDestination = () => {
     if (question && wasUpdatedAfterFlag && question.flagType) {
       if (question.flagType === 'creator') {
@@ -183,20 +195,15 @@ const ProcessorViewQuestion = () => {
       }
     }
     
-    // Check if explainer has already submitted explanation
     const hasExplanation = question && 
                           question.explanation && 
                           typeof question.explanation === 'string' &&
                           question.explanation.trim() !== '';
     
-    // If explainer has submitted explanation, next step is always completed
-    // Check both pending_processor and pending_explainer status (in case status wasn't updated yet)
     if (hasExplanation && (question.status === 'pending_processor' || question.status === 'pending_explainer')) {
       return 'completed';
     }
     
-    // CRITICAL: Check if question was actually submitted by creator (regardless of source page)
-    // This ensures correct routing even if question appears in wrong submission page
     const isVariant = question?.isVariant === true || question?.isVariant === 'true';
     const hasVariants = question?.variants && Array.isArray(question.variants) && question.variants.length > 0;
     const hasCreatorHistory = question?.history && Array.isArray(question.history) &&
@@ -208,42 +215,18 @@ const ProcessorViewQuestion = () => {
       question?.approvedById && 
       wasModifiedByCreator;
     
-    // If question was submitted by creator (variant, has variants, or creator modified), route to explainer
     if (isVariant || hasVariants || hasCreatorHistory || wasModifiedByCreator || isCreatorSubmitted) {
       return 'explainer';
     }
     
-    // Use source to determine next destination (more reliable than inferring from question)
-    if (isFromExplainerSubmission) {
-      return 'completed';
-    } else if (isFromCreatorSubmission) {
-      // From creator submission - check if explainer already submitted
-      if (hasExplanation) {
-        return 'completed'; // Explainer already submitted, ready to complete
-      }
-      // From creator submission - next step is explainer (if explainer hasn't submitted yet)
-      return 'explainer';
-    } else {
-      // From gatherer submission (default) - next step is creator
-      return 'creator';
-    }
+    return 'creator';
   };
 
   const nextDestination = question ? getNextDestination() : 'creator';
 
-  // Helper function to get navigation path based on source
+  // Navigation path for admin
   const getNavigationPath = () => {
-    if (isFromAllProcessedQuestions) {
-      return "/processor/question-bank/all-processed-questions";
-    } else if (isFromAdminSubmission) {
-      return "/processor/question-bank/admin-submission";
-    } else if (isFromExplainerSubmission) {
-      return "/processor/question-bank/explainer-submission";
-    } else if (isFromCreatorSubmission) {
-      return "/processor/question-bank/creator-submission";
-    } else {
-      return "/processor/question-bank/gatherer-submission";
-    }
+    return "/admin/question-bank/pending-processor";
   };
 
   // Fetch creators and explainers
@@ -252,7 +235,6 @@ const ProcessorViewQuestion = () => {
       try {
         setLoadingUsers(true);
         
-        // Fetch creators
         const creatorsResponse = await usersAPI.getAllUsers({ 
           adminRole: 'creator', 
           status: 'active',
@@ -265,7 +247,6 @@ const ProcessorViewQuestion = () => {
           })));
         }
         
-        // Fetch explainers
         const explainersResponse = await usersAPI.getAllUsers({ 
           adminRole: 'explainer', 
           status: 'active',
@@ -298,42 +279,118 @@ const ProcessorViewQuestion = () => {
 
       try {
         setLoading(true);
-        const response = await questionsAPI.getProcessorQuestionById(questionId);
-        
-        if (response.success && response.data?.question) {
-          const fetchedQuestion = response.data.question;
-          setQuestion(fetchedQuestion);
-          
-          // If this is a variant and viewing from creator/explainer submission, fetch parent question
-          const isVariant = fetchedQuestion.isVariant === true || fetchedQuestion.isVariant === 'true';
-          const originalQuestionId = fetchedQuestion.originalQuestionId || fetchedQuestion.originalQuestion?.id || fetchedQuestion.originalQuestion;
-          
-          // Check source from searchParams directly
-          const currentSource = searchParams.get("source");
-          const isFromCreator = currentSource === "creator-submission";
-          const isFromExplainer = currentSource === "explainer-submission";
-          
-          if (isVariant && originalQuestionId && (isFromCreator || isFromExplainer)) {
-            try {
-              setLoadingParent(true);
-              const parentResponse = await questionsAPI.getProcessorQuestionById(originalQuestionId);
-              if (parentResponse.success && parentResponse.data?.question) {
-                setParentQuestion(parentResponse.data.question);
+        // Use appropriate API based on user role
+        let response;
+        if (isSuperAdmin) {
+          // SuperAdmin uses admin API
+          response = await adminAPI.getQuestionDetails(questionId);
+          if (response.success && response.data?.question) {
+            const fetchedQuestion = response.data.question;
+            
+            // Debug: Log the raw response to see what we're getting
+            console.log('Admin API Response:', {
+              isFlagged: fetchedQuestion.isFlagged,
+              flagType: fetchedQuestion.flagType,
+              flagReason: fetchedQuestion.flagReason,
+              flagStatus: fetchedQuestion.flagStatus,
+              fullQuestion: fetchedQuestion
+            });
+            
+            // Transform admin API response to match processor API format
+            setQuestion({
+              ...fetchedQuestion,
+              questionText: fetchedQuestion.questionText || fetchedQuestion.question?.text,
+              questionType: fetchedQuestion.questionType || fetchedQuestion.question?.type,
+              options: fetchedQuestion.options || fetchedQuestion.question?.options,
+              // Handle correctAnswer - it might be an object {option, text} from admin API
+              correctAnswer: getCorrectAnswerLetter(fetchedQuestion.correctAnswer || fetchedQuestion.question?.correctAnswer),
+              explanation: fetchedQuestion.explanation,
+              subject: fetchedQuestion.subject || fetchedQuestion.classification?.subject,
+              topic: fetchedQuestion.topic || fetchedQuestion.classification?.topic,
+              subtopic: fetchedQuestion.subtopic || fetchedQuestion.classification?.subtopic,
+              attachments: fetchedQuestion.attachments || [],
+              history: fetchedQuestion.history || [],
+              // Flag fields - these should now be included in the API response
+              isFlagged: fetchedQuestion.isFlagged !== undefined ? fetchedQuestion.isFlagged : false,
+              flagReason: fetchedQuestion.flagReason || null,
+              flagType: fetchedQuestion.flagType || null,
+              flagStatus: fetchedQuestion.flagStatus || null,
+              flagRejectionReason: fetchedQuestion.flagRejectionReason || null,
+              isVariant: fetchedQuestion.isVariant,
+              originalQuestionId: fetchedQuestion.originalQuestionId || fetchedQuestion.originalQuestion?.id || fetchedQuestion.originalQuestion,
+              variants: fetchedQuestion.variants || [],
+              notes: fetchedQuestion.notes || fetchedQuestion.gathererNotes || fetchedQuestion.creatorNotes,
+              createdBy: fetchedQuestion.createdBy || fetchedQuestion.workflow?.createdBy,
+              lastModifiedBy: fetchedQuestion.lastModifiedBy,
+              assignedCreatorId: fetchedQuestion.assignedCreatorId,
+              assignedCreator: fetchedQuestion.assignedCreator,
+              assignedExplainerId: fetchedQuestion.assignedExplainerId,
+              assignedExplainer: fetchedQuestion.assignedExplainer,
+              approvedBy: fetchedQuestion.approvedBy,
+              approvedById: fetchedQuestion.approvedById,
+              lastModifiedById: fetchedQuestion.lastModifiedById,
+            });
+            
+            // Fetch parent question if variant
+            const isVariant = fetchedQuestion.isVariant === true || fetchedQuestion.isVariant === 'true';
+            const originalQuestionId = fetchedQuestion.originalQuestionId || fetchedQuestion.originalQuestion?.id || fetchedQuestion.originalQuestion;
+            
+            if (isVariant && originalQuestionId) {
+              try {
+                setLoadingParent(true);
+                const parentResponse = await adminAPI.getQuestionDetails(originalQuestionId);
+                if (parentResponse.success && parentResponse.data?.question) {
+                  const parentQ = parentResponse.data.question;
+                  setParentQuestion({
+                    ...parentQ,
+                    questionText: parentQ.questionText || parentQ.question?.text,
+                    questionType: parentQ.questionType || parentQ.question?.type,
+                    options: parentQ.options || parentQ.question?.options,
+                    correctAnswer: getCorrectAnswerLetter(parentQ.correctAnswer || parentQ.question?.correctAnswer),
+                  });
+                }
+              } catch (parentError) {
+                console.error("Error fetching parent question:", parentError);
+              } finally {
+                setLoadingParent(false);
               }
-            } catch (parentError) {
-              console.error("Error fetching parent question:", parentError);
-              // Don't show error toast for parent question fetch failure
-            } finally {
-              setLoadingParent(false);
             }
+          } else {
+            showErrorToast("Failed to load question");
+            navigate(getNavigationPath());
           }
         } else {
-          showErrorToast("Failed to load question");
-          navigate(getNavigationPath());
+          // Regular admin uses processor API
+          response = await questionsAPI.getProcessorQuestionById(questionId);
+          
+          if (response.success && response.data?.question) {
+            const fetchedQuestion = response.data.question;
+            setQuestion(fetchedQuestion);
+            
+            const isVariant = fetchedQuestion.isVariant === true || fetchedQuestion.isVariant === 'true';
+            const originalQuestionId = fetchedQuestion.originalQuestionId || fetchedQuestion.originalQuestion?.id || fetchedQuestion.originalQuestion;
+            
+            if (isVariant && originalQuestionId) {
+              try {
+                setLoadingParent(true);
+                const parentResponse = await questionsAPI.getProcessorQuestionById(originalQuestionId);
+                if (parentResponse.success && parentResponse.data?.question) {
+                  setParentQuestion(parentResponse.data.question);
+                }
+              } catch (parentError) {
+                console.error("Error fetching parent question:", parentError);
+              } finally {
+                setLoadingParent(false);
+              }
+            }
+          } else {
+            showErrorToast("Failed to load question");
+            navigate(getNavigationPath());
+          }
         }
       } catch (error) {
         console.error("Error fetching question:", error);
-        showErrorToast("Failed to load question");
+        showErrorToast(error.response?.data?.message || "Failed to load question");
         navigate(getNavigationPath());
       } finally {
         setLoading(false);
@@ -341,7 +398,7 @@ const ProcessorViewQuestion = () => {
     };
 
     fetchQuestion();
-  }, [questionId, navigate, searchParams]);
+  }, [questionId, navigate, isSuperAdmin]);
 
   const handleClose = () => {
     navigate(getNavigationPath());
@@ -353,14 +410,14 @@ const ProcessorViewQuestion = () => {
       return;
     }
 
-      try {
-        setProcessing(true);
-        await questionsAPI.rejectQuestion(questionId, rejectionReason);
-        showSuccessToast("Question rejected successfully");
-        // Add a small delay to ensure backend has processed the update
-        setTimeout(() => {
-          navigate(getNavigationPath());
-        }, 500);
+    try {
+      setProcessing(true);
+      await questionsAPI.rejectQuestion(questionId, rejectionReason);
+      showSuccessToast("Question rejected successfully");
+      // Add a small delay to ensure backend has processed the update
+      setTimeout(() => {
+        navigate(getNavigationPath());
+      }, 500);
     } catch (error) {
       console.error("Error rejecting question:", error);
       showErrorToast(error.response?.data?.message || "Failed to reject question");
@@ -371,54 +428,32 @@ const ProcessorViewQuestion = () => {
     }
   };
 
-  // Handle approve flag reason (send back to gatherer or creator based on flag type)
   const handleApproveFlagReason = async () => {
     try {
       setProcessing(true);
       
-      // Use appropriate API based on flag type
       if (flagType === 'student') {
-        // For student flags, approve the flag
-        // Backend will route to gatherer (original) or creator (variant)
         await questionsAPI.reviewStudentFlag(questionId, 'approve');
-        
-        // Determine navigation based on whether it's a variant or original question
         const isVariant = question.isVariant === true || question.isVariant === 'true' || question.originalQuestionId;
         if (isVariant) {
           showSuccessToast("Student flag approved. Question sent to creator for correction.");
         } else {
           showSuccessToast("Student flag approved. Question sent to gatherer for correction.");
         }
-        
         setTimeout(() => {
-          // Navigate based on source first, then variant status
-          if (isFromAdminSubmission || isFromAllProcessedQuestions) {
-            navigate(getNavigationPath());
-          } else if (isVariant) {
-            navigate("/processor/question-bank/creator-submission");
-          } else {
-            navigate("/processor/question-bank/gatherer-submission");
-          }
+          navigate(getNavigationPath());
         }, 500);
-        return; // Early return to avoid the navigation logic below
+        return;
       } else if (flagType === 'explainer') {
         await questionsAPI.reviewExplainerFlag(questionId, 'approve');
         showSuccessToast("Flag reason approved. Question sent back for correction.");
       } else {
-        // Default to creator flag review
         await questionsAPI.reviewCreatorFlag(questionId, 'approve');
         showSuccessToast("Flag reason approved. Question sent back for correction.");
       }
       
       setTimeout(() => {
-        // Navigate based on flag type and source
-        if (isFromAdminSubmission || isFromAllProcessedQuestions) {
-          navigate(getNavigationPath());
-        } else if (flagType === 'explainer') {
-          navigate("/processor/question-bank/explainer-submission");
-        } else {
-          navigate("/processor/question-bank/creator-submission");
-        }
+        navigate(getNavigationPath());
       }, 500);
     } catch (error) {
       console.error("Error approving flag reason:", error);
@@ -428,7 +463,6 @@ const ProcessorViewQuestion = () => {
     }
   };
 
-  // Handle reject flag reason (send back to flagger)
   const handleRejectFlagReason = async () => {
     if (!flagRejectionReason.trim()) {
       showErrorToast("Please provide a reason for rejecting the flag");
@@ -438,56 +472,26 @@ const ProcessorViewQuestion = () => {
     try {
       setProcessing(true);
       
-      // If gatherer rejected the flag, we're rejecting the gatherer's rejection (send back to gatherer)
       if (gathererRejectedFlag) {
-        // Reject gatherer's rejection - send back to gatherer with the flag
-        // This means processor disagrees with gatherer's rejection and wants to keep the flag
         await questionsAPI.rejectGathererFlagRejection(questionId, flagRejectionReason);
         showSuccessToast("Gatherer's rejection rejected. Question sent back to gatherer.");
         setTimeout(() => {
-          // If from all processed questions or admin submission, stay there; otherwise go to gatherer submission
-          if (isFromAllProcessedQuestions || isFromAdminSubmission) {
-            navigate(getNavigationPath());
-          } else {
-            navigate("/processor/question-bank/gatherer-submission");
-          }
+          navigate(getNavigationPath());
         }, 500);
       } else {
-        // Use appropriate API based on flag type
         if (flagType === 'student') {
-          // For student flags, reject the flag (question marked as completed)
           await questionsAPI.reviewStudentFlag(questionId, 'reject', flagRejectionReason);
           showSuccessToast("Student flag rejected. Question marked as completed.");
-          setTimeout(() => {
-            // Navigate back to the source page
-            if (isFromAllProcessedQuestions || isFromAdminSubmission) {
-              navigate(getNavigationPath());
-            } else {
-              navigate("/processor/question-bank/admin-submission");
-            }
-          }, 500);
         } else if (flagType === 'explainer') {
           await questionsAPI.reviewExplainerFlag(questionId, 'reject', flagRejectionReason);
           showSuccessToast("Flag reason rejected. Question sent back to explainer.");
-          setTimeout(() => {
-            if (isFromAllProcessedQuestions || isFromAdminSubmission) {
-              navigate(getNavigationPath());
-            } else {
-              navigate("/processor/question-bank/explainer-submission");
-            }
-          }, 500);
         } else {
-          // Default to creator flag review
           await questionsAPI.reviewCreatorFlag(questionId, 'reject', flagRejectionReason);
           showSuccessToast("Flag reason rejected. Question sent back to creator.");
-          setTimeout(() => {
-            if (isFromAllProcessedQuestions || isFromAdminSubmission) {
-              navigate(getNavigationPath());
-            } else {
-              navigate("/processor/question-bank/creator-submission");
-            }
-          }, 500);
         }
+        setTimeout(() => {
+          navigate(getNavigationPath());
+        }, 500);
       }
     } catch (error) {
       console.error("Error rejecting flag reason:", error);
@@ -499,21 +503,13 @@ const ProcessorViewQuestion = () => {
     }
   };
 
-  // Handle accept gatherer's flag rejection (processor agrees with gatherer, clears flag)
   const handleAcceptGathererRejection = async () => {
     try {
       setProcessing(true);
-      // Approve the question, which will clear the flagRejectionReason
       await questionsAPI.approveQuestion(questionId, { status: "approve" });
       showSuccessToast("Gatherer's rejection accepted. Question approved.");
-      
       setTimeout(() => {
-        // If from all processed questions or admin submission, stay there; otherwise go to gatherer submission
-        if (isFromAllProcessedQuestions || isFromAdminSubmission) {
-          navigate(getNavigationPath());
-        } else {
-          navigate("/processor/question-bank/gatherer-submission");
-        }
+        navigate(getNavigationPath());
       }, 500);
     } catch (error) {
       console.error("Error accepting gatherer's rejection:", error);
@@ -523,13 +519,6 @@ const ProcessorViewQuestion = () => {
     }
   };
 
-  // Check if question already has assigned creator/explainer
-  // Show modal only when:
-  // 1. Accepting from gatherer (first time) - need to select creator (if not already assigned)
-  // 2. Accepting from creator (first time sending to explainer) - need to select explainer (if not already assigned)
-  // After that, the same users remain assigned
-  
-  // Check if question already has assigned users
   const hasAssignedCreator = question && (question.assignedCreatorId || question.assignedCreator?.id);
   const hasAssignedExplainer = question && (question.assignedExplainerId || question.assignedExplainer?.id);
   
@@ -540,73 +529,27 @@ const ProcessorViewQuestion = () => {
       question.history.some(h => h.role === 'creator' && (h.action === 'approved' || h.action === 'variant_created')))
   );
   
-  // If coming from gatherer or admin submission and creator not assigned, need to select creator
-  // If coming from creator and explainer not assigned, need to select explainer
-  // Admin-created questions also need creator selection when first accepted by processor
+  const needsCreatorSelection = !hasAssignedCreator;
   // Variants from creator should always go to explainer and need explainer selection if not assigned
-  const needsCreatorSelection = (isFromGathererSubmission || isFromAdminSubmission) && !hasAssignedCreator;
-  const needsExplainerSelection = (isFromCreatorSubmission || isVariantFromCreator) && !hasAssignedExplainer;
+  const needsExplainerSelection = (nextDestination === 'explainer' || isVariantFromCreator) && !hasAssignedExplainer;
 
   const handleAccept = async (assignedUserId = null) => {
     try {
       setProcessing(true);
       
-      // Prepare approve data
       const approveData = { status: "approve" };
       if (assignedUserId) {
-        // If we have an assigned user, include it in the request
-        // Note: Backend may need to be updated to handle this
         approveData.assignedUserId = assignedUserId;
       }
       
       await questionsAPI.approveQuestion(questionId, approveData);
       
-      // Determine next destination based on flag type if updated after flag
-      // OR based on whether explainer has already submitted
-      const getNextDest = () => {
-        if (question && wasUpdatedAfterFlag && question.flagType) {
-          if (question.flagType === 'creator') {
-            return { type: 'creator', message: 'creator' };
-          } else if (question.flagType === 'explainer') {
-            return { type: 'explainer', message: 'explainer' };
-          }
-        }
-        
-        // Check if explainer has already submitted explanation
-        const hasExplanation = question && 
-                              question.explanation && 
-                              typeof question.explanation === 'string' &&
-                              question.explanation.trim() !== '';
-        
-        // If explainer has submitted, next step is always completed
-        if (hasExplanation && question.status === 'pending_processor') {
-          return { type: 'explainer', message: 'completed' };
-        }
-        
-        // Default logic based on submission source
-        if (isFromExplainerSubmission) {
-          return { type: 'explainer', message: 'completed' };
-        } else if (isFromCreatorSubmission) {
-          // From creator submission - check if explainer already submitted
-          if (hasExplanation) {
-            return { type: 'explainer', message: 'completed' }; // Explainer already submitted, ready to complete
-          }
-          // From creator submission - next step is explainer (if explainer hasn't submitted yet)
-          return { type: 'creator', message: 'explainer' };
-        } else if (isFromAdminSubmission) {
-          // Admin-created questions go to creator after processor accepts
-          return { type: 'creator', message: 'creator' };
-        } else {
-          return { type: 'gatherer', message: 'creator' };
-        }
-      };
+      const nextDest = getNextDestination();
       
-      const nextDest = getNextDest();
-      
-      // Show success message
-      if (nextDest.message === 'completed') {
+      // Show success message based on next destination
+      if (nextDest === 'completed') {
         showSuccessToast("Question approved successfully");
-      } else if (nextDest.message === 'explainer') {
+      } else if (nextDest === 'explainer') {
         showSuccessToast("Question approved and sent to explainer");
       } else {
         showSuccessToast("Question approved and sent to creator");
@@ -614,16 +557,7 @@ const ProcessorViewQuestion = () => {
       
       // Add a small delay to ensure backend has processed the update
       setTimeout(() => {
-        // If from all processed questions or admin submission, stay there; otherwise navigate based on next destination
-        if (isFromAllProcessedQuestions || isFromAdminSubmission) {
-          navigate(getNavigationPath());
-        } else if (nextDest.type === 'explainer') {
-          navigate("/processor/question-bank/explainer-submission");
-        } else if (nextDest.type === 'creator') {
-          navigate("/processor/question-bank/creator-submission");
-        } else {
-          navigate("/processor/question-bank/gatherer-submission");
-        }
+        navigate(getNavigationPath());
       }, 500);
     } catch (error) {
       console.error("Error approving question:", error);
@@ -633,85 +567,30 @@ const ProcessorViewQuestion = () => {
     }
   };
 
-  // Handle accept button click - show modal if needed
   const handleAcceptClick = () => {
-    // Determine next destination
-    const getNextDest = () => {
-      if (question && wasUpdatedAfterFlag && question.flagType) {
-        if (question.flagType === 'creator') {
-          return { type: 'creator', message: 'creator' };
-        } else if (question.flagType === 'explainer') {
-          return { type: 'explainer', message: 'explainer' };
-        }
-      }
-      
-      const hasExplanation = question && 
-                            question.explanation && 
-                            typeof question.explanation === 'string' &&
-                            question.explanation.trim() !== '';
-      
-      if (hasExplanation && question.status === 'pending_processor') {
-        return { type: 'explainer', message: 'completed' };
-      }
-      
-      // Check if this is a variant or was submitted by creator (regardless of source)
-      const isVariant = question?.isVariant === true || question?.isVariant === 'true';
-      const hasVariants = question?.variants && Array.isArray(question.variants) && question.variants.length > 0;
-      const hasCreatorHistory = question?.history && Array.isArray(question.history) &&
-        question.history.some(h => h.role === 'creator' && (h.action === 'approved' || h.action === 'variant_created'));
-      const wasModifiedByCreator = question?.lastModifiedById && 
-        question?.history && Array.isArray(question.history) &&
-        question.history.some(h => h.role === 'creator' && h.action === 'updated');
-      const isCreatorSubmitted = question?.status === 'pending_processor' && 
-        question?.approvedById && 
-        wasModifiedByCreator;
-      
-      // If question was submitted by creator (variant, has variants, or creator modified), route to explainer
-      if (isVariant || hasVariants || hasCreatorHistory || wasModifiedByCreator || isCreatorSubmitted) {
-        return { type: 'explainer', message: 'explainer' };
-      }
-      
-      if (isFromExplainerSubmission) {
-        return { type: 'explainer', message: 'completed' };
-      } else if (isFromCreatorSubmission) {
-        if (hasExplanation) {
-          return { type: 'explainer', message: 'completed' };
-        }
-        return { type: 'creator', message: 'explainer' };
-      } else if (isFromAdminSubmission) {
-        // Admin-created questions go to creator after processor accepts
-        return { type: 'creator', message: 'creator' };
-      } else {
-        return { type: 'gatherer', message: 'creator' };
-      }
-    };
-    
-    const nextDest = getNextDest();
+    const nextDest = getNextDestination();
     
     // Check if this is a variant from creator that needs explainer assignment
     const isVariantNeedingExplainer = isVariantFromCreator && !hasAssignedExplainer;
     
-    // Show creator modal if needed (first time accepting from gatherer)
-    if (nextDest.message === 'creator' && needsCreatorSelection && creators.length > 0) {
+    if (nextDest === 'creator' && needsCreatorSelection && creators.length > 0) {
       setShowCreatorModal(true);
       return;
     }
     
-    // Show explainer modal if needed:
+    // Show explainer modal if:
     // 1. Next destination is explainer AND needs explainer selection, OR
     // 2. It's a variant from creator that needs explainer assignment
-    if ((nextDest.message === 'explainer' && needsExplainerSelection) || isVariantNeedingExplainer) {
+    if ((nextDest === 'explainer' && needsExplainerSelection) || isVariantNeedingExplainer) {
       if (explainers.length > 0) {
         setShowExplainerModal(true);
         return;
       }
     }
     
-    // Otherwise, proceed directly (question already has assigned users or going to completed)
     handleAccept();
   };
 
-  // Handle creator selection
   const handleCreatorSelect = () => {
     if (!selectedCreator) {
       showErrorToast("Please select a creator");
@@ -722,7 +601,6 @@ const ProcessorViewQuestion = () => {
     setSelectedCreator("");
   };
 
-  // Handle explainer selection
   const handleExplainerSelect = () => {
     if (!selectedExplainer) {
       showErrorToast("Please select an explainer");
@@ -733,7 +611,6 @@ const ProcessorViewQuestion = () => {
     setSelectedExplainer("");
   };
 
-  // Format date for history
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -744,23 +621,18 @@ const ProcessorViewQuestion = () => {
     });
   };
 
-  // Strip HTML tags and return plain text
   const stripHtmlTags = (html) => {
     if (!html) return "—";
-    // Create a temporary div element to parse HTML
     const tmp = document.createElement('div');
     tmp.innerHTML = html;
-    // Get text content which automatically strips HTML tags
     return tmp.textContent || tmp.innerText || "—";
   };
 
-  // Build history from question data
   const getHistory = () => {
     if (!question) return [];
     const history = [];
     
     if (question.createdAt) {
-      // Determine creator role from history or createdBy
       const creationHistory = question.history?.find(h => h.action === 'created');
       const creatorRole = creationHistory?.role || question.createdBy?.adminRole;
       const roleLabel = creatorRole === 'admin' ? 'admin' : 'Gatherer';
@@ -820,7 +692,7 @@ const ProcessorViewQuestion = () => {
         {/* Header */}
         <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
-            {t("processor.viewQuestion.title")}
+            {t("header.titles.admin.pendingProcessorView") || t("admin.questionBank.pendingProcessor.viewQuestion.title") || "Review Pending Processor Question"}
           </h1>
           <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
             <OutlineButton
@@ -829,11 +701,11 @@ const ProcessorViewQuestion = () => {
               className="py-[10px] px-[14px]"
               disabled={processing}
             />
-            {/* Only show approve/reject buttons if question can still be processed */}
             {canProcessQuestion && (
               <>
-                {/* Show different buttons for flagged questions OR gatherer rejected flag */}
-                {isFlagged ? (
+                {/* Show flag action buttons if question is flagged and flagStatus is not 'rejected' */}
+                {/* If flagStatus is 'rejected', show regular approve/reject buttons instead */}
+                {isFlagged && question.flagStatus !== 'rejected' ? (
                   <>
                     <OutlineButton
                       text={t("processor.viewQuestion.rejectReasonButton") || "Reject Reason"}
@@ -865,6 +737,10 @@ const ProcessorViewQuestion = () => {
                   </>
                 ) : (
                   <>
+                    {/* Show regular approve/reject buttons for:
+                        1. Non-flagged questions
+                        2. Questions with rejected flags (flagStatus === 'rejected') - admin can still process these
+                    */}
                     <OutlineButton
                       text={t("processor.viewQuestion.reject")}
                       onClick={() => setShowRejectModal(true)}
@@ -896,8 +772,8 @@ const ProcessorViewQuestion = () => {
         <div className="flex flex-col gap-6 lg:flex-row">
           {/* Left Column */}
           <div className="flex-1 flex flex-col gap-6">
-            {/* Parent Question Reference - Show when viewing a variant from creator/explainer submission */}
-            {question.isVariant && (isFromCreatorSubmission || isFromExplainerSubmission) && parentQuestion && (
+            {/* Parent Question Reference */}
+            {question.isVariant && parentQuestion && (
               <div className="rounded-[12px] border border-[#03274633] bg-white pt-[20px] px-[30px] pb-[30px] w-full">
                 <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[32px] text-oxford-blue">
                   {t("processor.viewQuestion.parentQuestionReference")}
@@ -909,8 +785,9 @@ const ProcessorViewQuestion = () => {
                   <div className="mb-3">
                     <span className="font-roboto text-[14px] font-semibold text-oxford-blue">{t("processor.viewQuestion.parentQuestionLabel")}:</span>
                     <p
-                      className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue mt-2"
+                      className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue mt-2 max-w-[600px] truncate cursor-help"
                       dir="ltr"
+                      title={stripHtmlTags(parentQuestion.questionText)}
                     >
                       {stripHtmlTags(parentQuestion.questionText)}
                     </p>
@@ -927,21 +804,24 @@ const ProcessorViewQuestion = () => {
                                 {key}.
                               </span>
                               <span className="font-roboto text-[14px] font-normal text-dark-gray">
-                                {value}
+                                {getOptionText(value)}
                               </span>
                             </div>
                           ))}
                         </div>
                       </div>
                       
-                      {parentQuestion.correctAnswer && (
-                        <div className="mt-4 pt-3 border-t border-[#E5E7EB]">
-                          <span className="font-roboto text-[14px] font-semibold text-oxford-blue">{t("processor.viewQuestion.parentCorrectAnswerLabel")}: </span>
-                          <span className="font-roboto text-[14px] font-normal text-[#ED4122]">
-                            {parentQuestion.correctAnswer}. {parentQuestion.options[parentQuestion.correctAnswer]}
-                          </span>
-                        </div>
-                      )}
+                      {(() => {
+                        const parentCorrectAnswerLetter = getCorrectAnswerLetter(parentQuestion.correctAnswer);
+                        return parentCorrectAnswerLetter && (
+                          <div className="mt-4 pt-3 border-t border-[#E5E7EB]">
+                            <span className="font-roboto text-[14px] font-semibold text-oxford-blue">{t("processor.viewQuestion.parentCorrectAnswerLabel")}: </span>
+                            <span className="font-roboto text-[14px] font-normal text-[#ED4122]">
+                              {parentCorrectAnswerLetter}. {getOptionText(parentQuestion.options?.[parentCorrectAnswerLetter])}
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </>
                   )}
                 </div>
@@ -949,41 +829,34 @@ const ProcessorViewQuestion = () => {
             )}
 
             {/* Question Info Card */}
-            <div
-              className="rounded-[12px] border border-[#03274633] bg-white pt-[20px] px-[30px] pb-[67px] w-full"
-              style={{}}
-            >
+            <div className="rounded-[12px] border border-[#03274633] bg-white pt-[20px] px-[30px] pb-[67px] w-full">
               <h2 className="mb-2 font-archivo text-[20px] font-bold leading-[32px] text-oxford-blue">
                 {t("processor.viewQuestion.questionInfo")}
               </h2>
               <p
-                className="font-roboto text-[16px] font-normal leading-[100%] text-oxford-blue pt-[30px]"
+                className="font-roboto text-[16px] font-normal leading-[100%] text-oxford-blue pt-[30px] max-w-[600px] truncate cursor-help"
                 dir="ltr"
+                title={stripHtmlTags(question.questionText)}
               >
                 {stripHtmlTags(question.questionText)}
               </p>
             </div>
-            <div
-              className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full"
-              style={{}}
-            >
+            <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full">
               <div>
                 <div className="text-[16px] leading-[100%] font-normal font-roboto mb-[30px]">
                   {t("processor.viewQuestion.options")}
                 </div>
-                {/* Options */}
                 {(question.questionType === "MCQ" || question.questionType === "TRUE_FALSE") && question.options ? (
                   <>
                     <div className="space-y-5" dir="ltr">
                       {question.questionType === "TRUE_FALSE" ? (
-                        // True/False specific display
                         <>
                           <label className="flex items-center gap-3 cursor-pointer">
                             <input
                               type="radio"
                               name="option"
                               value="A"
-                              checked={question.correctAnswer === "A"}
+                              checked={getCorrectAnswerLetter(question.correctAnswer) === "A"}
                               className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
                               disabled
                             />
@@ -996,7 +869,7 @@ const ProcessorViewQuestion = () => {
                               type="radio"
                               name="option"
                               value="B"
-                              checked={question.correctAnswer === "B"}
+                              checked={getCorrectAnswerLetter(question.correctAnswer) === "B"}
                               className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
                               disabled
                             />
@@ -1006,19 +879,18 @@ const ProcessorViewQuestion = () => {
                           </label>
                         </>
                       ) : (
-                        // MCQ display
                         Object.entries(question.options).map(([key, value]) => (
                           <label key={key} className="flex items-center gap-3 cursor-pointer">
                             <input
                               type="radio"
                               name="option"
                               value={key}
-                              checked={key === question.correctAnswer}
+                              checked={key === getCorrectAnswerLetter(question.correctAnswer)}
                               className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
                               disabled
                             />
                             <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                              {key}. {value}
+                              {key}. {getOptionText(value)}
                             </span>
                           </label>
                         ))
@@ -1036,16 +908,21 @@ const ProcessorViewQuestion = () => {
                         <input
                           type="radio"
                           name="correctAnswer"
-                          value={question.correctAnswer}
+                          value={getCorrectAnswerLetter(question.correctAnswer) || ""}
                           checked
                           className="w-4 h-4 text-[#ED4122] border-[#03274633]"
                           disabled
                         />
                         <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#ED4122]">
-                          {question.questionType === "TRUE_FALSE" 
-                            ? (question.correctAnswer === "A" ? "True" : "False")
-                            : `${question.correctAnswer}. ${question.options[question.correctAnswer]}`
-                          }
+                          {(() => {
+                            const correctAnswerLetter = getCorrectAnswerLetter(question.correctAnswer);
+                            if (question.questionType === "TRUE_FALSE") {
+                              return correctAnswerLetter === "A" ? "True" : "False";
+                            }
+                            return correctAnswerLetter 
+                              ? `${correctAnswerLetter}. ${getOptionText(question.options?.[correctAnswerLetter])}`
+                              : "—";
+                          })()}
                         </span>
                       </label>
                     </div>
@@ -1058,21 +935,37 @@ const ProcessorViewQuestion = () => {
               </div>
             </div>
 
-            {/* Original Flag Reason Section - Show when there's an original flag (even if gatherer rejected it) */}
-            {/* For student flags from admin submission, show flag reason even if approved */}
-            {question.flagReason && (isFlagged || gathererRejectedFlag || (isFromAdminSubmission && flagType === 'student' && question.isFlagged)) && (
+            {/* Flag Reason Section */}
+            {/* Show flag reason for all flagged questions - admin needs to see all flags including student flags and rejected flags */}
+            {/* Show flag reason if:
+                1. Question is flagged (pending or approved)
+                2. Gatherer rejected a flag
+                3. Question has flagType (even if flagStatus is rejected - admin should see the original flag reason)
+            */}
+            {question.flagReason && (isFlagged || gathererRejectedFlag || (question.isFlagged === true && question.flagType) || (question.flagType && question.flagStatus === 'rejected')) && (
               <div className="rounded-[12px] border-2 border-orange-dark bg-orange-50 pt-[20px] px-[30px] pb-[30px] w-full">
                 <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[32px] text-orange-dark">
                   {t("processor.viewQuestion.flagReason") || "Original Flag Reason"}
                 </h2>
                 <div className="mb-2">
                   <p className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280] mb-2">
-                    {flagType === 'student'
-                      ? (t("processor.viewQuestion.flagReasonDescriptionStudent") || "The student has flagged this question with the following reason:")
-                      : flagType === 'explainer' 
-                      ? (t("processor.viewQuestion.flagReasonDescriptionExplainer") || "The explainer has flagged this question with the following reason:")
-                      : (t("processor.viewQuestion.flagReasonDescription") || "The creator has flagged this question with the following reason:")}
+                    {question.flagStatus === 'rejected'
+                      ? (flagType === 'student'
+                          ? (t("processor.viewQuestion.flagReasonDescriptionStudentRejected") || "The student flagged this question (rejected by processor) with the following reason:")
+                          : flagType === 'explainer'
+                          ? (t("processor.viewQuestion.flagReasonDescriptionExplainerRejected") || "The explainer flagged this question (rejected by processor) with the following reason:")
+                          : (t("processor.viewQuestion.flagReasonDescriptionRejected") || "The creator flagged this question (rejected by processor) with the following reason:"))
+                      : (flagType === 'student'
+                          ? (t("processor.viewQuestion.flagReasonDescriptionStudent") || "The student has flagged this question with the following reason:")
+                          : flagType === 'explainer' 
+                          ? (t("processor.viewQuestion.flagReasonDescriptionExplainer") || "The explainer has flagged this question with the following reason:")
+                          : (t("processor.viewQuestion.flagReasonDescription") || "The creator has flagged this question with the following reason:"))}
                   </p>
+                  {question.flagStatus === 'rejected' && (
+                    <p className="font-roboto text-[14px] font-semibold text-orange-600 mb-2">
+                      {t("processor.viewQuestion.flagRejectedNote") || "Note: This flag was previously rejected by the processor, but you can still review and process the question."}
+                    </p>
+                  )}
                 </div>
                 <div
                   className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue whitespace-pre-wrap bg-white p-4 rounded-lg border border-orange-200"
@@ -1083,7 +976,7 @@ const ProcessorViewQuestion = () => {
               </div>
             )}
 
-            {/* Gatherer Flag Rejection Section - Show when gatherer rejected a flag */}
+            {/* Gatherer Flag Rejection Section */}
             {gathererRejectedFlag && question.flagRejectionReason && (
               <div className="rounded-[12px] border-2 border-blue-500 bg-blue-50 pt-[20px] px-[30px] pb-[30px] w-full">
                 <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[32px] text-blue-700">
@@ -1103,8 +996,8 @@ const ProcessorViewQuestion = () => {
               </div>
             )}
 
-            {/* Explanation Section - Show for explainer submissions */}
-            {isFromExplainerSubmission && question.explanation && (
+            {/* Explanation Section */}
+            {question.explanation && (
               <div className="rounded-[12px] border border-[#03274633] bg-white pt-[20px] px-[30px] pb-[30px] w-full">
                 <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[32px] text-oxford-blue">
                   {t("processor.viewQuestion.explanation") || "Explanation"}
@@ -1166,7 +1059,6 @@ const ProcessorViewQuestion = () => {
                   <span className="text-orange-dark">
                     {(() => {
                       if (wasUpdatedAfterFlag && question.flagType) {
-                        // Determine updater role from history
                         const updateHistory = question.history?.find(h => (h.action === 'updated' || h.action === 'update') && (h.role === 'gatherer' || h.role === 'admin'));
                         const updaterRole = updateHistory?.role === 'admin' ? 'admin' : 'gatherer';
                         if (question.flagType === 'creator') {
@@ -1187,17 +1079,10 @@ const ProcessorViewQuestion = () => {
                         }
                       }
                       if (question.status === "pending_processor") {
-                        if (isFromExplainerSubmission) {
-                          return "Submitted by explainer";
-                        } else if (isFromCreatorSubmission) {
-                          return "Submitted by creator";
-                        } else {
-                          // Determine creator role from history or createdBy
-                          const creationHistory = question.history?.find(h => h.action === 'created');
-                          const creatorRole = creationHistory?.role || question.createdBy?.adminRole;
-                          const roleLabel = creatorRole === 'admin' ? 'admin' : 'gatherer';
-                          return `Submitted by ${roleLabel}`;
-                        }
+                        const creationHistory = question.history?.find(h => h.action === 'created');
+                        const creatorRole = creationHistory?.role || question.createdBy?.adminRole;
+                        const roleLabel = creatorRole === 'admin' ? 'admin' : 'gatherer';
+                        return `Submitted by ${roleLabel}`;
                       }
                       return question.status || "—";
                     })()}
@@ -1417,4 +1302,5 @@ const ProcessorViewQuestion = () => {
   );
 };
 
-export default ProcessorViewQuestion;
+export default AdminPendingProcessorViewQuestion;
+

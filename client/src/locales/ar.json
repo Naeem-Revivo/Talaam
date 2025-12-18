@@ -39,6 +39,14 @@
         "userManagement": "إدارة المستخدمين",
         "studentManagement": "إدارة الطلاب",
         "questionBank": "بنك الأسئلة",
+        "pendingProcessor": "المعالج المعلق",
+        "pendingProcessorView": "مراجعة سؤال المعالج المعلق",
+        "pendingCreator": "المنشئ المعلق",
+        "pendingCreatorView": "عرض سؤال المنشئ المعلق",
+        "pendingExplainer": "المشرح المعلق",
+        "pendingExplainerView": "عرض سؤال المشرح المعلق",
+        "sentBackQuestions": "الأسئلة المرسلة",
+        "sentBackQuestionsView": "عرض السؤال المرسل",
         "questionManagement": "إدارة الأسئلة",
         "addQuestion": "إضافة سؤال جديد",
         "questionDetails": "عرض تفاصيل السؤال",
@@ -1095,6 +1103,9 @@
       "userManagement": "إدارة المستخدمين",
       "studentManagement": "إدارة الطلاب",
       "questionBank": "بنك الأسئلة",
+      "pendingProcessor": "المعالج المعلق",
+      "pendingCreator": "المنشئ المعلق",
+      "pendingExplainer": "المشرح المعلق",
       "classification": "التصنيف",
       "subscriptions": "الاشتراكات والفوترة",
       "paymentHistory": "سجل المدفوعات",
@@ -1428,10 +1439,37 @@
         "title": "بنك الأسئلة",
         "subtitle": "إدارة وتصفية ومراجعة جميع الأسئلة حسب الموضوع أو الموضوع أو الدور."
       },
+      "pendingProcessor": {
+        "title": "المعالج المعلق",
+        "subtitle": "عرض وإدارة الأسئلة المعلقة لمراجعة المعالج."
+      },
+      "pendingCreator": {
+        "title": "المنشئ المعلق",
+        "subtitle": "عرض وإدارة الأسئلة المعلقة لمراجعة المنشئ.",
+        "viewQuestion": {
+          "title": "عرض سؤال المنشئ المعلق"
+        }
+      },
+      "pendingExplainer": {
+        "title": "المشرح المعلق",
+        "subtitle": "عرض وإدارة الأسئلة المعلقة لمراجعة المشرح.",
+        "viewQuestion": {
+          "title": "إضافة شرح"
+        }
+      },
+      "sentBackQuestions": {
+        "title": "الأسئلة المرسلة",
+        "subtitle": "عرض وإدارة الأسئلة المرسلة إلى جامع (الأسئلة المعلقة والرفض).",
+        "view": {
+          "title": "عرض السؤال المرسل"
+        }
+      },
+      "loading": "جارٍ تحميل الأسئلة...",
       "actions": {
         "questionManagement": "إدارة الأسئلة",
         "users": "المستخدمون",
         "addNewQuestion": "+ إضافة سؤال جديد",
+        "sentBackQuestions": "الأسئلة المرسلة",
         "import": "استيراد",
         "export": "تصدير"
       },
@@ -1507,7 +1545,8 @@
         "cognitiveLevel": "المستوى المعرفي",
         "source": "المصدر (اختياري)",
         "exam": "الامتحان",
-        "reference": "المرجع"
+        "reference": "المرجع",
+        "processor": "المعالج"
       },
       "placeholders": {
         "questionText": "أدخل نص السؤال هنا...",
@@ -1601,7 +1640,8 @@
         "delete": "حذف",
         "edit": "تعديل",
         "createVariant": "+ إنشاء متغير",
-        "addComment": "إضافة تعليق"
+        "addComment": "إضافة تعليق",
+        "back": "رجوع"
       },
       "sections": {
         "questionInfo": "معلومات السؤال",
@@ -1617,6 +1657,7 @@
         "correctAnswer": "الإجابة الصحيحة",
         "subject": "الموضوع",
         "topic": "الموضوع",
+        "exam": "الامتحان",
         "cognitiveLevel": "المستوى المعرفي",
         "createdBy": "تم الإنشاء بواسطة",
         "submittedOn": "تم الإرسال في",
@@ -1625,7 +1666,10 @@
         "createdByVariant": "تم الإنشاء بواسطة"
       },
       "status": {
-        "inReview": "قيد المراجعة"
+        "inReview": "قيد المراجعة",
+        "pending": "قيد الانتظار",
+        "approved": "موافق عليه",
+        "rejected": "مرفوض"
       },
       "placeholders": {
         "addComments": "إضافة تعليقات"
@@ -3299,7 +3343,23 @@
         "textbook": "كتاب دراسي",
         "pastExam": "امتحان سابق",
         "custom": "مخصص"
-      }
+      },
+      "updateVariant": "تحديث المتغير"
+    },
+    "flaggedVariant": {
+      "title": "متغير معلق",
+      "description": "تم الإبلاغ عن هذا المتغير للأسباب التالية:",
+      "descriptionStudent": "تم الإبلاغ عن هذا المتغير من قبل طالب للأسباب التالية:",
+      "descriptionExplainer": "تم الإبلاغ عن هذا المتغير من قبل المشرح للأسباب التالية:",
+      "rejectFlag": "رفض الإبلاغ",
+      "updateHint": "قم بتحديث المتغير أدناه وانقر على 'تحديث المتغير' لإصلاح المشكلة.",
+      "rejectFlagTitle": "رفض الإبلاغ",
+      "rejectFlagDescription": "يرجى تقديم سبب لرفض هذا الإبلاغ. سيتم إرسال السؤال مرة أخرى إلى المعالج للمراجعة.",
+      "rejectionReason": "سبب رفض الإبلاغ",
+      "rejectionReasonPlaceholder": "أدخل سبب رفض هذا الإبلاغ...",
+      "cancel": "إلغاء",
+      "rejecting": "جاري الرفض...",
+      "submitRejection": "إرسال الرفض"
     },
     "profile": {
       "title": "إعدادات الحساب",
@@ -3400,6 +3460,10 @@
         "draftExplanations": "مسودات الشروحات",
         "sentBackForRevision": "تم إرجاعها للمراجعة"
       }
+    },
+    "addExplanation": {
+      "saveDraft": "حفظ المسودة",
+      "submit": "إرسال الشرح"
     },
     "draftExplanation": {
       "title": "مسودات الشروحات",
@@ -3657,7 +3721,12 @@
       "rejectReasonButton": "رفض السبب",
       "flagReason": "سبب الإبلاغ",
       "flagReasonDescription": "قام المنشئ بالإبلاغ عن هذا السؤال للأسباب التالية:",
+      "flagReasonDescriptionStudent": "قام الطالب بالإبلاغ عن هذا السؤال للأسباب التالية:",
       "flagReasonDescriptionExplainer": "قام المشرح بالإبلاغ عن هذا السؤال للأسباب التالية:",
+      "flagReasonDescriptionRejected": "قام المنشئ بالإبلاغ عن هذا السؤال (تم رفضه من قبل المعالج) للأسباب التالية:",
+      "flagReasonDescriptionStudentRejected": "قام الطالب بالإبلاغ عن هذا السؤال (تم رفضه من قبل المعالج) للأسباب التالية:",
+      "flagReasonDescriptionExplainerRejected": "قام المشرح بالإبلاغ عن هذا السؤال (تم رفضه من قبل المعالج) للأسباب التالية:",
+      "flagRejectedNote": "ملاحظة: تم رفض هذا الإبلاغ سابقاً من قبل المعالج، ولكن لا يزال بإمكانك مراجعة ومعالجة السؤال.",
       "rejectFlagReason": "رفض سبب الإبلاغ",
       "rejectFlagReasonDescription": "يرجى تقديم سبب لرفض إبلاغ المنشئ. سيتم حل الإبلاغ وسيتم إرسال السؤال مرة أخرى إلى المنشئ.",
       "rejectFlagReasonDescriptionExplainer": "يرجى تقديم سبب لرفض إبلاغ المشرح. سيتم حل الإبلاغ وسيتم إرسال السؤال مرة أخرى إلى المشرح.",

@@ -5,9 +5,9 @@ const Topic = require('../../../models/topic');
 const Classification = require('../../../models/classification');
 
 /**
- * Create question by Gatherer
+ * Create question by Gatherer or Admin
  */
-const createQuestion = async (questionData, userId) => {
+const createQuestion = async (questionData, userId, userRole = 'gatherer') => {
   // Validate exam exists
   const exam = await Exam.findById(questionData.exam);
   if (!exam) {
@@ -74,6 +74,12 @@ const createQuestion = async (questionData, userId) => {
     }
   );
 
+  // Determine role for history - use 'admin' for both admin and superadmin
+  const historyRole = (userRole === 'admin' || userRole === 'superadmin') ? 'admin' : 'gatherer';
+  const historyNotes = historyRole === 'admin' 
+    ? 'Question created by admin' 
+    : 'Question created by gatherer';
+
   // Create question
   const question = await Question.create({
     ...questionData,
@@ -83,14 +89,163 @@ const createQuestion = async (questionData, userId) => {
       {
         action: 'created',
         performedBy: userId,
-        role: 'gatherer',
+        role: historyRole,
         timestamp: new Date(),
-        notes: 'Question created by gatherer',
+        notes: historyNotes,
       },
     ],
   });
 
   // Return the question with populated relations (already included by Prisma)
+  return await Question.findById(question.id);
+};
+
+/**
+ * Create question with completed status (for superadmin when assigned to me)
+ * Also creates variants if provided
+ */
+const createQuestionWithCompletedStatus = async (questionData, userId, variants = []) => {
+  // Validate exam exists
+  const exam = await Exam.findById(questionData.exam);
+  if (!exam) {
+    throw new Error('Exam not found');
+  }
+
+  // Validate subject exists
+  const subject = await Subject.findById(questionData.subject);
+  if (!subject) {
+    throw new Error('Subject not found');
+  }
+
+  // Validate topic exists and belongs to subject
+  const topics = await Topic.findMany({
+    where: {
+      id: questionData.topic,
+      parentSubject: questionData.subject,
+    },
+  });
+  const topic = topics[0];
+  if (!topic) {
+    throw new Error('Topic not found or does not belong to the selected subject');
+  }
+
+  // Create or update classification
+  await Classification.findOneAndUpdate(
+    {
+      exam: questionData.exam,
+      subject: questionData.subject,
+      topic: questionData.topic,
+    },
+    {
+      exam: questionData.exam,
+      subject: questionData.subject,
+      topic: questionData.topic,
+      status: 'active',
+    },
+    {
+      upsert: true,
+      new: true,
+    }
+  );
+
+  // Determine role for history - use 'admin' for both admin and superadmin
+  const historyRole = 'admin';
+  const historyNotes = 'Question created by superadmin with completed status';
+
+  // When "Assigned to me" is selected, assign the question to the current user (superadmin)
+  // This allows the superadmin to act as the processor
+  const assignedProcessorId = userId;
+
+  // Create question with completed status
+  const question = await Question.create({
+    exam: questionData.exam,
+    subject: questionData.subject,
+    topic: questionData.topic,
+    questionText: questionData.questionText.trim(),
+    questionType: questionData.questionType,
+    options: questionData.options,
+    correctAnswer: questionData.correctAnswer,
+    explanation: questionData.explanation?.trim() || '',
+    createdBy: userId,
+    assignedProcessor: assignedProcessorId, // Assign to current user (superadmin)
+    status: 'completed', // Direct completed status
+    history: [
+      {
+        action: 'created',
+        performedBy: userId,
+        role: historyRole,
+        timestamp: new Date(),
+        notes: historyNotes,
+      },
+      {
+        action: 'approved',
+        performedBy: userId,
+        role: historyRole,
+        timestamp: new Date(),
+        notes: 'Question approved and marked as completed by superadmin',
+      },
+    ],
+  });
+
+  // Create variants if provided
+  if (variants && variants.length > 0) {
+    for (const variantData of variants) {
+      // Validate variant has required fields
+      if (!variantData.questionText || !variantData.questionText.trim()) {
+        throw new Error('Variant question text is required');
+      }
+      if (!variantData.questionType) {
+        throw new Error('Variant question type is required');
+      }
+      if (!variantData.correctAnswer) {
+        throw new Error('Variant correct answer is required');
+      }
+
+      // Create variant question with completed status
+      const variantQuestion = await Question.create({
+        exam: questionData.exam,
+        subject: questionData.subject,
+        topic: questionData.topic,
+        questionText: variantData.questionText.trim(),
+        questionType: variantData.questionType,
+        options: variantData.options,
+        correctAnswer: variantData.correctAnswer,
+        explanation: variantData.explanation?.trim() || '',
+        originalQuestionId: question.id, // Use originalQuestionId instead of originalQuestion
+        isVariant: true,
+        createdBy: userId,
+        assignedProcessor: assignedProcessorId, // Assign to current user (superadmin)
+        status: 'completed', // Direct completed status
+        history: [
+          {
+            action: 'variant_created',
+            performedBy: userId,
+            role: historyRole,
+            timestamp: new Date(),
+            notes: `Variant question created from question ${question.id} with completed status`,
+          },
+          {
+            action: 'approved',
+            performedBy: userId,
+            role: historyRole,
+            timestamp: new Date(),
+            notes: 'Variant approved and marked as completed by superadmin',
+          },
+        ],
+      });
+
+      // Add history entry to original question
+      await Question.addHistory(question.id, {
+        action: 'variant_created',
+        performedById: userId,
+        role: historyRole,
+        timestamp: new Date(),
+        notes: `Variant question ${variantQuestion.id} created from this question with completed status`,
+      });
+    }
+  }
+
+  // Return the question with populated relations
   return await Question.findById(question.id);
 };
 
@@ -387,12 +542,45 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
     }
 
     // For gatherer: also check createdBy OR flagRejectionReason (gatherer rejected a flag)
+    // IMPORTANT: Exclude questions created by superadmin
     if (submittedByRole === 'gatherer' && userIdsWithRole.length > 0) {
-      roleConditions.push({
-        createdById: {
-          in: userIdsWithRole
-        }
+      // Get superadmin user IDs to exclude them (check both role and adminRole)
+      const superadminUsers = await prisma.user.findMany({
+        where: {
+          OR: [
+            { role: 'superadmin' },
+            { adminRole: 'superadmin' }
+          ],
+          status: 'active'
+        },
+        select: { id: true }
       });
+      
+      const superadminUserIds = superadminUsers.map(u => u.id);
+      
+      // Add condition to include gatherer-created questions, but exclude superadmin-created ones
+      if (superadminUserIds.length > 0) {
+        roleConditions.push({
+          AND: [
+            {
+              createdById: {
+                in: userIdsWithRole
+              }
+            },
+            {
+              createdById: {
+                notIn: superadminUserIds
+              }
+            }
+          ]
+        });
+      } else {
+        roleConditions.push({
+          createdById: {
+            in: userIdsWithRole
+          }
+        });
+      }
       
       // Include questions where gatherer rejected a flag (has flagRejectionReason)
       // These are in pending_processor status and need processor review
@@ -408,6 +596,64 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
           }
         ]
       });
+    }
+    
+    // For admin: check createdBy (ONLY superadmin creates questions for admin submission page)
+    // Include ONLY questions created by superadmin (not regular admin)
+    if (submittedByRole === 'admin') {
+      // Get ONLY superadmin users (check both role and adminRole)
+      const superadminUsers = await prisma.user.findMany({
+        where: {
+          OR: [
+            { role: 'superadmin' },
+            { adminRole: 'superadmin' }
+          ],
+          status: 'active'
+        },
+        select: { id: true }
+      });
+      
+      if (superadminUsers.length > 0) {
+        const superadminUserIds = superadminUsers.map(u => u.id);
+        roleConditions.push({
+          createdById: {
+            in: superadminUserIds
+          }
+        });
+      }
+      
+      // Also check history for admin role (only if created by superadmin)
+      // Note: When superadmin creates, history role is 'admin', but we verify via createdById
+      const adminHistoryEntries = await prisma.questionHistory.findMany({
+        where: {
+          role: 'admin',
+          action: {
+            in: ['created', 'updated', 'submitted']
+          }
+        },
+        select: {
+          questionId: true,
+          performedById: true
+        }
+      });
+
+      // Filter history entries to only include those performed by superadmin users
+      if (superadminUsers.length > 0 && adminHistoryEntries.length > 0) {
+        const superadminUserIds = superadminUsers.map(u => u.id);
+        const superadminQuestionIdsFromHistory = adminHistoryEntries
+          .filter(h => superadminUserIds.includes(h.performedById))
+          .map(h => h.questionId);
+        
+        const uniqueSuperadminQuestionIds = [...new Set(superadminQuestionIdsFromHistory)];
+
+        if (uniqueSuperadminQuestionIds.length > 0) {
+          roleConditions.push({
+            id: {
+              in: uniqueSuperadminQuestionIds
+            }
+          });
+        }
+      }
     }
 
     // For creator: check assignedCreatorId OR lastModifiedBy (creator modifies questions) OR flagged by creator
@@ -566,9 +812,13 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
   // The exclusion for creator's own view is handled in getQuestionsByStatus function
   
   if (flagType === 'student') {
-    // Only fetch student-flagged questions (all statuses for admin submission page)
+    // Only fetch student-flagged questions that are approved by admin
+    // Admin submission page should only show approved student flags
     where.AND.push({
-      flagType: 'student'
+      AND: [
+        { flagType: 'student' },
+        { flagStatus: 'approved' }
+      ]
     });
   } else {
     // Exclude questions with flagType='student' that are NOT approved
@@ -594,7 +844,7 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
       exam: { select: { name: true } },
       subject: { select: { name: true } },
       topic: { select: { name: true } },
-      createdBy: { select: { name: true, email: true } },
+      createdBy: { select: { id: true, name: true, email: true } },
       lastModifiedBy: { select: { name: true, email: true } },
       assignedProcessor: { select: { name: true, fullName: true, email: true } },
       assignedCreator: { select: { name: true, fullName: true, email: true } },
@@ -609,6 +859,93 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
       }
     }
   });
+
+  // Populate role and adminRole for createdBy by fetching from user table
+  // Since these fields are not included in the select, we need to fetch them separately
+  const createdByIds = [];
+  
+  // Collect all createdByIds from questions - check multiple possible locations
+  questions.forEach(q => {
+    // Priority: createdById (direct field) > createdBy.id (relation) > createdBy (if string)
+    if (q.createdById) {
+      createdByIds.push(q.createdById);
+    } else if (q.createdBy?.id) {
+      createdByIds.push(q.createdBy.id);
+    } else if (q.createdBy && typeof q.createdBy === 'string') {
+      createdByIds.push(q.createdBy);
+    }
+  });
+  
+  if (createdByIds.length > 0) {
+    const uniqueCreatedByIds = [...new Set(createdByIds.filter(id => id))];
+    
+    if (uniqueCreatedByIds.length > 0) {
+      const users = await prisma.user.findMany({
+        where: {
+          id: { in: uniqueCreatedByIds }
+        },
+        select: {
+          id: true,
+          role: true,
+          adminRole: true
+        }
+      });
+      
+      const userRoleMap = new Map(users.map(u => [u.id, { role: u.role, adminRole: u.adminRole }]));
+      
+      // Populate role and adminRole for each question's createdBy
+      questions.forEach(question => {
+        let createdById = null;
+        
+        // Try to get the ID from different possible locations (same priority as above)
+        if (question.createdById) {
+          createdById = question.createdById;
+        } else if (question.createdBy?.id) {
+          createdById = question.createdBy.id;
+        } else if (question.createdBy && typeof question.createdBy === 'string') {
+          createdById = question.createdBy;
+        }
+        
+        if (createdById) {
+          // Ensure createdBy object exists and is an object (not string)
+          if (!question.createdBy || typeof question.createdBy === 'string') {
+            question.createdBy = { id: createdById };
+          }
+          
+          // Populate role and adminRole from the map
+          const userData = userRoleMap.get(createdById);
+          if (userData !== undefined) {
+            question.createdBy.role = userData.role;
+            question.createdBy.adminRole = userData.adminRole;
+          } else {
+            // If not found in map, set to null
+            question.createdBy.role = null;
+            question.createdBy.adminRole = null;
+          }
+        } else if (question.createdBy && typeof question.createdBy === 'object') {
+          // If createdBy exists but we couldn't find the ID, ensure role and adminRole are set
+          if (!question.createdBy.hasOwnProperty('role')) {
+            question.createdBy.role = null;
+          }
+          if (!question.createdBy.hasOwnProperty('adminRole')) {
+            question.createdBy.adminRole = null;
+          }
+        }
+      });
+    }
+  } else {
+    // If no createdByIds found, ensure all createdBy objects have role and adminRole set to null
+    questions.forEach(question => {
+      if (question.createdBy && typeof question.createdBy === 'object') {
+        if (!question.createdBy.hasOwnProperty('role')) {
+          question.createdBy.role = null;
+        }
+        if (!question.createdBy.hasOwnProperty('adminRole')) {
+          question.createdBy.adminRole = null;
+        }
+      }
+    });
+  }
 
   // Additional filtering: ensure questions actually went through the specified role
   // Show questions that were: created, approved, or flagged by the role
@@ -629,13 +966,38 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
                            (question.flagStatus === 'pending' || question.flagStatus === null || question.flagStatus === undefined);
 
     // For gatherer: check createdBy (gatherer creates questions)
+    // IMPORTANT: Exclude questions created by superadmin
     // Note: We don't exclude creator-submitted questions here - they can appear in gatherer submission
     // The button logic in ProcessorViewQuestion will handle showing correct options
     if (submittedByRole === 'gatherer') {
+      // Check if question was created by superadmin - check both role and adminRole
+      const isSuperadminCreated = question.createdBy?.role === 'superadmin' || 
+                                  question.createdBy?.adminRole === 'superadmin' ||
+                                  (question.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
+      
+      // Exclude superadmin-created questions
+      if (isSuperadminCreated) {
+        return false;
+      }
+      
       const createdByGatherer = question.createdById && userIdsWithRole && userIdsWithRole.includes(question.createdById);
       const createdByRole = question.createdBy?.adminRole === 'gatherer' || 
                            (question.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'gatherer');
       return hasRoleHistory || hasRoleApproval || isFlaggedByRole || createdByGatherer || createdByRole;
+    }
+    
+    // For admin: check createdBy (ONLY superadmin creates questions for admin submission page)
+    // Check both role and adminRole fields, but ONLY for superadmin
+    if (submittedByRole === 'admin') {
+      // Check if created by superadmin ONLY - check both role and adminRole
+      const createdBySuperadmin = question.createdBy?.role === 'superadmin' ||
+                                  question.createdBy?.adminRole === 'superadmin' ||
+                                  (question.history?.find(h => h.action === 'created')?.performedBy?.role === 'superadmin') ||
+                                  (question.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
+      // Check history role for 'admin' but verify it was created by superadmin via createdById
+      const historyRoleIsAdmin = question.history?.some(h => h.role === 'admin' && h.action === 'created');
+      // Only return true if created by superadmin (not regular admin)
+      return createdBySuperadmin || (historyRoleIsAdmin && createdBySuperadmin);
     }
 
     // For creator: check if question went through creator workflow
@@ -893,29 +1255,65 @@ const getQuestionById = async (questionId, userId, role) => {
   }
 
   // Access control: Check if user has permission to view this question
-  // Gatherer can only access their own questions
-  if (role === 'gatherer' && question.createdById !== userId) {
-    throw new Error('Access denied');
-  }
-  
-  // Processor can only see questions assigned to them
-  if (role === 'processor') {
-    if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
-      throw new Error('Access denied. This question is not assigned to you.');
+  // SuperAdmin can access all questions - bypass access checks
+  if (role !== 'superadmin') {
+    // Gatherer can only access their own questions
+    if (role === 'gatherer' && question.createdById !== userId) {
+      throw new Error('Access denied');
+    }
+    
+    // Processor can only see questions assigned to them
+    if (role === 'processor') {
+      if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+        throw new Error('Access denied. This question is not assigned to you.');
+      }
+    }
+    
+    // Creator can only see questions assigned to them
+    if (role === 'creator') {
+      if (question.assignedCreatorId && question.assignedCreatorId !== userId) {
+        throw new Error('Access denied. This question is not assigned to you.');
+      }
+    }
+    
+    // Explainer can only see questions assigned to them
+    if (role === 'explainer') {
+      if (question.assignedExplainerId && question.assignedExplainerId !== userId) {
+        throw new Error('Access denied. This question is not assigned to you.');
+      }
     }
   }
-  
-  // Creator can only see questions assigned to them
-  if (role === 'creator') {
-    if (question.assignedCreatorId && question.assignedCreatorId !== userId) {
-      throw new Error('Access denied. This question is not assigned to you.');
-    }
-  }
-  
-  // Explainer can only see questions assigned to them
-  if (role === 'explainer') {
-    if (question.assignedExplainerId && question.assignedExplainerId !== userId) {
-      throw new Error('Access denied. This question is not assigned to you.');
+
+  // Populate role and adminRole for createdBy by fetching from user table
+  if (question.createdBy) {
+    const { prisma } = require('../../../config/db/prisma');
+    const createdById = question.createdBy?.id || question.createdById;
+    
+    if (createdById) {
+      const user = await prisma.user.findUnique({
+        where: { id: createdById },
+        select: {
+          id: true,
+          role: true,
+          adminRole: true
+        }
+      });
+      
+      if (user) {
+        // Ensure createdBy is an object
+        if (!question.createdBy || typeof question.createdBy === 'string') {
+          question.createdBy = { id: createdById };
+        }
+        question.createdBy.role = user.role;
+        question.createdBy.adminRole = user.adminRole;
+      } else {
+        // If user not found, ensure role fields are set to null
+        if (!question.createdBy || typeof question.createdBy === 'string') {
+          question.createdBy = { id: createdById };
+        }
+        question.createdBy.role = null;
+        question.createdBy.adminRole = null;
+      }
     }
   }
 
@@ -1314,8 +1712,9 @@ const saveDraftExplanationByExplainer = async (questionId, explanation, userId) 
  * @param {string} questionId - Question ID
  * @param {string} userId - Processor user ID
  * @param {string} assignedUserId - Optional: Creator or Explainer user ID to assign
+ * @param {string} role - Optional: User role (for superAdmin bypass)
  */
-const approveQuestion = async (questionId, userId, assignedUserId = null) => {
+const approveQuestion = async (questionId, userId, assignedUserId = null, role = null) => {
   const question = await Question.findById(questionId);
 
   if (!question) {
@@ -1328,7 +1727,8 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
 
   // CRITICAL: Ensure the processor is the assigned processor
   // The question must be assigned to this processor throughout the workflow
-  if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+  // SuperAdmin can bypass this check
+  if (role !== 'superadmin' && question.assignedProcessorId && question.assignedProcessorId !== userId) {
     throw new Error('Access denied. This question is not assigned to you.');
   }
 
@@ -1562,17 +1962,26 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
     } else if (nextStatus === 'pending_explainer' && !question.assignedExplainerId) {
       updateData.assignedExplainer = assignedUserId;
       
-      // Also update all variants of this question to have the same assignedExplainerId
+      // Also update all variants to have the same assignedExplainerId
       // This ensures variants are visible to the explainer
       try {
+        // Check if the question being approved is a variant
+        const isVariant = question.isVariant === true || question.isVariant === 'true' || question.isVariant === 1;
+        const originalQuestionId = question.originalQuestionId || question.originalQuestion?.id || question.originalQuestion;
+        
+        // If this is a variant, find all variants of the same original question (including this variant)
+        // If this is the original question, find all its variants
+        const targetQuestionId = isVariant && originalQuestionId ? originalQuestionId : questionId;
+        
         const variants = await Question.findMany({
           where: {
-            originalQuestionId: questionId,
+            originalQuestionId: targetQuestionId,
             isVariant: true
           }
         });
         
         // Update each variant with the same assignedExplainerId
+        // This includes the variant being approved (if it's a variant) and all sibling variants
         if (variants && variants.length > 0) {
           await Promise.all(
             variants.map(variant => 
@@ -1646,8 +2055,12 @@ const approveQuestion = async (questionId, userId, assignedUserId = null) => {
 
 /**
  * Reject question by Processor
+ * @param {string} questionId - Question ID
+ * @param {string} rejectionReason - Rejection reason
+ * @param {string} userId - Processor user ID
+ * @param {string} role - Optional: User role (for superAdmin bypass)
  */
-const rejectQuestion = async (questionId, rejectionReason, userId) => {
+const rejectQuestion = async (questionId, rejectionReason, userId, role = null) => {
   const question = await Question.findById(questionId);
 
   if (!question) {
@@ -1660,7 +2073,8 @@ const rejectQuestion = async (questionId, rejectionReason, userId) => {
 
   // CRITICAL: Ensure the processor is the assigned processor
   // The question must be assigned to this processor throughout the workflow
-  if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+  // SuperAdmin can bypass this check
+  if (role !== 'superadmin' && question.assignedProcessorId && question.assignedProcessorId !== userId) {
     throw new Error('Access denied. This question is not assigned to you.');
   }
 
@@ -1733,6 +2147,22 @@ const buildSearchQuery = (baseFilters = {}, searchTerm = '') => {
     // Already in Prisma format
   }
 
+  // Exclude student-flagged questions that are not approved
+  // Only show student-flagged questions if flagStatus is 'approved'
+  // This ensures student-flagged questions don't appear until admin approves them
+  const studentFlagExclusion = {
+    OR: [
+      { flagType: null }, // Questions with no flag
+      { flagType: { not: 'student' } }, // Questions flagged by creator, explainer, etc.
+      {
+        AND: [
+          { flagType: 'student' },
+          { flagStatus: 'approved' } // Only approved student flags
+        ]
+      }
+    ]
+  };
+
   if (searchTerm && searchTerm.trim()) {
     const searchConditions = [
       { questionText: { contains: searchTerm.trim(), mode: 'insensitive' } },
@@ -1740,14 +2170,36 @@ const buildSearchQuery = (baseFilters = {}, searchTerm = '') => {
       { status: { contains: searchTerm.trim(), mode: 'insensitive' } },
     ];
     
-    // Combine existing conditions with search using AND
+    // Combine existing conditions with search and student flag exclusion using AND
     const existingConditions = { ...where };
     delete existingConditions.OR;
+    delete existingConditions.AND;
+    
+    const allConditions = [];
+    if (Object.keys(existingConditions).length > 0) {
+      allConditions.push(existingConditions);
+    }
+    allConditions.push({ OR: searchConditions });
+    allConditions.push(studentFlagExclusion);
+    
+    where.AND = allConditions;
+    
+    // Remove individual conditions that are now in AND
+    Object.keys(existingConditions).forEach(key => {
+      if (key !== 'AND' && key !== 'OR') {
+        delete where[key];
+      }
+    });
+  } else {
+    // No search term, just add student flag exclusion
+    const existingConditions = { ...where };
+    delete existingConditions.OR;
+    delete existingConditions.AND;
     
     if (Object.keys(existingConditions).length > 0) {
       where.AND = [
         existingConditions,
-        { OR: searchConditions }
+        studentFlagExclusion
       ];
       // Remove individual conditions that are now in AND
       Object.keys(existingConditions).forEach(key => {
@@ -1756,7 +2208,8 @@ const buildSearchQuery = (baseFilters = {}, searchTerm = '') => {
         }
       });
     } else {
-      where.OR = searchConditions;
+      // No other conditions, just apply student flag exclusion
+      Object.assign(where, studentFlagExclusion);
     }
   }
 
@@ -1909,6 +2362,7 @@ const getAllQuestionsForSuperadmin = async (filters = {}, searchTerm = '', pagin
       topic: true,
       createdBy: { select: { id: true, name: true, fullName: true, email: true } },
       lastModifiedBy: { select: { id: true, name: true, fullName: true, email: true } },
+      flaggedBy: { select: { id: true, name: true, fullName: true, email: true } },
       history: {
         include: {
           performedBy: { select: { id: true, name: true, fullName: true, adminRole: true } }
@@ -2040,7 +2494,7 @@ const flagQuestionByCreator = async (questionId, flagReason, userId) => {
 /**
  * Review Creator's flag by Processor
  */
-const reviewCreatorFlag = async (questionId, decision, rejectionReason, userId) => {
+const reviewCreatorFlag = async (questionId, decision, rejectionReason, userId, role = null) => {
   const question = await Question.findById(questionId);
 
   if (!question) {
@@ -2048,7 +2502,8 @@ const reviewCreatorFlag = async (questionId, decision, rejectionReason, userId) 
   }
 
   // CRITICAL: Ensure the processor is the assigned processor
-  if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+  // SuperAdmin can bypass this check
+  if (role !== 'superadmin' && question.assignedProcessorId && question.assignedProcessorId !== userId) {
     throw new Error('Access denied. This question is not assigned to you.');
   }
 
@@ -2142,7 +2597,7 @@ const flagQuestionByExplainer = async (questionId, flagReason, userId) => {
  * Review Student's flag by Processor
  * When processor reviews a student flag, they can approve or reject it
  */
-const reviewStudentFlag = async (questionId, decision, rejectionReason, userId) => {
+const reviewStudentFlag = async (questionId, decision, rejectionReason, userId, role = null) => {
   const question = await Question.findById(questionId);
 
   if (!question) {
@@ -2150,7 +2605,8 @@ const reviewStudentFlag = async (questionId, decision, rejectionReason, userId) 
   }
 
   // CRITICAL: Ensure the processor is the assigned processor
-  if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+  // SuperAdmin can bypass this check
+  if (role !== 'superadmin' && question.assignedProcessorId && question.assignedProcessorId !== userId) {
     throw new Error('Access denied. This question is not assigned to you.');
   }
 
@@ -2219,7 +2675,7 @@ const reviewStudentFlag = async (questionId, decision, rejectionReason, userId) 
  * Review Explainer's flag by Processor
  * Handles both regular questions (goes to Gatherer) and variants (goes to Creator)
  */
-const reviewExplainerFlag = async (questionId, decision, rejectionReason, userId) => {
+const reviewExplainerFlag = async (questionId, decision, rejectionReason, userId, role = null) => {
   const question = await Question.findById(questionId);
 
   if (!question) {
@@ -2227,7 +2683,8 @@ const reviewExplainerFlag = async (questionId, decision, rejectionReason, userId
   }
 
   // CRITICAL: Ensure the processor is the assigned processor
-  if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+  // SuperAdmin can bypass this check
+  if (role !== 'superadmin' && question.assignedProcessorId && question.assignedProcessorId !== userId) {
     throw new Error('Access denied. This question is not assigned to you.');
   }
 
@@ -2929,7 +3386,7 @@ const rejectFlagByGatherer = async (questionId, rejectionReason, userId) => {
  * Reject gatherer's flag rejection by Processor
  * When processor disagrees with gatherer's rejection and wants to restore the flag
  */
-const rejectGathererFlagRejection = async (questionId, rejectionReason, userId) => {
+const rejectGathererFlagRejection = async (questionId, rejectionReason, userId, role = null) => {
   const question = await Question.findById(questionId);
 
   if (!question) {
@@ -2937,7 +3394,8 @@ const rejectGathererFlagRejection = async (questionId, rejectionReason, userId) 
   }
 
   // CRITICAL: Ensure the processor is the assigned processor
-  if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+  // SuperAdmin can bypass this check
+  if (role !== 'superadmin' && question.assignedProcessorId && question.assignedProcessorId !== userId) {
     throw new Error('Access denied. This question is not assigned to you.');
   }
 
@@ -3285,6 +3743,7 @@ const rejectStudentFlag = async (questionId, rejectionReason, adminId) => {
 
 module.exports = {
   createQuestion,
+  createQuestionWithCompletedStatus,
   getQuestionsByStatus,
   getQuestionById,
   updateQuestionByCreator,

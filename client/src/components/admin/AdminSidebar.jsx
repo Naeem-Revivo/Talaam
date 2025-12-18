@@ -347,6 +347,25 @@ const AdminSidebar = ({ isOpen, onClose }) => {
         labelKey: "admin.sidebar.paymentHistory",
       },
     ],
+    questionBank: [
+      {
+        path: "/admin/question-bank",
+        labelKey: "admin.sidebar.questionBank",
+        isMain: true,
+      },
+      {
+        path: "/admin/question-bank/pending-processor",
+        labelKey: "admin.sidebar.pendingProcessor",
+      },
+      {
+        path: "/admin/question-bank/pending-creator",
+        labelKey: "admin.sidebar.pendingCreator",
+      },
+      {
+        path: "/admin/question-bank/pending-explainer",
+        labelKey: "admin.sidebar.pendingExplainer",
+      },
+    ],
   };
 
   const menuItems = [
@@ -374,6 +393,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       path: "/admin/question-bank",
       labelKey: "admin.sidebar.questionBank",
       icon: QuestionBankIcon,
+      submenuKey: "questionBank",
     },
     {
       path: "/admin/approved-questions",

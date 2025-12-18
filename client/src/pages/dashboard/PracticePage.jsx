@@ -112,9 +112,18 @@ const PracticePage = () => {
         const response = await subjectsAPI.getAllSubjects();
         if (response.success && response.data) {
           setSubjects(response.data.subjects || response.data);
+        } else {
+          setSubjects([]);
         }
       } catch (error) {
         console.error('Error fetching subjects:', error);
+        // Handle permission errors gracefully
+        if (error.response?.status === 403 || error.response?.status === 401) {
+          showErrorToast('You do not have permission to access subjects. Please contact support.');
+        } else {
+          showErrorToast(error.message || 'Failed to load subjects. Please try again.');
+        }
+        setSubjects([]);
       } finally {
         setLoadingSubjects(false);
       }
@@ -148,14 +157,24 @@ const PracticePage = () => {
                   };
                 } catch (error) {
                   console.error(`Error fetching count for topic ${topic.id}:`, error);
+                  // Don't show toast for individual topic count errors
                   return { ...topic, count: 0 };
                 }
               })
             );
             setTopics(topicsWithCounts);
+          } else {
+            setTopics([]);
           }
         } catch (error) {
           console.error('Error fetching topics:', error);
+          // Handle permission errors gracefully
+          if (error.response?.status === 403 || error.response?.status === 401) {
+            showErrorToast('You do not have permission to access topics. Please contact support.');
+          } else {
+            showErrorToast(error.message || 'Failed to load topics. Please try again.');
+          }
+          setTopics([]);
         } finally {
           setLoadingTopics(false);
         }

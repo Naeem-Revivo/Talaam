@@ -127,6 +127,14 @@ const Header = ({ onToggleSidebar }) => {
     if (pathname.includes('email-template')) return t('header.titles.admin.emailTemplate');
     if (pathname.includes('roles-permissions')) return t('header.titles.admin.rolesPermissions');
     if (pathname.startsWith('/admin/users')) return t('header.titles.admin.userManagement');
+    if (pathname.includes('pending-processor/view')) return t('header.titles.admin.pendingProcessorView') || t('header.titles.admin.pendingProcessor');
+    if (pathname.includes('pending-processor')) return t('header.titles.admin.pendingProcessor');
+    if (pathname.includes('pending-creator/view')) return t('header.titles.admin.pendingCreatorView') || t('header.titles.admin.pendingCreator');
+    if (pathname.includes('pending-creator')) return t('header.titles.admin.pendingCreator');
+    if (pathname.includes('pending-explainer/view')) return t('header.titles.admin.pendingExplainerView') || t('header.titles.admin.pendingExplainer');
+    if (pathname.includes('pending-explainer')) return t('header.titles.admin.pendingExplainer');
+    if (pathname.includes('sent-back-questions/view')) return t('header.titles.admin.sentBackQuestionsView') || t('admin.sentBackQuestions.view.title');
+    if (pathname.includes('sent-back-questions')) return t('header.titles.admin.sentBackQuestions') || t('admin.questionBank.sentBackQuestions.title');
     if (pathname.startsWith('/admin/question-bank')) return t('header.titles.admin.questionBank');
     if (pathname.startsWith('/admin/question-management')) return t('header.titles.admin.questionManagement');
     if (pathname.startsWith('/admin/add-question')) return t('header.titles.admin.addQuestion');

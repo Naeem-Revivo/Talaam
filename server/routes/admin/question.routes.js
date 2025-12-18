@@ -75,8 +75,15 @@ router.get(
 router.post(
   '/',
   authMiddleware,
-  gathererMiddleware,
+  adminOrSuperadminMiddleware,
   questionController.createQuestion
+);
+
+router.post(
+  '/completed',
+  authMiddleware,
+  adminOrSuperadminMiddleware,
+  questionController.createQuestionWithCompletedStatus
 );
 
 router.get(
