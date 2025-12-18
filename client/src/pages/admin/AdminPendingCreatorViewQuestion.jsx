@@ -1,13 +1,26 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
 import RichTextEditor from "../../components/common/RichTextEditor";
+import adminAPI from "../../api/admin";
 import questionsAPI from "../../api/questions";
 import examsAPI from "../../api/exams";
 import subjectsAPI from "../../api/subjects";
 import topicsAPI from "../../api/topics";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
+
+// Helper function to extract correct answer letter (handles both string and object formats)
+const getCorrectAnswerLetter = (correctAnswerValue) => {
+  if (!correctAnswerValue) return null;
+  if (typeof correctAnswerValue === 'string') return correctAnswerValue;
+  if (typeof correctAnswerValue === 'object') {
+    // Handle object format like {option: 'A', text: 'Some text'}
+    return correctAnswerValue.option || correctAnswerValue.text || null;
+  }
+  return String(correctAnswerValue);
+};
 
 const Dropdown = ({ label, value, options, onChange, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -85,51 +98,40 @@ const Dropdown = ({ label, value, options, onChange, placeholder }) => {
   );
 };
 
-const CreatorVariantsPage = () => {
+const AdminPendingCreatorViewQuestion = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { t } = useLanguage();
+  const [searchParams] = useSearchParams();
+  const { t, language } = useLanguage();
+  const dir = language === "ar" ? "rtl" : "ltr";
   
-  // Get question data from location state or fetch it
-  const questionId = location.state?.questionId;
-  const variantToEdit = location.state?.variant || null;
-  const isEditMode = location.state?.isFlagged === true && variantToEdit;
-  const [originalQuestion, setOriginalQuestion] = useState(location.state?.originalQuestion || location.state?.question || null);
-  const [loading, setLoading] = useState(!originalQuestion && !questionId && !isEditMode);
-  const [questionIdDisplay, setQuestionIdDisplay] = useState(
-    originalQuestion?.id || questionId || "QB-1442"
-  );
+  // Get current user from Redux
+  const { user } = useSelector((state) => state.auth || {});
+  const isSuperAdmin = user?.role === 'superadmin';
+  
+  // Get question data from search params
+  const questionId = searchParams.get("questionId");
+  const variantToEdit = null; // Not used in admin view, but keeping for consistency
+  const isEditMode = false; // Admin view doesn't have edit mode for variants
+  
+  const [originalQuestion, setOriginalQuestion] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [questionIdDisplay, setQuestionIdDisplay] = useState(questionId || "QB-1442");
   
   // Original question state - initialize from passed data or API
-  const [questionText, setQuestionText] = useState(originalQuestion?.questionText || "");
-  const [questionType, setQuestionType] = useState(() => {
-    if (!originalQuestion?.questionType) return "Multiple Choice (MCQ)";
-    if (originalQuestion.questionType === "MCQ") return "Multiple Choice (MCQ)";
-    if (originalQuestion.questionType === "TRUE_FALSE") return "True/False";
-    return originalQuestion.questionType;
-  });
-  const [options, setOptions] = useState(
-    originalQuestion?.options || { A: "", B: "", C: "", D: "" }
-  );
-  const [correctAnswer, setCorrectAnswer] = useState(() => {
-    if (!originalQuestion?.correctAnswer) return "Option A";
-    // Handle TRUE_FALSE questions - map A to "True", B to "False"
-    if (originalQuestion.questionType === "TRUE_FALSE") {
-      return originalQuestion.correctAnswer === "A" ? "True" : "False";
-    }
-    // For MCQ, use "Option A" format
-    return `Option ${originalQuestion.correctAnswer}`;
-  });
+  const [questionText, setQuestionText] = useState("");
+  const [questionType, setQuestionType] = useState("Multiple Choice (MCQ)");
+  const [options, setOptions] = useState({ A: "", B: "", C: "", D: "" });
+  const [correctAnswer, setCorrectAnswer] = useState("Option A");
   
-  // Classification state - storing IDs and names (like gatherer page)
+  // Classification state - storing IDs and names
   const [examId, setExamId] = useState("");
-  const [examName, setExamName] = useState(originalQuestion?.exam?.name || "");
+  const [examName, setExamName] = useState("");
   const [subjectId, setSubjectId] = useState("");
-  const [subjectName, setSubjectName] = useState(originalQuestion?.subject?.name || "");
+  const [subjectName, setSubjectName] = useState("");
   const [topicId, setTopicId] = useState("");
-  const [topicName, setTopicName] = useState(originalQuestion?.topic?.name || "");
+  const [topicName, setTopicName] = useState("");
   const [source, setSource] = useState("");
-  const [explanation, setExplanation] = useState(originalQuestion?.explanation || "");
+  const [explanation, setExplanation] = useState("");
 
   // Classification data lists
   const [exams, setExams] = useState([]);
@@ -145,28 +147,18 @@ const CreatorVariantsPage = () => {
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
   const [flagReason, setFlagReason] = useState("");
   const [isFlagging, setIsFlagging] = useState(false);
+  
+  // Reject flag modal state
+  const [isRejectFlagModalOpen, setIsRejectFlagModalOpen] = useState(false);
+  const [flagRejectionReason, setFlagRejectionReason] = useState("");
+  const [isRejectingFlag, setIsRejectingFlag] = useState(false);
+  
+  // Check if question/variant is flagged
+  const isFlagged = originalQuestion?.isFlagged === true && originalQuestion?.flagStatus === 'approved';
+  const flagType = originalQuestion?.flagType || null;
 
   // Variants state - array of variant objects
-  // If in edit mode, initialize with the variant to edit
-  // Otherwise, start with empty array - variants only appear when "Add Variant" is clicked
-  const [variants, setVariants] = useState(
-    isEditMode && variantToEdit
-      ? [
-          {
-            id: variantToEdit.id || 1,
-            questionText: variantToEdit.questionText || "",
-            questionType: variantToEdit.questionType === "MCQ" 
-              ? "Multiple Choice (MCQ)" 
-              : variantToEdit.questionType || "Multiple Choice (MCQ)",
-            options: variantToEdit.options || { A: "", B: "", C: "", D: "" },
-            correctAnswer: variantToEdit.correctAnswer 
-              ? `Option ${variantToEdit.correctAnswer}` 
-              : "Option A",
-            explanation: variantToEdit.explanation || "",
-          },
-        ]
-      : [] // Start with empty array - no variants shown initially
-  );
+  const [variants, setVariants] = useState([]);
 
   const handleOptionChange = (option, value) => {
     setOptions((prev) => ({ ...prev, [option]: value }));
@@ -238,15 +230,15 @@ const CreatorVariantsPage = () => {
       ...prev,
       {
         id: newVariantId,
-        questionText: "", // User will fill this
+        questionText: "",
         questionType: "Multiple Choice (MCQ)",
         options: { 
-          A: "", // Empty - user will fill
+          A: "",
           B: "", 
           C: "", 
           D: "" 
         },
-        correctAnswer: "Option A", // Default correct answer
+        correctAnswer: "Option A",
         explanation: "",
       },
     ]);
@@ -277,10 +269,6 @@ const CreatorVariantsPage = () => {
     setTopicName("");
   };
 
-  // ============================================================
-  // UPDATE handleSubjectChange TO THIS:
-  // ============================================================
-
   const handleSubjectChange = (selectedSubjectName) => {
     const selectedSubject = subjects.find((s) => s.name === selectedSubjectName);
     if (selectedSubject) {
@@ -294,10 +282,6 @@ const CreatorVariantsPage = () => {
     setTopicName("");
   };
 
-  // ============================================================
-  // UPDATE handleTopicChange TO THIS:
-  // ============================================================
-
   const handleTopicChange = (selectedTopicName) => {
     const selectedTopic = topics.find((t) => t.name === selectedTopicName);
     if (selectedTopic) {
@@ -309,106 +293,80 @@ const CreatorVariantsPage = () => {
     }
   };
 
-  const handleSaveDraft = () => {
-    // TODO: Implement save draft functionality
-    console.log("Save draft");
-  };
-
   const handleSubmit = async () => {
-    // If in edit mode, handle updating flagged variant
-    if (isEditMode && variantToEdit) {
-      try {
-        setIsSubmitting(true);
-        const variantId = variantToEdit.id;
-        const validVariant = variants.find(
-          (variant) => variant.questionText && variant.questionText.trim() !== ""
-        );
-
-        if (!validVariant) {
-          showErrorToast("Variant question text is required.");
-          setIsSubmitting(false);
-          return;
-        }
-        
-        // Convert question type from display format to API format
-        const questionTypeMap = {
-          "Multiple Choice (MCQ)": "MCQ",
-          "True/False": "TRUE_FALSE",
-        };
-        const apiQuestionType = questionTypeMap[validVariant.questionType] || "MCQ";
-        
-        // Extract correct answer - handle True/False differently
-        let correctAnswerLetter;
-        if (apiQuestionType === "TRUE_FALSE") {
-          // Map "True" to "A" and "False" to "B"
-          correctAnswerLetter = validVariant.correctAnswer === "True" ? "A" : "B";
-        } else {
-          // Extract correct answer letter from "Option A" format
-          correctAnswerLetter = validVariant.correctAnswer.replace("Option ", "").trim();
-        }
-
-        const variantData = {
-          questionText: validVariant.questionText.trim(),
-          questionType: apiQuestionType,
-          options: {
-            A: validVariant.options.A?.trim() || (apiQuestionType === "TRUE_FALSE" ? "True" : ""),
-            B: validVariant.options.B?.trim() || (apiQuestionType === "TRUE_FALSE" ? "False" : ""),
-            C: validVariant.options.C?.trim() || "",
-            D: validVariant.options.D?.trim() || "",
-          },
-          correctAnswer: correctAnswerLetter,
-          explanation: validVariant.explanation?.trim() || "",
-        };
-
-        await questionsAPI.updateFlaggedVariant(variantId, variantData);
-        showSuccessToast("Variant updated successfully. Sent to processor for review.");
-        setTimeout(() => {
-          navigate("/creator/question-bank/variants-list");
-        }, 1500);
-      } catch (error) {
-        const errorMessage =
-          error.response?.data?.message ||
-          error.message ||
-          "Failed to update variant";
-        showErrorToast(errorMessage);
-      } finally {
-        setIsSubmitting(false);
-      }
-      return;
-    }
-
-    // Original create mode logic
     if (!questionId && !originalQuestion?.id) {
       showErrorToast("Question ID is missing. Cannot submit question.");
       return;
     }
 
-    let shouldRedirect = false;
-    let redirectPath = "/creator/question-bank";
-    try {
-      setIsSubmitting(true);
-      const idToUse = questionId || originalQuestion?.id;
+      let shouldRedirect = false;
+      let redirectPath = "/admin/question-bank/pending-creator";
+      try {
+        setIsSubmitting(true);
+        const idToUse = questionId || originalQuestion?.id;
+        
+        // If this is a flagged variant, use updateFlaggedVariant API
+        if (isFlagged && originalQuestion?.isVariant) {
+          // Use first variant or original question data
+          const variantToUpdate = variants.length > 0 ? variants[0] : {
+            questionText,
+            questionType,
+            options,
+            correctAnswer,
+            explanation
+          };
+          
+          const questionTypeMap = {
+            "Multiple Choice (MCQ)": "MCQ",
+            "True/False": "TRUE_FALSE",
+          };
+          const apiQuestionType = questionTypeMap[variantToUpdate.questionType] || "MCQ";
+          
+          let correctAnswerLetter;
+          if (apiQuestionType === "TRUE_FALSE") {
+            correctAnswerLetter = variantToUpdate.correctAnswer === "True" ? "A" : "B";
+          } else {
+            correctAnswerLetter = variantToUpdate.correctAnswer.replace("Option ", "").trim();
+          }
+          
+          const updateData = {
+            questionText: variantToUpdate.questionText.trim(),
+            questionType: apiQuestionType,
+            options: {
+              A: variantToUpdate.options.A?.trim() || (apiQuestionType === "TRUE_FALSE" ? "True" : ""),
+              B: variantToUpdate.options.B?.trim() || (apiQuestionType === "TRUE_FALSE" ? "False" : ""),
+              C: variantToUpdate.options.C?.trim() || "",
+              D: variantToUpdate.options.D?.trim() || "",
+            },
+            correctAnswer: correctAnswerLetter,
+            explanation: variantToUpdate.explanation?.trim() || explanation?.trim() || "",
+          };
+          
+          await questionsAPI.updateFlaggedVariant(idToUse, updateData);
+          showSuccessToast("Variant updated successfully and sent to processor for review!");
+          shouldRedirect = true;
+          redirectPath = "/admin/question-bank/pending-creator";
+          setIsSubmitting(false);
+          if (shouldRedirect) {
+            navigate(redirectPath);
+          }
+          return;
+        }
 
       // Validate variants - check if any variant is incomplete
-      // If there are any variants in the array, they must all be complete
       if (variants.length > 0) {
         const incompleteVariants = variants.filter((variant) => {
-          // Check if variant has question text
           const hasQuestionText = variant.questionText && variant.questionText.trim() !== "";
           if (!hasQuestionText) {
-            // Empty variant - incomplete
             return true;
           }
           
-          // If variant has question text, validate it's complete
           const questionType = variant.questionType;
           const isTrueFalse = questionType === "True/False";
           
           if (isTrueFalse) {
-            // True/False: options A and B are auto-filled, just need correctAnswer
             return !variant.correctAnswer || (variant.correctAnswer !== "True" && variant.correctAnswer !== "False");
           } else {
-            // MCQ: need all options (A, B, C, D) and correctAnswer
             const hasAllOptions = variant.options.A?.trim() && 
                                  variant.options.B?.trim() && 
                                  variant.options.C?.trim() && 
@@ -425,34 +383,27 @@ const CreatorVariantsPage = () => {
         }
       }
 
-      // Filter out empty variants (variants with no question text)
-      // Creating variants is OPTIONAL - if no variants are created, we still submit the question
+      // Filter out empty variants
       const validVariants = variants.filter(
         (variant) => variant.questionText && variant.questionText.trim() !== ""
       );
 
       // If there are valid variants, create them first
       if (validVariants.length > 0) {
-        // Create all variants
         const variantPromises = validVariants.map((variant) => {
-          // Convert question type from display format to API format
           const questionTypeMap = {
             "Multiple Choice (MCQ)": "MCQ",
             "True/False": "TRUE_FALSE",
           };
           const apiQuestionType = questionTypeMap[variant.questionType] || "MCQ";
           
-          // Extract correct answer - handle True/False differently
           let correctAnswerLetter;
           if (apiQuestionType === "TRUE_FALSE") {
-            // Map "True" to "A" and "False" to "B"
             correctAnswerLetter = variant.correctAnswer === "True" ? "A" : "B";
           } else {
-            // Extract correct answer letter from "Option A" format
             correctAnswerLetter = variant.correctAnswer.replace("Option ", "").trim();
           }
 
-          // Use classification IDs from state (or fallback to original question)
           const variantExamId = examId || (typeof originalQuestion?.exam === 'string' 
             ? originalQuestion.exam 
             : (originalQuestion?.exam?.id || originalQuestion?.examId || null));
@@ -477,27 +428,18 @@ const CreatorVariantsPage = () => {
             subject: variantSubjectId,
             topic: variantTopicId,
             explanation: explanation?.trim() || "",
-            // Note: source/reference is not stored in database, so not included in variantData
           };
 
           return questionsAPI.createQuestionVariant(idToUse, variantData).catch((error) => {
-            // Wrap error to include variant context
             const errorMsg = error?.message || error?.response?.data?.message || "Failed to create variant";
             throw new Error(`Failed to create variant: ${errorMsg}`);
           });
         });
 
-        // Wait for all variants to be created
-        // If any fail, Promise.all will reject with the first error
         await Promise.all(variantPromises);
-        // Note: Server-side automatically updates original question status to 'pending_processor' when variants are created
-        // So we should NOT try to submit again - the server already handled it
-        
-        // Show success message
         showSuccessToast(`Successfully created ${validVariants.length} variant(s)!`);
         shouldRedirect = true;
-        // Redirect to question bank page after creating variants
-        redirectPath = "/creator/question-bank";
+        redirectPath = "/admin/question-bank/pending-creator";
       } else {
         // No variants created - submit the question explicitly
         try {
@@ -505,21 +447,18 @@ const CreatorVariantsPage = () => {
           showSuccessToast("Question submitted successfully (no variants created).");
           shouldRedirect = true;
         } catch (submitError) {
-          // If submitQuestionByCreator fails, try alternative method
           console.warn("Primary submit method failed, trying alternative:", submitError);
           try {
             await questionsAPI.updateQuestion(idToUse, { status: 'pending_processor' });
             showSuccessToast("Question submitted successfully (no variants created).");
             shouldRedirect = true;
           } catch (altError) {
-            // If both methods fail, throw the error
             throw new Error(altError.message || "Failed to submit question. Please try again.");
           }
         }
       }
     } catch (error) {
       console.error("Error submitting question:", error);
-      // Extract error message - handle both string and object errors
       let errorMessage = "Failed to submit question. Please try again.";
       if (error.message) {
         errorMessage = error.message;
@@ -531,7 +470,6 @@ const CreatorVariantsPage = () => {
       showErrorToast(errorMessage);
     } finally {
       setIsSubmitting(false);
-      // Redirect only if everything succeeded
       if (shouldRedirect) {
         navigate(redirectPath);
       }
@@ -618,41 +556,186 @@ const CreatorVariantsPage = () => {
     fetchTopics();
   }, [subjectId]);
 
-  // Fetch question data if not provided in location state
+  // Fetch question data
   useEffect(() => {
     const fetchQuestion = async () => {
-      if (!originalQuestion && questionId) {
-        try {
-          setLoading(true);
-          const response = await questionsAPI.getCreatorQuestionById(questionId);
+      if (!questionId) {
+        showErrorToast("Question ID is missing");
+        navigate("/admin/question-bank/pending-creator");
+        return;
+      }
+
+      try {
+        setLoading(true);
+        let response;
+        
+        if (isSuperAdmin) {
+          // SuperAdmin uses admin API
+          response = await adminAPI.getQuestionDetails(questionId);
+          if (response.success && response.data?.question) {
+            const question = response.data.question;
+            const transformedQuestion = {
+              ...question,
+              questionText: question.questionText || question.question?.text,
+              questionType: question.questionType || question.question?.type,
+              options: question.options || question.question?.options,
+              correctAnswer: question.correctAnswer || question.question?.correctAnswer,
+              explanation: question.explanation,
+              exam: question.exam || question.classification?.exam,
+              subject: question.subject || question.classification?.subject,
+              topic: question.topic || question.classification?.topic,
+            };
+            setOriginalQuestion(transformedQuestion);
+            
+            // Set state from transformed question
+            setQuestionText(transformedQuestion.questionText || "");
+            let displayQuestionType = "Multiple Choice (MCQ)";
+            if (transformedQuestion.questionType === "MCQ") {
+              displayQuestionType = "Multiple Choice (MCQ)";
+            } else if (transformedQuestion.questionType === "TRUE_FALSE") {
+              displayQuestionType = "True/False";
+            }
+            setQuestionType(displayQuestionType);
+            setOptions(transformedQuestion.options || { A: "", B: "", C: "", D: "" });
+            
+            let displayCorrectAnswer = "Option A";
+            if (transformedQuestion.correctAnswer) {
+              const correctAnswerLetter = getCorrectAnswerLetter(transformedQuestion.correctAnswer);
+              if (transformedQuestion.questionType === "TRUE_FALSE") {
+                displayCorrectAnswer = correctAnswerLetter === "A" ? "True" : "False";
+              } else {
+                displayCorrectAnswer = correctAnswerLetter ? `Option ${correctAnswerLetter}` : "Option A";
+              }
+            }
+            setCorrectAnswer(displayCorrectAnswer);
+            
+            // Set classification
+            if (transformedQuestion.exam) {
+              const examIdValue = typeof transformedQuestion.exam === 'string' ? transformedQuestion.exam : (transformedQuestion.exam?.id || transformedQuestion.examId);
+              const examNameValue = typeof transformedQuestion.exam === 'string' ? "" : (transformedQuestion.exam?.name || "");
+              setExamId(examIdValue || "");
+              setExamName(examNameValue || "");
+            }
+            if (transformedQuestion.subject) {
+              const subjectIdValue = typeof transformedQuestion.subject === 'string' ? transformedQuestion.subject : (transformedQuestion.subject?.id || transformedQuestion.subjectId);
+              const subjectNameValue = typeof transformedQuestion.subject === 'string' ? "" : (transformedQuestion.subject?.name || "");
+              setSubjectId(subjectIdValue || "");
+              setSubjectName(subjectNameValue || "");
+            }
+            if (transformedQuestion.topic) {
+              const topicIdValue = typeof transformedQuestion.topic === 'string' ? transformedQuestion.topic : (transformedQuestion.topic?.id || transformedQuestion.topicId);
+              const topicNameValue = typeof transformedQuestion.topic === 'string' ? "" : (transformedQuestion.topic?.name || "");
+              setTopicId(topicIdValue || "");
+              setTopicName(topicNameValue || "");
+            }
+            setExplanation(transformedQuestion.explanation || "");
+            setQuestionIdDisplay(transformedQuestion.id || questionId);
+            
+            // Fetch existing variants
+            if (transformedQuestion.variants && transformedQuestion.variants.length > 0) {
+              setVariants(transformedQuestion.variants.map((v, idx) => {
+                const variantCorrectAnswerLetter = getCorrectAnswerLetter(v.correctAnswer);
+                let variantDisplayCorrectAnswer = "Option A";
+                if (variantCorrectAnswerLetter) {
+                  if (v.questionType === "TRUE_FALSE") {
+                    variantDisplayCorrectAnswer = variantCorrectAnswerLetter === "A" ? "True" : "False";
+                  } else {
+                    variantDisplayCorrectAnswer = `Option ${variantCorrectAnswerLetter}`;
+                  }
+                }
+                return {
+                  id: v.id || idx + 1,
+                  questionText: v.questionText || "",
+                  questionType: v.questionType === "MCQ" ? "Multiple Choice (MCQ)" : v.questionType === "TRUE_FALSE" ? "True/False" : "Multiple Choice (MCQ)",
+                  options: v.options || { A: "", B: "", C: "", D: "" },
+                  correctAnswer: variantDisplayCorrectAnswer,
+                  explanation: v.explanation || "",
+                };
+              }));
+            } else {
+              // Try to fetch variants separately
+              try {
+                const statusesToFetch = ['pending_creator', 'pending_processor', 'completed', 'rejected'];
+                const allQuestions = [];
+                
+                for (const status of statusesToFetch) {
+                  try {
+                    const variantResponse = await questionsAPI.getCreatorQuestions({ status });
+                    if (variantResponse.success && variantResponse.data?.questions) {
+                      allQuestions.push(...variantResponse.data.questions);
+                    }
+                  } catch (err) {
+                    // Ignore errors
+                  }
+                }
+                
+                const questionIdStr = String(questionId);
+                const relatedVariants = allQuestions.filter(
+                  (q) => {
+                    const isVariant = q.isVariant === true || q.isVariant === 'true';
+                    const originalId = q.originalQuestionId || q.originalQuestion;
+                    return isVariant && originalId && String(originalId) === questionIdStr;
+                  }
+                );
+                
+                if (relatedVariants.length > 0) {
+                  setVariants(relatedVariants.map((v, idx) => {
+                    const variantCorrectAnswerLetter = getCorrectAnswerLetter(v.correctAnswer);
+                    let variantDisplayCorrectAnswer = "Option A";
+                    if (variantCorrectAnswerLetter) {
+                      if (v.questionType === "TRUE_FALSE") {
+                        variantDisplayCorrectAnswer = variantCorrectAnswerLetter === "A" ? "True" : "False";
+                      } else {
+                        variantDisplayCorrectAnswer = `Option ${variantCorrectAnswerLetter}`;
+                      }
+                    }
+                    return {
+                      id: v.id || idx + 1,
+                      questionText: v.questionText || "",
+                      questionType: v.questionType === "MCQ" ? "Multiple Choice (MCQ)" : v.questionType === "TRUE_FALSE" ? "True/False" : "Multiple Choice (MCQ)",
+                      options: v.options || { A: "", B: "", C: "", D: "" },
+                      correctAnswer: variantDisplayCorrectAnswer,
+                      explanation: v.explanation || "",
+                    };
+                  }));
+                }
+              } catch (variantError) {
+                console.warn("Could not fetch variants:", variantError);
+              }
+            }
+          } else {
+            showErrorToast("Failed to load question");
+            navigate("/admin/question-bank/pending-creator");
+          }
+        } else {
+          // Regular admin uses creator API
+          response = await questionsAPI.getCreatorQuestionById(questionId);
+          
           if (response.success && response.data?.question) {
             const question = response.data.question;
             setOriginalQuestion(question);
             setQuestionText(question.questionText || "");
-            // Map question type from API format to display format
             let displayQuestionType = "Multiple Choice (MCQ)";
             if (question.questionType === "MCQ") {
               displayQuestionType = "Multiple Choice (MCQ)";
             } else if (question.questionType === "TRUE_FALSE") {
               displayQuestionType = "True/False";
-            } else if (question.questionType) {
-              displayQuestionType = question.questionType;
             }
             setQuestionType(displayQuestionType);
             setOptions(question.options || { A: "", B: "", C: "", D: "" });
-            // Map correct answer based on question type
+            
             let displayCorrectAnswer = "Option A";
             if (question.correctAnswer) {
+              const correctAnswerLetter = getCorrectAnswerLetter(question.correctAnswer);
               if (question.questionType === "TRUE_FALSE") {
-                // Map A to "True", B to "False"
-                displayCorrectAnswer = question.correctAnswer === "A" ? "True" : "False";
+                displayCorrectAnswer = correctAnswerLetter === "A" ? "True" : "False";
               } else {
-                // For MCQ, use "Option A" format
-                displayCorrectAnswer = `Option ${question.correctAnswer}`;
+                displayCorrectAnswer = correctAnswerLetter ? `Option ${correctAnswerLetter}` : "Option A";
               }
             }
             setCorrectAnswer(displayCorrectAnswer);
-            // Set classification with IDs
+            
+            // Set classification
             if (question.exam) {
               const examIdValue = typeof question.exam === 'string' ? question.exam : (question.exam?.id || question.examId);
               const examNameValue = typeof question.exam === 'string' ? "" : (question.exam?.name || "");
@@ -673,50 +756,75 @@ const CreatorVariantsPage = () => {
             }
             setExplanation(question.explanation || "");
             setQuestionIdDisplay(question.id || questionId);
+            
+            // Fetch variants
+            try {
+              const statusesToFetch = ['pending_creator', 'pending_processor', 'completed', 'rejected'];
+              const allQuestions = [];
+              
+              for (const status of statusesToFetch) {
+                try {
+                  const variantResponse = await questionsAPI.getCreatorQuestions({ status });
+                  if (variantResponse.success && variantResponse.data?.questions) {
+                    allQuestions.push(...variantResponse.data.questions);
+                  }
+                } catch (err) {
+                  // Ignore errors
+                }
+              }
+              
+              const questionIdStr = String(questionId);
+              const relatedVariants = allQuestions.filter(
+                (q) => {
+                  const isVariant = q.isVariant === true || q.isVariant === 'true';
+                  const originalId = q.originalQuestionId || q.originalQuestion;
+                  return isVariant && originalId && String(originalId) === questionIdStr;
+                }
+              );
+              
+              if (relatedVariants.length > 0) {
+                setVariants(relatedVariants.map((v, idx) => {
+                  const variantCorrectAnswerLetter = getCorrectAnswerLetter(v.correctAnswer);
+                  let variantDisplayCorrectAnswer = "Option A";
+                  if (variantCorrectAnswerLetter) {
+                    if (v.questionType === "TRUE_FALSE") {
+                      variantDisplayCorrectAnswer = variantCorrectAnswerLetter === "A" ? "True" : "False";
+                    } else {
+                      variantDisplayCorrectAnswer = `Option ${variantCorrectAnswerLetter}`;
+                    }
+                  }
+                  return {
+                    id: v.id || idx + 1,
+                    questionText: v.questionText || "",
+                    questionType: v.questionType === "MCQ" ? "Multiple Choice (MCQ)" : v.questionType === "TRUE_FALSE" ? "True/False" : "Multiple Choice (MCQ)",
+                    options: v.options || { A: "", B: "", C: "", D: "" },
+                    correctAnswer: variantDisplayCorrectAnswer,
+                    explanation: v.explanation || "",
+                  };
+                }));
+              }
+            } catch (variantError) {
+              console.warn("Could not fetch variants:", variantError);
+            }
+          } else {
+            showErrorToast("Failed to load question");
+            navigate("/admin/question-bank/pending-creator");
           }
-        } catch (error) {
-          console.error("Error fetching question:", error);
-        } finally {
-          setLoading(false);
         }
-      } else if (originalQuestion) {
-        // If question data was passed, use it to set question ID display and classification
-        setQuestionIdDisplay(originalQuestion.id || questionId || "QB-1442");
-        // Set classification with IDs from original question
-        if (originalQuestion.exam) {
-          const examIdValue = typeof originalQuestion.exam === 'string' ? originalQuestion.exam : (originalQuestion.exam?.id || originalQuestion.examId);
-          const examNameValue = typeof originalQuestion.exam === 'string' ? "" : (originalQuestion.exam?.name || "");
-          setExamId(examIdValue || "");
-          setExamName(examNameValue || "");
-        }
-        if (originalQuestion.subject) {
-          const subjectIdValue = typeof originalQuestion.subject === 'string' ? originalQuestion.subject : (originalQuestion.subject?.id || originalQuestion.subjectId);
-          const subjectNameValue = typeof originalQuestion.subject === 'string' ? "" : (originalQuestion.subject?.name || "");
-          setSubjectId(subjectIdValue || "");
-          setSubjectName(subjectNameValue || "");
-        }
-        if (originalQuestion.topic) {
-          const topicIdValue = typeof originalQuestion.topic === 'string' ? originalQuestion.topic : (originalQuestion.topic?.id || originalQuestion.topicId);
-          const topicNameValue = typeof originalQuestion.topic === 'string' ? "" : (originalQuestion.topic?.name || "");
-          setTopicId(topicIdValue || "");
-          setTopicName(topicNameValue || "");
-        }
+      } catch (error) {
+        console.error("Error fetching question:", error);
+        showErrorToast(error.response?.data?.message || "Failed to load question");
+        navigate("/admin/question-bank/pending-creator");
+      } finally {
         setLoading(false);
       }
     };
 
     fetchQuestion();
-  }, [questionId, originalQuestion]);
+  }, [questionId, navigate, isSuperAdmin]);
 
   const handleCancel = () => {
-    navigate("/creator/question-bank");
-  };
-
-  const handleSaveQuestion = () => {
-    // TODO: Implement save question functionality
-    console.log("Save question");
-    // Navigate to question details page after saving
-    navigate("/admin/question-details");
+    navigate("/admin/question-bank/pending-creator");
   };
 
   const handleFlagClick = () => {
@@ -739,7 +847,6 @@ const CreatorVariantsPage = () => {
       return;
     }
 
-    // Check if question is in the correct status for flagging
     const questionStatus = originalQuestion?.status;
     if (questionStatus !== 'pending_creator') {
       showErrorToast("This question cannot be flagged. Only questions in 'Pending' status can be flagged.");
@@ -752,14 +859,9 @@ const CreatorVariantsPage = () => {
       const idToUse = questionId || originalQuestion?.id;
       await questionsAPI.flagQuestion(idToUse, flagReason);
       
-      // Show success message
       showSuccessToast("Question flagged successfully and sent to processor for review!");
-      
-      // Close modal and reset
       handleFlagClose();
-      
-      // Navigate to question bank page
-      navigate("/creator/question-bank");
+      navigate("/admin/question-bank/pending-creator");
     } catch (error) {
       console.error("Error flagging question:", error);
       showErrorToast(error.message || "Failed to flag question. Please try again.");
@@ -768,6 +870,47 @@ const CreatorVariantsPage = () => {
     }
   };
 
+  const handleRejectFlagClick = () => {
+    setIsRejectFlagModalOpen(true);
+  };
+
+  const handleRejectFlagClose = () => {
+    setIsRejectFlagModalOpen(false);
+    setFlagRejectionReason("");
+  };
+
+  const handleRejectFlagSubmit = async () => {
+    if (!flagRejectionReason.trim()) {
+      showErrorToast("Please enter a reason for rejecting the flag.");
+      return;
+    }
+
+    if (!questionId && !originalQuestion?.id) {
+      showErrorToast("Question ID is missing. Cannot reject flag.");
+      return;
+    }
+
+    if (!isFlagged) {
+      showErrorToast("This question is not flagged.");
+      handleRejectFlagClose();
+      return;
+    }
+
+    try {
+      setIsRejectingFlag(true);
+      const idToUse = questionId || originalQuestion?.id;
+      await questionsAPI.rejectFlagByCreator(idToUse, flagRejectionReason);
+      
+      showSuccessToast("Flag rejected successfully. Question sent back to processor for review!");
+      handleRejectFlagClose();
+      navigate("/admin/question-bank/pending-creator");
+    } catch (error) {
+      console.error("Error rejecting flag:", error);
+      showErrorToast(error.message || "Failed to reject flag. Please try again.");
+    } finally {
+      setIsRejectingFlag(false);
+    }
+  };
 
   return (
     <>
@@ -836,16 +979,16 @@ const CreatorVariantsPage = () => {
           min-height: 150px;
         }
       `}</style>
-      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 lg:px-8 pb-24 relative">
+      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 lg:px-8 pb-24 relative" dir={dir}>
         <div className="mx-auto max-w-[1200px]">
           {/* Header */}
           <header className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center mb-10">
             <div>
               <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
-                {t("creator.createVariants.title")}
+                {t("admin.questionBank.pendingCreator.viewQuestion.title") || "Create Variants"}
               </h1>
               <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
-                {loading ? "Loading question..." : `Questions ID: ${questionIdDisplay}`}
+                {loading ? "Loading question..." : `Question ID: ${questionIdDisplay}`}
               </p>
             </div>
             {!isEditMode && (
@@ -870,8 +1013,43 @@ const CreatorVariantsPage = () => {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
             {/* Left Column - Question Details (2/3 width on xl screens) */}
             <div className="xl:col-span-2 space-y-[30px]">
+              {/* Flag Alert Banner - Show when variant is flagged */}
+              {isFlagged && (
+                <div className="rounded-[12px] border-2 border-orange-500 bg-orange-50 pt-[20px] px-[30px] pb-[30px] w-full">
+                  <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[32px] text-orange-700">
+                    {t("creator.flaggedVariant.title") || "Flagged Variant"}
+                  </h2>
+                  <div className="mb-4">
+                    <p className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280] mb-2">
+                      {flagType === 'student'
+                        ? (t("creator.flaggedVariant.descriptionStudent") || "This variant has been flagged by a student with the following reason:")
+                        : flagType === 'explainer'
+                        ? (t("creator.flaggedVariant.descriptionExplainer") || "This variant has been flagged by an explainer with the following reason:")
+                        : (t("creator.flaggedVariant.description") || "This variant has been flagged with the following reason:")}
+                    </p>
+                  </div>
+                  <div
+                    className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue whitespace-pre-wrap bg-white p-4 rounded-lg border border-orange-200 mb-4"
+                    dir="ltr"
+                  >
+                    {originalQuestion?.flagReason || "No reason provided"}
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={handleRejectFlagClick}
+                      className="flex h-[36px] items-center justify-center rounded-[8px] border border-orange-600 bg-white px-4 text-[14px] font-archivo font-semibold leading-[16px] text-orange-600 transition hover:bg-orange-50"
+                    >
+                      {t("creator.flaggedVariant.rejectFlag") || "Reject Flag"}
+                    </button>
+                    <p className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280] flex items-center">
+                      {t("creator.flaggedVariant.updateHint") || "Update the variant below and click 'Update Variant' to fix the issue."}
+                    </p>
+                  </div>
+                </div>
+              )}
               {!isEditMode && (
-              <div className=" bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
+              <div className="bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
                 <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark mb-[30px]">
                   Original Question
                 </h2>
@@ -885,16 +1063,14 @@ const CreatorVariantsPage = () => {
                     <RichTextEditor
                       value={questionText}
                       onChange={setQuestionText}
-                      placeholder={t(
-                        "creator.createVariants.placeholders.questionText"
-                      )}
+                      placeholder={t("creator.createVariants.placeholders.questionText")}
                       minHeight="200px"
                     />
                   </div>
 
                   {/* Question Type */}
                   <div>
-                    <label className="block  text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                    <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                       {t("creator.createVariants.fields.questionType")}
                     </label>
                     <Dropdown
@@ -907,7 +1083,7 @@ const CreatorVariantsPage = () => {
                     />
                   </div>
 
-                  {/* Options Grid - Show 2 options for True/False, 4 for MCQ */}
+                  {/* Options Grid */}
                   {questionType === "True/False" ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
@@ -943,9 +1119,7 @@ const CreatorVariantsPage = () => {
                         <input
                           type="text"
                           value={options.A}
-                          onChange={(e) =>
-                            handleOptionChange("A", e.target.value)
-                          }
+                          onChange={(e) => handleOptionChange("A", e.target.value)}
                           className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                         />
                       </div>
@@ -956,9 +1130,7 @@ const CreatorVariantsPage = () => {
                         <input
                           type="text"
                           value={options.C}
-                          onChange={(e) =>
-                            handleOptionChange("C", e.target.value)
-                          }
+                          onChange={(e) => handleOptionChange("C", e.target.value)}
                           className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                         />
                       </div>
@@ -971,9 +1143,7 @@ const CreatorVariantsPage = () => {
                         <input
                           type="text"
                           value={options.B}
-                          onChange={(e) =>
-                            handleOptionChange("B", e.target.value)
-                          }
+                          onChange={(e) => handleOptionChange("B", e.target.value)}
                           className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                         />
                       </div>
@@ -984,9 +1154,7 @@ const CreatorVariantsPage = () => {
                         <input
                           type="text"
                           value={options.D}
-                          onChange={(e) =>
-                            handleOptionChange("D", e.target.value)
-                          }
+                          onChange={(e) => handleOptionChange("D", e.target.value)}
                           className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                         />
                       </div>
@@ -1022,13 +1190,13 @@ const CreatorVariantsPage = () => {
               </div>
               )}
 
-                {/* Variants - Dynamically rendered - Only show if variants exist */}
-                {variants.length > 0 && variants.map((variant, index) => (
-                <div key={variant.id} className=" bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
+              {/* Variants */}
+              {variants.length > 0 && variants.map((variant, index) => (
+                <div key={variant.id} className="bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
                   <div className="flex items-center justify-between mb-[30px]">
                     <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark">
-                    Variant # {index + 1}
-                  </h2>
+                      Variant #{index + 1}
+                    </h2>
                     <button
                       type="button"
                       onClick={() => handleDeleteVariant(variant.id)}
@@ -1062,16 +1230,14 @@ const CreatorVariantsPage = () => {
                       <RichTextEditor
                         value={variant.questionText}
                         onChange={(value) => handleVariantQuestionTextChange(variant.id, value)}
-                        placeholder={t(
-                          "creator.createVariants.placeholders.questionText"
-                        )}
+                        placeholder={t("creator.createVariants.placeholders.questionText")}
                         minHeight="200px"
                       />
                     </div>
 
                     {/* Question Type */}
                     <div>
-                      <label className="block  text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                         {t("creator.createVariants.fields.questionType")}
                       </label>
                       <Dropdown
@@ -1084,7 +1250,7 @@ const CreatorVariantsPage = () => {
                       />
                     </div>
 
-                    {/* Options Grid - Show 2 options for True/False, 4 for MCQ */}
+                    {/* Options Grid */}
                     {variant.questionType === "True/False" ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -1120,9 +1286,7 @@ const CreatorVariantsPage = () => {
                           <input
                             type="text"
                             value={variant.options.A}
-                            onChange={(e) =>
-                              handleVariantOptionChange(variant.id, "A", e.target.value)
-                            }
+                            onChange={(e) => handleVariantOptionChange(variant.id, "A", e.target.value)}
                             className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                           />
                         </div>
@@ -1133,9 +1297,7 @@ const CreatorVariantsPage = () => {
                           <input
                             type="text"
                             value={variant.options.C}
-                            onChange={(e) =>
-                              handleVariantOptionChange(variant.id, "C", e.target.value)
-                            }
+                            onChange={(e) => handleVariantOptionChange(variant.id, "C", e.target.value)}
                             className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                           />
                         </div>
@@ -1148,9 +1310,7 @@ const CreatorVariantsPage = () => {
                           <input
                             type="text"
                             value={variant.options.B}
-                            onChange={(e) =>
-                              handleVariantOptionChange(variant.id, "B", e.target.value)
-                            }
+                            onChange={(e) => handleVariantOptionChange(variant.id, "B", e.target.value)}
                             className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                           />
                         </div>
@@ -1161,9 +1321,7 @@ const CreatorVariantsPage = () => {
                           <input
                             type="text"
                             value={variant.options.D}
-                            onChange={(e) =>
-                              handleVariantOptionChange(variant.id, "D", e.target.value)
-                            }
+                            onChange={(e) => handleVariantOptionChange(variant.id, "D", e.target.value)}
                             className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
                           />
                         </div>
@@ -1210,10 +1368,10 @@ const CreatorVariantsPage = () => {
                 {/* Exam */}
                 <div>
                   <Dropdown
-                      label={t('gatherer.addNewQuestion.classification.exam')}
+                    label={t('gatherer.addNewQuestion.classification.exam')}
                     value={examName}
                     onChange={handleExamChange}
-                      placeholder="Select exam"
+                    placeholder="Select exam"
                     options={
                       loadingExams
                         ? [t('gatherer.addNewQuestion.messages.loading')]
@@ -1227,10 +1385,10 @@ const CreatorVariantsPage = () => {
                 {/* Subject */}
                 <div>
                   <Dropdown
-                      label={t('gatherer.addNewQuestion.classification.subject')}
+                    label={t('gatherer.addNewQuestion.classification.subject')}
                     value={subjectName}
                     onChange={handleSubjectChange}
-                      placeholder="Select subject"
+                    placeholder="Select subject"
                     options={
                       !examId
                         ? [t('gatherer.addNewQuestion.messages.selectExamFirst')]
@@ -1246,10 +1404,10 @@ const CreatorVariantsPage = () => {
                 {/* Topic */}
                 <div>
                   <Dropdown
-                      label={t('gatherer.addNewQuestion.classification.topic')}
+                    label={t('gatherer.addNewQuestion.classification.topic')}
                     value={topicName}
                     onChange={handleTopicChange}
-                      placeholder="Select topic"
+                    placeholder="Select topic"
                     options={
                       !subjectId
                         ? [t('gatherer.addNewQuestion.messages.selectSubjectFirst')]
@@ -1262,15 +1420,15 @@ const CreatorVariantsPage = () => {
                   />
                 </div>
 
-                  {/* Reference */}
+                {/* Reference */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                      Reference
+                    Reference
                   </label>
                   <Dropdown
                     value={source}
                     onChange={setSource}
-                      placeholder="Select Reference"
+                    placeholder="Select Reference"
                     options={[
                       t("creator.createVariants.sources.textbook"),
                       t("creator.createVariants.sources.pastExam"),
@@ -1278,7 +1436,6 @@ const CreatorVariantsPage = () => {
                     ]}
                   />
                 </div>
-
               </div>
             </div>
           </div>
@@ -1286,14 +1443,17 @@ const CreatorVariantsPage = () => {
         </div>
       </div>
       
-      {/* Sticky Footer Buttons - Only within page content */}
+      {/* Sticky Footer Buttons */}
       <div className="sticky bottom-0 bg-white border-t border-[#E5E7EB] shadow-lg z-40 mt-6 overflow-x-hidden">
         <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:justify-end gap-3 py-4">
-            <OutlineButton text={t("creator.createVariants.cancel")} className="py-[10px] px-7 text-nowrap" onClick={handleCancel} />
-            {!isEditMode && (
+            <OutlineButton 
+              text={t("creator.createVariants.cancel") || "Cancel"} 
+              className="py-[10px] px-7 text-nowrap" 
+              onClick={handleCancel} 
+            />
+            {!isEditMode && !isFlagged && (
               <>
-                {/* <OutlineButton text={t("creator.createVariants.saveDraft")} className="py-[10px] px-7 text-nowrap" onClick={handleSaveDraft}/> */}
                 <button
                   type="button"
                   onClick={handleFlagClick}
@@ -1303,8 +1463,17 @@ const CreatorVariantsPage = () => {
                 </button>
               </>
             )}
+            {isFlagged && (
+              <button
+                type="button"
+                onClick={handleRejectFlagClick}
+                className="flex h-[36px] items-center justify-center rounded-[8px] border border-orange-600 bg-white px-4 md:px-7 text-[14px] md:text-[16px] font-archivo font-semibold leading-[16px] text-orange-600 transition hover:bg-orange-50 text-nowrap py-[10px]"
+              >
+                {t("creator.flaggedVariant.rejectFlag") || "Reject Flag"}
+              </button>
+            )}
             <PrimaryButton 
-              text={isSubmitting ? (isEditMode ? "Updating..." : "Submitting...") : (isEditMode ? "Update Variant" : t("creator.createVariants.submitVariant"))} 
+              text={isSubmitting ? "Submitting..." : (isFlagged ? (t("creator.createVariants.updateVariant") || "Update Variant") : (t("creator.createVariants.submitVariant") || "Submit Variant"))} 
               className="py-[10px] px-7 text-nowrap"
               onClick={handleSubmit}
               disabled={isSubmitting}
@@ -1357,10 +1526,53 @@ const CreatorVariantsPage = () => {
           </div>
         </div>
       )}
+
+      {/* Reject Flag Modal */}
+      {isRejectFlagModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white rounded-lg shadow-xl max-w-[600px] w-full p-8">
+            <h2 className="text-[24px] leading-[100%] font-bold text-oxford-blue mb-2">
+              {t("creator.flaggedVariant.rejectFlagTitle") || "Reject Flag"}
+            </h2>
+            <p className="text-[16px] leading-[100%] font-normal text-dark-gray mb-6">
+              {t("creator.flaggedVariant.rejectFlagDescription") || "Please provide a reason for rejecting this flag. The question will be sent back to the processor for review."}
+            </p>
+            
+            <div className="mb-6">
+              <label className="block text-[16px] leading-[100%] font-roboto font-normal text-oxford-blue mb-2">
+                {t("creator.flaggedVariant.rejectionReason") || "Reason for Rejecting Flag"}
+              </label>
+              <textarea
+                value={flagRejectionReason}
+                onChange={(e) => setFlagRejectionReason(e.target.value)}
+                placeholder={t("creator.flaggedVariant.rejectionReasonPlaceholder") || "Enter the reason for rejecting this flag..."}
+                className="w-full h-[120px] rounded-[8px] border border-[#03274633] bg-white px-4 py-3 font-roboto text-[16px] leading-[20px] text-oxford-blue outline-none placeholder:text-[#9CA3AF] resize-none focus:border-oxford-blue"
+                disabled={isRejectingFlag}
+              />
+            </div>
+            
+            <div className="flex gap-4">
+              <button
+                onClick={handleRejectFlagClose}
+                disabled={isRejectingFlag}
+                className="flex-1 font-roboto px-4 py-3 border-[0.5px] text-base font-normal border-[#032746] rounded-lg text-blue-dark hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {t("creator.flaggedVariant.cancel") || "Cancel"}
+              </button>
+              
+              <button
+                onClick={handleRejectFlagSubmit}
+                disabled={isRejectingFlag || !flagRejectionReason.trim()}
+                className="flex-1 font-roboto px-4 py-3 bg-[#ED4122] text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#d43a1f]"
+              >
+                {isRejectingFlag ? (t("creator.flaggedVariant.rejecting") || "Rejecting...") : (t("creator.flaggedVariant.submitRejection") || "Submit Rejection")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
 
-export default CreatorVariantsPage;
-
-
+export default AdminPendingCreatorViewQuestion;

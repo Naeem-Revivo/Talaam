@@ -1,8 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
-import { OutlineButton } from "../../components/common/Button";
-import QuestionBankTabs from "../../components/admin/questionBank/QuestionBankTabs";
 import QuestionBankFilters from "../../components/admin/questionBank/QuestionBankFilters";
 import QuestionBankSummaryCards from "../../components/admin/questionBank/QuestionBankSummaryCards";
 import QuestionBankTable from "../../components/admin/questionBank/QuestionBankTable";
@@ -13,12 +11,6 @@ import topicsAPI from "../../api/topics";
 import { showErrorToast } from "../../utils/toastConfig";
 
 const pageSize = 5;
-
-const getTabs = (t) => [
-  { label: t('admin.questionBank.tabs.all'), value: "all" },
-  { label: t('admin.questionBank.tabs.variantPending') || "Pending", value: "pending" },
-  { label: t('admin.questionBank.tabs.rejected'), value: "rejected" },
-];
 
 // Map status to display status
 const mapStatusToDisplay = (status) => {
@@ -54,24 +46,9 @@ const mapStatusToDisplay = (status) => {
   return "Pending";
 };
 
-const getTabCounts = (summary, t) => {
-  const tabs = getTabs(t);
-  const baseCounts = {
-    all: summary?.total || 0,
-    pending: summary?.pending || 0,
-    rejected: summary?.rejected || 0,
-  };
-
-  return tabs.map((tab) => ({
-    ...tab,
-    count: baseCounts[tab.value] ?? 0,
-  }));
-};
-
-const QuestionBankPage = () => {
+const PendingProcessorPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({
     exam: "",
@@ -94,7 +71,7 @@ const QuestionBankPage = () => {
   // Fetch questions from API
   useEffect(() => {
     fetchQuestions();
-  }, [activeTab, search, filters, page]);
+  }, [search, filters, page]);
 
   // Fetch filter options on mount
   useEffect(() => {
@@ -133,7 +110,7 @@ const QuestionBankPage = () => {
     try {
       setLoading(true);
       const params = {
-        tab: activeTab,
+        status: "pending_processor",
         page,
         limit: pageSize,
       };
@@ -142,26 +119,6 @@ const QuestionBankPage = () => {
       if (filters.exam && filters.exam.trim()) params.exam = filters.exam.trim();
       if (filters.subject && filters.subject.trim()) params.subject = filters.subject.trim();
       if (filters.topic && filters.topic.trim()) params.topic = filters.topic.trim();
-      if (filters.status) {
-        // Map display status back to API status
-        if (filters.status === "Pending") {
-          // Don't set status, let tab handle it (tab will filter by pending_* statuses)
-        } else if (filters.status === "Approved") {
-          params.status = "completed";
-        } else if (filters.status === "Rejected") {
-          params.status = "rejected";
-        } else if (filters.status === "Sent Back") {
-          // "Sent Back" is not a valid API status, so don't send it
-          // This will show all questions and we can filter client-side if needed
-          // For now, just don't apply status filter for "Sent Back"
-        } else {
-          // Only send if it's a valid API status value
-          const validApiStatuses = ['pending_processor', 'pending_creator', 'pending_explainer', 'completed', 'rejected'];
-          if (validApiStatuses.includes(filters.status)) {
-            params.status = filters.status;
-          }
-        }
-      }
 
       const response = await adminAPI.getAllQuestions(params);
       
@@ -242,7 +199,7 @@ const QuestionBankPage = () => {
     () => [
       {
         label: t('admin.questionBank.stats.totalQuestions'),
-        value: summary.total || 0,
+        value: total || 0,
         iconBg: "#FFF1E6",
       icon: (
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -254,45 +211,9 @@ const QuestionBankPage = () => {
         </svg>
       ),
       },
-      {
-        label: t('admin.questionBank.stats.pending'),
-        value: summary.pending || 0,
-        iconBg: "#E8F3FF",
-      icon: (
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="40" height="40" rx="6" fill="#ED4122" />
-          <path
-            d="M25.49 16.8601L20.02 20L14.52 16.8601C13.58 16.3301 13 16 13 14.26V12.5C13 11.67 13.67 11 14.5 11H25.5C26.33 11 27 11.67 27 12.5V14.26C27 16 26.42 16.3301 25.49 16.8601ZM13 25.74V27.5C13 28.33 13.67 29 14.5 29H25.5C26.33 29 27 28.33 27 27.5V25.74C27 24 26.42 23.6699 25.49 23.1399L20.02 20L14.52 23.1399C13.58 23.6699 13 24 13 25.74Z"
-            fill="white"
-          />
-        </svg>
-      ),
-      },
-      {
-        label: t('admin.questionBank.stats.approved'),
-        value: summary.approved || 0,
-        iconBg: "#E8F7F0",
-      labelClassName: "text-[#ED4122]",
-      icon: (
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="40" height="40" rx="6" fill="#ED4122" />
-          <path
-            d="M20 10C14.48 10 10 14.48 10 20C10 25.52 14.48 30 20 30C25.52 30 30 25.52 30 20C30 14.48 25.52 10 20 10ZM24.03 18.2L19.36 22.86C19.22 23.01 19.03 23.08 18.83 23.08C18.64 23.08 18.45 23.01 18.3 22.86L15.97 20.53C15.68 20.24 15.68 19.76 15.97 19.47C16.26 19.18 16.74 19.18 17.03 19.47L18.83 21.27L22.97 17.14C23.26 16.84 23.74 16.84 24.03 17.14C24.32 17.43 24.32 17.9 24.03 18.2Z"
-            fill="white"
-          />
-        </svg>
-      ),
-      },
     ],
-    [t, summary]
+    [t, total]
   );
-
-  const tabDefinitions = useMemo(() => getTabCounts(summary, t), [summary, t]);
-
-  const handleTabChange = (value) => {
-    setActiveTab(value);
-    setPage(1);
-  };
 
   const handleSearchChange = (value) => {
     setSearch(value);
@@ -373,60 +294,19 @@ const QuestionBankPage = () => {
     setPage(1);
   };
 
-  const handleImport = () => {
-    // TODO: integrate import flow
-  };
-
-  const handleExport = () => {
-    // TODO: integrate export flow
-  };
-
   return (
     <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 2xl:px-0">
       <div className="mx-auto flex max-w-[1200px] flex-col gap-6">
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div className="space-y-2">
             <h1 className="font-archivo text-[36px] font-bold leading-[40px] text-oxford-blue">
-              {t('admin.questionBank.hero.title')}
+              {t('admin.questionBank.pendingProcessor.title')}
             </h1>
             <p className="font-roboto text-[18px] leading-[28px] text-[#6B7280]">
-              {t('admin.questionBank.hero.subtitle')}
+              {t('admin.questionBank.pendingProcessor.subtitle')}
             </p>
           </div>
-          <div className="flex flex-wrap gap-4">
-            <OutlineButton
-              text={t('admin.questionBank.actions.sentBackQuestions') || "Sent Back Questions"}
-              onClick={() => navigate("/admin/question-bank/sent-back-questions")}
-              className="h-[36px] px-4"
-            />
-            <button
-              type="button"
-              onClick={() => navigate("/admin/question-bank/add-question")}
-              className="flex h-[36px] items-center justify-center rounded-[10px] bg-[#ED4122] px-4 text-[16px] font-archivo font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
-            >
-              {t('admin.questionBank.actions.addNewQuestion')}
-            </button>
-          </div>
         </header>
-
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <QuestionBankTabs tabs={tabDefinitions} activeTab={activeTab} onChange={handleTabChange} />
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={handleExport}
-              className="flex h-[36px] items-center gap-2 rounded-[8px] border border-[#E5E7EB] bg-white px-4 text-[16px] font-roboto font-medium leading-[16px] text-oxford-blue transition hover:bg-[#F3F4F6]"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M5.10357 3.51181C4.86316 3.2714 4.86316 2.88163 5.10357 2.64122L7.5651 0.179682C7.62172 0.123067 7.68994 0.0779487 7.76542 0.0467692C7.91558 -0.0155898 8.08542 -0.0155898 8.23558 0.0467692C8.31106 0.0779487 8.37908 0.123067 8.4357 0.179682L10.8972 2.64122C11.1376 2.88163 11.1376 3.2714 10.8972 3.51181C10.7774 3.63161 10.6199 3.6923 10.4623 3.6923C10.3048 3.6923 10.1472 3.63243 10.0274 3.51181L8.61619 2.10051V11.2821C8.61619 11.6217 8.34049 11.8974 8.0008 11.8974C7.66111 11.8974 7.38542 11.6217 7.38542 11.2821V2.10131L5.97416 3.51262C5.73293 3.75221 5.34398 3.75223 5.10357 3.51181ZM12.9231 5.74359C12.5834 5.74359 12.3077 6.01928 12.3077 6.35897C12.3077 6.69866 12.5834 6.97436 12.9231 6.97436C14.217 6.97436 14.7692 7.52656 14.7692 8.82051V12.9231C14.7692 14.217 14.217 14.7692 12.9231 14.7692H3.07692C1.78297 14.7692 1.23077 14.217 1.23077 12.9231V8.82051C1.23077 7.52656 1.78297 6.97436 3.07692 6.97436C3.41662 6.97436 3.69231 6.69866 3.69231 6.35897C3.69231 6.01928 3.41662 5.74359 3.07692 5.74359C1.09292 5.74359 0 6.83651 0 8.82051V12.9231C0 14.9071 1.09292 16 3.07692 16H12.9231C14.9071 16 16 14.9071 16 12.9231V8.82051C16 6.83651 14.9071 5.74359 12.9231 5.74359Z"
-                  fill="#032746"
-                />
-              </svg>
-              {t('admin.questionBank.actions.export')}
-            </button>
-          </div>
-        </div>
 
         <QuestionBankFilters
           searchValue={search}
@@ -458,7 +338,7 @@ const QuestionBankPage = () => {
             pageSize={pageSize}
             total={total}
             onPageChange={setPage}
-            onView={(question) => navigate(`/admin/question-bank/question-details?id=${question.id}`)}
+            onView={(question) => navigate(`/admin/question-bank/pending-processor/view?questionId=${question.id}`)}
           />
         )}
       </div>
@@ -466,6 +346,5 @@ const QuestionBankPage = () => {
   );
 };
 
-export default QuestionBankPage;
-
+export default PendingProcessorPage;
 

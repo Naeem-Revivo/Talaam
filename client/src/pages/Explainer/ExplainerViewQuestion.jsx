@@ -160,10 +160,10 @@ const ExplainerViewQuestion = () => {
                           </>
                         ) : (
                           Object.entries(question.options).map(([key, value]) => (
-                            <div key={key} className="p-3 rounded border border-[#E5E7EB] bg-[#F9FAFB]">
-                              <span className="font-roboto text-[14px] font-semibold text-oxford-blue">{key}: </span>
-                              <span className="font-roboto text-[14px] text-dark-gray">{value || "—"}</span>
-                            </div>
+                          <div key={key} className="p-3 rounded border border-[#E5E7EB] bg-[#F9FAFB]">
+                            <span className="font-roboto text-[14px] font-semibold text-oxford-blue">{key}: </span>
+                            <span className="font-roboto text-[14px] text-dark-gray">{value || "—"}</span>
+                          </div>
                           ))
                         )}
                       </div>

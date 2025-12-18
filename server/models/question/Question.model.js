@@ -7,7 +7,7 @@ const Question = {
   // Create a new question
   async create(data) {
     // Handle history and comments if provided
-    const { history, comments, exam, subject, topic, createdBy, assignedProcessor, assignedCreator, assignedExplainer, ...questionData } = data;
+    const { history, comments, exam, subject, topic, createdBy, assignedProcessor, assignedCreator, assignedExplainer, originalQuestion, ...questionData } = data;
     
     // Map relation fields to Prisma format (exam -> examId, etc.)
     const createData = {
@@ -19,6 +19,7 @@ const Question = {
       ...(assignedProcessor && { assignedProcessorId: assignedProcessor }),
       ...(assignedCreator && { assignedCreatorId: assignedCreator }),
       ...(assignedExplainer && { assignedExplainerId: assignedExplainer }),
+      ...(originalQuestion && { originalQuestionId: originalQuestion }),
       ...(history && history.length > 0 && {
         history: {
           create: history.map(h => {

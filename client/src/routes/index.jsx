@@ -38,6 +38,14 @@ import AdminQuestionBankPage from '../pages/admin/QuestionBankPage';
 import QuestionManagementPage from '../pages/admin/QuestionManagementPage';
 import AddNewQuestionPage from '../pages/admin/AddNewQuestionPage';
 import QuestionDetailsPage from '../pages/admin/QuestionDetailsPage';
+import PendingProcessorPage from '../pages/admin/PendingProcessorPage';
+import PendingCreatorPage from '../pages/admin/PendingCreatorPage';
+import PendingExplainerPage from '../pages/admin/PendingExplainerPage';
+import SentBackQuestionsPage from '../pages/admin/SentBackQuestionsPage';
+import AdminPendingProcessorViewQuestion from '../pages/admin/AdminPendingProcessorViewQuestion';
+import AdminPendingCreatorViewQuestion from '../pages/admin/AdminPendingCreatorViewQuestion';
+import AdminPendingExplainerViewQuestion from '../pages/admin/AdminPendingExplainerViewQuestion';
+import AdminSentBackQuestionView from '../pages/admin/AdminSentBackQuestionView';
 import CreateVariantPage from '../pages/admin/CreateVariantPage';
 import VariantQuestionReviewPage from '../pages/admin/VariantQuestionReviewPage';
 import AddSubjectPage from '../pages/admin/AddSubjectPage';
@@ -185,7 +193,15 @@ export const AppRoutes = () => {
           <Route path="classification/edit-subject/:subjectId" element={<EditSubject />} />
           <Route path="classification/edit-topic/:topicId" element={<EditTopic />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
-          <Route path="question-management" element={<QuestionManagementPage />} />
+          <Route path="question-bank/pending-processor" element={<PendingProcessorPage />} />
+          <Route path="question-bank/pending-processor/view" element={<AdminPendingProcessorViewQuestion />} />
+          <Route path="question-bank/pending-creator" element={<PendingCreatorPage />} />
+          <Route path="question-bank/pending-creator/view" element={<AdminPendingCreatorViewQuestion />} />
+                <Route path="question-bank/pending-explainer" element={<PendingExplainerPage />} />
+                <Route path="question-bank/pending-explainer/view" element={<AdminPendingExplainerViewQuestion />} />
+                <Route path="question-bank/sent-back-questions" element={<SentBackQuestionsPage />} />
+                <Route path="question-bank/sent-back-questions/view" element={<AdminSentBackQuestionView />} />
+                <Route path="question-management" element={<QuestionManagementPage />} />
           <Route path="question-bank/add-question" element={<AddNewQuestionPage />} />
           <Route path="question-bank/question-details" element={<QuestionDetailsPage />} />
           <Route path="create-variant" element={<CreateVariantPage />} />

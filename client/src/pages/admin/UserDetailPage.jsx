@@ -335,7 +335,7 @@ const UserDetailPage = () => {
   // Build activity log - include lastLogin if it exists
   const buildActivityLog = () => {
     const log = [];
-    
+
     // Add lastLogin to activity log if it exists
     if (user.lastLogin) {
       const formattedLastLogin = formatLastLogin(user.lastLogin);
@@ -355,7 +355,7 @@ const UserDetailPage = () => {
       const dateA = new Date(a.timestamp || 0);
       const dateB = new Date(b.timestamp || 0);
       return dateB - dateA;
-    });
+        });
   };
 
   const activityLog = buildActivityLog();

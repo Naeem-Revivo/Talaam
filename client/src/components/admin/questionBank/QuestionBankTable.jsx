@@ -74,11 +74,12 @@ const TableRow = ({ question, onView, t, dir }) => {
   return (
     <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row">
       <td className={`px-6 py-4 align-top ${headerConfig[0].widthClass} ${textAlign}`}>
-        <div className={`w-[218px] ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+        <div className={`w-[150px] max-w-[150px] ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
           <p 
-            className="text-[12px] font-roboto leading-[16px] text-oxford-blue break-words"
+            className="text-[12px] font-roboto leading-[16px] text-oxford-blue truncate cursor-help"
             dir="ltr"
-            style={{ wordBreak: 'break-word', lineHeight: '1.4' }}
+            title={question.prompt}
+            style={{ lineHeight: '1.4' }}
           >
             {question.prompt}
           </p>
@@ -103,7 +104,17 @@ const TableRow = ({ question, onView, t, dir }) => {
       </td>
       <td className={`px-6 py-4 text-center ${headerConfig[4].widthClass}`}>
         {question.isFlagged ? (
-          <span className="text-[18px]" title={question.flagReason || "Flagged"}>🚩</span>
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-[18px]">🚩</span>
+            {question.flagReason && (
+              <span 
+                className="text-[10px] text-gray-600 max-w-[100px] truncate cursor-help" 
+                title={question.flagReason}
+              >
+                {question.flagReason.length > 20 ? question.flagReason.substring(0, 20) + '...' : question.flagReason}
+              </span>
+            )}
+          </div>
         ) : (
           <span className="text-[14px] text-gray-400">—</span>
         )}
@@ -200,7 +211,18 @@ const MobileQuestionCard = ({ question, onView, t, dir }) => {
         </div>
         <div>
           <p className="text-dark-gray">{t('admin.questionBank.table.headers.flags') || "Flags"}</p>
-          <p>{question.isFlagged ? "🚩 Flagged" : "—"}</p>
+          {question.isFlagged ? (
+            <div className="flex flex-col gap-1">
+              <p>🚩 Flagged</p>
+              {question.flagReason && (
+                <p className="text-[12px] text-gray-600" title={question.flagReason}>
+                  {question.flagReason.length > 30 ? question.flagReason.substring(0, 30) + '...' : question.flagReason}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p>—</p>
+          )}
         </div>
         <div className="col-span-2">
           <p className="text-dark-gray">{t('admin.questionBank.table.headers.lastAction') || "Last Action"}</p>
