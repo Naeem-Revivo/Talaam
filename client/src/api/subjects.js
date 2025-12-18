@@ -6,14 +6,19 @@ const subjectsAPI = {
   getAllSubjects: async (params = {}) => {
     try {
       // Try student endpoint first, fallback to admin endpoint
-      let response;
       try {
-        response = await axiosClient.get('/student/subjects');
+        const response = await axiosClient.get('/student/subjects');
+        return response.data;
       } catch (studentError) {
-        // Fallback to admin endpoint if student endpoint fails
-        response = await axiosClient.get('/admin/subjects');
+        // Only fallback to admin endpoint if student endpoint fails with non-permission error
+        // If it's a 403/401, don't try admin endpoint as it will also fail
+        if (studentError.response?.status === 403 || studentError.response?.status === 401) {
+          throw studentError;
+        }
+        // Fallback to admin endpoint for other errors
+        const response = await axiosClient.get('/admin/subjects');
+        return response.data;
       }
-      return response.data;
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Failed to fetch subjects' };

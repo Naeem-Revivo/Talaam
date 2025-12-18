@@ -31,16 +31,6 @@ const getCreatorDashboard = async (userId) => {
     },
   });
 
-  // Get all questions assigned to creator in the last 30 days (for calculating sent back rate)
-  const assignedQuestions = await prisma.question.findMany({
-    where: {
-      assignedCreatorId: userId,
-      updatedAt: {
-        gte: thirtyDaysAgo,
-      },
-    },
-  });
-
   // Get variants created by creator in the last 30 days
   const createdVariants = await prisma.question.findMany({
     where: {
@@ -53,28 +43,25 @@ const getCreatorDashboard = async (userId) => {
   });
 
   // Calculate performance metrics
-  // Variant completion rate: variants that moved past pending_creator / total variants created
+  // Variant completion rate: completed variants (status === 'completed') / total variants created
   const totalVariantsCreated = createdVariants.length;
   const completedVariants = createdVariants.filter(v => 
-    v.status !== 'pending_creator' && v.status !== 'rejected'
+    v.status === 'completed'
   ).length;
   const variantCompletionRate = totalVariantsCreated > 0 
     ? Math.round((completedVariants / totalVariantsCreated) * 100) 
     : 0;
 
-  // Sent back rate: questions that are currently pending_creator (sent back) / total questions assigned
-  const sentBackQuestions = await prisma.question.count({
-    where: {
-      assignedCreatorId: userId,
-      status: 'pending_creator',
-      updatedAt: {
-        gte: thirtyDaysAgo,
-      },
-    },
-  });
-  const totalAssigned = assignedQuestions.length;
-  const sentBackRate = totalAssigned > 0
-    ? Math.round((sentBackQuestions / totalAssigned) * 100)
+  // Sent back rate: (rejected variants + flagged variants) / total variants created
+  const rejectedVariants = createdVariants.filter(v => 
+    v.status === 'rejected'
+  ).length;
+  const flaggedVariants = createdVariants.filter(v => 
+    v.isFlagged === true
+  ).length;
+  const sentBackVariants = rejectedVariants + flaggedVariants;
+  const sentBackRate = totalVariantsCreated > 0
+    ? Math.round((sentBackVariants / totalVariantsCreated) * 100)
     : 0;
 
   // Approved variants: variants that reached completed or pending_explainer status (approved and moved forward)

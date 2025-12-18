@@ -421,8 +421,8 @@ const ProcessorQuestionBank = () => {
           onTopicChange={setTopic}
           subjectOptions={subjects.length > 0 ? subjects : [t("filter.subject")]}
           topicOptions={topicOptions}
-          topicLabel="Status"
-          subjectLabel="Subject"
+          topicLabel="All Status"
+          subjectLabel="All Subject"
           searchPlaceholder={t("processor.questionBank.searchPlaceholder")}
         />
         <div>

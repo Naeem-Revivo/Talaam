@@ -4,9 +4,11 @@ import { RoleCard } from "../../components/common/RoleCard";
 import { PerformanceCard } from "../../components/gatherer/performanceCard";
 import { LastLoginCard } from "../../components/gatherer/LastLogin";
 import axiosClient from "../../api/client";
+import { useSelector } from "react-redux";
 
 const CreatorDashboard = () => {
   const { t } = useLanguage();
+  const { user: authUser } = useSelector((state) => state.auth);
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -49,6 +51,8 @@ const CreatorDashboard = () => {
         setLoading(true);
         setError(null);
         const response = await axiosClient.get('/creator/dashboard');
+
+        console.log(response.data.data, "`creator dashboard data`");
         
         if (response.data.success) {
           setDashboardData(response.data.data);
@@ -131,7 +135,7 @@ const CreatorDashboard = () => {
               {t("creator.dashboard.title")}
             </h1>
             <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
-              {t("creator.dashboard.subtitle")}
+              {t("creator.dashboard.subtitle").replace("John Doe", authUser?.name || "User")}
             </p>
           </div>
         </header>

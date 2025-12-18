@@ -120,12 +120,21 @@ const Header = ({ onToggleSidebar }) => {
   // Admin routes
   if (pathname.startsWith('/admin')) {
     if (pathname === '/admin') return t('header.titles.admin.dashboard');
+    if (pathname.startsWith('/admin/students')) return t('header.titles.admin.studentManagement');
     if (pathname.includes('add-announcements')) return t('header.titles.admin.addAnnouncements');
     if (pathname.includes('announcements')) return t('header.titles.admin.announcements');
     if (pathname.includes('language-management')) return t('header.titles.admin.languageManagement');
     if (pathname.includes('email-template')) return t('header.titles.admin.emailTemplate');
     if (pathname.includes('roles-permissions')) return t('header.titles.admin.rolesPermissions');
     if (pathname.startsWith('/admin/users')) return t('header.titles.admin.userManagement');
+    if (pathname.includes('pending-processor/view')) return t('header.titles.admin.pendingProcessorView') || t('header.titles.admin.pendingProcessor');
+    if (pathname.includes('pending-processor')) return t('header.titles.admin.pendingProcessor');
+    if (pathname.includes('pending-creator/view')) return t('header.titles.admin.pendingCreatorView') || t('header.titles.admin.pendingCreator');
+    if (pathname.includes('pending-creator')) return t('header.titles.admin.pendingCreator');
+    if (pathname.includes('pending-explainer/view')) return t('header.titles.admin.pendingExplainerView') || t('header.titles.admin.pendingExplainer');
+    if (pathname.includes('pending-explainer')) return t('header.titles.admin.pendingExplainer');
+    if (pathname.includes('sent-back-questions/view')) return t('header.titles.admin.sentBackQuestionsView') || t('admin.sentBackQuestions.view.title');
+    if (pathname.includes('sent-back-questions')) return t('header.titles.admin.sentBackQuestions') || t('admin.questionBank.sentBackQuestions.title');
     if (pathname.startsWith('/admin/question-bank')) return t('header.titles.admin.questionBank');
     if (pathname.startsWith('/admin/question-management')) return t('header.titles.admin.questionManagement');
     if (pathname.startsWith('/admin/add-question')) return t('header.titles.admin.addQuestion');
@@ -238,7 +247,9 @@ const Header = ({ onToggleSidebar }) => {
                 {authUser?.name || 'User'}
               </p>
               <p className="text-[12px] leading-[100%] tracking-[0px] text-left pt-1 pl-1 font-roboto font-[400] text-dark-gray">
-                {authUser?.role
+                {authUser?.role === 'admin' && authUser?.adminRole
+                  ? authUser.adminRole.charAt(0).toUpperCase() + authUser.adminRole.slice(1)
+                  : authUser?.role
                   ? authUser.role.charAt(0).toUpperCase() + authUser.role.slice(1)
                   : 'User'}
               </p>

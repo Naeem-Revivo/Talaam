@@ -94,7 +94,7 @@ const login = async (req, res, next) => {
         message: error.message,
       });
     }
-    if (error.message === 'Your account has been suspended. Please contact administrator.') {
+    if (error.message === 'Account suspended. Please contact support team.') {
       return res.status(403).json({
         success: false,
         message: error.message,
@@ -145,7 +145,7 @@ const verifyOTP = async (req, res, next) => {
         message: error.message,
       });
     }
-    if (error.message === 'Your account has been suspended. Please contact administrator.') {
+    if (error.message === 'Account suspended. Please contact support team.') {
       return res.status(403).json({
         success: false,
         message: error.message,
@@ -307,6 +307,7 @@ const getCurrentUser = async (req, res, next) => {
           isEmailVerified: user.isEmailVerified,
           fullName: user.fullName,
           dateOfBirth: user.dateOfBirth,
+          phone: user.phone,
           country: user.country,
           timezone: user.timezone,
           language: user.language,

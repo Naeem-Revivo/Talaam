@@ -2,7 +2,6 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import { bookIcon, videoIcon, checkCircleIcon, phoneIcon, check } from "../../../assets/svg";
-import productsData from "../../../data/productsData.json";
 
 export default function PricingPlans() {
   const { t } = useLanguage();
@@ -42,22 +41,40 @@ export default function PricingPlans() {
     icon: <img src={iconMap[quduratProduct.iconName]} alt="" className="w-12 h-12" />
   }];
 
+
+  // Helper function to get value from either localStorage or sessionStorage
+  const getStorageValue = (key) => {
+    return localStorage.getItem(key) || sessionStorage.getItem(key);
+  };
+
+  console.log("token", getStorageValue('authToken'));
+  console.log("user", getStorageValue('user'));
+
   const handleSubscribe = (product) => {
     console.log('Subscribe button clicked for product:', product);
-    // Check if user is logged in
-    const token = localStorage.getItem('authToken');
-    const user = localStorage.getItem('user');
+    // Check if user is logged in - check both localStorage and sessionStorage
+    const token = getStorageValue('authToken');
+    const user = getStorageValue('user');
     
     console.log('Auth check - token:', !!token, 'user:', !!user);
     
     if (!token || !user) {
-      // Store the intended destination in localStorage
+      // Clear any existing redirect values first
+      localStorage.removeItem('redirectAfterLogin');
+      sessionStorage.removeItem('redirectAfterLogin');
+      
+      // Store the intended destination in both storage locations
+      sessionStorage.setItem('redirectAfterLogin', '/moyassar-payment');
       localStorage.setItem('redirectAfterLogin', '/moyassar-payment');
       // Navigate to login
       console.log('User not logged in, redirecting to login');
       navigate('/login');
     } else {
-      // User is logged in, navigate to Moyassar payment page in same tab
+      // User is logged in - clear any existing redirect values to prevent conflicts
+      localStorage.removeItem('redirectAfterLogin');
+      sessionStorage.removeItem('redirectAfterLogin');
+      
+      // Navigate to Moyassar payment page in same tab
       console.log('User logged in, navigating to /moyassar-payment');
       navigate('/moyassar-payment');
     }

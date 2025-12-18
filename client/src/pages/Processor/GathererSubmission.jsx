@@ -203,6 +203,14 @@ const GathererSubmission = () => {
         );
       }
 
+      // IMPORTANT: Client-side filter to exclude superadmin-created questions
+      // This is a backup in case backend filtering doesn't catch all cases
+      allQuestions = allQuestions.filter(q => {
+        const isSuperadminCreated = q.createdBy?.adminRole === 'superadmin' || 
+                                    (q.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
+        return !isSuperadminCreated;
+      });
+
       const transformedData = transformQuestionData(allQuestions);
       setGathererSubmissionData(transformedData);
       setTotal(transformedData.length);

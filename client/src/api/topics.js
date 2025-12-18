@@ -13,20 +13,24 @@ const topicsAPI = {
       const queryString = queryParams.toString();
       
       // Try student endpoint first, fallback to admin endpoint
-      let url;
       try {
-        url = queryString 
+        const url = queryString 
           ? `/student/topics?${queryString}`
           : '/student/topics';
         const response = await axiosClient.get(url);
         return response.data;
       } catch (studentError) {
-        // Fallback to admin endpoint if student endpoint fails
-        url = queryString 
+        // Only fallback to admin endpoint if student endpoint fails with non-permission error
+        // If it's a 403/401, don't try admin endpoint as it will also fail
+        if (studentError.response?.status === 403 || studentError.response?.status === 401) {
+          throw studentError;
+        }
+        // Fallback to admin endpoint for other errors
+        const url = queryString 
           ? `/admin/topics?${queryString}`
-        : '/admin/topics';
-      const response = await axiosClient.get(url);
-      return response.data;
+          : '/admin/topics';
+        const response = await axiosClient.get(url);
+        return response.data;
       }
     } catch (error) {
       const apiError = error.response?.data;

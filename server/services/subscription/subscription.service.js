@@ -113,26 +113,37 @@ const confirmPayment = async (userId, subscriptionId, transactionId) => {
 
 /**
  * Get my subscription
+ * Prioritizes active paid subscriptions over pending ones
  */
 const getMySubscription = async (userId) => {
   try {
     console.log('🔍 Getting subscription for user:', userId);
     
-    // Get the latest subscription (most recent first)
-    const subscriptions = await Subscription.findByUserId(userId, {
-      orderBy: { createdAt: 'desc' },
-      take: 1
+    // First, try to get all subscriptions for the user
+    const allSubscriptions = await Subscription.findByUserId(userId, {
+      orderBy: { createdAt: 'desc' }
     });
 
-    console.log('📋 Found subscriptions:', subscriptions?.length || 0);
+    console.log('📋 Found subscriptions:', allSubscriptions?.length || 0);
 
-    if (!subscriptions || subscriptions.length === 0) {
+    if (!allSubscriptions || allSubscriptions.length === 0) {
       console.log('⚠️  No subscription found for user:', userId);
       throw new Error('No subscription found');
     }
 
-    console.log('✅ Returning subscription:', subscriptions[0].id);
-    return subscriptions[0];
+    // Prioritize: Active paid subscription first
+    const activePaidSubscription = allSubscriptions.find(
+      sub => sub.paymentStatus === 'Paid' && sub.isActive === true
+    );
+
+    if (activePaidSubscription) {
+      console.log('✅ Returning active paid subscription:', activePaidSubscription.id);
+      return activePaidSubscription;
+    }
+
+    // If no active paid subscription, return the most recent one
+    console.log('✅ Returning most recent subscription:', allSubscriptions[0].id);
+    return allSubscriptions[0];
   } catch (error) {
     console.error('❌ Error in getMySubscription:', error);
     throw error;
@@ -241,6 +252,104 @@ const getMyBillingHistory = async (userId) => {
   return billingHistory;
 };
 
+/**
+ * Cancel subscription
+ * Sets paymentStatus to 'Cancelled' and isActive to false
+ */
+const cancelSubscription = async (userId, subscriptionId) => {
+  try {
+    // Find the subscription
+    const subscription = await Subscription.findById(subscriptionId);
+    
+    if (!subscription) {
+      throw new Error('Subscription not found');
+    }
+    
+    // Verify the subscription belongs to the user
+    if (subscription.userId !== userId) {
+      throw new Error('Unauthorized: This subscription does not belong to you');
+    }
+    
+    // Only allow cancellation of active or pending subscriptions
+    if (subscription.paymentStatus === 'Cancelled') {
+      throw new Error('Subscription is already cancelled');
+    }
+    
+    // Update subscription to cancelled
+    const updatedSubscription = await Subscription.update(subscriptionId, {
+      paymentStatus: 'Cancelled',
+      isActive: false,
+    });
+    
+    return updatedSubscription;
+  } catch (error) {
+    console.error('Error cancelling subscription:', error);
+    throw error;
+  }
+};
+
+/**
+ * Renew subscription
+ * Creates a new subscription with the same plan, extending from the current expiry date
+ */
+const renewSubscription = async (userId, subscriptionId) => {
+  try {
+    // Find the current subscription
+    const currentSubscription = await Subscription.findById(subscriptionId);
+    
+    if (!currentSubscription) {
+      throw new Error('Subscription not found');
+    }
+    
+    // Verify the subscription belongs to the user
+    if (currentSubscription.userId !== userId) {
+      throw new Error('Unauthorized: This subscription does not belong to you');
+    }
+    
+    // Only allow renewal of paid and active subscriptions
+    if (currentSubscription.paymentStatus !== 'Paid' || !currentSubscription.isActive) {
+      throw new Error('Only active paid subscriptions can be renewed');
+    }
+    
+    // Get the plan to calculate new expiry date
+    const plan = await Plan.findById(currentSubscription.planId);
+    if (!plan) {
+      throw new Error('Plan not found');
+    }
+    
+    // Calculate new dates - start from current expiry date
+    const startDate = new Date(currentSubscription.expiryDate);
+    const durationInDays = getDurationInDays(plan.duration);
+    const expiryDate = new Date(startDate);
+    expiryDate.setDate(expiryDate.getDate() + durationInDays);
+    
+    // Get user name
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    const userName = user.fullName || user.name || user.email;
+    
+    // Create new subscription for renewal
+    const renewalSubscription = await Subscription.create({
+      userId,
+      planId: plan.id,
+      userName,
+      planName: plan.name,
+      startDate,
+      expiryDate,
+      paymentStatus: 'Pending',
+      isActive: false,
+      transactionId: null,
+    });
+    
+    return renewalSubscription;
+  } catch (error) {
+    console.error('Error renewing subscription:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   subscribeToPlan,
   confirmPayment,
@@ -248,5 +357,7 @@ module.exports = {
   updateExpiredSubscriptions,
   getExpiredSubscriptionsCount,
   getMyBillingHistory,
+  cancelSubscription,
+  renewSubscription,
 };
 

@@ -5,6 +5,16 @@ import { useNavigate, useLocation } from "react-router-dom";
 import questionsAPI from "../../api/questions";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig.jsx";
 
+// Strip HTML tags and return plain text
+const stripHtmlTags = (html) => {
+  if (!html) return "—";
+  // Create a temporary div element to parse HTML
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  // Get text content which automatically strips HTML tags
+  return tmp.textContent || tmp.innerText || "—";
+};
+
 // QuestionDetails Component - displays full question
 const QuestionDetails = ({
   question,
@@ -13,15 +23,32 @@ const QuestionDetails = ({
   onFlag,
   isFlagged,
 }) => {
-  const correctAnswer = question.correctAnswer 
-    ? (question.correctAnswer.length === 1 
+  // Map correct answer based on question type
+  const getCorrectAnswerDisplay = () => {
+    if (!question.correctAnswer) return "—";
+    
+    // Handle TRUE_FALSE questions - map A to "True", B to "False"
+    if (question.questionType === "TRUE_FALSE") {
+      return question.correctAnswer === "A" ? "True" : "False";
+    }
+    
+    // Handle MCQ questions - use "Option A" format
+    if (question.questionType === "MCQ") {
+      return question.correctAnswer.length === 1 
         ? `Option ${question.correctAnswer}` 
-        : question.correctAnswer)
-    : "—";
+        : question.correctAnswer;
+    }
+    
+    // Default fallback
+    return question.correctAnswer;
+  };
+  
+  const correctAnswer = getCorrectAnswerDisplay();
   
   const subject = question.subject?.name || question.subject || "—";
+  const topic = question.topic?.name || question.topic || "—";
   const difficulty = question.difficulty || question.metadata?.difficulty || "—";
-  const questionText = question.questionText || "—";
+  const questionText = stripHtmlTags(question.questionText);
   const options = question.options || {};
 
   return (
@@ -47,18 +74,29 @@ const QuestionDetails = ({
           )}
         </div>
         
-        {question.questionType === "MCQ" && (
+        {(question.questionType === "MCQ" || question.questionType === "TRUE_FALSE") && (
           <div className="space-y-2">
             <p className="text-[16px] leading-[100%] font-normal font-roboto text-blue-dark">
               <span className="text-[#6B7280]">Options:</span>
             </p>
-            <div className="grid grid-cols-2 gap-2 ml-4">
-              {Object.entries(options).map(([key, value]) => (
-                <p key={key} className="text-[14px] text-blue-dark">
-                  <span className="font-medium">{key}:</span> {value || "—"}
+            {question.questionType === "TRUE_FALSE" ? (
+              <div className="grid grid-cols-2 gap-2 ml-4">
+                <p className="text-[14px] text-blue-dark">
+                  <span className="font-medium">A:</span> {options.A || "True"}
                 </p>
-              ))}
-            </div>
+                <p className="text-[14px] text-blue-dark">
+                  <span className="font-medium">B:</span> {options.B || "False"}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 ml-4">
+                {Object.entries(options).map(([key, value]) => (
+                  <p key={key} className="text-[14px] text-blue-dark">
+                    <span className="font-medium">{key}:</span> {value || "—"}
+                  </p>
+                ))}
+              </div>
+            )}
           </div>
         )}
         
@@ -66,15 +104,20 @@ const QuestionDetails = ({
           <span className="text-[#6B7280]">Correct Answer:</span> {correctAnswer}
         </p>
         
-        <div className="flex gap-6 text-[16px] leading-[100%] font-normal font-roboto text-[#6B7280]">
-          <span>
-            Subject: <span className="text-blue-dark">{subject}</span>
-          </span>
-          {difficulty !== "—" && (
+        <div className="flex flex-col gap-2 text-[16px] leading-[100%] font-normal font-roboto text-[#6B7280]">
+          <div className="flex gap-6">
             <span>
-              Difficulty: <span className="text-blue-dark">{difficulty}</span>
+              Subject: <span className="text-blue-dark">{subject}</span>
             </span>
-          )}
+            {difficulty !== "—" && (
+              <span>
+                Difficulty: <span className="text-blue-dark">{difficulty}</span>
+              </span>
+            )}
+          </div>
+          <span>
+            Topic: <span className="text-blue-dark">{topic}</span>
+          </span>
         </div>
       </div>
     </div>
@@ -650,9 +693,9 @@ export default function AddExplanationPage() {
           <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue mb-1.5">
             Add Explanation
           </h1>
-          <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
+          {/* <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
             {isVariant ? "Variant" : "Question"} ID: {questionIdDisplay}
-          </p>
+          </p> */}
         </div>
 
         {/* Display Original Question Reference if viewing a variant */}
@@ -671,33 +714,57 @@ export default function AddExplanationPage() {
                   className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue mt-2"
                   dir="ltr"
                 >
-                  {originalQuestion.questionText || "—"}
+                  {stripHtmlTags(originalQuestion.questionText)}
                 </p>
               </div>
               
-              {originalQuestion.questionType === "MCQ" && originalQuestion.options && (
+              {(originalQuestion.questionType === "MCQ" || originalQuestion.questionType === "TRUE_FALSE") && originalQuestion.options && (
                 <>
                   <div className="mt-4 mb-3">
                     <span className="font-roboto text-[14px] font-semibold text-oxford-blue">Options:</span>
-                    <div className="space-y-2 mt-2" dir="ltr">
-                      {Object.entries(originalQuestion.options).map(([key, value]) => (
-                        <div key={key} className="flex items-center gap-2">
+                    {originalQuestion.questionType === "TRUE_FALSE" ? (
+                      <div className="space-y-2 mt-2" dir="ltr">
+                        <div className="flex items-center gap-2">
                           <span className="font-roboto text-[14px] font-normal text-dark-gray min-w-[20px]">
-                            {key}.
+                            A.
                           </span>
                           <span className="font-roboto text-[14px] font-normal text-dark-gray">
-                            {value}
+                            {originalQuestion.options.A || "True"}
                           </span>
                         </div>
-                      ))}
-                    </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-roboto text-[14px] font-normal text-dark-gray min-w-[20px]">
+                            B.
+                          </span>
+                          <span className="font-roboto text-[14px] font-normal text-dark-gray">
+                            {originalQuestion.options.B || "False"}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 mt-2" dir="ltr">
+                        {Object.entries(originalQuestion.options).map(([key, value]) => (
+                          <div key={key} className="flex items-center gap-2">
+                            <span className="font-roboto text-[14px] font-normal text-dark-gray min-w-[20px]">
+                              {key}.
+                            </span>
+                            <span className="font-roboto text-[14px] font-normal text-dark-gray">
+                              {value}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   
                   {originalQuestion.correctAnswer && (
                     <div className="mt-4 pt-3 border-t border-[#E5E7EB]">
                       <span className="font-roboto text-[14px] font-semibold text-oxford-blue">Correct Answer: </span>
                       <span className="font-roboto text-[14px] font-normal text-[#ED4122]">
-                        {originalQuestion.correctAnswer}. {originalQuestion.options[originalQuestion.correctAnswer]}
+                        {originalQuestion.questionType === "TRUE_FALSE" 
+                          ? (originalQuestion.correctAnswer === "A" ? "True" : "False")
+                          : `${originalQuestion.correctAnswer}. ${originalQuestion.options[originalQuestion.correctAnswer]}`
+                        }
                       </span>
                     </div>
                   )}
@@ -811,23 +878,11 @@ export default function AddExplanationPage() {
           </div>
         )}
 
-        <SupportingMaterial
-          file={file}
-          onFileChange={handleFileChange}
-          onRemove={handleRemoveFile}
-        />
-
         <div className="flex flex-col sm:flex-row sm:justify-end gap-3 px-5 pb-6 pt-2">
           <OutlineButton
             text="Cancel"
             className="py-[10px] px-7 text-nowrap"
             onClick={handleCancel}
-          />
-          <OutlineButton
-            text="Save Draft"
-            className="py-[10px] px-7 text-nowrap"
-            onClick={handleSaveDraft}
-            disabled={isSavingDraft}
           />
           <PrimaryButton
             text="Submit explanation"

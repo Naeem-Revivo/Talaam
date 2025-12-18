@@ -43,8 +43,29 @@ const updateExam = async (exam, updateData) => {
 
 /**
  * Delete exam
+ * Cascading: Also deletes all subjects related to this exam and all topics related to those subjects
  */
 const deleteExam = async (examId) => {
+  const { prisma } = require('../../../config/db/prisma');
+  
+  // Find all subjects related to this exam
+  const subjects = await prisma.subject.findMany({
+    where: { examId: examId }
+  });
+  
+  // For each subject, delete all related topics
+  for (const subject of subjects) {
+    await prisma.topic.deleteMany({
+      where: { parentSubject: subject.id }
+    });
+  }
+  
+  // Delete all subjects related to this exam
+  await prisma.subject.deleteMany({
+    where: { examId: examId }
+  });
+  
+  // Finally, delete the exam
   return await Exam.delete(examId);
 };
 

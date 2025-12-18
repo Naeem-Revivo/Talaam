@@ -99,16 +99,15 @@ const AdminSubmission = () => {
     return statusMap[status?.toLowerCase()] || 'Pending';
   };
 
-  // Fetch admin submissions from API - questions flagged by students
+  // Fetch admin submissions from API - questions flagged by students AND questions created by superadmin
   useEffect(() => {
     const fetchAdminSubmissions = async () => {
       try {
         setLoading(true);
         
-        // Fetch questions with flagType='student'
-        // These are questions flagged by students
+        // Fetch questions with flagType='student' AND questions created by superadmin/admin
         const statusesToFetch = [
-          'pending_processor', // Questions with student flags
+          'pending_processor', // Questions with student flags or created by admin
           'pending_creator',
           'pending_explainer',
           'completed',
@@ -117,11 +116,19 @@ const AdminSubmission = () => {
 
         let allQuestions = [];
 
-        // Fetch questions for each status with flagType='student'
-        // This will fetch only student-flagged questions
-        const promises = statusesToFetch.map(status => 
+        // Fetch ONLY student-flagged questions that are approved by admin
+        // The backend will filter to only return flagStatus='approved'
+        const studentFlagPromises = statusesToFetch.map(status => 
           questionsAPI.getProcessorQuestions({ status, flagType: 'student' })
         );
+        
+        // Fetch ONLY superadmin-created questions (not regular admin)
+        const superadminCreatedPromises = statusesToFetch.map(status => 
+          questionsAPI.getProcessorQuestions({ status, submittedBy: 'admin' })
+        );
+        
+        // Combine both promises
+        const promises = [...studentFlagPromises, ...superadminCreatedPromises];
         
         const responses = await Promise.all(promises);
         
@@ -171,19 +178,39 @@ const AdminSubmission = () => {
           })
         );
 
-        // Filter to only show questions with flagType='student'
+        // Filter to show ONLY:
+        // 1. Questions flagged by students AND approved by admin (flagStatus === 'approved')
+        // 2. Questions created by superadmin ONLY (not regular admin)
         const filteredQuestions = questionsWithDetails.filter((question) => {
-          return question.flagType === 'student';
+          // Check if student-flagged AND approved by admin
+          const isStudentFlaggedAndApproved = question.flagType === 'student' && 
+                                              question.flagStatus === 'approved';
+          
+          // Check if created by superadmin ONLY (not regular admin)
+          const isSuperadminCreated = question.createdBy?.role === 'superadmin' ||
+                                      question.createdBy?.adminRole === 'superadmin' ||
+                                      (question.history?.find(h => h.action === 'created')?.performedBy?.role === 'superadmin') ||
+                                      (question.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
+          
+          return isStudentFlaggedAndApproved || isSuperadminCreated;
         });
 
         // Transform API data to match table structure
         const transformedData = filteredQuestions.map((question) => {
-          // Get student name (flaggedBy would be the student who flagged)
-          const studentName = question.flaggedBy?.name || 
+          // Check if question is created by superadmin ONLY (not regular admin)
+          const isSuperadminCreated = question.createdBy?.role === 'superadmin' ||
+                                      question.createdBy?.adminRole === 'superadmin' ||
+                                      (question.history?.find(h => h.action === 'created')?.performedBy?.role === 'superadmin') ||
+                                      (question.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
+          
+          // Get name: superadmin name for superadmin-created questions, student name for student-flagged questions
+          const studentName = isSuperadminCreated
+            ? (question.createdBy?.name || question.createdBy?.fullName || 'Superadmin')
+            : (question.flaggedBy?.name || 
                              question.flaggedBy?.fullName ||
                              question.lastModifiedBy?.name || 
                              question.lastModifiedBy?.fullName ||
-                             'Unknown';
+               'Unknown');
 
           // Check if question is flagged by student
           // For admin submission page, show ALL student-flagged questions regardless of flagStatus
@@ -196,9 +223,10 @@ const AdminSubmission = () => {
 
           // Get admin status with proper mapping
           // For admin submission page, always show "Flagged" for student-flagged questions
+          // For admin-created questions, show the actual status
           const adminStatus = isFlagged ? 'Flagged' : mapAdminStatus(question.status, false);
 
-          // Get flag reason
+          // Get flag reason (only for student-flagged questions)
           const flagReason = question.flagReason || null;
 
           return {
@@ -209,6 +237,7 @@ const AdminSubmission = () => {
             adminStatus: adminStatus,
             submittedOn: formatDate(question.updatedAt || question.createdAt),
             flagReason: flagReason,
+            isSuperadminCreated: isSuperadminCreated, // Track if this is superadmin-created
             indicators: {
               approved: adminStatus === 'Approved' || question.status === 'completed',
               flag: isFlagged,

@@ -198,12 +198,66 @@ const questionsAPI = {
         apiData.correctAnswer = questionData.correctAnswer;
       }
 
+      // Add TRUE_FALSE-specific fields
+      if (questionData.questionType === 'TRUE_FALSE') {
+        apiData.options = questionData.options || {
+          A: "True",
+          B: "False",
+        };
+        apiData.correctAnswer = questionData.correctAnswer;
+      }
+
       console.log('API Request Data:', apiData);
       const response = await axiosClient.post('/admin/questions', apiData);
       return response.data;
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Failed to create question' };
+    }
+  },
+
+  // Create question with completed status (for superadmin when assigned to me)
+  createQuestionWithCompletedStatus: async (questionData) => {
+    try {
+      const apiData = {
+        exam: questionData.exam,
+        subject: questionData.subject,
+        topic: questionData.topic,
+        questionText: questionData.questionText?.trim(),
+        questionType: questionData.questionType,
+        explanation: questionData.explanation?.trim() || '',
+      };
+
+      // Add MCQ-specific fields
+      if (questionData.questionType === 'MCQ') {
+        apiData.options = {
+          A: questionData.options?.A?.trim(),
+          B: questionData.options?.B?.trim(),
+          C: questionData.options?.C?.trim(),
+          D: questionData.options?.D?.trim(),
+        };
+        apiData.correctAnswer = questionData.correctAnswer;
+      }
+
+      // Add TRUE_FALSE-specific fields
+      if (questionData.questionType === 'TRUE_FALSE') {
+        apiData.options = questionData.options || {
+          A: "True",
+          B: "False",
+        };
+        apiData.correctAnswer = questionData.correctAnswer;
+      }
+
+      // Add variants if provided
+      if (questionData.variants && questionData.variants.length > 0) {
+        apiData.variants = questionData.variants;
+      }
+
+      const response = await axiosClient.post('/admin/questions/completed', apiData);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to create question with completed status' };
     }
   },
 

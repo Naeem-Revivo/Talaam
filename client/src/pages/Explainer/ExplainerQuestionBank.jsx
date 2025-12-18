@@ -197,10 +197,6 @@ const ExplainerQuestionBank = () => {
     return () => clearInterval(statsInterval);
   }, []);
 
-  const handleAddExplanationButton = () => {
-    navigate("/explainer/question-bank/add-explanation");
-  };
-
   const handleCompletedExplanation = () => {
     navigate("/explainer/question-bank/completed-explanation");
   };
@@ -222,11 +218,11 @@ const ExplainerQuestionBank = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-3 justify-start lg:justify-end">
-            <OutlineButton
+            {/* <OutlineButton
               text={t("explainer.questionBank.draft")}
                 onClick={handleDraftExplanation}
               className="py-[10px] px-9"
-            />
+            /> */}
 
             <OutlineButton
               text={t("explainer.questionBank.completed")}
@@ -235,9 +231,9 @@ const ExplainerQuestionBank = () => {
             />
 
             <PrimaryButton
-              text={t("explainer.questionBank.addExplanation")}
+              text={t("explainer.questionBank.assignedQuestions")}
               className="py-[10px] px-8"
-                onClick={handleAddExplanationButton}
+              onClick={() => navigate("/explainer/question-bank/assigned-questions")}
             />
           </div>
         </header>

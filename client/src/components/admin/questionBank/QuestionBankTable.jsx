@@ -10,13 +10,17 @@ const statusTone = {
     wrapper: "bg-[#ED4122]",
     text: "text-white",
   },
-  Inactive: {
-    wrapper: "bg-[#C6D8D3]",
-    text: "text-oxford-blue",
+  Approved: {
+    wrapper: "bg-[#E8F7F0]",
+    text: "text-[#10B981]",
   },
   Rejected: {
     wrapper: "bg-[#F4D7D7]",
     text: "text-[#B91C1C]",
+  },
+  "Sent Back": {
+    wrapper: "bg-[#FEF3C7]",
+    text: "text-[#D97706]",
   },
 };
 
@@ -27,6 +31,8 @@ const useHeaderConfig = (t) => {
     { label: t('admin.questionBank.table.headers.subject'), widthClass: "min-w-[75px]", key: "subject" },
     { label: t('admin.questionBank.table.headers.topic'), widthClass: "min-w-[49px]", key: "topic" },
     { label: t('admin.questionBank.table.headers.createdBy'), widthClass: "min-w-[101px]", key: "createdBy" },
+    { label: t('admin.questionBank.table.headers.flags') || "Flags", widthClass: "min-w-[60px]", key: "flags" },
+    { label: t('admin.questionBank.table.headers.lastAction') || "Last Action", widthClass: "min-w-[150px]", key: "lastAction" },
     { label: t('admin.questionBank.table.headers.status'), widthClass: "min-w-[62px]", key: "status" },
     { label: t('admin.questionBank.table.headers.actions'), widthClass: "min-w-[72px]", key: "actions" },
   ], [t]);
@@ -53,18 +59,27 @@ const TableHeader = ({ t, dir }) => {
 };
 
 const TableRow = ({ question, onView, t, dir }) => {
-  const tone = statusTone[question.status] ?? statusTone.Active;
+  const tone = statusTone[question.status] ?? statusTone.Pending;
   const headerConfig = useHeaderConfig(t);
   const textAlign = dir === 'rtl' ? 'text-right' : 'text-left';
+
+  // Format last action
+  const formatLastAction = () => {
+    if (!question.lastAction) return "—";
+    const { action, by, when } = question.lastAction;
+    const actionText = action || "N/A";
+    return `${actionText} by ${by} on ${when}`;
+  };
 
   return (
     <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row">
       <td className={`px-6 py-4 align-top ${headerConfig[0].widthClass} ${textAlign}`}>
-        <div className={`w-[218px] ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+        <div className={`w-[150px] max-w-[150px] ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
           <p 
-            className="text-[12px] font-roboto leading-[16px] text-oxford-blue break-words"
+            className="text-[12px] font-roboto leading-[16px] text-oxford-blue truncate cursor-help"
             dir="ltr"
-            style={{ wordBreak: 'break-word', lineHeight: '1.4' }}
+            title={question.prompt}
+            style={{ lineHeight: '1.4' }}
           >
             {question.prompt}
           </p>
@@ -87,14 +102,47 @@ const TableRow = ({ question, onView, t, dir }) => {
       <td className={`px-6 py-4 text-[14px] font-roboto leading-[16px] text-oxford-blue ${headerConfig[3].widthClass} whitespace-nowrap ${textAlign}`}>
         {question.createdBy}
       </td>
-      <td className={`px-6 py-4 ${headerConfig[4].widthClass} ${textAlign}`}>
+      <td className={`px-6 py-4 text-center ${headerConfig[4].widthClass}`}>
+        {question.isFlagged ? (
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-[18px]">🚩</span>
+            {question.flagReason && (
+              <span 
+                className="text-[10px] text-gray-600 max-w-[100px] truncate cursor-help" 
+                title={question.flagReason}
+              >
+                {question.flagReason.length > 20 ? question.flagReason.substring(0, 20) + '...' : question.flagReason}
+              </span>
+            )}
+          </div>
+        ) : (
+          <span className="text-[14px] text-gray-400">—</span>
+        )}
+      </td>
+      <td className={`px-6 py-4 text-[12px] font-roboto leading-[16px] text-oxford-blue ${headerConfig[5].widthClass} ${textAlign}`}>
+        <div className="max-w-[200px]">
+          {question.lastAction ? (
+            <div className="space-y-1">
+              <p className="text-oxford-blue">
+                {question.lastAction.action || "N/A"}
+              </p>
+              <p className="text-dark-gray text-[11px]">
+                by {question.lastAction.by || "N/A"} on {question.lastAction.when || "N/A"}
+              </p>
+            </div>
+          ) : (
+            <span className="text-gray-400">—</span>
+          )}
+        </div>
+      </td>
+      <td className={`px-6 py-4 ${headerConfig[6].widthClass} ${textAlign}`}>
         <span
           className={`inline-flex h-[22px] items-center justify-center rounded-[6px] px-2.5 text-[12px] font-roboto font-normal uppercase tracking-[0%] ${tone.wrapper} ${tone.text}`}
         >
           {question.status}
         </span>
       </td>
-      <td className={`px-6 py-4 ${headerConfig[5].widthClass} ${textAlign}`}>
+      <td className={`px-6 py-4 ${headerConfig[7].widthClass} ${textAlign}`}>
         <button
           type="button"
           onClick={() => onView?.(question)}
@@ -127,7 +175,7 @@ const TableRow = ({ question, onView, t, dir }) => {
 };
 
 const MobileQuestionCard = ({ question, onView, t, dir }) => {
-  const tone = statusTone[question.status] ?? statusTone.Active;
+  const tone = statusTone[question.status] ?? statusTone.Pending;
   const textAlign = dir === 'rtl' ? 'text-right' : 'text-left';
 
   return (
@@ -160,6 +208,36 @@ const MobileQuestionCard = ({ question, onView, t, dir }) => {
         <div>
           <p className="text-dark-gray">{t('admin.questionBank.table.headers.createdBy')}</p>
           <p>{question.createdBy}</p>
+        </div>
+        <div>
+          <p className="text-dark-gray">{t('admin.questionBank.table.headers.flags') || "Flags"}</p>
+          {question.isFlagged ? (
+            <div className="flex flex-col gap-1">
+              <p>🚩 Flagged</p>
+              {question.flagReason && (
+                <p className="text-[12px] text-gray-600" title={question.flagReason}>
+                  {question.flagReason.length > 30 ? question.flagReason.substring(0, 30) + '...' : question.flagReason}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p>—</p>
+          )}
+        </div>
+        <div className="col-span-2">
+          <p className="text-dark-gray">{t('admin.questionBank.table.headers.lastAction') || "Last Action"}</p>
+          {question.lastAction ? (
+            <div className="space-y-1">
+              <p className="text-[12px] text-oxford-blue">
+                {question.lastAction.action || "N/A"}
+              </p>
+              <p className="text-[11px] text-dark-gray">
+                by {question.lastAction.by || "N/A"} on {question.lastAction.when || "N/A"}
+              </p>
+            </div>
+          ) : (
+            <p className="text-[12px] text-gray-400">—</p>
+          )}
         </div>
       </div>
       <div className={`flex items-center justify-between pt-1 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
@@ -297,7 +375,7 @@ const QuestionBankTable = ({
             ) : (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={8}
                   className="px-6 py-10 text-center text-sm text-dark-gray"
                 >
                   {t('admin.questionBank.table.emptyState')}

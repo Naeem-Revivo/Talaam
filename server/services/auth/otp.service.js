@@ -49,7 +49,7 @@ const verifyOTP = async (email, otp) => {
 
   // Check if user is suspended
   if (user.status === 'suspended') {
-    throw new Error('Your account has been suspended. Please contact administrator.');
+    throw new Error('Account suspended. Please contact support team.');
   }
 
   // Update user using Prisma

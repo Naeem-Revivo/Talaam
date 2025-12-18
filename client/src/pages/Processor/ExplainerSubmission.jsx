@@ -1,11 +1,12 @@
 
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
-import { useState, useEffect } from "react";
-import ProcessorFilter from "../../components/Processor/ProcessorFilter";
+import { useState, useEffect, useMemo } from "react";
+import SearchFilter from "../../components/common/SearchFilter";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
 import questionsAPI from "../../api/questions";
+import subjectsAPI from "../../api/subjects";
 import Loader from "../../components/common/Loader";
 
 
@@ -15,12 +16,13 @@ const ExplainerSubmission = () => {
 
   const [search, setSearch] = useState("");
   const [subject, setSubject] = useState("");
-  const [topic, setTopic] = useState("");
   const [subtopic, setSubtopic] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [submissions, setSubmissions] = useState([]);
+  const [allSubmissions, setAllSubmissions] = useState([]);
   const [total, setTotal] = useState(0);
+  const [subjects, setSubjects] = useState([]);
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
   const [selectedFlagReason, setSelectedFlagReason] = useState("");
 
@@ -329,6 +331,7 @@ const ExplainerSubmission = () => {
           };
         });
 
+        setAllSubmissions(transformedData);
         setSubmissions(transformedData);
         setTotal(transformedData.length);
       } catch (error) {
@@ -341,7 +344,89 @@ const ExplainerSubmission = () => {
     };
 
     fetchExplainerSubmissions();
-  }, [currentPage, search, subject, topic, subtopic]);
+  }, [currentPage]);
+
+  // Fetch subjects for filter
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const response = await subjectsAPI.getAllSubjects();
+        let subjectsList = [];
+        
+        if (response.success) {
+          if (response.data?.subjects && Array.isArray(response.data.subjects)) {
+            subjectsList = response.data.subjects;
+          } else if (Array.isArray(response.data)) {
+            subjectsList = response.data;
+          }
+        }
+        
+        setSubjects(subjectsList);
+      } catch (error) {
+        console.error('Error fetching subjects:', error);
+        setSubjects([]);
+      }
+    };
+    fetchSubjects();
+  }, []);
+
+  // Get unique subjects from submissions for filter
+  const getSubjectOptions = () => {
+    const subjectSet = new Set();
+    allSubmissions.forEach(item => {
+      const subjectName = item.originalData?.subject?.name;
+      if (subjectName) {
+        subjectSet.add(subjectName);
+      }
+    });
+    return ["All Subject", ...Array.from(subjectSet).sort()];
+  };
+
+  const subjectOptions = getSubjectOptions();
+  const subtopicOptions = ["All Status", "Pending Review", "Approved", "Rejected", "Flag"];
+
+  // Apply filters
+  const filteredSubmissions = useMemo(() => {
+    let filtered = [...allSubmissions];
+
+    // Filter by search
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter((item) => {
+        return (
+          item.questionTitle?.toLowerCase().includes(searchLower) ||
+          item.explainer?.toLowerCase().includes(searchLower) ||
+          item.processorStatus?.toLowerCase().includes(searchLower) ||
+          item.explainerStatus?.toLowerCase().includes(searchLower)
+        );
+      });
+    }
+
+    // Filter by subject
+    if (subject && subject !== "All Subject") {
+      filtered = filtered.filter((item) => {
+        const questionSubject = item.originalData?.subject?.name || "";
+        return questionSubject.toLowerCase() === subject.toLowerCase();
+      });
+    }
+
+    // Filter by status (subtopic)
+    if (subtopic && subtopic !== "All Status") {
+      filtered = filtered.filter((item) => {
+        const itemStatus = item.processorStatus || item.explainerStatus || "";
+        return itemStatus.toLowerCase() === subtopic.toLowerCase();
+      });
+    }
+
+    return filtered;
+  }, [search, subject, subtopic, allSubmissions]);
+
+  // Update displayed submissions when filters change
+  useEffect(() => {
+    setSubmissions(filteredSubmissions);
+    setTotal(filteredSubmissions.length);
+    setCurrentPage(1); // Reset to first page when filters change
+  }, [filteredSubmissions]);
 
   // Handler for review action
   const handleReview = (item) => {
@@ -391,17 +476,19 @@ const ExplainerSubmission = () => {
             <OutlineButton text={t("processor.explainerSubmission.back")} className="py-[10px] px-5" onClick={handleCancel}/>
         </header>
 
-        <ProcessorFilter
-        searchValue={search}
-        subjectValue={subject}
-        topicValue={topic}
-        subtopicValue={subtopic}
-        onSearchChange={setSearch}
-        onSubjectChange={setSubject}
-        onTopicChange={setTopic}
-        onSubtopicChange={setSubtopic}
-        showRole={false}
-      />
+        <SearchFilter
+          searchValue={search}
+          subjectValue={subject}
+          subtopicValue={subtopic}
+          onSearchChange={setSearch}
+          onSubjectChange={setSubject}
+          onSubtopicChange={setSubtopic}
+          subjectOptions={subjectOptions}
+          subtopicOptions={subtopicOptions}
+          subjectLabel="All Subject"
+          subtopicLabel="All Status"
+          searchPlaceholder={t("processor.explainerSubmission.searchPlaceholder")}
+        />
 
       {loading ? (
         <Loader 

@@ -38,6 +38,14 @@ import AdminQuestionBankPage from '../pages/admin/QuestionBankPage';
 import QuestionManagementPage from '../pages/admin/QuestionManagementPage';
 import AddNewQuestionPage from '../pages/admin/AddNewQuestionPage';
 import QuestionDetailsPage from '../pages/admin/QuestionDetailsPage';
+import PendingProcessorPage from '../pages/admin/PendingProcessorPage';
+import PendingCreatorPage from '../pages/admin/PendingCreatorPage';
+import PendingExplainerPage from '../pages/admin/PendingExplainerPage';
+import SentBackQuestionsPage from '../pages/admin/SentBackQuestionsPage';
+import AdminPendingProcessorViewQuestion from '../pages/admin/AdminPendingProcessorViewQuestion';
+import AdminPendingCreatorViewQuestion from '../pages/admin/AdminPendingCreatorViewQuestion';
+import AdminPendingExplainerViewQuestion from '../pages/admin/AdminPendingExplainerViewQuestion';
+import AdminSentBackQuestionView from '../pages/admin/AdminSentBackQuestionView';
 import CreateVariantPage from '../pages/admin/CreateVariantPage';
 import VariantQuestionReviewPage from '../pages/admin/VariantQuestionReviewPage';
 import AddSubjectPage from '../pages/admin/AddSubjectPage';
@@ -92,6 +100,8 @@ import ExplainerQuestionBank from '../pages/Explainer/ExplainerQuestionBank';
 import AddExplanationPage from '../pages/Explainer/AddExplanationPage';
 import CompletedExplanationPage from '../pages/Explainer/CompletedExplanation';
 import DraftExplanationPage from '../pages/Explainer/DraftExplanation';
+import ExplainerAssignedQuestions from '../pages/Explainer/ExplainerAssignedQuestions';
+import ExplainerViewQuestion from '../pages/Explainer/ExplainerViewQuestion';
 import AccountSettingPage from '../pages/dashboard/AccountSettingPage';
 import ProcessorQuestionBank from '../pages/Processor/ProcessorQuestionBank';
 import SubscriptionBillingPage from '../pages/dashboard/SubscriptionBillingPage';
@@ -107,6 +117,8 @@ import CreatorViewVariant from '../pages/Creator/CreatorViewVariant';
 import CreatorVariantsListPage from '../pages/Creator/CreatorVariantsListPage';
 import CreatorViewQuestion from '../pages/Creator/CreatorViewQuestion';
 import ApprovedQuestions from '../pages/admin/ApprovedQuestions';
+import StudentManagementPage from '../pages/admin/StudentManagementPage';
+import StudentDetailPage from '../pages/admin/StudentDetailPage';
 
 export const AppRoutes = () => {
   return (
@@ -119,13 +131,13 @@ export const AppRoutes = () => {
       <Route path="/question-banks" element={<QuestionBankPage />} />
       {/* Public Auth Routes - Redirect authenticated users to dashboard */}
       <Route element={<PublicRoute />}>
-        <Route path="/signupfree" element={<SignUpFreePage />} />
-        <Route path="/create-account" element={<CreateAccountPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/forgot-modal" element={<ForgotModalPage />} />
-        <Route path="/set-new-password" element={<SetNewPasswordPage />} />
-        <Route path="/password-reset" element={<PasswordResetPage />} />
+      <Route path="/signupfree" element={<SignUpFreePage />} />
+      <Route path="/create-account" element={<CreateAccountPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/forgot-modal" element={<ForgotModalPage />} />
+      <Route path="/set-new-password" element={<SetNewPasswordPage />} />
+      <Route path="/password-reset" element={<PasswordResetPage />} />
       </Route>
       
       {/* Profile page - can be accessed by authenticated users or during signup flow */}
@@ -181,7 +193,15 @@ export const AppRoutes = () => {
           <Route path="classification/edit-subject/:subjectId" element={<EditSubject />} />
           <Route path="classification/edit-topic/:topicId" element={<EditTopic />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
-          <Route path="question-management" element={<QuestionManagementPage />} />
+          <Route path="question-bank/pending-processor" element={<PendingProcessorPage />} />
+          <Route path="question-bank/pending-processor/view" element={<AdminPendingProcessorViewQuestion />} />
+          <Route path="question-bank/pending-creator" element={<PendingCreatorPage />} />
+          <Route path="question-bank/pending-creator/view" element={<AdminPendingCreatorViewQuestion />} />
+                <Route path="question-bank/pending-explainer" element={<PendingExplainerPage />} />
+                <Route path="question-bank/pending-explainer/view" element={<AdminPendingExplainerViewQuestion />} />
+                <Route path="question-bank/sent-back-questions" element={<SentBackQuestionsPage />} />
+                <Route path="question-bank/sent-back-questions/view" element={<AdminSentBackQuestionView />} />
+                <Route path="question-management" element={<QuestionManagementPage />} />
           <Route path="question-bank/add-question" element={<AddNewQuestionPage />} />
           <Route path="question-bank/question-details" element={<QuestionDetailsPage />} />
           <Route path="create-variant" element={<CreateVariantPage />} />
@@ -204,6 +224,8 @@ export const AppRoutes = () => {
           <Route path="security/view-logs" element={<ViewLogDetails />} />
           <Route path="security/roles-permissions" element={<RolesPermissionsPage />} />
           <Route path="approved-questions" element={<ApprovedQuestions />} />
+          <Route path="students" element={<StudentManagementPage />} />
+          <Route path="students/:id" element={<StudentDetailPage />} />
         </Route>
       </Route>
 
@@ -242,7 +264,7 @@ export const AppRoutes = () => {
           <Route index element={<CreatorDashboard />} />
           <Route path="profile" element={<CreatorProfile />} />
           <Route path="question-bank" element={<CreatorQuestionBank />} />
-          <Route path="question-bank/assigned-question" element={<AssignedQuestionPage />} />
+          {/* <Route path="question-bank/assigned-question" element={<AssignedQuestionPage />} /> */}
           <Route path="question-bank/completed-question" element={<CompletedQuestionPage />} />
           <Route path="question-bank/create-variants" element={<CreatorVariantsPage />} />
           <Route path="question-bank/edit-variant" element={<CreatorVariantsPage />} />
@@ -261,6 +283,8 @@ export const AppRoutes = () => {
           <Route path="question-bank/add-explanation" element={<AddExplanationPage />} />
           <Route path="question-bank/completed-explanation" element={<CompletedExplanationPage />} />
           <Route path="question-bank/draft-explanation" element={<DraftExplanationPage />} />
+          <Route path="question-bank/assigned-questions" element={<ExplainerAssignedQuestions />} />
+          <Route path="question-bank/question/:questionId" element={<ExplainerViewQuestion />} />
         </Route>
       </Route>
       

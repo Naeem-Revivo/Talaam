@@ -11,7 +11,16 @@ const createSubject = async (subjectData) => {
  * Get all subjects
  */
 const getAllSubjects = async () => {
-  return await Subject.findMany({
+  const { prisma } = require('../../../config/db/prisma');
+  return await prisma.subject.findMany({
+    include: {
+      exam: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
     orderBy: { createdAt: 'desc' }
   });
 };
@@ -99,8 +108,18 @@ const updateSubject = async (subject, updateData) => {
 
 /**
  * Delete subject
+ * Cascading: Also deletes all topics related to this subject
  */
 const deleteSubject = async (subjectId) => {
+  const { prisma } = require('../../../config/db/prisma');
+  
+  // Delete all topics related to this subject first
+  // Note: Prisma schema has onDelete: Cascade, but we'll do it explicitly for clarity
+  await prisma.topic.deleteMany({
+    where: { parentSubject: subjectId }
+  });
+  
+  // Then delete the subject
   return await Subject.delete(subjectId);
 };
 

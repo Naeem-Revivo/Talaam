@@ -37,7 +37,16 @@
         "emailTemplate": "قوالب البريد الإلكتروني",
         "rolesPermissions": "أدوار المسؤولين والصلاحيات",
         "userManagement": "إدارة المستخدمين",
+        "studentManagement": "إدارة الطلاب",
         "questionBank": "بنك الأسئلة",
+        "pendingProcessor": "المعالج المعلق",
+        "pendingProcessorView": "مراجعة سؤال المعالج المعلق",
+        "pendingCreator": "المنشئ المعلق",
+        "pendingCreatorView": "عرض سؤال المنشئ المعلق",
+        "pendingExplainer": "المشرح المعلق",
+        "pendingExplainerView": "عرض سؤال المشرح المعلق",
+        "sentBackQuestions": "الأسئلة المرسلة",
+        "sentBackQuestionsView": "عرض السؤال المرسل",
         "questionManagement": "إدارة الأسئلة",
         "addQuestion": "إضافة سؤال جديد",
         "questionDetails": "عرض تفاصيل السؤال",
@@ -725,15 +734,29 @@
         "title": "خطتك الحالية",
         "planName": "الخطة الاحترافية",
         "statusActive": "نشط",
+        "statusPending": "قيد الانتظار",
+        "statusCancelled": "ملغى",
+        "statusInactive": "غير نشط",
         "cancelSubscription": "إلغاء الاشتراك",
         "upgradePlan": "ترقية الخطة",
+        "renewPlan": "تجديد الخطة",
         "plan": "الخطة:",
         "renewsOn": "تجديد في:",
         "access": "الوصول:",
         "autoRenew": "التجديد التلقائي:",
         "monthly": "شهري",
+        "quarterly": "ربع سنوي",
+        "semiAnnual": "نصف سنوي",
+        "annual": "سنوي",
         "questionBankAccess": "الوصول إلى بنك الأسئلة",
-        "on": "تشغيل"
+        "on": "تشغيل",
+        "off": "إيقاف",
+        "cancelModalTitle": "إلغاء الاشتراك",
+        "cancelModalMessage": "هل أنت متأكد أنك تريد إلغاء اشتراكك؟",
+        "cancelModalSubMessage": "لا يمكن التراجع عن هذا الإجراء. سيبقى اشتراكك نشطًا حتى نهاية فترة الفوترة الحالية.",
+        "cancelConfirm": "إلغاء الاشتراك",
+        "cancelCancel": "الاحتفاظ بالاشتراك",
+        "noPlanAvailable": "لا يوجد خطة اشتراك متاحة"
       },
       "pricingPlans": {
         "title": "اختر الخطة المناسبة لك",
@@ -1078,7 +1101,11 @@
     "sidebar": {
       "dashboard": "لوحة التحكم",
       "userManagement": "إدارة المستخدمين",
+      "studentManagement": "إدارة الطلاب",
       "questionBank": "بنك الأسئلة",
+      "pendingProcessor": "المعالج المعلق",
+      "pendingCreator": "المنشئ المعلق",
+      "pendingExplainer": "المشرح المعلق",
       "classification": "التصنيف",
       "subscriptions": "الاشتراكات والفوترة",
       "paymentHistory": "سجل المدفوعات",
@@ -1103,7 +1130,7 @@
         "activeSubscriptions": "الاشتراكات النشطة",
         "revenue": "الإيرادات",
         "fromLastMonth": "+12% من الشهر الماضي",
-        "verificationRate": "معدل التحقق 72%",
+        "verificationRate": "معدل التحقق",
         "thisWeek": "+8% هذا الأسبوع",
         "thisMonth": "+15% هذا الشهر"
       },
@@ -1206,6 +1233,133 @@
         "fileName": "إدارة-المستخدمين.csv"
       }
     },
+      "studentManagement": {
+        "hero": {
+          "title": "إدارة الطلاب",
+          "subtitle": "إدارة حسابات الطلاب والاشتراكات وتحليلات النشاط."
+        },
+        "summary": {
+          "totalStudents": "إجمالي الطلاب",
+          "activeStudents": "الطلاب النشطون",
+          "suspended": "المعلقون",
+          "verifiedUnverified": "الموثقون / غير الموثقين"
+        },
+        "status": {
+          "active": "نشط",
+          "suspended": "معلق"
+        },
+        "subscription": {
+          "free": "مجاني",
+          "trial": "تجريبي",
+          "premium": "مميز"
+        },
+        "filters": {
+          "searchPlaceholder": "البحث بالاسم أو البريد الإلكتروني أو المعرف",
+          "filter": "تصفية",
+          "plan": "الخطة",
+          "status": "الحالة",
+          "date": "التاريخ",
+          "all": "الكل",
+          "refresh": "تحديث",
+          "applyFilters": "تطبيق التصفية",
+          "plans": {
+            "free": "مجاني",
+            "trial": "تجريبي",
+            "premium": "مميز"
+          },
+          "dateOptions": {
+            "today": "اليوم",
+            "thisWeek": "هذا الأسبوع",
+            "thisMonth": "هذا الشهر",
+            "thisYear": "هذا العام"
+          }
+        },
+        "table": {
+          "headers": {
+            "studentId": "معرف الطالب",
+            "name": "الاسم",
+            "email": "البريد الإلكتروني",
+            "subscription": "الاشتراك",
+            "progress": "التقدم",
+            "signUpDate": "تاريخ التسجيل",
+            "status": "الحالة",
+            "actions": "الإجراءات"
+          },
+          "emptyState": "لا يوجد طلاب يطابقون التصفية الحالية.",
+          "pagination": {
+            "showing": "عرض {{first}} إلى {{last}} من {{total}} نتيجة",
+            "previous": "السابق",
+            "next": "التالي"
+          },
+          "ariaLabels": {
+            "view": "عرض {{name}}",
+            "edit": "تعديل {{name}}",
+            "delete": "حذف {{name}}",
+            "suspend": "تعليق {{name}}",
+            "activate": "تفعيل {{name}}"
+          },
+          "actions": {
+            "suspend": "تعليق",
+            "activate": "تفعيل"
+          }
+        }
+      },
+      "studentDetail": {
+        "hero": {
+          "title": "الملف الشخصي للطالب",
+          "subtitle": "عرض معلومات الحساب والنشاط الكاملة"
+        },
+        "studentId": "معرف الطالب",
+        "emailAddress": "عنوان البريد الإلكتروني",
+        "subscriptionPlan": "خطة الاشتراك",
+        "exp": "ينتهي",
+        "signupDate": "تاريخ التسجيل",
+        "manageSubscription": "إدارة الاشتراك",
+        "activityOverview": {
+          "title": "نظرة عامة على النشاط",
+          "avgScore": "متوسط النقاط",
+          "totalTest": "إجمالي الاختبارات",
+          "correctAnswer": "الإجابات الصحيحة",
+          "incorrect": "الإجابات الخاطئة"
+        },
+        "activityTrend": {
+          "title": "اتجاه النشاط (آخر 7 أيام)",
+          "lastActive": "آخر نشاط",
+          "averageScore": "متوسط النقاط",
+          "good": "جيد",
+          "activityLevel": "مستوى النشاط"
+        },
+        "flaggedIssues": {
+          "title": "المشاكل المبلغ عنها",
+          "reportedAndFlagged": "الأسئلة المبلغ عنها والمميزة",
+          "flaggedOn": "تم الإبلاغ في",
+          "severity": "الشدة",
+          "reason": "السبب",
+          "status": "الحالة",
+          "approved": "موافق عليه",
+          "rejected": "مرفوض",
+          "pending": "قيد الانتظار",
+          "noIssues": "لا توجد مشاكل مبلغ عنها"
+        },
+        "progressBreakdown": {
+          "title": "تفصيل التقدم",
+          "testName": "اسم الاختبار",
+          "date": "التاريخ",
+          "score": "النقاط",
+          "result": "النتيجة",
+          "action": "الإجراء",
+          "passed": "نجح",
+          "failed": "فشل",
+          "viewTest": "عرض {{test}}",
+          "noData": "لا توجد بيانات تقدم متاحة"
+        },
+        "actions": {
+          "editStudent": "تعديل الطالب",
+          "back": "رجوع",
+          "suspendAccount": "تعليق الحساب",
+          "activateAccount": "تفعيل الحساب"
+        }
+      },
     "addUser": {
       "hero": {
         "title": "إضافة مستخدم جديد",
@@ -1285,10 +1439,37 @@
         "title": "بنك الأسئلة",
         "subtitle": "إدارة وتصفية ومراجعة جميع الأسئلة حسب الموضوع أو الموضوع أو الدور."
       },
+      "pendingProcessor": {
+        "title": "المعالج المعلق",
+        "subtitle": "عرض وإدارة الأسئلة المعلقة لمراجعة المعالج."
+      },
+      "pendingCreator": {
+        "title": "المنشئ المعلق",
+        "subtitle": "عرض وإدارة الأسئلة المعلقة لمراجعة المنشئ.",
+        "viewQuestion": {
+          "title": "عرض سؤال المنشئ المعلق"
+        }
+      },
+      "pendingExplainer": {
+        "title": "المشرح المعلق",
+        "subtitle": "عرض وإدارة الأسئلة المعلقة لمراجعة المشرح.",
+        "viewQuestion": {
+          "title": "إضافة شرح"
+        }
+      },
+      "sentBackQuestions": {
+        "title": "الأسئلة المرسلة",
+        "subtitle": "عرض وإدارة الأسئلة المرسلة إلى جامع (الأسئلة المعلقة والرفض).",
+        "view": {
+          "title": "عرض السؤال المرسل"
+        }
+      },
+      "loading": "جارٍ تحميل الأسئلة...",
       "actions": {
         "questionManagement": "إدارة الأسئلة",
         "users": "المستخدمون",
         "addNewQuestion": "+ إضافة سؤال جديد",
+        "sentBackQuestions": "الأسئلة المرسلة",
         "import": "استيراد",
         "export": "تصدير"
       },
@@ -1319,6 +1500,8 @@
           "topic": "الموضوع",
           "level": "المستوى",
           "createdBy": "تم الإنشاء بواسطة",
+          "flags": "الأعلام",
+          "lastAction": "الإجراء الأخير",
           "status": "الحالة",
           "actions": "الإجراءات"
         },
@@ -1362,7 +1545,8 @@
         "cognitiveLevel": "المستوى المعرفي",
         "source": "المصدر (اختياري)",
         "exam": "الامتحان",
-        "reference": "المرجع"
+        "reference": "المرجع",
+        "processor": "المعالج"
       },
       "placeholders": {
         "questionText": "أدخل نص السؤال هنا...",
@@ -1456,7 +1640,8 @@
         "delete": "حذف",
         "edit": "تعديل",
         "createVariant": "+ إنشاء متغير",
-        "addComment": "إضافة تعليق"
+        "addComment": "إضافة تعليق",
+        "back": "رجوع"
       },
       "sections": {
         "questionInfo": "معلومات السؤال",
@@ -1472,6 +1657,7 @@
         "correctAnswer": "الإجابة الصحيحة",
         "subject": "الموضوع",
         "topic": "الموضوع",
+        "exam": "الامتحان",
         "cognitiveLevel": "المستوى المعرفي",
         "createdBy": "تم الإنشاء بواسطة",
         "submittedOn": "تم الإرسال في",
@@ -1480,7 +1666,10 @@
         "createdByVariant": "تم الإنشاء بواسطة"
       },
       "status": {
-        "inReview": "قيد المراجعة"
+        "inReview": "قيد المراجعة",
+        "pending": "قيد الانتظار",
+        "approved": "موافق عليه",
+        "rejected": "مرفوض"
       },
       "placeholders": {
         "addComments": "إضافة تعليقات"
@@ -2103,7 +2292,7 @@
     "classificationManagement": {
       "hero": {
         "title": "إدارة التصنيف",
-        "subtitle": "تنظيم الأسئلة حسب الموضوع والموضوع والموضوع الفرعي والمفهوم"
+       "subtitle": "تنظيم الأسئلة حسب المادة، الموضوع، والاختبار"
       },
       "actions": {
         "export": "تصدير",
@@ -2163,10 +2352,12 @@
         "searchPlaceholder": "البحث...",
         "selectSubject": "اختر الموضوع",
         "selectTopic": "اختر الموضوع",
+        "selectExam": "اختر الامتحان",
         "selectSubtopic": "اختر الموضوع الفرعي",
         "allSubjects": "جميع المواضيع",
         "allTopics": "جميع المواضيع",
-        "allSubtopics": "جميع المواضيع الفرعية"
+        "allSubtopics": "جميع المواضيع الفرعية",
+        "allExams": "جميع الامتحانات"
       },
       "headings": {
         "subject": "إدارة التصنيف",
@@ -2710,6 +2901,7 @@
       "table": {
         "columns": {
           "number": "#",
+          "questionTitle": "عنوان السؤال",
           "contentType": "نوع المحتوى",
           "submittedBy": "تم الإرسال بواسطة",
           "flagReason": "سبب الإبلاغ",
@@ -2780,7 +2972,7 @@
       },
       "filter": {
         "search": "ابحث عن الأسئلة، المادة، الموضوع",
-        "subject": "المادة",
+        "subject": "جميع المواد",
         "exam": "الامتحان",
         "topic": "الموضوع"
       },
@@ -3035,6 +3227,7 @@
       "sentBackByProcessor": "تم إرجاعه من قبل المعالج",
       "workflowProgress": "تقدم سير العمل",
       "recentActivity": "النشاط الأخير",
+      "noActivity": "لا يوجد نشاط حديث",
       "stats": {
         "questionsAssigned": "الأسئلة المخصصة",
         "variantsPending": "المتغيرات المعلقة",
@@ -3150,7 +3343,23 @@
         "textbook": "كتاب دراسي",
         "pastExam": "امتحان سابق",
         "custom": "مخصص"
-      }
+      },
+      "updateVariant": "تحديث المتغير"
+    },
+    "flaggedVariant": {
+      "title": "متغير معلق",
+      "description": "تم الإبلاغ عن هذا المتغير للأسباب التالية:",
+      "descriptionStudent": "تم الإبلاغ عن هذا المتغير من قبل طالب للأسباب التالية:",
+      "descriptionExplainer": "تم الإبلاغ عن هذا المتغير من قبل المشرح للأسباب التالية:",
+      "rejectFlag": "رفض الإبلاغ",
+      "updateHint": "قم بتحديث المتغير أدناه وانقر على 'تحديث المتغير' لإصلاح المشكلة.",
+      "rejectFlagTitle": "رفض الإبلاغ",
+      "rejectFlagDescription": "يرجى تقديم سبب لرفض هذا الإبلاغ. سيتم إرسال السؤال مرة أخرى إلى المعالج للمراجعة.",
+      "rejectionReason": "سبب رفض الإبلاغ",
+      "rejectionReasonPlaceholder": "أدخل سبب رفض هذا الإبلاغ...",
+      "cancel": "إلغاء",
+      "rejecting": "جاري الرفض...",
+      "submitRejection": "إرسال الرفض"
     },
     "profile": {
       "title": "إعدادات الحساب",
@@ -3221,6 +3430,7 @@
       "subtitle": "إضافة شروحات ورسوم بيانية وملاحظات داعمة للأسئلة النهائية.",
       "draft": "مسودة",
       "completed": "مكتمل",
+      "assignedQuestions": "الأسئلة المخصصة",
       "addExplanation": "+ إضافة شرح",
       "pendingExplanations": "الشروحات المعلقة",
       "workflowProgress": "تقدم سير العمل",
@@ -3251,6 +3461,10 @@
         "sentBackForRevision": "تم إرجاعها للمراجعة"
       }
     },
+    "addExplanation": {
+      "saveDraft": "حفظ المسودة",
+      "submit": "إرسال الشرح"
+    },
     "draftExplanation": {
       "title": "مسودات الشروحات",
       "subtitle": "متابعة تعديل مسودات الشروحات الخاصة بك.",
@@ -3276,6 +3490,34 @@
         "action": "الإجراء"
       },
       "emptyMessage": "لم يتم العثور على شروحات مكتملة"
+    },
+    "assignedQuestions": {
+      "title": "الأسئلة المخصصة",
+      "subtitle": "عرض جميع الأسئلة المخصصة لك مع حالتها الحالية.",
+      "back": "رجوع",
+      "searchPlaceholder": "البحث عن الأسئلة...",
+      "loading": "جاري التحميل...",
+      "viewTitle": "عرض السؤال",
+      "viewSubtitle": "عرض تفاصيل السؤال وحالته",
+      "questionDetails": "تفاصيل السؤال",
+      "status": "الحالة",
+      "questionText": "نص السؤال",
+      "questionType": "نوع السؤال",
+      "options": "الخيارات",
+      "correctAnswer": "الإجابة الصحيحة",
+      "explanation": "الشرح",
+      "subject": "المادة",
+      "topic": "الموضوع",
+      "processor": "المعالج",
+      "table": {
+        "question": "السؤال",
+        "subject": "المادة",
+        "processor": "المعالج",
+        "status": "الحالة",
+        "updatedOn": "تم التحديث في",
+        "actions": "الإجراءات"
+      },
+      "emptyMessage": "لم يتم العثور على أسئلة مخصصة"
     },
     "profile": {
       "title": "إعدادات الحساب",
@@ -3402,6 +3644,7 @@
     "explainerSubmission": {
       "title": "تقديم المشرح",
       "back": "رجوع",
+      "searchPlaceholder": "البحث عن الأسئلة...",
       "table": {
         "question": "السؤال",
         "explainer": "المشرح",
@@ -3478,7 +3721,12 @@
       "rejectReasonButton": "رفض السبب",
       "flagReason": "سبب الإبلاغ",
       "flagReasonDescription": "قام المنشئ بالإبلاغ عن هذا السؤال للأسباب التالية:",
+      "flagReasonDescriptionStudent": "قام الطالب بالإبلاغ عن هذا السؤال للأسباب التالية:",
       "flagReasonDescriptionExplainer": "قام المشرح بالإبلاغ عن هذا السؤال للأسباب التالية:",
+      "flagReasonDescriptionRejected": "قام المنشئ بالإبلاغ عن هذا السؤال (تم رفضه من قبل المعالج) للأسباب التالية:",
+      "flagReasonDescriptionStudentRejected": "قام الطالب بالإبلاغ عن هذا السؤال (تم رفضه من قبل المعالج) للأسباب التالية:",
+      "flagReasonDescriptionExplainerRejected": "قام المشرح بالإبلاغ عن هذا السؤال (تم رفضه من قبل المعالج) للأسباب التالية:",
+      "flagRejectedNote": "ملاحظة: تم رفض هذا الإبلاغ سابقاً من قبل المعالج، ولكن لا يزال بإمكانك مراجعة ومعالجة السؤال.",
       "rejectFlagReason": "رفض سبب الإبلاغ",
       "rejectFlagReasonDescription": "يرجى تقديم سبب لرفض إبلاغ المنشئ. سيتم حل الإبلاغ وسيتم إرسال السؤال مرة أخرى إلى المنشئ.",
       "rejectFlagReasonDescriptionExplainer": "يرجى تقديم سبب لرفض إبلاغ المشرح. سيتم حل الإبلاغ وسيتم إرسال السؤال مرة أخرى إلى المشرح.",
@@ -3553,9 +3801,9 @@
     }
   },
   "filter": {
-    "subject": "المادة",
+    "subject": "جميع المواد",
     "role": "الدور",
-    "status": "الحالة"
+    "status": "جميع الحالات"
   },
   "payment": {
     "title": "دفع مويسر",

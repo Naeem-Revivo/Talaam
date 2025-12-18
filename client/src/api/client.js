@@ -39,14 +39,16 @@ axiosClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Check if this is an auth or admin endpoint - skip interceptor toasts for these as they're handled by components
+    // Check if this is an auth, admin, or subscription endpoint - skip interceptor toasts for these as they're handled by components
     const authEndpoints = ['/auth/login', '/auth/signup', '/auth/verify-otp', '/auth/resend-otp', 
                            '/auth/forgot-password', '/auth/reset-password', '/auth/google'];
     const adminEndpoints = ['/admin/create', '/admin/update', '/admin/status'];
+    const subscriptionEndpoints = ['/subscription/me']; // No subscription is a valid state, not an error
     const requestUrl = error.config?.url || '';
     const isAuthEndpoint = authEndpoints.some(endpoint => requestUrl.includes(endpoint));
     const isAdminEndpoint = adminEndpoints.some(endpoint => requestUrl.includes(endpoint));
-    const shouldSkipToast = isAuthEndpoint || isAdminEndpoint;
+    const isSubscriptionEndpoint = subscriptionEndpoints.some(endpoint => requestUrl.includes(endpoint));
+    const shouldSkipToast = isAuthEndpoint || isAdminEndpoint || isSubscriptionEndpoint;
 
     if (error.response) {
       // Handle common response errors

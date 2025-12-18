@@ -60,25 +60,25 @@ const getAllQuestionsForSuperadmin = async (req, res, next) => {
       });
     }
 
-    // Validate ObjectIds for exam, subject, topic
-    const mongoose = require('mongoose');
+    // Validate UUIDs for exam, subject, topic (Prisma uses UUIDs, not MongoDB ObjectIds)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     const errors = [];
     
-    if (exam && !mongoose.Types.ObjectId.isValid(exam)) {
+    if (exam && exam.trim() !== '' && !uuidRegex.test(exam)) {
       errors.push({
         field: 'exam',
         message: 'Invalid exam ID format',
       });
     }
     
-    if (subject && !mongoose.Types.ObjectId.isValid(subject)) {
+    if (subject && subject.trim() !== '' && !uuidRegex.test(subject)) {
       errors.push({
         field: 'subject',
         message: 'Invalid subject ID format',
       });
     }
     
-    if (topic && !mongoose.Types.ObjectId.isValid(topic)) {
+    if (topic && topic.trim() !== '' && !uuidRegex.test(topic)) {
       errors.push({
         field: 'topic',
         message: 'Invalid topic ID format',
@@ -187,6 +187,37 @@ const getAllQuestionsForSuperadmin = async (req, res, next) => {
             name: q.exam.name,
           } : null,
           status: q.status,
+          isFlagged: q.isFlagged || false,
+          flagReason: q.flagReason || null,
+          flagType: q.flagType || null,
+          flaggedBy: q.flaggedBy ? {
+            id: q.flaggedBy.id || q.flaggedBy._id,
+            name: q.flaggedBy.name || q.flaggedBy.fullName || 'N/A',
+            fullName: q.flaggedBy.fullName || null,
+          } : null,
+          flaggedAt: q.flaggedAt || null,
+          createdBy: q.createdBy ? {
+            id: q.createdBy.id || q.createdBy._id,
+            name: q.createdBy.name || q.createdBy.fullName || 'N/A',
+            adminRole: q.createdBy.adminRole || null,
+          } : null,
+          lastModifiedBy: q.lastModifiedBy ? {
+            id: q.lastModifiedBy.id || q.lastModifiedBy._id,
+            name: q.lastModifiedBy.name || q.lastModifiedBy.fullName || 'N/A',
+          } : null,
+          history: q.history && q.history.length > 0 ? q.history.map((h) => ({
+            action: h.action,
+            role: h.role || null, // Include the role from history (gatherer, admin, etc.)
+            performedBy: h.performedBy ? {
+              id: h.performedBy.id || h.performedBy._id,
+              name: h.performedBy.name || h.performedBy.fullName || 'N/A',
+              adminRole: h.performedBy.adminRole || null,
+            } : null,
+            timestamp: h.timestamp || h.createdAt,
+            createdAt: h.timestamp || h.createdAt, // Keep for backward compatibility
+          })) : [],
+          createdAt: q.createdAt,
+          updatedAt: q.updatedAt,
         })),
         pagination: {
           ...result.pagination,
@@ -339,6 +370,20 @@ const getQuestionDetailForSuperadmin = async (req, res, next) => {
           // History
           history: question.history || [],
           
+          // Flag Information
+          isFlagged: question.isFlagged || false,
+          flagType: question.flagType || null,
+          flagReason: question.flagReason || null,
+          flagStatus: question.flagStatus || null,
+          flagRejectionReason: question.flagRejectionReason || null,
+          flaggedBy: question.flaggedBy || null,
+          flaggedAt: question.flaggedAt || null,
+          
+          // Variant Information
+          isVariant: question.isVariant || false,
+          originalQuestionId: question.originalQuestionId || null,
+          originalQuestion: question.originalQuestion || null,
+          
           // Timestamps
           createdAt: question.createdAt,
           updatedAt: question.updatedAt,
@@ -428,6 +473,17 @@ const createQuestion = async (req, res, next) => {
       }
     }
 
+    // Validate TRUE_FALSE specific fields
+    if (questionType === 'TRUE_FALSE') {
+      // Correct answer is required for TRUE_FALSE questions (should be "A" for True or "B" for False)
+      if (!correctAnswer || !['A', 'B'].includes(correctAnswer)) {
+        errors.push({
+          field: 'correctAnswer',
+          message: 'Correct answer is required and must be A (True) or B (False) for True/False questions',
+        });
+      }
+    }
+
     if (errors.length > 0) {
       return res.status(400).json({
         success: false,
@@ -458,7 +514,22 @@ const createQuestion = async (req, res, next) => {
       questionData.correctAnswer = correctAnswer;
     }
 
-    const question = await questionService.createQuestion(questionData, req.user.id);
+    if (questionType === 'TRUE_FALSE') {
+      // Set default options for True/False if not provided
+      questionData.options = options || {
+        A: "True",
+        B: "False",
+      };
+      // Correct answer is required for TRUE_FALSE questions (A for True, B for False)
+      questionData.correctAnswer = correctAnswer;
+    }
+
+    // Get user role - use 'admin' for both admin and superadmin when creating questions
+    const userRole = (req.user.adminRole === 'admin' || req.user.adminRole === 'superadmin') 
+      ? 'admin' 
+      : req.user.adminRole || 'gatherer';
+    
+    const question = await questionService.createQuestion(questionData, req.user.id, userRole);
 
     const response = {
       success: true,
@@ -576,7 +647,13 @@ const getQuestions = async (req, res, next) => {
           correctAnswer: q.correctAnswer,
           explanation: q.explanation,
           status: q.status,
-          createdBy: q.createdBy,
+          createdBy: q.createdBy ? {
+            id: q.createdBy.id || q.createdBy._id,
+            name: q.createdBy.name || q.createdBy.fullName || 'N/A',
+            email: q.createdBy.email || null,
+            role: q.createdBy.role || null,
+            adminRole: q.createdBy.adminRole || null,
+          } : null,
           lastModifiedBy: q.lastModifiedBy,
           assignedProcessor: q.assignedProcessor,
           approvedBy: q.approvedBy,
@@ -587,6 +664,7 @@ const getQuestions = async (req, res, next) => {
           flagStatus: q.flagStatus || null,
           isVariant: q.isVariant || false,
           originalQuestionId: q.originalQuestionId || null,
+          history: q.history || [],
           createdAt: q.createdAt,
           updatedAt: q.updatedAt,
         })),
@@ -661,10 +739,13 @@ const getQuestionById = async (req, res, next) => {
       requestedBy: req.user.id,
     });
 
+    // For superAdmin, pass 'superadmin' as role; otherwise use adminRole
+    const userRole = req.user.role === 'superadmin' ? 'superadmin' : req.user.adminRole;
+    
     const question = await questionService.getQuestionById(
       questionId,
       req.user.id,
-      req.user.adminRole
+      userRole
     );
 
     const response = {
@@ -681,7 +762,13 @@ const getQuestionById = async (req, res, next) => {
           correctAnswer: question.correctAnswer,
           explanation: question.explanation,
           status: question.status,
-          createdBy: question.createdBy,
+          createdBy: question.createdBy ? {
+            id: question.createdBy.id || question.createdBy._id,
+            name: question.createdBy.name || question.createdBy.fullName || 'N/A',
+            email: question.createdBy.email || null,
+            role: question.createdBy.role || null,
+            adminRole: question.createdBy.adminRole || null,
+          } : null,
           lastModifiedBy: question.lastModifiedBy,
           approvedBy: question.approvedBy,
           rejectedBy: question.rejectedBy,
@@ -857,6 +944,166 @@ const updateQuestion = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         message: 'Invalid question ID',
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * Create question with completed status (for superadmin when assigned to me)
+ * POST /admin/questions/completed
+ */
+const createQuestionWithCompletedStatus = async (req, res, next) => {
+  try {
+    const {
+      exam,
+      subject,
+      topic,
+      questionText,
+      questionType,
+      options,
+      correctAnswer,
+      explanation,
+      variants,
+    } = req.body;
+
+    console.log('[QUESTION] POST /admin/questions/completed → requested', {
+      requestedBy: req.user.id,
+      requesterRole: req.user.adminRole,
+    });
+
+    // Validate required fields
+    const errors = [];
+
+    if (!exam) {
+      errors.push({ field: 'exam', message: 'Exam is required' });
+    }
+    if (!subject) {
+      errors.push({ field: 'subject', message: 'Subject is required' });
+    }
+    if (!topic) {
+      errors.push({ field: 'topic', message: 'Topic is required' });
+    }
+    if (!questionText || !questionText.trim()) {
+      errors.push({ field: 'questionText', message: 'Question text is required' });
+    }
+    if (!questionType) {
+      errors.push({ field: 'questionType', message: 'Question type is required' });
+    }
+    if (!explanation || !explanation.trim()) {
+      errors.push({ field: 'explanation', message: 'Explanation is required' });
+    }
+
+    // Validate MCQ specific fields
+    if (questionType === 'MCQ') {
+      if (!options || !options.A || !options.B || !options.C || !options.D) {
+        errors.push({
+          field: 'options',
+          message: 'All four options (A, B, C, D) are required for MCQ questions',
+        });
+      }
+      if (!correctAnswer || !['A', 'B', 'C', 'D'].includes(correctAnswer)) {
+        errors.push({
+          field: 'correctAnswer',
+          message: 'Correct answer is required and must be A, B, C, or D for MCQ questions',
+        });
+      }
+    }
+
+    // Validate TRUE_FALSE specific fields
+    if (questionType === 'TRUE_FALSE') {
+      if (!correctAnswer || !['A', 'B'].includes(correctAnswer)) {
+        errors.push({
+          field: 'correctAnswer',
+          message: 'Correct answer is required and must be A (True) or B (False) for True/False questions',
+        });
+      }
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors,
+      });
+    }
+
+    // Create question data
+    const questionData = {
+      exam,
+      subject,
+      topic,
+      questionText: questionText.trim(),
+      questionType,
+      explanation: explanation.trim(),
+    };
+
+    if (questionType === 'MCQ') {
+      questionData.options = {
+        A: options.A.trim(),
+        B: options.B.trim(),
+        C: options.C.trim(),
+        D: options.D.trim(),
+      };
+      questionData.correctAnswer = correctAnswer;
+    }
+
+    if (questionType === 'TRUE_FALSE') {
+      questionData.options = options || {
+        A: "True",
+        B: "False",
+      };
+      questionData.correctAnswer = correctAnswer;
+    }
+
+    // Get user role - use 'admin' for both admin and superadmin
+    const userRole = (req.user.adminRole === 'admin' || req.user.adminRole === 'superadmin') 
+      ? 'admin' 
+      : req.user.adminRole || 'gatherer';
+    
+    // Create question with completed status and variants
+    const question = await questionService.createQuestionWithCompletedStatus(
+      questionData,
+      req.user.id,
+      variants || []
+    );
+
+    const response = {
+      success: true,
+      message: 'Question created successfully with completed status',
+      data: {
+        question: {
+          id: question._id || question.id,
+          exam: question.exam,
+          subject: question.subject,
+          topic: question.topic,
+          questionText: question.questionText,
+          questionType: question.questionType,
+          options: question.options,
+          correctAnswer: question.correctAnswer,
+          explanation: question.explanation,
+          status: question.status,
+          createdBy: question.createdBy,
+          createdAt: question.createdAt,
+        },
+      },
+    };
+
+    console.log('[QUESTION] POST /admin/questions/completed → 201 (created)', { questionId: question._id || question.id });
+    res.status(201).json(response);
+  } catch (error) {
+    console.error('[QUESTION] POST /admin/questions/completed → error', error);
+    if (error.message === 'Exam not found' || error.message === 'Subject not found' || error.message === 'Topic not found or does not belong to the selected subject') {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
       });
     }
     next(error);
@@ -1111,14 +1358,18 @@ const approveQuestion = async (req, res, next) => {
       requesterRole: req.user.adminRole,
     });
 
+    // For superAdmin, pass 'superadmin' as role; otherwise use adminRole
+    const userRole = req.user.role === 'superadmin' ? 'superadmin' : req.user.adminRole;
+    
     let question;
     if (status === 'approve') {
-      question = await questionService.approveQuestion(questionId, req.user.id, assignedUserId);
+      question = await questionService.approveQuestion(questionId, req.user.id, assignedUserId, userRole);
     } else {
       question = await questionService.rejectQuestion(
         questionId,
         rejectionReason,
-        req.user.id
+        req.user.id,
+        userRole
       );
     }
 
@@ -1409,11 +1660,15 @@ const reviewCreatorFlag = async (req, res, next) => {
       });
     }
 
+    // For superAdmin, pass 'superadmin' as role; otherwise use adminRole
+    const userRole = req.user.role === 'superadmin' ? 'superadmin' : req.user.adminRole;
+    
     const question = await questionService.reviewCreatorFlag(
       questionId,
       decision,
       rejectionReason,
-      req.user.id
+      req.user.id,
+      userRole
     );
 
     const response = {
@@ -1649,11 +1904,15 @@ const reviewExplainerFlag = async (req, res, next) => {
       });
     }
 
+    // For superAdmin, pass 'superadmin' as role; otherwise use adminRole
+    const userRole = req.user.role === 'superadmin' ? 'superadmin' : req.user.adminRole;
+    
     const question = await questionService.reviewExplainerFlag(
       questionId,
       decision,
       rejectionReason,
-      req.user.id
+      req.user.id,
+      userRole
     );
 
     const questionType = question.isVariant ? 'variant' : 'question';
@@ -1753,11 +2012,15 @@ const reviewStudentFlag = async (req, res, next) => {
       });
     }
 
+    // For superAdmin, pass 'superadmin' as role; otherwise use adminRole
+    const userRole = req.user.role === 'superadmin' ? 'superadmin' : req.user.adminRole;
+    
     const question = await questionService.reviewStudentFlag(
       questionId,
       decision,
       rejectionReason,
-      req.user.id
+      req.user.id,
+      userRole
     );
 
     const response = {
@@ -2429,10 +2692,14 @@ const rejectGathererFlagRejection = async (req, res, next) => {
       });
     }
 
+    // For superAdmin, pass 'superadmin' as role; otherwise use adminRole
+    const userRole = req.user.role === 'superadmin' ? 'superadmin' : req.user.adminRole;
+    
     const question = await questionService.rejectGathererFlagRejection(
       questionId,
       rejectionReason,
-      req.user.id
+      req.user.id,
+      userRole
     );
 
     const response = {
@@ -2635,6 +2902,7 @@ module.exports = {
   getAllQuestionsForSuperadmin,
   getQuestionDetailForSuperadmin,
   createQuestion,
+  createQuestionWithCompletedStatus,
   getQuestions,
   getGathererStats,
   getGathererQuestions,

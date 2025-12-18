@@ -112,9 +112,18 @@ const PracticePage = () => {
         const response = await subjectsAPI.getAllSubjects();
         if (response.success && response.data) {
           setSubjects(response.data.subjects || response.data);
+        } else {
+          setSubjects([]);
         }
       } catch (error) {
         console.error('Error fetching subjects:', error);
+        // Handle permission errors gracefully
+        if (error.response?.status === 403 || error.response?.status === 401) {
+          showErrorToast('You do not have permission to access subjects. Please contact support.');
+        } else {
+          showErrorToast(error.message || 'Failed to load subjects. Please try again.');
+        }
+        setSubjects([]);
       } finally {
         setLoadingSubjects(false);
       }
@@ -148,14 +157,24 @@ const PracticePage = () => {
                   };
                 } catch (error) {
                   console.error(`Error fetching count for topic ${topic.id}:`, error);
+                  // Don't show toast for individual topic count errors
                   return { ...topic, count: 0 };
                 }
               })
             );
             setTopics(topicsWithCounts);
+          } else {
+            setTopics([]);
           }
         } catch (error) {
           console.error('Error fetching topics:', error);
+          // Handle permission errors gracefully
+          if (error.response?.status === 403 || error.response?.status === 401) {
+            showErrorToast('You do not have permission to access topics. Please contact support.');
+          } else {
+            showErrorToast(error.message || 'Failed to load topics. Please try again.');
+          }
+          setTopics([]);
         } finally {
           setLoadingTopics(false);
         }
@@ -234,7 +253,7 @@ const PracticePage = () => {
       {/* Session Mode and Question Status Cards - Flexed */}
       <div className="flex flex-col xl:flex-row justify-start gap-2 mb-6">
         {/* Session Mode Card */}
-        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:h-[266px]">
+        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:h-full">
         <h2 className="font-archivo font-bold text-lg md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-4">
           {t('dashboard.practice.sessionMode.title')}
         </h2>
@@ -311,7 +330,7 @@ const PracticePage = () => {
         </div>
 
         {/* Question Status Card */}
-        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:h-[266px]">
+        <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full lg:h-auto">
         <h2 className="font-archivo font-bold text-[18px] md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-4">
           {t('dashboard.practice.questionStatus.title')}
         </h2>

@@ -37,7 +37,16 @@
         "emailTemplate": "Email Templates",
         "rolesPermissions": "Admin Roles & Permissions",
         "userManagement": "User Management",
+        "studentManagement": "Student Management",
         "questionBank": "Question Bank",
+        "pendingProcessor": "Pending Processor",
+        "pendingProcessorView": "Review Pending Processor Question",
+        "pendingCreator": "Pending Creator",
+        "pendingCreatorView": "View Pending Creator Question",
+        "pendingExplainer": "Pending Explainer",
+        "pendingExplainerView": "View Pending Explainer Question",
+        "sentBackQuestions": "Sent Back Questions",
+        "sentBackQuestionsView": "View Sent Back Question",
         "questionManagement": "Question Management",
         "addQuestion": "Add New Question",
         "questionDetails": "View Question Details",
@@ -715,15 +724,29 @@
         "title": "Your Current Plan",
         "planName": "Professional Plan",
         "statusActive": "Active",
+        "statusPending": "Pending",
+        "statusCancelled": "Cancelled",
+        "statusInactive": "Inactive",
         "cancelSubscription": "Cancel Subscription",
         "upgradePlan": "Upgrade Plan",
+        "renewPlan": "Renew Plan",
         "plan": "Plan:",
         "renewsOn": "Renews on:",
         "access": "Access:",
         "autoRenew": "Auto-Renew:",
         "monthly": "Monthly",
+        "quarterly": "Quarterly",
+        "semiAnnual": "Semi-Annual",
+        "annual": "Annual",
         "questionBankAccess": "Question Bank Access",
-        "on": "On"
+        "on": "On",
+        "off": "Off",
+        "cancelModalTitle": "Cancel Subscription",
+        "cancelModalMessage": "Are you sure you want to cancel your subscription?",
+        "cancelModalSubMessage": "This action cannot be undone. Your subscription will remain active until the end of the current billing period.",
+        "cancelConfirm": "Cancel Subscription",
+        "cancelCancel": "Keep Subscription",
+        "noPlanAvailable": "No subscription plan available"
       },
       "pricingPlans": {
         "title": "Choose the Right Plan for You",
@@ -1068,7 +1091,12 @@
     "sidebar": {
       "dashboard": "Dashboard",
       "userManagement": "User Management",
+      "studentManagement": "Student Management",
       "questionBank": "Question Bank",
+      "pendingProcessor": "Pending Processor",
+      "pendingCreator": "Pending Creator",
+      "pendingExplainer": "Pending Explainer",
+      "sentBackQuestions": "Sent Back Questions",
       "classification": "Classification",
       "subscriptions": "Subscriptions",
       "paymentHistory": "Payment History",
@@ -1093,7 +1121,7 @@
         "activeSubscriptions": "Active Subscriptions",
         "revenue": "Revenue",
         "fromLastMonth": "+12% from last month",
-        "verificationRate": "72% verification rate",
+        "verificationRate": "verification rate",
         "thisWeek": "+8% this week",
         "thisMonth": "+15% this month"
       },
@@ -1196,6 +1224,133 @@
         "fileName": "user-management.csv"
       }
     },
+    "studentManagement": {
+      "hero": {
+        "title": "Student Management",
+        "subtitle": "Manage student accounts, subscription, and activity analytics."
+      },
+      "summary": {
+        "totalStudents": "Total Students",
+        "activeStudents": "Active Students",
+        "suspended": "Suspended",
+        "verifiedUnverified": "Verified / Unverified"
+      },
+      "status": {
+        "active": "Active",
+        "suspended": "Suspended"
+      },
+      "subscription": {
+        "free": "Free",
+        "trial": "Trial",
+        "premium": "Premium"
+      },
+      "filters": {
+        "searchPlaceholder": "Search by name, email or ID",
+        "filter": "Filter",
+        "plan": "Plan",
+        "status": "Status",
+        "date": "Date",
+        "all": "All",
+        "refresh": "Refresh",
+        "applyFilters": "Apply Filters",
+        "plans": {
+          "free": "Free",
+          "trial": "Trial",
+          "premium": "Premium"
+        },
+        "dateOptions": {
+          "today": "Today",
+          "thisWeek": "This Week",
+          "thisMonth": "This Month",
+          "thisYear": "This Year"
+        }
+      },
+      "table": {
+        "headers": {
+          "studentId": "STUDENT ID",
+          "name": "NAME",
+          "email": "EMAIL",
+          "subscription": "SUBSCRIPTION",
+          "progress": "PROGRESS",
+          "signUpDate": "SIGN UP DATE",
+          "status": "STATUS",
+          "actions": "ACTIONS"
+        },
+        "emptyState": "No students match the current filters.",
+        "pagination": {
+          "showing": "Showing {{first}} to {{last}} of {{total}} results",
+          "previous": "Previous",
+          "next": "Next"
+        },
+        "ariaLabels": {
+          "view": "View {{name}}",
+          "edit": "Edit {{name}}",
+          "delete": "Delete {{name}}",
+          "suspend": "Suspend {{name}}",
+          "activate": "Activate {{name}}"
+        },
+        "actions": {
+          "suspend": "Suspend",
+          "activate": "Activate"
+        }
+      }
+    },
+    "studentDetail": {
+      "hero": {
+        "title": "Student Profile",
+        "subtitle": "View complete account and activity information"
+      },
+      "studentId": "Student ID",
+      "emailAddress": "Email Address",
+      "subscriptionPlan": "Subscription Plan",
+      "exp": "Exp",
+      "signupDate": "Signup Date",
+      "manageSubscription": "Manage Subscription",
+      "activityOverview": {
+        "title": "Activity Overview",
+        "avgScore": "Avg Score",
+        "totalTest": "Total Test",
+        "correctAnswer": "Correct Answer",
+        "incorrect": "incorrect"
+      },
+      "activityTrend": {
+        "title": "Activity Trend (Last 7 Days)",
+        "lastActive": "Last Active",
+        "averageScore": "Average Score",
+        "good": "Good",
+        "activityLevel": "ACTIVITY LEVEL"
+      },
+      "flaggedIssues": {
+        "title": "Flag / Reported Issues",
+        "reportedAndFlagged": "Reported and Flagged Questions",
+        "flaggedOn": "Flagged on",
+        "severity": "Severity",
+        "reason": "Reason",
+        "status": "Status",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "pending": "Pending",
+        "noIssues": "No reported issues"
+      },
+      "progressBreakdown": {
+        "title": "Progress Breakdown",
+        "testName": "Test Name",
+        "date": "Date",
+        "score": "Score",
+        "result": "Result",
+        "action": "Action",
+        "passed": "Passed",
+        "failed": "Failed",
+        "viewTest": "View {{test}}",
+        "noData": "No progress data available"
+      },
+      "actions": {
+        "editStudent": "Edit Student",
+        "back": "Back",
+        "suspendAccount": "Suspend Account",
+        "activateAccount": "Activate Account"
+      }
+    },
     "addUser": {
       "hero": {
         "title": "Add New User",
@@ -1275,10 +1430,37 @@
         "title": "Question Bank",
         "subtitle": "Manage filter and review all questions by subject topic or role."
       },
+      "pendingProcessor": {
+        "title": "Pending Processor",
+        "subtitle": "View and manage questions pending processor review."
+      },
+      "pendingCreator": {
+        "title": "Pending Creator",
+        "subtitle": "View and manage questions pending creator review.",
+        "viewQuestion": {
+          "title": "View Pending Creator Question"
+        }
+      },
+      "pendingExplainer": {
+        "title": "Pending Explainer",
+        "subtitle": "View and manage questions pending explainer review.",
+        "viewQuestion": {
+          "title": "Add Explanation"
+        }
+      },
+      "sentBackQuestions": {
+        "title": "Sent Back Questions",
+        "subtitle": "View and manage questions sent back to gatherer (flagged and rejected questions).",
+        "view": {
+          "title": "View Sent Back Question"
+        }
+      },
+      "loading": "Loading questions...",
       "actions": {
         "questionManagement": "Question Management",
         "users": "Users",
         "addNewQuestion": "+ Add New Question",
+        "sentBackQuestions": "Sent Back Questions",
         "import": "Import",
         "export": "Export"
       },
@@ -1309,6 +1491,8 @@
           "topic": "Topic",
           "level": "Level",
           "createdBy": "Created By",
+          "flags": "Flags",
+          "lastAction": "Last Action",
           "status": "Status",
           "actions": "Actions"
         },
@@ -1352,7 +1536,8 @@
         "cognitiveLevel": "Cognitive Level",
         "source": "Source (Optional)",
         "exam": "Exam",
-        "reference": "Reference"
+        "reference": "Reference",
+        "processor": "Processor"
       },
       "placeholders": {
         "questionText": "Enter your question text here...",
@@ -1446,7 +1631,8 @@
         "delete": "Delete",
         "edit": "Edit",
         "createVariant": "+ Create Variant",
-        "addComment": "Add Comment"
+        "addComment": "Add Comment",
+        "back": "Back"
       },
       "sections": {
         "questionInfo": "Question Info",
@@ -1462,6 +1648,7 @@
         "correctAnswer": "Correct Answer",
         "subject": "Subject",
         "topic": "Topic",
+        "exam": "Exam",
         "cognitiveLevel": "Cognitive Level",
         "createdBy": "Created by",
         "submittedOn": "Submitted on",
@@ -1470,7 +1657,10 @@
         "createdByVariant": "Created By"
       },
       "status": {
-        "inReview": "In Review"
+        "inReview": "In Review",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
       },
       "placeholders": {
         "addComments": "add comments"
@@ -2093,7 +2283,7 @@
     "classificationManagement": {
       "hero": {
         "title": "Classification Management",
-        "subtitle": "Organize questions by subject, topic, subtopic, and concept"
+        "subtitle": "Organize questions by subject, topic, Exam"
       },
       "actions": {
         "export": "Export",
@@ -2154,9 +2344,11 @@
         "selectSubject": "Select Subject",
         "selectTopic": "Select Topic",
         "selectSubtopic": "Select Subtopic",
+        "selectExam": "Select Exam",
         "allSubjects": "All Subjects",
         "allTopics": "All Topics",
-        "allSubtopics": "All Subtopics"
+        "allSubtopics": "All Subtopics",
+        "allExams": "All Exams"
       },
       "headings": {
         "subject": "Classification Management",
@@ -2700,6 +2892,7 @@
       "table": {
         "columns": {
           "number": "#",
+          "questionTitle": "QUESTION TITLE",
           "contentType": "CONTENT TYPE",
           "submittedBy": "SUBMITTED BY",
           "flagReason": "FLAG REASON",
@@ -2770,7 +2963,7 @@
     },
     "filter": {
         "search": "Search by Questions, subject, topic",
-        "subject": "Subject",
+        "subject": "All Subject",
         "exam": "Exam",
         "topic": "Topic"
       },
@@ -3025,6 +3218,7 @@
       "sentBackByProcessor": "Sent Back by Processor",
       "workflowProgress": "Workflow Progress",
       "recentActivity": "Recent Activity",
+      "noActivity": "No recent activity",
       "stats": {
         "questionsAssigned": "Questions Assigned",
         "variantsPending": "Variants Pending",
@@ -3148,7 +3342,23 @@
         "textbook": "Textbook",
         "pastExam": "Past Exam",
         "custom": "Custom"
-      }
+      },
+      "updateVariant": "Update Variant"
+    },
+    "flaggedVariant": {
+      "title": "Flagged Variant",
+      "description": "This variant has been flagged with the following reason:",
+      "descriptionStudent": "This variant has been flagged by a student with the following reason:",
+      "descriptionExplainer": "This variant has been flagged by an explainer with the following reason:",
+      "rejectFlag": "Reject Flag",
+      "updateHint": "Update the variant below and click 'Update Variant' to fix the issue.",
+      "rejectFlagTitle": "Reject Flag",
+      "rejectFlagDescription": "Please provide a reason for rejecting this flag. The question will be sent back to the processor for review.",
+      "rejectionReason": "Reason for Rejecting Flag",
+      "rejectionReasonPlaceholder": "Enter the reason for rejecting this flag...",
+      "cancel": "Cancel",
+      "rejecting": "Rejecting...",
+      "submitRejection": "Submit Rejection"
     },
     "profile": {
       "title": "Account Settings",
@@ -3219,6 +3429,7 @@
       "subtitle": "Add explanations, diagrams, and supporting notes to finalized Questions.",
       "draft": "Draft",
       "completed": "Completed",
+      "assignedQuestions": "Assigned Questions",
       "addExplanation": "+ Add Explanation",
       "pendingExplanations": "Pending Explanations",
       "workflowProgress": "Workflow Progress",
@@ -3249,6 +3460,10 @@
       },
       "emptyMessage": "No questions found"
     },
+    "addExplanation": {
+      "saveDraft": "Save Draft",
+      "submit": "Submit explanation"
+    },
     "draftExplanation": {
       "title": "Draft Explanations",
       "subtitle": "Continue editing your draft explanations.",
@@ -3274,6 +3489,34 @@
         "action": "ACTION"
       },
       "emptyMessage": "No completed explanations found"
+    },
+    "assignedQuestions": {
+      "title": "Assigned Questions",
+      "subtitle": "View all questions assigned to you with their current status.",
+      "back": "Back",
+      "searchPlaceholder": "Search questions...",
+      "loading": "Loading...",
+      "viewTitle": "View Question",
+      "viewSubtitle": "View question details and status",
+      "questionDetails": "Question Details",
+      "status": "Status",
+      "questionText": "Question Text",
+      "questionType": "Question Type",
+      "options": "Options",
+      "correctAnswer": "Correct Answer",
+      "explanation": "Explanation",
+      "subject": "Subject",
+      "topic": "Topic",
+      "processor": "Processor",
+      "table": {
+        "question": "QUESTION",
+        "subject": "SUBJECT",
+        "processor": "PROCESSOR",
+        "status": "STATUS",
+        "updatedOn": "UPDATED ON",
+        "actions": "ACTIONS"
+      },
+      "emptyMessage": "No assigned questions found"
     },
     "profile": {
       "title": "Account Settings",
@@ -3400,6 +3643,7 @@
     "explainerSubmission": {
       "title": "Explainer Submission",
       "back": "Back",
+      "searchPlaceholder": "Search questions...",
       "table": {
         "question": "QUESTION",
         "explainer": "EXPLAINER",
@@ -3476,7 +3720,12 @@
       "rejectReasonButton": "Reject Reason",
       "flagReason": "Flag Reason",
       "flagReasonDescription": "The creator has flagged this question with the following reason:",
+      "flagReasonDescriptionStudent": "The student has flagged this question with the following reason:",
       "flagReasonDescriptionExplainer": "The explainer has flagged this question with the following reason:",
+      "flagReasonDescriptionRejected": "The creator flagged this question (rejected by processor) with the following reason:",
+      "flagReasonDescriptionStudentRejected": "The student flagged this question (rejected by processor) with the following reason:",
+      "flagReasonDescriptionExplainerRejected": "The explainer flagged this question (rejected by processor) with the following reason:",
+      "flagRejectedNote": "Note: This flag was previously rejected by the processor, but you can still review and process the question.",
       "rejectFlagReason": "Reject Flag Reason",
       "rejectFlagReasonDescription": "Please provide a reason for rejecting the creator's flag. The flag will be resolved and the question will be sent back to the creator.",
       "rejectFlagReasonDescriptionExplainer": "Please provide a reason for rejecting the explainer's flag. The flag will be resolved and the question will be sent back to the explainer.",
@@ -3551,9 +3800,9 @@
     }
   },
   "filter": {
-    "subject": "Subject",
+    "subject": "All Subject",
     "role": "Role",
-    "status": "Status"
+    "status": "All Status"
   },
   "payment": {
     "title": "Moyassar Payment",
