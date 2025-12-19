@@ -1,17 +1,20 @@
 import React from "react";
 import { mind, book, ielts, toefl, add, feature, tick, lock, arrowup } from "../../assets/svg";
+import { useLanguage } from "../../context/LanguageContext";
 
 const QuestionBankDashboard = () => {
+  const { t } = useLanguage();
+  
   const exams = [
     {
       id: 1,
       name: "Qudurat",
       icon: mind,
       iconBgColor: "bg-[#E43F21]",
-      status: "Subscribed",
+      status: t("questionBanks.exams.subscribed"),
       statusColor: "bg-orange-dark",
       textColor: "text-white",
-      buttonText: "START STUDYING",
+      buttonText: t("questionBanks.exams.startStudying"),
       statusIcon: tick,
       statusIconBg: "bg-white",
     },
@@ -20,10 +23,10 @@ const QuestionBankDashboard = () => {
       name: "Tahseely",
       icon: book,
       iconBgColor: "bg-oxford-blue",
-      status: "Not Subscribed",
+      status: t("questionBanks.exams.notSubscribed"),
       statusColor: "bg-[#FDF0D5]",
       textColor: "text-orange-dark",
-      buttonText: "UPGRADE TO ACCESS",
+      buttonText: t("questionBanks.exams.upgradeToAccess"),
       statusIcon: lock,
       statusIconBg: "bg-orange-dark",
     },
@@ -32,10 +35,10 @@ const QuestionBankDashboard = () => {
       name: "IELTS",
       icon: ielts,
       iconBgColor: "bg-[#E43F21]",
-      status: "Subscribed",
+      status: t("questionBanks.exams.subscribed"),
       statusColor: "bg-orange-dark",
       textColor: "text-white",
-      buttonText: "START STUDYING",
+      buttonText: t("questionBanks.exams.startStudying"),
       statusIcon: tick,
       statusIconBg: "bg-white",
     },
@@ -44,22 +47,22 @@ const QuestionBankDashboard = () => {
       name: "TOEFL",
       icon: toefl,
       iconBgColor: "bg-oxford-blue",
-      status: "Not Subscribed",
+      status: t("questionBanks.exams.notSubscribed"),
       statusColor: "bg-[#FDF0D5]",
       textColor: "text-orange-dark",
-      buttonText: "UPGRADE TO ACCESS",
+      buttonText: t("questionBanks.exams.upgradeToAccess"),
       statusIcon: lock,
       statusIconBg: "bg-orange-dark",
     },
     {
       id: 5,
-      name: "More Exams Coming Soon",
+      name: t("questionBanks.exams.moreExamsComingSoon"),
       icon: add,
       isPlaceholder: true,
     },
     {
       id: 6,
-      name: "Advanced Features",
+      name: t("questionBanks.exams.advancedFeatures"),
       icon: feature,
       isPlaceholder: true,
     },
@@ -71,10 +74,10 @@ const QuestionBankDashboard = () => {
       <div className="w-full h-auto md:h-auto lg:h-[277px] bg-soft-orange-fade flex items-center justify-center py-8 md:py-10 lg:py-0">
         <div className="text-center px-4 md:px-6 lg:px-0">
           <h1 className="text-oxford-blue font-archivo font-bold text-[32px] md:text-[50px] lg:text-[70px] leading-[120%] md:leading-[105%] lg:leading-[91px] tracking-[0] align-middle">
-            Your Question Banks
+            {t("questionBanks.hero.title")}
           </h1>
           <p className="font-roboto font-normal text-[14px] md:text-[15px] lg:text-[16px] leading-[140%] md:leading-[130%] lg:leading-[25.6px] tracking-[0] align-middle text-oxford-blue mt-2 px-4 md:px-8 lg:px-0">
-            Access the exams you're subscribed to, or upgrade to unlock more.
+            {t("questionBanks.hero.subtitle")}
           </p>
         </div>
       </div>
@@ -124,7 +127,7 @@ const QuestionBankDashboard = () => {
                       {/* Status Button */}
                       <div
                         className={`${exam.statusColor} px-2 py-1 md:px-2.5 md:py-1.5 lg:px-3 lg:py-1.5 rounded-full flex items-center gap-1 md:gap-1.5 lg:gap-1.5 ${
-                          exam.status === "Not Subscribed" ? "w-[129px] md:w-auto" : "w-[105px] md:w-auto"
+                          exam.status === t("questionBanks.exams.notSubscribed") ? "w-[129px] md:w-auto" : "w-[105px] md:w-auto"
                         } h-[24px] lg:w-auto lg:h-auto justify-center flex-shrink-0`}
                       >
                         <div className={`${exam.statusIconBg} w-4 h-4 md:w-5.5 md:h-5.5 lg:w-6 lg:h-6 rounded-full flex items-center justify-center`}>
@@ -139,7 +142,7 @@ const QuestionBankDashboard = () => {
                     {/* Bottom Section - Action Button */}
                     <button className="w-full lg:w-[530px] h-[40px] md:h-[52px] lg:h-[54px] rounded-lg bg-gradient-to-r from-orange-dark to-orange-light text-white hover:opacity-90 transition-opacity font-archivo font-semibold text-[11px] md:text-[13px] lg:text-[14px] leading-[14px] tracking-[0] align-middle uppercase">
                       <div className="flex items-center justify-center gap-1.5">
-                        {exam.buttonText === "UPGRADE TO ACCESS" && (
+                        {exam.buttonText === t("questionBanks.exams.upgradeToAccess") && (
                           <p><img src={arrowup} alt="" className="w-[9px] h-[11px] md:w-[11px] md:h-[13px] lg:w-[12px] lg:h-[14px]" /></p>
                         )}
                         <p className="">{exam.buttonText}</p>

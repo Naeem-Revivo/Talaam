@@ -335,6 +335,20 @@
       }
     }
   },
+  "questionBanks": {
+    "hero": {
+      "title": "Your Question Banks",
+      "subtitle": "Access the exams you're subscribed to, or upgrade to unlock more."
+    },
+    "exams": {
+      "subscribed": "Subscribed",
+      "notSubscribed": "Not Subscribed",
+      "startStudying": "START STUDYING",
+      "upgradeToAccess": "UPGRADE TO ACCESS",
+      "moreExamsComingSoon": "More Exams Coming Soon",
+      "advancedFeatures": "Advanced Features"
+    }
+  },
   "about": {
     "hero": {
       "title1": "About",

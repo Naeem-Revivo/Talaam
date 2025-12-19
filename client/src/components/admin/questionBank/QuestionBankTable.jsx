@@ -291,7 +291,27 @@ const Pagination = ({ page, pageSize, total, onPageChange, t, dir }) => {
     if (page < safeTotalPages) onPageChange?.(page + 1);
   };
 
-  const pages = Array.from({ length: safeTotalPages }, (_, index) => index + 1);
+  // Calculate which pages to show (sliding window of 3 pages)
+  const getVisiblePages = () => {
+    if (safeTotalPages <= 3) {
+      // If total pages is 3 or less, show all pages
+      return Array.from({ length: safeTotalPages }, (_, index) => index + 1);
+    }
+    
+    // Start with pages 1, 2, 3
+    if (page <= 3) {
+      return [1, 2, 3];
+    }
+    
+    // When page is 4 or more, show a sliding window of 3 pages
+    // Show current page and 2 pages before it
+    const startPage = page - 2;
+    const endPage = Math.min(safeTotalPages, page);
+    
+    return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
+  };
+
+  const pages = getVisiblePages();
 
   return (
     <div 
