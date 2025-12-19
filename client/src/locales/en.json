@@ -1187,6 +1187,7 @@
           "organization": "Organization"
         }
       },
+      "loading": "Loading dashboard data...",
       "sections": {
         "latestSignups": "Latest Sign-ups",
         "systemNotifications": "System Notifications"
@@ -1217,6 +1218,7 @@
         "title": "User Management",
         "subtitle": "Manage user accounts and workflow roles."
       },
+      "loading": "Loading...",
       "actions": {
         "addNewUser": "+ Add New User",
         "export": "Export"
@@ -1276,6 +1278,7 @@
         "title": "Student Management",
         "subtitle": "Manage student accounts, subscription, and activity analytics."
       },
+      "loading": "Loading...",
       "summary": {
         "totalStudents": "Total Students",
         "activeStudents": "Active Students",
@@ -1347,6 +1350,7 @@
         "title": "Student Profile",
         "subtitle": "View complete account and activity information"
       },
+      "loading": "Loading...",
       "studentId": "Student ID",
       "emailAddress": "Email Address",
       "subscriptionPlan": "Subscription Plan",
@@ -1553,6 +1557,11 @@
         "ariaLabels": {
           "view": "View {{prompt}}"
         }
+      }
+    },
+    "sentBackQuestions": {
+      "view": {
+        "title": "View Sent Back Question"
       }
     },
     "addNewQuestion": {
@@ -2088,6 +2097,7 @@
       "hero": {
         "title": "Subscription Trend"
       },
+      "loading": "Loading subscription data...",
       "actions": {
         "comparePeriod": "Compare period",
         "exportReport": "Export Report"
@@ -2135,6 +2145,7 @@
         "title": "Reports & Analytics",
         "subtitle": "Monitor student performance, question usage, and test activity."
       },
+      "loading": "Loading analytics data...",
       "actions": {
         "exportReport": "Export Report"
       },
@@ -2984,6 +2995,7 @@
       "hero": {
         "title": "Content Details"
       },
+      "loading": "Loading...",
       "sections": {
         "reportInformation": "Report Information",
         "content": "Content",
@@ -3271,11 +3283,13 @@
       },
       "lastLogin": {
         "title": "Last Login"
-      }
+      },
+      "loading": "Loading dashboard data..."
     },
     "questionBank": {
       "title": "Creator Dashboard",
       "subtitle": "Improve questions,create variants,and submit enhanced versions for final review.",
+      "loading": "Loading questions...",
       "completedQuestions": "Completed Questions",
       "createVariants": "Create Variants",
       "assignedQuestions": "Assigned Questions",
@@ -3649,9 +3663,11 @@
       "lastLogin": {
         "title": "Last Login"
       },
-      "pendingTasks": "Pending Tasks"
+      "pendingTasks": "Pending Tasks",
+      "loading": "Loading dashboard data..."
     },
     "questionBank": {
+      "loading": "Loading questions...",
       "title": "Processor Dashboard",
       "subtitle": "Review incoming questions, accept or reject, and pass them to creators.",
       "allProcessedQuestions": "All Processed Questions",
@@ -3680,6 +3696,7 @@
     "creatorSubmission": {
       "title": "Creator Submissions",
       "back": "Back",
+      "loading": "Loading...",
       "table": {
         "question": "QUESTION",
         "creator": "CREATOR",
@@ -3708,6 +3725,7 @@
     "explainerSubmission": {
       "title": "Explainer Submission",
       "back": "Back",
+      "loading": "Loading...",
       "searchPlaceholder": "Search questions...",
       "table": {
         "question": "QUESTION",
@@ -3723,6 +3741,7 @@
     "adminSubmission": {
       "title": "Admin Submission",
       "back": "Back",
+      "loading": "Loading...",
       "table": {
         "question": "QUESTION",
         "student": "STUDENT",
@@ -3744,6 +3763,7 @@
     "allProcessedQuestions": {
       "title": "All Processed Questions",
       "back": "Back",
+      "loading": "Loading...",
       "table": {
         "questionTitle": "QUESTION",
         "status": "STATUS",
@@ -3781,6 +3801,9 @@
       "cancel": "Cancel",
       "confirmReject": "Confirm Reject",
       "loading": "Loading question...",
+      "processing": "Processing...",
+      "loadingCreators": "Loading creators...",
+      "loadingExplainers": "Loading explainers...",
       "noOptions": "No options available for this question type.",
       "approveReason": "Approve Reason",
       "rejectReasonButton": "Reject Reason",
@@ -3891,6 +3914,7 @@
     "dismiss": "Dismiss"
   },
   "common": {
+    "loading": "Loading...",
     "months": {
       "january": "January",
       "february": "February",
