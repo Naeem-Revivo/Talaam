@@ -20,7 +20,7 @@ export default function AddNewExam() {
         if (success) {
             showSuccessToast("Exam created successfully");
             dispatch(clearSuccess());
-            navigate("/admin/classification");
+            navigate("/admin/classification?tab=Exams");
         }
     }, [success, navigate, dispatch]);
 

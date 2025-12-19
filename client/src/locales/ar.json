@@ -925,7 +925,8 @@
         "previous": "السابق",
         "next": "التالي",
         "loadMore": "تحميل المزيد من النتائج"
-      }
+      },
+      "noSessions": "لم يتم العثور على جلسات"
     },
     "reviewIncorrect": {
       "item": "عنصر {{current}} من {{total}}",
@@ -2901,7 +2902,7 @@
       "table": {
         "columns": {
           "number": "#",
-          "questionTitle": "عنوان السؤال",
+          "questionTitle": "السؤال",
           "contentType": "نوع المحتوى",
           "submittedBy": "تم الإرسال بواسطة",
           "flagReason": "سبب الإبلاغ",
@@ -3662,6 +3663,7 @@
       "table": {
         "question": "السؤال",
         "student": "الطالب",
+        "role": "الدور",
         "processorStatus": "حالة المعالج",
         "adminStatus": "حالة الإدارة",
         "submittedOn": "تم الإرسال في",

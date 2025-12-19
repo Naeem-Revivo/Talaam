@@ -254,7 +254,11 @@ const CreatorVariantsListPage = () => {
                             ) : (
                               variants.map((variant, index) => {
                                 // Format status
-                                const formatStatus = (status) => {
+                                const formatStatus = (status, isFlagged) => {
+                                  // Check if variant is flagged first
+                                  if (isFlagged) {
+                                    return 'Flagged';
+                                  }
                                   if (!status) return "—";
                                   const statusMap = {
                                     'pending_processor': 'Pending',
@@ -268,12 +272,13 @@ const CreatorVariantsListPage = () => {
                                   ).join(' ');
                                 };
 
+                                const isFlagged = variant.isFlagged === true || variant.isFlagged === 'true';
                                 const isRejected = variant.status === 'rejected' && variant.rejectionReason;
 
                                 return (
                                   <div
                                     key={variant.id || index}
-                                    className={`p-4 rounded-[8px] border ${isRejected ? 'border-[#ED4122] bg-[#FEF2F2]' : 'border-[#E5E7EB] bg-white'} hover:border-[#ED4122] transition-colors cursor-pointer`}
+                                    className={`p-4 rounded-[8px] border ${isRejected || isFlagged ? 'border-[#ED4122] bg-[#FEF2F2]' : 'border-[#E5E7EB] bg-white'} hover:border-[#ED4122] transition-colors cursor-pointer`}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleVariantClick(variant);
@@ -286,8 +291,8 @@ const CreatorVariantsListPage = () => {
                                           dangerouslySetInnerHTML={{ __html: getQuestionTitle(variant.questionText) }}
                                         />
                                         <div className="flex flex-col gap-1">
-                                          <span className={`font-roboto text-[12px] ${isRejected ? 'text-[#ED4122] font-semibold' : 'text-dark-gray'}`}>
-                                            Status: {formatStatus(variant.status)}
+                                          <span className={`font-roboto text-[12px] ${isRejected || isFlagged ? 'text-[#ED4122] font-semibold' : 'text-dark-gray'}`}>
+                                            Status: {formatStatus(variant.status, isFlagged)}
                                           </span>
                                           {isRejected && variant.rejectionReason && (
                                             <span className="font-roboto text-[11px] text-dark-gray line-clamp-2">

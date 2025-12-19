@@ -27,7 +27,7 @@ export default function AddTopicPage() {
         if (success) {
             showSuccessToast("Topic created successfully");
             dispatch(clearSuccess());
-            navigate("/admin/classification");
+            navigate("/admin/classification?tab=Topics");
         }
     }, [success, navigate, dispatch]);
 

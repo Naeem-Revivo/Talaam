@@ -5,7 +5,7 @@ import ClassificationTable from "../../components/admin/ClassificationManaement/
 import Tabs from "../../components/admin/ClassificationManaement/ClassificationTab";
 import StatsCards from "../../components/admin/ClassificationManaement/StatsCard";
 import { useAdminSubjects } from "../../context/AdminClassificationContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { ConfirmationModal } from "../../components/common/ConfirmationModal";
 import { fetchExams, deleteExam, updateExam, clearError as clearExamError, clearSuccess as clearExamSuccess } from "../../store/slices/examsSlice";
@@ -212,13 +212,35 @@ const ClassificationManagement = () => {
   const { t } = useLanguage();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   // Redux state for exams, subjects, and topics
   const { exams: examsData, loading: examsLoading, error: examsError, success: examsSuccess } = useSelector((state) => state.exams);
   const { subjects: subjectsData, loading: subjectsLoading, error: subjectsError, success: subjectsSuccess } = useSelector((state) => state.subjects);
   const { topics: topicsData, loading: topicsLoading, error: topicsError, success: topicsSuccess } = useSelector((state) => state.topics);
   
-  const [activeTab, setActiveTab] = useState("Exams");
+  // Get tab from URL query parameter, default to "Exams"
+  const tabFromUrl = searchParams.get('tab');
+  const initialTab = tabFromUrl === 'Subject' ? 'Subject' : 
+                     tabFromUrl === 'Topics' ? 'Topics' : 
+                     tabFromUrl === 'Exams' ? 'Exams' : 'Exams';
+  
+  const [activeTab, setActiveTab] = useState(initialTab);
+  
+  // Update active tab when URL parameter changes (only once on mount or when tab param changes)
+  useEffect(() => {
+    if (tabFromUrl) {
+      const validTabs = ['Exams', 'Subject', 'Topics', 'Subtopics'];
+      if (validTabs.includes(tabFromUrl)) {
+        setActiveTab(tabFromUrl);
+        // Remove the tab parameter from URL after setting the tab (clean URL)
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.delete('tab');
+        setSearchParams(newSearchParams, { replace: true });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabFromUrl]); // Only depend on tabFromUrl to avoid infinite loops
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [subject, setSubject] = useState("");

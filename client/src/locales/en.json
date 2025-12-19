@@ -915,7 +915,8 @@
         "previous": "Previous",
         "next": "Next",
         "loadMore": "Load More Results"
-      }
+      },
+      "noSessions": "No sessions found"
     },
     "reviewIncorrect": {
       "item": "Item {{current}} of {{total}}",
@@ -2892,7 +2893,7 @@
       "table": {
         "columns": {
           "number": "#",
-          "questionTitle": "QUESTION TITLE",
+          "questionTitle": "QUESTION",
           "contentType": "CONTENT TYPE",
           "submittedBy": "SUBMITTED BY",
           "flagReason": "FLAG REASON",
@@ -3661,6 +3662,7 @@
       "table": {
         "question": "QUESTION",
         "student": "STUDENT",
+        "role": "Role",
         "processorStatus": "PROCESSOR STATUS",
         "adminStatus": "ADMIN STATUS",
         "submittedOn": "SUBMITTED ON",

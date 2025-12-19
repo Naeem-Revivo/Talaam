@@ -97,108 +97,6 @@ const ContentModerationPage = () => {
     return questionType;
   };
 
-  // Mock data for flagged content (fallback)
-  const mockFlaggedContent = [
-    {
-      id: "0001",
-      contentType: "Question",
-      submittedBy: "Sarah Khan",
-      flagReason: "Inappropriate Content",
-      dateReported: "15-01-2024",
-      status: "Flagged",
-      question: "What is the capital of France?",
-      options: ["Berlin", "Paris", "Rome", "Madrid"],
-      correctAnswer: "Paris",
-      explanation: "Paris is the capital of France and also its largest city. Situated on the River Seine, in northern France, at the heart of the Île-de-France region, Paris has the reputation of being the most beautiful and romantic of all cities, brimming with historic associations and remaining vastly influential in the realms of culture, art, fashion, food and design.",
-      approvedCount: 120,
-      rejectedCount: 30,
-    },
-    {
-      id: "0002",
-      contentType: "Question",
-      submittedBy: "Ali Raza",
-      flagReason: "Copyright Violation",
-      dateReported: "16-01-2024",
-      status: "Flagged",
-      question: "What is the capital of Germany?",
-      options: ["Berlin", "Munich", "Hamburg", "Frankfurt"],
-      correctAnswer: "Berlin",
-      explanation: "Berlin is the capital and largest city of Germany. It is located in northeastern Germany on the banks of the rivers Spree and Havel.",
-      approvedCount: 95,
-      rejectedCount: 25,
-    },
-    {
-      id: "0003",
-      contentType: "Question",
-      submittedBy: "Sarah khan",
-      flagReason: "Spam",
-      dateReported: "17-01-2024",
-      status: "Flagged",
-      question: "What is the capital of Italy?",
-      options: ["Milan", "Rome", "Naples", "Turin"],
-      correctAnswer: "Rome",
-      explanation: "Rome is the capital city of Italy and the seat of the Roman Catholic Church. It is located in the central-western portion of the Italian Peninsula.",
-      approvedCount: 110,
-      rejectedCount: 20,
-    },
-    {
-      id: "0004",
-      contentType: "Question",
-      submittedBy: "Sofia Clark",
-      flagReason: "Harassment",
-      dateReported: "17-01-2024",
-      status: "Flagged",
-      question: "What is the capital of Spain?",
-      options: ["Barcelona", "Madrid", "Valencia", "Seville"],
-      correctAnswer: "Madrid",
-      explanation: "Madrid is the capital and largest city of Spain. It is located in the center of the Iberian Peninsula.",
-      approvedCount: 105,
-      rejectedCount: 15,
-    },
-    {
-      id: "0005",
-      contentType: "Question",
-      submittedBy: "Laim Harper",
-      flagReason: "Misinformation",
-      dateReported: "18-01-2024",
-      status: "Flagged",
-      question: "What is the capital of Portugal?",
-      options: ["Porto", "Lisbon", "Coimbra", "Braga"],
-      correctAnswer: "Lisbon",
-      explanation: "Lisbon is the capital and largest city of Portugal. It is located on the Atlantic coast of the Iberian Peninsula.",
-      approvedCount: 98,
-      rejectedCount: 22,
-    },
-    {
-      id: "0006",
-      contentType: "Question",
-      submittedBy: "Ava Foster",
-      flagReason: "Hate Speech",
-      dateReported: "19-01-2024",
-      status: "Flagged",
-      question: "What is the capital of Greece?",
-      options: ["Thessaloniki", "Athens", "Patras", "Heraklion"],
-      correctAnswer: "Athens",
-      explanation: "Athens is the capital and largest city of Greece. It is one of the world's oldest cities, with a recorded history spanning over 3,400 years.",
-      approvedCount: 115,
-      rejectedCount: 18,
-    },
-    {
-      id: "0007",
-      contentType: "Question",
-      submittedBy: "Liam Harper",
-      flagReason: "Violence",
-      dateReported: "20-01-2024",
-      status: "Flagged",
-      question: "What is the capital of Netherlands?",
-      options: ["Rotterdam", "Amsterdam", "Utrecht", "The Hague"],
-      correctAnswer: "Amsterdam",
-      explanation: "Amsterdam is the capital and most populous city of the Netherlands. It is located in the province of North Holland.",
-      approvedCount: 100,
-      rejectedCount: 28,
-    },
-  ];
-
   const handleView = (id) => {
     const item = flaggedContent.find(q => q.id === id);
     if (item) {
@@ -464,7 +362,7 @@ const ContentModerationPage = () => {
               <thead>
                 <tr className="bg-oxford-blue text-center">
                   <th className="px-4 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white w-[200px]">
-                    {t('admin.contentModeration.table.columns.questionTitle') || "Question Title"}
+                    {t('admin.contentModeration.table.columns.questionTitle') || "Question"}
                   </th>
                   <th className="px-4 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
                     {t('admin.contentModeration.table.columns.contentType')}
@@ -505,7 +403,7 @@ const ContentModerationPage = () => {
                     key={item.id}
                     className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition"
                   >
-                    <td className="px-4 py-4 text-[14px] font-roboto font-normal leading-[100%] text-left text-oxford-blue w-[200px]">
+                    <td className="px-4 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue w-[200px]">
                       <div className="line-clamp-2">
                         {item.question || item.questionText || "N/A"}
                       </div>

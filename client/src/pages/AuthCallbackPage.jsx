@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { fetchCurrentUser } from '../store/slices/authSlice';
 import { showSuccessToast, showErrorToast } from '../utils/toastConfig';
 import Loader from '../components/common/Loader';
+import { isProfileComplete } from '../utils/profileUtils';
 
 const AuthCallbackPage = () => {
   const navigate = useNavigate();
@@ -79,7 +80,12 @@ const AuthCallbackPage = () => {
             if (role === 'admin' || role === 'superadmin') {
               navigate('/admin', { replace: true });
             } else if (role === 'user' || role === 'student') {
-              navigate('/dashboard', { replace: true });
+              // Check if profile is complete for students
+              if (!isProfileComplete(user)) {
+                navigate('/complete-profile', { replace: true })
+              } else {
+                navigate('/dashboard', { replace: true })
+              }
             } else {
               // For other roles (gatherer, creator, processor, explainer)
               const roleRoutes = {

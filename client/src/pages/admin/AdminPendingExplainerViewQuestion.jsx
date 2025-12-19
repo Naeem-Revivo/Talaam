@@ -105,11 +105,11 @@ const QuestionDetails = ({
     <div className="border border-[#03274633] bg-white pt-[24px] pb-[42px] px-[28px] rounded-[12px] mb-[30px]">
       <div className="space-y-[30px]">
         <div className="flex items-center justify-between">
-                <p className="text-[16px] leading-[100%] font-medium font-roboto text-blue-dark">
-                  <span className="font-medium">
-                    {isVariant ? `Variant ${variantNumber}:` : "Original Question:"}
+          <p className="text-[16px] leading-[100%] font-medium font-roboto text-blue-dark">
+            <span className="font-medium">
+              {isVariant ? `Variant ${variantNumber}:` : "Original Question:"}
                   </span> <span className="max-w-[400px] truncate inline-block cursor-help" title={questionText}>"{questionText}"</span>
-                </p>
+          </p>
           {onFlag && (
             <button
               onClick={() => onFlag(question)}
@@ -405,7 +405,7 @@ export default function AdminPendingExplainerViewQuestion() {
         } else {
           // Regular admin uses explainer API
           questionResponse = await questionsAPI.getExplainerQuestionById(questionId);
-          if (questionResponse.success && questionResponse.data?.question) {
+        if (questionResponse.success && questionResponse.data?.question) {
             fetchedQuestion = questionResponse.data.question;
           } else {
             setError("Question not found");
@@ -414,46 +414,46 @@ export default function AdminPendingExplainerViewQuestion() {
           }
         }
         
-        setQuestion(fetchedQuestion);
-        
-        // Initialize explanation for current question
-        // First check if there's a saved draft
-        const draftKey = `explainer_draft_${questionId}`;
-        const savedDraft = localStorage.getItem(draftKey);
-        let initialExplanation = fetchedQuestion.explanation || "";
-        
-        if (savedDraft) {
-          try {
-            const draftData = JSON.parse(savedDraft);
-            if (draftData.explanations && draftData.explanations[questionId]) {
-              initialExplanation = draftData.explanations[questionId];
-            }
-          } catch (e) {
-            console.warn("Could not parse saved draft:", e);
-          }
-        }
-        
-        setExplanations(prev => ({
-          ...prev,
-          [questionId]: initialExplanation
-        }));
-
-        // Check if this is a variant - if so, fetch the original question
-        const isVariant = fetchedQuestion.isVariant === true || fetchedQuestion.isVariant === 'true';
-        const originalQuestionId = fetchedQuestion.originalQuestionId || fetchedQuestion.originalQuestion?.id || fetchedQuestion.originalQuestion;
-        
-        if (isVariant && originalQuestionId) {
-          try {
-            setLoadingOriginal(true);
-            let originalResponse;
-            
-            if (isSuperAdmin) {
-              originalResponse = await adminAPI.getQuestionDetails(originalQuestionId);
-              if (originalResponse.success && originalResponse.data?.question) {
-                setOriginalQuestion(transformAdminQuestion(originalResponse.data.question));
+          setQuestion(fetchedQuestion);
+          
+          // Initialize explanation for current question
+          // First check if there's a saved draft
+          const draftKey = `explainer_draft_${questionId}`;
+          const savedDraft = localStorage.getItem(draftKey);
+          let initialExplanation = fetchedQuestion.explanation || "";
+          
+          if (savedDraft) {
+            try {
+              const draftData = JSON.parse(savedDraft);
+              if (draftData.explanations && draftData.explanations[questionId]) {
+                initialExplanation = draftData.explanations[questionId];
               }
-            } else {
-              originalResponse = await questionsAPI.getExplainerQuestionById(originalQuestionId);
+            } catch (e) {
+              console.warn("Could not parse saved draft:", e);
+            }
+          }
+          
+          setExplanations(prev => ({
+            ...prev,
+            [questionId]: initialExplanation
+          }));
+
+          // Check if this is a variant - if so, fetch the original question
+          const isVariant = fetchedQuestion.isVariant === true || fetchedQuestion.isVariant === 'true';
+          const originalQuestionId = fetchedQuestion.originalQuestionId || fetchedQuestion.originalQuestion?.id || fetchedQuestion.originalQuestion;
+          
+          if (isVariant && originalQuestionId) {
+            try {
+              setLoadingOriginal(true);
+              let originalResponse;
+            
+              if (isSuperAdmin) {
+                originalResponse = await adminAPI.getQuestionDetails(originalQuestionId);
+                if (originalResponse.success && originalResponse.data?.question) {
+                setOriginalQuestion(transformAdminQuestion(originalResponse.data.question));
+                }
+              } else {
+                originalResponse = await questionsAPI.getExplainerQuestionById(originalQuestionId);
               if (originalResponse.success && originalResponse.data?.question) {
                 setOriginalQuestion(originalResponse.data.question);
               }
@@ -464,36 +464,36 @@ export default function AdminPendingExplainerViewQuestion() {
                 ? transformAdminQuestion(originalResponse.data.question)
                 : originalResponse.data.question;
               
-              // Initialize explanation for original question if it exists
-              // Check for saved draft
-              const draftKey = `explainer_draft_${questionId}`;
-              const savedDraft = localStorage.getItem(draftKey);
+                // Initialize explanation for original question if it exists
+                // Check for saved draft
+                const draftKey = `explainer_draft_${questionId}`;
+                const savedDraft = localStorage.getItem(draftKey);
               let originalExplanation = originalQ.explanation || "";
-              
-              if (savedDraft) {
-                try {
-                  const draftData = JSON.parse(savedDraft);
-                  if (draftData.explanations && draftData.explanations[originalQuestionId]) {
-                    originalExplanation = draftData.explanations[originalQuestionId];
+                
+                if (savedDraft) {
+                  try {
+                    const draftData = JSON.parse(savedDraft);
+                    if (draftData.explanations && draftData.explanations[originalQuestionId]) {
+                      originalExplanation = draftData.explanations[originalQuestionId];
+                    }
+                  } catch (e) {
+                    console.warn("Could not parse saved draft:", e);
                   }
-                } catch (e) {
-                  console.warn("Could not parse saved draft:", e);
                 }
+                
+                setExplanations(prev => ({
+                  ...prev,
+                  [originalQuestionId]: originalExplanation
+                }));
               }
-              
-              setExplanations(prev => ({
-                ...prev,
-                [originalQuestionId]: originalExplanation
-              }));
+            } catch (originalError) {
+              console.warn("Could not fetch original question:", originalError);
+            } finally {
+              setLoadingOriginal(false);
             }
-          } catch (originalError) {
-            console.warn("Could not fetch original question:", originalError);
-          } finally {
-            setLoadingOriginal(false);
-          }
-        } else {
-          // If this is the original question, check if it has variants
-          try {
+          } else {
+            // If this is the original question, check if it has variants
+            try {
             let allQuestionsResponse;
             
             if (isSuperAdmin) {
@@ -578,11 +578,11 @@ export default function AdminPendingExplainerViewQuestion() {
                   ...variantExplanations
                 }));
               }
+              }
+            } catch (variantError) {
+              console.warn("Could not fetch variants:", variantError);
+              // Continue without variants
             }
-          } catch (variantError) {
-            console.warn("Could not fetch variants:", variantError);
-            // Continue without variants
-          }
         }
       } catch (err) {
         console.error("Error fetching question:", err);

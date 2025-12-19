@@ -182,6 +182,47 @@ const Header = ({ onToggleSidebar }) => {
 
   const headerTitle = getTitleByPath(location.pathname);
 
+  // Helper function to extract name from email
+  const getNameFromEmail = (email) => {
+    if (!email) return null;
+    const emailPart = email.split('@')[0];
+    if (!emailPart) return null;
+    
+    // Replace dots, underscores, and hyphens with spaces
+    let name = emailPart.replace(/[._-]/g, ' ');
+    
+    // Capitalize first letter of each word
+    name = name.split(' ').map(word => {
+      if (!word) return '';
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join(' ');
+    
+    return name.trim() || null;
+  };
+
+  // Get display name: use name if available, otherwise extract from email for students
+  const getDisplayName = () => {
+    // For superadmin, show "Admin"
+    if (authUser?.role === 'superadmin') {
+      return 'Admin';
+    }
+    
+    if (authUser?.name) {
+      return authUser.name;
+    }
+    
+    // For students, try to extract name from email
+    const isStudent = authUser?.role === 'user' || authUser?.role === 'student';
+    if (isStudent && authUser?.email) {
+      const nameFromEmail = getNameFromEmail(authUser.email);
+      if (nameFromEmail) {
+        return nameFromEmail;
+      }
+    }
+    
+    return 'User';
+  };
+
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50 h-[70.8px]">
       <div className="flex items-center justify-between px-4 md:px-8 h-full">
@@ -244,7 +285,7 @@ const Header = ({ onToggleSidebar }) => {
             </button>
             <div className="text-right hidden sm:block">
               <p className="text-[14px] text-oxford-blue leading-[100%] tracking-[0px] font-archivo font-[700]">
-                {authUser?.name || 'User'}
+                {getDisplayName()}
               </p>
               <p className="text-[12px] leading-[100%] tracking-[0px] text-left pt-1 pl-1 font-roboto font-[400] text-dark-gray">
                 {authUser?.role === 'admin' && authUser?.adminRole

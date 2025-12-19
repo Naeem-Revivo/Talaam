@@ -197,7 +197,7 @@ const ReviewPage = () => {
         <div className="lg:hidden space-y-4 mb-4 ">
           {currentSessions.length === 0 ? (
             <div className="p-8 text-center text-oxford-blue">
-              {t('dashboard.review.noSessions') || 'No sessions found'}
+              {t('dashboard.review.noSessions')}
             </div>
           ) : (
             currentSessions.map((session) => (

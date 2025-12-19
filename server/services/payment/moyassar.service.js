@@ -21,7 +21,7 @@ const getAuthHeader = () => {
  * @param {String} subscriptionId - Subscription ID
  * @param {Number} amount - Payment amount in halalas (1 SAR = 100 halalas)
  * @param {String} description - Payment description
- * @param {Object} metadata - Additional metadata
+ * @param {Object} metadata - Additional metadata (can include success_url, back_url)
  * @returns {Promise<Object>} Payment response with payment URL
  */
 const initiatePayment = async (subscriptionId, amount, description, metadata = {}) => {
@@ -64,15 +64,30 @@ const initiatePayment = async (subscriptionId, amount, description, metadata = {
     let response;
     let useInvoiceAPI = true;
 
+    // Extract success_url and back_url from metadata if provided
+    const { success_url, back_url, ...restMetadata } = metadata;
+    
     const paymentData = {
       amount: amountInHalalas,
       currency: MOYASSAR_CONFIG.currency,
       description: description || MOYASSAR_CONFIG.description,
       metadata: {
         subscription_id: subscriptionId.toString(),
-        ...metadata,
+        ...restMetadata,
       },
     };
+
+    // Add success_url if provided
+    if (success_url) {
+      paymentData.success_url = success_url;
+      console.log('✅ Set success URL:', paymentData.success_url);
+    }
+
+    // Add back_url if provided
+    if (back_url) {
+      paymentData.back_url = back_url;
+      console.log('✅ Set back URL:', paymentData.back_url);
+    }
 
     // Add callback_url for redirect after payment
     // This is where users are redirected after completing payment on Moyassar
@@ -84,8 +99,17 @@ const initiatePayment = async (subscriptionId, amount, description, metadata = {
                         process.env.BASE_URL || 
                         'http://localhost:5000';
       const urlObj = new URL(backendUrl);
-      // Redirect to our callback endpoint with subscription ID
-      paymentData.callback_url = `${urlObj.origin}/api/payment/moyassar/callback?subscriptionId=${subscriptionId}`;
+      
+      // Build callback URL with subscription ID and optional success_url/back_url
+      let callbackUrl = `${urlObj.origin}/api/payment/moyassar/callback?subscriptionId=${subscriptionId}`;
+      if (success_url) {
+        callbackUrl += `&success_url=${encodeURIComponent(success_url)}`;
+      }
+      if (back_url) {
+        callbackUrl += `&back_url=${encodeURIComponent(back_url)}`;
+      }
+      
+      paymentData.callback_url = callbackUrl;
       console.log('✅ Set callback URL:', paymentData.callback_url);
     } catch (error) {
       console.warn('Error setting callback URL:', error);
@@ -576,9 +600,10 @@ const handleWebhook = async (webhookData) => {
 /**
  * Create payment for subscription
  * @param {String} subscriptionId - Subscription ID
+ * @param {Object} options - Optional payment options (success_url, back_url)
  * @returns {Promise<Object>} Payment initiation result
  */
-const createSubscriptionPayment = async (subscriptionId) => {
+const createSubscriptionPayment = async (subscriptionId, options = {}) => {
   try {
     // Get subscription with plan details
     const subscription = await Subscription.findById(subscriptionId);
@@ -607,6 +632,8 @@ const createSubscriptionPayment = async (subscriptionId) => {
         user_id: subscription.userId,
         plan_id: plan.id,
         plan_name: subscription.planName,
+        success_url: options.success_url,
+        back_url: options.back_url,
       }
     );
 
