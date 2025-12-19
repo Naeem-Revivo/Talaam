@@ -98,30 +98,16 @@ const GathererQuestionBank = () => {
           limit: 10,
         };
         
-        // Fetch all questions created by gatherer (no status filter to get all questions)
-        // Then filter client-side for only flagged and rejected questions
+        // Pass status filter to API (empty string means "all")
+        if (statusFilter && statusFilter !== '') {
+          params.status = statusFilter;
+        }
+        
         const response = await questionsAPI.getGathererQuestions(params);
 
-        if (response.success && response.data?.questions) {
-          let questions = response.data.questions;
-          console.log('All questions from API:', questions.length);
-          
-          // Apply status filter if selected
-          if (statusFilter && statusFilter !== '') {
-            if (statusFilter === 'flagged') {
-              // Filter for flagged questions (isFlagged = true and flagStatus = 'approved')
-            questions = questions.filter(q => {
-              const flagStatus = q.flagStatus;
-              return q.isFlagged === true && flagStatus === 'approved';
-            });
-            } else {
-              // Filter by status for other statuses
-              questions = questions.filter(q => q.status === statusFilter);
-            }
-          }
-          // If statusFilter is empty string, show all questions (no filtering)
-          
-          console.log('Questions after filter:', questions.length);
+        if (response.success && response.data) {
+          const questions = response.data.questions || [];
+          const pagination = response.data.pagination || {};
           
           // Map API response to table format
           const mappedData = questions.map((question) => {
@@ -129,7 +115,6 @@ const GathererQuestionBank = () => {
                                   question.assignedProcessor?.fullName || 
                                   question.assignedProcessor?.username || 
                                   "—";
-            console.log('Question ID:', question.id, 'Processor:', processorName, 'assignedProcessor object:', question.assignedProcessor);
             const isRejected = question.status === 'rejected';
             
             // Only consider question as flagged if flag has been approved by processor
@@ -162,22 +147,33 @@ const GathererQuestionBank = () => {
 
           setGathererData(mappedData);
           
-          // Use questions length for total (since we're filtering client-side from multiple API calls)
-          setTotalQuestions(questions.length);
+          // Use pagination totalItems from API response
+          setTotalQuestions(pagination.totalItems || 0);
 
-          // Calculate stats from current questions
-          const pendingReview = questions.filter(q => q.status === "pending_processor").length;
-          const acceptedByProcessor = questions.filter(q => 
-            q.status === "pending_creator" || q.status === "pending_explainer" || q.status === "completed"
-          ).length;
-          const rejected = questions.filter(q => q.status === "rejected").length;
+          // Get stats from API response if available, otherwise calculate from current page
+          if (response.data.summary) {
+            const summary = response.data.summary;
+            setStats([
+              { label: t("gatherer.questionBank.stats.questionAdded"), value: summary.totalSubmitted || 0, color: "blue" },
+              { label: t("gatherer.questionBank.stats.pendingReview"), value: summary.totalPending || 0, color: "red" },
+              { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: summary.totalAccepted || 0, color: "red" },
+              { label: t("gatherer.questionBank.stats.rejected"), value: summary.totalRejected || 0, color: "red" },
+            ]);
+          } else {
+            // Fallback: calculate stats from current page questions (not ideal but better than nothing)
+            const pendingReview = questions.filter(q => q.status === "pending_processor").length;
+            const acceptedByProcessor = questions.filter(q => 
+              q.status === "pending_creator" || q.status === "pending_explainer" || q.status === "completed"
+            ).length;
+            const rejected = questions.filter(q => q.status === "rejected").length;
 
-          setStats([
-            { label: t("gatherer.questionBank.stats.questionAdded"), value: questions.length, color: "blue" },
-            { label: t("gatherer.questionBank.stats.pendingReview"), value: pendingReview, color: "red" },
-            { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: acceptedByProcessor, color: "red" },
-            { label: t("gatherer.questionBank.stats.rejected"), value: rejected, color: "red" },
-          ]);
+            setStats([
+              { label: t("gatherer.questionBank.stats.questionAdded"), value: pagination.totalItems || 0, color: "blue" },
+              { label: t("gatherer.questionBank.stats.pendingReview"), value: pendingReview, color: "red" },
+              { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: acceptedByProcessor, color: "red" },
+              { label: t("gatherer.questionBank.stats.rejected"), value: rejected, color: "red" },
+            ]);
+          }
         } else {
           // No questions found
           setGathererData([]);
