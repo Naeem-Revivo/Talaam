@@ -9,6 +9,7 @@ import SignUpFreePage from '../pages/SignUpFreePage';
 import CreateAccountPage from '../pages/CreateAccountPage';
 import VerifyEmailPage from '../pages/VerifyEmailPage';
 import ProfilePage from '../pages/ProfilePage';
+import CompleteProfilePage from '../pages/CompleteProfilePage';
 import LoginPage from '../pages/LoginPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import ForgotModalPage from '../pages/ForgotModalPage';
@@ -31,7 +32,7 @@ import UserManagementPage from '../pages/admin/UserManagementPage';
 import AddUserPage from '../pages/admin/AddUserPage';
 import EditUserPage from '../pages/admin/EditUserPage';
 import UserDetailPage from '../pages/admin/UserDetailPage';
-import { RoleRoute } from './ProtectedRoute';
+import { RoleRoute, ProtectedRoute } from './ProtectedRoute';
 import { PublicRoute } from './PublicRoute';
 import ClassificationManagement from '../pages/admin/ClassificationManagementPage';
 import AdminQuestionBankPage from '../pages/admin/QuestionBankPage';
@@ -146,6 +147,11 @@ export const AppRoutes = () => {
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      
+      {/* Complete Profile page - protected route for authenticated users (especially students) */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/complete-profile" element={<CompleteProfilePage />} />
+      </Route>
       <Route path="/moyassar-payment" element={<MoyassarPaymentPage />} />
       
       {/* Dashboard Routes (User) */}
@@ -204,7 +210,7 @@ export const AppRoutes = () => {
                 <Route path="question-bank/pending-explainer/view" element={<AdminPendingExplainerViewQuestion />} />
                 <Route path="question-bank/sent-back-questions" element={<SentBackQuestionsPage />} />
                 <Route path="question-bank/sent-back-questions/view" element={<AdminSentBackQuestionView />} />
-                <Route path="question-management" element={<QuestionManagementPage />} />
+          <Route path="question-management" element={<QuestionManagementPage />} />
           <Route path="question-bank/add-question" element={<AddNewQuestionPage />} />
           <Route path="question-bank/question-details" element={<QuestionDetailsPage />} />
           <Route path="create-variant" element={<CreateVariantPage />} />

@@ -28,7 +28,7 @@ export default function AddSubjectPage() {
         if (success) {
             showSuccessToast("Subject created successfully");
             dispatch(clearSuccess());
-            navigate("/admin/classification");
+            navigate("/admin/classification?tab=Subject");
         }
     }, [success, navigate, dispatch]);
 

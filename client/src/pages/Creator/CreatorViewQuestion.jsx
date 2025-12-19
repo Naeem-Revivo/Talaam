@@ -75,7 +75,7 @@ const CreatorViewQuestion = () => {
   }, [questionId, question, variants]);
 
   const handleBack = () => {
-    navigate("/creator/question-bank/variants-list");
+    navigate("/creator/question-bank");
   };
 
   const handleVariantClick = (variant) => {

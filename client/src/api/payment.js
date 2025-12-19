@@ -4,10 +4,13 @@ import axiosClient from './client';
 const paymentAPI = {
   // Initiate Moyassar payment for a subscription
   // POST /api/payment/moyassar/initiate
-  initiateMoyassarPayment: async (subscriptionId) => {
+  initiateMoyassarPayment: async (subscriptionId, options = {}) => {
     try {
+      const { success_url, back_url } = options;
       const response = await axiosClient.post('/payment/moyassar/initiate', {
         subscriptionId,
+        ...(success_url && { success_url }),
+        ...(back_url && { back_url }),
       });
       return response.data;
     } catch (error) {

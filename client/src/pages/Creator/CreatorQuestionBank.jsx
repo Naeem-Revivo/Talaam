@@ -109,21 +109,25 @@ const CreatorQuestionBank = () => {
       }
     });
 
-    // Process all questions (including variants) to show both original and variants
+    // Process only original questions (exclude variants)
     questions.forEach((question) => {
+      const isVariant = question.isVariant === true || question.isVariant === 'true';
+      
+      // Skip variant questions - only show original questions
+      if (isVariant) {
+        return;
+      }
+      
       const processorName = question.approvedBy?.name || question.assignedProcessor?.name || "—";
       const subjectName = question.subject?.name || "—";
       
       const isApproved = question.status === 'completed';
       const isFlagged = question.isFlagged === true;
       const isRejected = question.status === 'rejected';
-      const isVariant = question.isVariant === true || question.isVariant === 'true';
-      const isVariantCreatedByCreator = isVariant && (question.createdById || question.createdBy);
       
       const questionId = questionIdStr(question.id || question._id);
       const hasVariants = variantsByParentId.has(questionId) && variantsByParentId.get(questionId).length > 0;
       
-      const isVariantQuestion = isVariant && question.status === 'pending_processor' && !isFlagged;
       const isParentWithVariants = hasVariants && question.status === 'pending_processor' && !isFlagged;
       const isSubmittedByCreator = question.status === 'pending_processor' && 
                                    !isFlagged && 
@@ -132,7 +136,7 @@ const CreatorQuestionBank = () => {
       let status;
       if (isFlagged) {
         status = 'Flag';
-      } else if (isVariantQuestion || isParentWithVariants || isSubmittedByCreator) {
+      } else if (isParentWithVariants || isSubmittedByCreator) {
         status = 'Approved';
       } else if (question.status === 'pending_explainer') {
         status = 'In Review';
@@ -146,6 +150,14 @@ const CreatorQuestionBank = () => {
             : question.questionText)
         : "—";
 
+      // Determine action type based on question status
+      let actionType = 'view';
+      if (question.status === 'pending_creator') {
+        actionType = 'createVariant';
+      } else {
+        actionType = 'view';
+      }
+
       const questionData = {
         id: question.id,
         questionTitle: questionTitle,
@@ -153,74 +165,20 @@ const CreatorQuestionBank = () => {
         processor: processorName,
         status: status,
         indicators: {
-          approved: isApproved || isVariantQuestion || isParentWithVariants || isSubmittedByCreator,
+          approved: isApproved || isParentWithVariants || isSubmittedByCreator,
           flag: isFlagged,
           reject: isRejected,
-          variant: isVariantCreatedByCreator || isVariant
+          variant: false
         },
         flagReason: question.flagReason || null,
         rejectionReason: question.rejectionReason || null,
         updatedOn: formatDate(question.updatedAt),
-        actionType: question.isVariant ? 'createVariant' : 'open',
+        actionType: actionType,
         originalData: question
       };
       
       result.push(questionData);
       processedQuestionIds.add(questionIdStr(question.id || question._id));
-    });
-
-    // Also include variants that might not be in the questions array
-    // This ensures both original questions and their variants are shown
-    allQuestions.forEach((q) => {
-      const isVariant = q.isVariant === true || q.isVariant === 'true';
-      if (isVariant) {
-        const variantId = questionIdStr(q.id || q._id);
-        // Only add if not already processed
-        if (!processedQuestionIds.has(variantId)) {
-          const processorName = q.approvedBy?.name || q.assignedProcessor?.name || "—";
-          const subjectName = q.subject?.name || "—";
-          const isFlagged = q.isFlagged === true;
-          const isRejected = q.status === 'rejected';
-          const isVariantQuestion = q.status === 'pending_processor' && !isFlagged;
-          const isVariantCreatedByCreator = (q.createdById || q.createdBy);
-          
-          let status;
-          if (isFlagged) {
-            status = 'Flag';
-          } else if (isVariantQuestion) {
-            status = 'Approved';
-          } else if (q.status === 'pending_explainer') {
-            status = 'In Review';
-          } else {
-            status = formatStatus(q.status);
-          }
-          
-          const questionTitle = q.questionText 
-            ? (q.questionText.length > 50 
-                ? q.questionText.substring(0, 50) + "..." 
-                : q.questionText)
-            : "—";
-
-          result.push({
-            id: q.id,
-            questionTitle: questionTitle,
-            subject: subjectName,
-            processor: processorName,
-            status: status,
-            indicators: {
-              approved: isVariantQuestion || q.status === 'completed',
-              flag: isFlagged,
-              reject: isRejected,
-              variant: isVariantCreatedByCreator
-            },
-            flagReason: q.flagReason || null,
-            rejectionReason: q.rejectionReason || null,
-            updatedOn: formatDate(q.updatedAt),
-            actionType: 'createVariant',
-            originalData: q
-          });
-        }
-      }
     });
 
     return result;
@@ -410,7 +368,14 @@ const CreatorQuestionBank = () => {
 
   const handleView = (item) => {
     if (item.originalData) {
+      const question = item.originalData;
+      // For pending_creator questions, navigate to create-variants
+      if (question.status === 'pending_creator') {
+        handleCreateVariant(item);
+      } else {
+        // For other questions, navigate to view question page
       navigate(`/creator/question-bank/question/${item.id}`);
+      }
     }
   };
 
@@ -699,10 +664,10 @@ const CreatorQuestionBank = () => {
               onView={handleView}
               onEdit={handleEdit}
               onCustomAction={(item) => {
-                if (item.actionType === 'open') {
+                if (item.actionType === 'createVariant') {
                   handleCreateVariant(item);
-                } else if (item.actionType === 'createVariant') {
-                  handleCreateVariant(item);
+                } else if (item.actionType === 'view') {
+                  handleView(item);
                 }
               }}
               emptyMessage={t("creator.assignedQuestionPage.emptyMessage")}

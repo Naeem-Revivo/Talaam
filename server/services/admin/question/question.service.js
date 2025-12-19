@@ -1257,29 +1257,29 @@ const getQuestionById = async (questionId, userId, role) => {
   // Access control: Check if user has permission to view this question
   // SuperAdmin can access all questions - bypass access checks
   if (role !== 'superadmin') {
-    // Gatherer can only access their own questions
-    if (role === 'gatherer' && question.createdById !== userId) {
-      throw new Error('Access denied');
+  // Gatherer can only access their own questions
+  if (role === 'gatherer' && question.createdById !== userId) {
+    throw new Error('Access denied');
+  }
+  
+  // Processor can only see questions assigned to them
+  if (role === 'processor') {
+    if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
+      throw new Error('Access denied. This question is not assigned to you.');
     }
-    
-    // Processor can only see questions assigned to them
-    if (role === 'processor') {
-      if (question.assignedProcessorId && question.assignedProcessorId !== userId) {
-        throw new Error('Access denied. This question is not assigned to you.');
-      }
+  }
+  
+  // Creator can only see questions assigned to them
+  if (role === 'creator') {
+    if (question.assignedCreatorId && question.assignedCreatorId !== userId) {
+      throw new Error('Access denied. This question is not assigned to you.');
     }
-    
-    // Creator can only see questions assigned to them
-    if (role === 'creator') {
-      if (question.assignedCreatorId && question.assignedCreatorId !== userId) {
-        throw new Error('Access denied. This question is not assigned to you.');
-      }
-    }
-    
-    // Explainer can only see questions assigned to them
-    if (role === 'explainer') {
-      if (question.assignedExplainerId && question.assignedExplainerId !== userId) {
-        throw new Error('Access denied. This question is not assigned to you.');
+  }
+  
+  // Explainer can only see questions assigned to them
+  if (role === 'explainer') {
+    if (question.assignedExplainerId && question.assignedExplainerId !== userId) {
+      throw new Error('Access denied. This question is not assigned to you.');
       }
     }
   }

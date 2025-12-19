@@ -168,7 +168,14 @@ const MoyassarPaymentPage = () => {
           } else if (sub.moyassarPaymentId) {
             // Has payment ID but no URL, try to initiate payment
             try {
-              const paymentResponse = await paymentAPI.initiateMoyassarPayment(sub.id);
+              const frontendUrl = window.location.origin;
+              const successUrl = `${frontendUrl}/moyassar-payment?subscriptionId=${sub.id}&payment=success`;
+              const backUrl = `${frontendUrl}/dashboard/subscription-billings`;
+              
+              const paymentResponse = await paymentAPI.initiateMoyassarPayment(sub.id, {
+                success_url: successUrl,
+                back_url: backUrl,
+              });
               if (paymentResponse.success && paymentResponse.data.paymentUrl) {
                 setPaymentUrl(paymentResponse.data.paymentUrl);
                 window.location.href = paymentResponse.data.paymentUrl;
@@ -202,10 +209,18 @@ const MoyassarPaymentPage = () => {
       if (subscriptionResponse.success) {
         setSubscription(subscriptionResponse.data.subscription);
         
-        // Initiate payment
+        // Initiate payment with success_url and back_url
         console.log('Initiating Moyassar payment for subscription:', subscriptionResponse.data.subscription.id);
+        const frontendUrl = window.location.origin;
+        const successUrl = `${frontendUrl}/moyassar-payment?subscriptionId=${subscriptionResponse.data.subscription.id}&payment=success`;
+        const backUrl = `${frontendUrl}/dashboard/subscription-billings`;
+        
         const paymentResponse = await paymentAPI.initiateMoyassarPayment(
-          subscriptionResponse.data.subscription.id
+          subscriptionResponse.data.subscription.id,
+          {
+            success_url: successUrl,
+            back_url: backUrl,
+          }
         );
         console.log('Payment response:', paymentResponse);
         

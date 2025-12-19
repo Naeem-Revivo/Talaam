@@ -65,15 +65,6 @@ const CreatorViewVariant = () => {
     navigate("/creator/question-bank/variants-list");
   };
 
-  const handleCreateVariant = () => {
-    if (originalQuestion) {
-      navigate("/creator/question-bank/create-variants", {
-        state: { questionId: originalQuestion.id, question: originalQuestion }
-      });
-    } else {
-      showErrorToast("Original question not found");
-    }
-  };
 
   // Check if variant is flagged and approved (needs creator action)
   const isFlaggedAndApproved = variant && 
@@ -301,18 +292,11 @@ const CreatorViewVariant = () => {
                   />
                 </>
               ) : (
-                <>
-                  <OutlineButton
-                    text={t('admin.variantQuestionReview.buttons.cancel') || 'Cancel'}
-                    className="py-[10px] px-5"
-                    onClick={handleCancel}
-                  />
-                  <PrimaryButton
-                    text={t('admin.variantQuestionReview.buttons.createVariant') || 'Create Variant'}
-                    className="py-[10px] px-5"
-                    onClick={handleCreateVariant}
-                  />
-                </>
+                <OutlineButton
+                  text={t('admin.variantQuestionReview.buttons.cancel') || 'Cancel'}
+                  className="py-[10px] px-5"
+                  onClick={handleCancel}
+                />
               )}
             </div>
           </div>

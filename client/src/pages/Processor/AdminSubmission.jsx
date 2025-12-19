@@ -26,7 +26,7 @@ const AdminSubmission = () => {
 
   const adminColumns = [
     { key: 'questionTitle', label: t("processor.adminSubmission.table.question") },
-    { key: 'student', label: t("processor.adminSubmission.table.student") },
+    { key: 'student', label: t("processor.adminSubmission.table.role") || "Role" },
     { key: 'processorStatus', label: t("processor.adminSubmission.table.processorStatus") || "PROCESSOR STATUS" },
     { key: 'adminStatus', label: t("processor.adminSubmission.table.adminStatus") || "ADMIN STATUS" },
     { key: 'submittedOn', label: t("processor.adminSubmission.table.submittedOn") },

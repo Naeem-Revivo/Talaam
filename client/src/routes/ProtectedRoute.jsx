@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { isProfileComplete } from '../utils/profileUtils';
 
 // Guard that ONLY uses Redux auth state
 export const ProtectedRoute = () => {
@@ -67,6 +68,13 @@ export const RoleRoute = ({ allow = [] }) => {
       // Determine redirect based on adminRole if user is admin, otherwise use role
       const redirectRole = (role === 'admin' && adminRole) ? adminRole : role;
       return <Navigate to={homeRoutes[redirectRole] || '/dashboard'} replace />;
+    }
+  }
+
+  // For student/user routes, check if profile is complete
+  if (allow.includes('user') && (role === 'user' || role === 'student')) {
+    if (!isProfileComplete(user)) {
+      return <Navigate to="/complete-profile" replace />;
     }
   }
 

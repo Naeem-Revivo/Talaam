@@ -8,7 +8,7 @@ const Subscription = require('../../models/subscription');
  */
 const initiateMoyassarPayment = async (req, res, next) => {
   try {
-    const { subscriptionId } = req.body;
+    const { subscriptionId, success_url, back_url } = req.body;
     const userId = req.user.id;
 
     if (!subscriptionId) {
@@ -60,7 +60,10 @@ const initiateMoyassarPayment = async (req, res, next) => {
     }
 
     // Create payment with Moyassar
-    const paymentResult = await moyassarService.createSubscriptionPayment(subscriptionId);
+    const paymentResult = await moyassarService.createSubscriptionPayment(subscriptionId, {
+      success_url,
+      back_url,
+    });
 
     res.status(200).json({
       success: true,
@@ -318,7 +321,7 @@ const getPaymentStatus = async (req, res, next) => {
  */
 const handlePaymentCallback = async (req, res, next) => {
   try {
-    const { subscriptionId, paymentId, id, status } = req.query;
+    const { subscriptionId, paymentId, id, status, success_url, back_url } = req.query;
     
     // Get payment/invoice ID from query (Moyassar may send it as 'id')
     const moyassarPaymentId = paymentId || id;
@@ -354,13 +357,25 @@ const handlePaymentCallback = async (req, res, next) => {
     console.log('🔄 Syncing payment status on callback:', { subscriptionId: finalSubscriptionId, moyassarPaymentId });
     const syncResult = await moyassarService.syncPaymentStatus(finalSubscriptionId);
 
+    // Get success_url and back_url from query params (passed from payment initiation via callback URL)
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const defaultSuccessUrl = `${frontendUrl}/moyassar-payment?subscriptionId=${finalSubscriptionId}&payment=success`;
+    const defaultBackUrl = `${frontendUrl}/dashboard/subscription-billings`;
     
+    // Check if payment was successful
     if (syncResult.wasUpdated && syncResult.subscription.paymentStatus === 'Paid') {
-      // Payment successful
-      return res.redirect(`${frontendUrl}/moyassar-payment?subscriptionId=${finalSubscriptionId}&payment=success`);
+      // Payment successful - use success_url from query params if available, otherwise default
+      const successUrl = success_url ? decodeURIComponent(success_url) : defaultSuccessUrl;
+      return res.redirect(successUrl);
     } else {
-      // Payment still pending or failed
+      // Payment still pending or failed - check if user cancelled (back_url)
+      // Moyassar may send a status parameter indicating cancellation
+      if (status === 'cancelled' || status === 'canceled' || req.query.cancelled === 'true') {
+        const backUrl = back_url ? decodeURIComponent(back_url) : defaultBackUrl;
+        return res.redirect(`${backUrl}?payment=cancelled`);
+      }
+      
+      // Payment pending or failed - redirect to default success URL with status
       const paymentStatus = syncResult.subscription?.paymentStatus || 'pending';
       return res.redirect(`${frontendUrl}/moyassar-payment?subscriptionId=${finalSubscriptionId}&payment=${paymentStatus.toLowerCase()}`);
     }

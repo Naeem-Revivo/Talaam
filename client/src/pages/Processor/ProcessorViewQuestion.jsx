@@ -702,8 +702,8 @@ const ProcessorViewQuestion = () => {
     // 2. It's a variant from creator that needs explainer assignment
     if ((nextDest.message === 'explainer' && needsExplainerSelection) || isVariantNeedingExplainer) {
       if (explainers.length > 0) {
-        setShowExplainerModal(true);
-        return;
+      setShowExplainerModal(true);
+      return;
       }
     }
     
