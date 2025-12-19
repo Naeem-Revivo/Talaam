@@ -3,6 +3,7 @@ import { useLanguage } from '../../context/LanguageContext'
 import profileData from '../../data/profileData.json'
 import { useDispatch, useSelector } from 'react-redux'
 import { completeProfile, fetchCurrentUser } from '../../store/slices/authSlice'
+import { isProfileComplete } from '../../utils/profileUtils'
 import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
 import { useNavigate } from 'react-router-dom'
 import ProfileDropdown from '../common/ProfileDropdown'
@@ -172,6 +173,10 @@ const Profile = () => {
         const backendMessage = resultAction.payload?.message || 'Profile completed successfully'
         const msg = getTranslatedAuthMessage(backendMessage, t, 'profile.success') || t('profile.success') || 'Profile completed successfully.'
         showSuccessToast(msg, { title: t('profile.successTitle') || 'Profile Saved', isAuth: true })
+        
+        // Refresh user data to get updated profile
+        await dispatch(fetchCurrentUser())
+        
         navigate('/dashboard', { replace: true })
       } else {
         // Extract error message from API response

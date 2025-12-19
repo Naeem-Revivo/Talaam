@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { tick, cross, analytics, watch, setting, flag } from '../../assets/svg/dashboard';
 import { useLanguage } from '../../context/LanguageContext';
 import studentQuestionsAPI from '../../api/studentQuestions';
@@ -8,8 +8,14 @@ import { showErrorToast } from '../../utils/toastConfig';
 const ReviewIncorrectPage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('sessionId');
+  
+  // Check for data passed via navigation state
+  const stateData = location.state;
+  const incorrectQuestionsFromState = stateData?.incorrectQuestions;
+  const fromCurrentSession = stateData?.fromCurrentSession;
   
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,8 +28,50 @@ const ReviewIncorrectPage = () => {
   // Fetch incorrect questions
   useEffect(() => {
     const fetchIncorrectQuestions = async () => {
+      // If we have data from navigation state, use it
+      if (incorrectQuestionsFromState && Array.isArray(incorrectQuestionsFromState)) {
+        try {
+          setLoading(true);
+          const formattedQuestions = incorrectQuestionsFromState.map((item, index) => {
+            const optionsObj = item.options || {};
+            const options = ['A', 'B', 'C', 'D', 'E'].map((key) => ({
+              id: key,
+              text: optionsObj[key] || '',
+              correct: key === item.correctAnswer,
+              userSelected: key === item.selectedAnswer,
+            })).filter(opt => opt.text);
+
+            return {
+              id: item.questionId || index + 1,
+              question: item.questionText || '',
+              options,
+              correctAnswer: item.correctAnswer,
+              selectedAnswer: item.selectedAnswer,
+              explanation: item.explanation || '',
+            };
+          });
+
+          setQuestions(formattedQuestions);
+          if (formattedQuestions.length > 0) {
+            setCurrentQuestionIndex(0);
+            setVisitedQuestions(new Set([0]));
+          }
+          // If no incorrect questions, the component will show the "No incorrect questions" message
+        } catch (error) {
+          console.error('Error formatting incorrect questions from state:', error);
+          // Navigate silently without showing error
+          navigate('/dashboard/review');
+        } finally {
+          setLoading(false);
+        }
+        return;
+      }
+
+      // Otherwise, try to fetch from sessionId
       if (!sessionId) {
-        showErrorToast('Session ID is required');
+        // If no sessionId and no state data, navigate back to review page
+        // Don't show error toast - just redirect silently
+        setLoading(false);
         navigate('/dashboard/review');
         return;
       }
@@ -65,7 +113,11 @@ const ReviewIncorrectPage = () => {
         }
       } catch (error) {
         console.error('Error fetching incorrect questions:', error);
-        showErrorToast(error.message || 'Failed to load incorrect questions');
+        // Only show error if we have a sessionId (meaning user came from review page with sessionId)
+        // If coming from current session without sessionId, navigate silently
+        if (sessionId) {
+          showErrorToast(error.message || 'Failed to load incorrect questions');
+        }
         navigate('/dashboard/review');
       } finally {
         setLoading(false);
@@ -73,7 +125,7 @@ const ReviewIncorrectPage = () => {
     };
 
     fetchIncorrectQuestions();
-  }, [sessionId, navigate]);
+  }, [sessionId, navigate, incorrectQuestionsFromState, fromCurrentSession]);
 
   const totalQuestions = questions.length;
   const currentQuestion = questions[currentQuestionIndex] || null;

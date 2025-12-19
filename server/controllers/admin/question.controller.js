@@ -741,7 +741,7 @@ const getQuestionById = async (req, res, next) => {
 
     // For superAdmin, pass 'superadmin' as role; otherwise use adminRole
     const userRole = req.user.role === 'superadmin' ? 'superadmin' : req.user.adminRole;
-    
+
     const question = await questionService.getQuestionById(
       questionId,
       req.user.id,
@@ -1360,7 +1360,7 @@ const approveQuestion = async (req, res, next) => {
 
     // For superAdmin, pass 'superadmin' as role; otherwise use adminRole
     const userRole = req.user.role === 'superadmin' ? 'superadmin' : req.user.adminRole;
-    
+
     let question;
     if (status === 'approve') {
       question = await questionService.approveQuestion(questionId, req.user.id, assignedUserId, userRole);
@@ -1662,7 +1662,7 @@ const reviewCreatorFlag = async (req, res, next) => {
 
     // For superAdmin, pass 'superadmin' as role; otherwise use adminRole
     const userRole = req.user.role === 'superadmin' ? 'superadmin' : req.user.adminRole;
-    
+
     const question = await questionService.reviewCreatorFlag(
       questionId,
       decision,
@@ -1906,7 +1906,7 @@ const reviewExplainerFlag = async (req, res, next) => {
 
     // For superAdmin, pass 'superadmin' as role; otherwise use adminRole
     const userRole = req.user.role === 'superadmin' ? 'superadmin' : req.user.adminRole;
-    
+
     const question = await questionService.reviewExplainerFlag(
       questionId,
       decision,
@@ -2014,7 +2014,7 @@ const reviewStudentFlag = async (req, res, next) => {
 
     // For superAdmin, pass 'superadmin' as role; otherwise use adminRole
     const userRole = req.user.role === 'superadmin' ? 'superadmin' : req.user.adminRole;
-    
+
     const question = await questionService.reviewStudentFlag(
       questionId,
       decision,
@@ -2694,7 +2694,7 @@ const rejectGathererFlagRejection = async (req, res, next) => {
 
     // For superAdmin, pass 'superadmin' as role; otherwise use adminRole
     const userRole = req.user.role === 'superadmin' ? 'superadmin' : req.user.adminRole;
-    
+
     const question = await questionService.rejectGathererFlagRejection(
       questionId,
       rejectionReason,

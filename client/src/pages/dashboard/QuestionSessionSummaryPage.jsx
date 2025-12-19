@@ -99,20 +99,21 @@ const QuestionSessionSummaryPage = () => {
       <div className="flex flex-1 overflow-hidden">
         <div className="hidden lg:flex w-[110px] h-full bg-white border-r border-[#E5E7EB]">
           <div className="flex flex-col w-full h-full overflow-y-auto py-2">
-            {questions.map((question) => (
-              <div
-                key={question.id}
-                className={`h-[44px] flex items-center justify-center text-[16px] font-roboto border border-[#B9C9C5] ${
-                  question.id === 3
-                    ? 'bg-[#EF4444] text-white border-[#EF4444]'
-                    : question.status === 'correct'
-                    ? 'bg-[#C6D8D3] text-oxford-blue'
-                    : 'bg-[#FDF0D5] text-[#B91C1C] border-[#F5C19B]'
-                }`}
-              >
-                {question.id}
-              </div>
-            ))}
+            {questions.map((question, index) => {
+              const questionNumber = index + 1;
+              return (
+                <div
+                  key={question.id || index}
+                  className={`h-[44px] flex items-center justify-center text-[16px] font-roboto border border-[#B9C9C5] ${
+                    question.status === 'correct'
+                      ? 'bg-[#C6D8D3] text-oxford-blue'
+                      : 'bg-[#FDF0D5] text-[#B91C1C] border-[#F5C19B]'
+                  }`}
+                >
+                  {questionNumber}
+                </div>
+              );
+            })}
           </div>
         </div>
 

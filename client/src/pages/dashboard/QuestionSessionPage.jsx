@@ -934,13 +934,129 @@ const QuestionSessionPage = () => {
     navigate('/dashboard/session-summary', { state: { sessionData } });
   };
 
-  const handleReviewAnswers = () => {
+  const handleReviewAnswers = async () => {
+    let updatedQuestionState = questionState;
+    
+    // For test mode, we need to get results first to know which questions are incorrect
+    if (mode === 'test') {
+      const sessionKey = `session_saved_${sessionIdRef.current}`;
+      const resultsKey = `test_results_${sessionIdRef.current}`;
+      const alreadySaved = sessionStorage.getItem(sessionKey);
+      
+      // Check if we have stored test results
+      let storedResults = null;
+      try {
+        const stored = sessionStorage.getItem(resultsKey);
+        if (stored) {
+          storedResults = JSON.parse(stored);
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
+      
+      if (storedResults && storedResults.results && Array.isArray(storedResults.results)) {
+        // Use stored results to update questionState with isCorrect values
+        updatedQuestionState = questionState.map((state, idx) => {
+          const result = storedResults.results.find(
+            (r) => r.questionId === questions[idx]?.id
+          );
+          return {
+            ...state,
+            isCorrect: result ? result.isCorrect : null,
+          };
+        });
+      } else if (!alreadySaved && sessionInfoRef.current.examId) {
+        // Not saved yet, submit and get results
+        try {
+          const totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+          const timeTakenMs = totalTime;
+          
+          const answers = questions.map((q, idx) => ({
+            questionId: q.id,
+            selectedAnswer: questionState[idx]?.selectedOption || '',
+          }));
+
+          const response = await studentQuestionsAPI.submitTestAnswers(
+            sessionInfoRef.current.examId,
+            answers,
+            timeTakenMs
+          );
+
+          // Mark as saved
+          sessionStorage.setItem(sessionKey, 'true');
+          
+          // Extract results from API response
+          if (response.success && response.data) {
+            const testResults = response.data;
+            // Store results for later use
+            sessionStorage.setItem(resultsKey, JSON.stringify(testResults));
+            
+            // Update questionState with isCorrect values from results
+            if (testResults.results && Array.isArray(testResults.results)) {
+              updatedQuestionState = questionState.map((state, idx) => {
+                const result = testResults.results.find(
+                  (r) => r.questionId === questions[idx]?.id
+                );
+                return {
+                  ...state,
+                  isCorrect: result ? result.isCorrect : null,
+                };
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error getting test results for review:', error);
+          // Continue with current state if error occurs
+        }
+      }
+    }
+    
+    // Prepare incorrect questions data from current session
+    const incorrectQuestions = questions
+      .map((q, idx) => {
+        const state = updatedQuestionState[idx];
+        const isIncorrect = state?.isCorrect === false;
+        
+        if (!isIncorrect) return null;
+        
+        // Handle options - q.options is an array of {id, text} objects
+        let optionsObj = {};
+        if (Array.isArray(q.options)) {
+          // Convert array format to object format for ReviewIncorrectPage
+          q.options.forEach(opt => {
+            if (opt.id && opt.text) {
+              optionsObj[opt.id] = opt.text;
+            }
+          });
+        } else if (q.options && typeof q.options === 'object') {
+          // Already an object
+          optionsObj = q.options;
+        }
+        
+        return {
+          questionId: q.id || idx + 1,
+          questionText: q.prompt || '',
+          options: optionsObj, // Pass as object for ReviewIncorrectPage to convert to array
+          correctAnswer: q.correctAnswer,
+          selectedAnswer: state?.selectedOption || '',
+          explanation: q.explanation || '',
+        };
+      })
+      .filter(Boolean);
+    
     // Clear session in test mode when reviewing answers after completion
     if (mode === 'test' && sessionComplete && sessionIdRef.current) {
       clearSession(sessionIdRef.current);
       sessionIdRef.current = null;
     }
-    navigate('/dashboard/review-incorrect');
+    
+    // Navigate with incorrect questions data in state
+    navigate('/dashboard/review-incorrect', { 
+      state: { 
+        incorrectQuestions,
+        fromCurrentSession: true 
+      } 
+    });
   };
 
   const toggleQuestionNav = () => setShowQuestionNav((prev) => !prev);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import subjectsAPI from '../../api/subjects';
@@ -20,6 +20,7 @@ const PracticePage = () => {
   const [selectedAllQuestions, setSelectedAllQuestions] = useState(false);
   const [expandedDomains, setExpandedDomains] = useState({});
   const [selectedSubtopics, setSelectedSubtopics] = useState({});
+  const [allTopics, setAllTopics] = useState([]); // Store all topics for "select all" functionality
   const [sessionSize, setSessionSize] = useState('20');
   const [subjects, setSubjects] = useState([]);
   const [topics, setTopics] = useState([]);
@@ -35,7 +36,38 @@ const PracticePage = () => {
     Number.isInteger(parsedSessionSize) && parsedSessionSize >= 1 && parsedSessionSize <= 50;
   const canStartTestSession =
     sessionMode === 'test' && selectedSubtopicCount > 0 && isSessionSizeValid;
-  const canStartSession = sessionMode === 'study' || canStartTestSession;
+  const canStartStudySession =
+    sessionMode === 'study' && selectedSubtopicCount > 0;
+  const canStartSession = canStartTestSession || canStartStudySession;
+
+  // Calculate total available questions from selected topics
+  const totalAvailableQuestions = useMemo(() => {
+    if (selectedSubtopicCount === 0) return 0;
+    
+    const selectedTopicIds = Object.keys(selectedSubtopics).filter(
+      (topicId) => selectedSubtopics[topicId]
+    );
+    
+    // Combine allTopics and topics to get all available topic data
+    const allAvailableTopics = [...allTopics];
+    topics.forEach(topic => {
+      const topicId = topic.id || topic._id;
+      if (!allAvailableTopics.find(t => (t.id || t._id) === topicId)) {
+        allAvailableTopics.push(topic);
+      }
+    });
+    
+    // Calculate total from selected topics using their counts
+    let total = 0;
+    selectedTopicIds.forEach(topicId => {
+      const topic = allAvailableTopics.find(t => (t.id || t._id) === topicId);
+      if (topic && topic.count !== undefined) {
+        total += topic.count || 0;
+      }
+    });
+    
+    return total;
+  }, [selectedSubtopics, allTopics, topics, selectedSubtopicCount]);
   const handleStartSession = () => {
     if (!canStartSession) return;
     
@@ -131,6 +163,46 @@ const PracticePage = () => {
     fetchSubjects();
   }, []);
 
+  // Fetch all topics on mount (for "select all" functionality)
+  useEffect(() => {
+    const fetchAllTopics = async () => {
+      try {
+        const response = await topicsAPI.getAllTopics(); // Fetch all topics without subject filter
+        if (response.success && response.data) {
+          const topicsList = response.data.topics || response.data;
+          // Fetch question counts for each topic
+          const topicsWithCounts = await Promise.all(
+            topicsList.map(async (topic) => {
+              try {
+                // Get question count for this topic
+                const questionsResponse = await studentQuestionsAPI.getAvailableQuestions({ 
+                  topic: topic.id || topic._id 
+                });
+                const count = questionsResponse.success && questionsResponse.data?.questions 
+                  ? questionsResponse.data.questions.length 
+                  : 0;
+                return {
+                  ...topic,
+                  count: count,
+                };
+              } catch (error) {
+                console.error(`Error fetching count for topic ${topic.id}:`, error);
+                // Don't show toast for individual topic count errors
+                return { ...topic, count: 0 };
+              }
+            })
+          );
+          setAllTopics(topicsWithCounts);
+        }
+      } catch (error) {
+        console.error('Error fetching all topics:', error);
+        // Don't show error toast for this - it's a background fetch
+        setAllTopics([]);
+      }
+    };
+    fetchAllTopics();
+  }, []);
+
   // Fetch topics when a subject is expanded
   useEffect(() => {
     if (selectedSubjectId) {
@@ -201,10 +273,24 @@ const PracticePage = () => {
   };
 
   const toggleTopic = (topicId) => {
-    setSelectedSubtopics(prev => ({
+    setSelectedSubtopics(prev => {
+      const newState = {
       ...prev,
       [topicId]: !prev[topicId],
-    }));
+      };
+      
+      // Update "All Questions" checkbox based on whether all topics are selected
+      if (allTopics.length > 0) {
+        const allTopicIds = allTopics.map(t => t.id || t._id).filter(Boolean);
+        const allSelected = allTopicIds.length > 0 && allTopicIds.every(id => newState[id] === true);
+        setSelectedAllQuestions(allSelected);
+      } else {
+        // If allTopics not loaded, uncheck "All Questions" when manually toggling
+        setSelectedAllQuestions(false);
+      }
+      
+      return newState;
+    });
   };
 
   const handleStatusChange = (status) => {
@@ -416,7 +502,87 @@ const PracticePage = () => {
             <input
               type="checkbox"
               checked={selectedAllQuestions}
-              onChange={() => setSelectedAllQuestions(!selectedAllQuestions)}
+              onChange={async () => {
+                const newValue = !selectedAllQuestions;
+                setSelectedAllQuestions(newValue);
+                
+                if (newValue) {
+                  // Select all topics from all subjects
+                  if (allTopics.length > 0) {
+                    const allTopicIds = {};
+                    allTopics.forEach(topic => {
+                      const topicId = topic.id || topic._id;
+                      if (topicId) {
+                        allTopicIds[topicId] = true;
+                      }
+                    });
+                    setSelectedSubtopics(allTopicIds);
+                    
+                    // Expand all subjects in the UI
+                    const allExpanded = {};
+                    subjects.forEach(subject => {
+                      const subjectId = subject.id || subject._id;
+                      if (subjectId) {
+                        allExpanded[subjectId] = true;
+                      }
+                    });
+                    setExpandedDomains(allExpanded);
+                  } else {
+                    // If allTopics not loaded yet, fetch them
+                    try {
+                      setLoadingTopics(true);
+                      const response = await topicsAPI.getAllTopics();
+                      if (response.success && response.data) {
+                        const topicsList = response.data.topics || response.data;
+                        const topicsWithCounts = await Promise.all(
+                          topicsList.map(async (topic) => {
+                            try {
+                              const questionsResponse = await studentQuestionsAPI.getAvailableQuestions({ 
+                                topic: topic.id || topic._id 
+                              });
+                              const count = questionsResponse.success && questionsResponse.data?.questions 
+                                ? questionsResponse.data.questions.length 
+                                : 0;
+                              return { ...topic, count: count };
+                            } catch (error) {
+                              return { ...topic, count: 0 };
+                            }
+                          })
+                        );
+                        setAllTopics(topicsWithCounts);
+                        
+                        const allTopicIds = {};
+                        topicsWithCounts.forEach(topic => {
+                          const topicId = topic.id || topic._id;
+                          if (topicId) {
+                            allTopicIds[topicId] = true;
+                          }
+                  });
+                        setSelectedSubtopics(allTopicIds);
+                        
+                        // Expand all subjects
+                        const allExpanded = {};
+                        subjects.forEach(subject => {
+                          const subjectId = subject.id || subject._id;
+                          if (subjectId) {
+                            allExpanded[subjectId] = true;
+                          }
+                        });
+                        setExpandedDomains(allExpanded);
+                      }
+                    } catch (error) {
+                      console.error('Error fetching all topics:', error);
+                      showErrorToast('Failed to load all topics. Please try again.');
+                      setSelectedAllQuestions(false);
+                    } finally {
+                      setLoadingTopics(false);
+                    }
+                  }
+                } else {
+                  // Unselect all topics
+                  setSelectedSubtopics({});
+                }
+              }}
               className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red"
             />
             <span className="font-archivo font-bold text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
@@ -498,13 +664,6 @@ const PracticePage = () => {
             </div>
           </div>
         </div>
-
-        {/* Warning Message */}
-        <div className="mt-4 flex items-center gap-2 rounded-lg w-full bg-papaya-whip border border-[#FFE5B0] p-3">
-          <p className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue text-center">
-            {t('dashboard.practice.questionPool.noQuestionsMatch')}
-          </p>
-        </div>
       </div>
 
       {/* Session Size Section */}
@@ -528,14 +687,17 @@ const PracticePage = () => {
         <p className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-gray-500 mb-4">
           {t('dashboard.practice.sessionSize.enterRange')}
         </p>
-        <div className="rounded-lg flex items-center gap-2 w-full h-auto lg:h-[47px] bg-papaya-whip border border-cinnebar-red px-4 py-3">
-          <svg className="w-5 h-5 text-cinnebar-red flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-          <p className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-cinnebar-red">
-            {t('dashboard.practice.sessionSize.onlyQuestionsAvailable')}
-          </p>
-        </div>
+        {/* Warning Message - Only show when topics are selected and total is 0 */}
+        {selectedSubtopicCount > 0 && totalAvailableQuestions === 0 && (
+          <div className="rounded-lg flex items-center gap-2 w-full h-auto lg:h-[47px] bg-papaya-whip border border-cinnebar-red px-4 py-3 mb-4">
+              <svg className="w-5 h-5 text-cinnebar-red flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <p className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-cinnebar-red">
+              {t('dashboard.practice.sessionSize.onlyQuestionsAvailable')}
+              </p>
+            </div>
+        )}
       </div>
 
       {/* Begin Session Button */}

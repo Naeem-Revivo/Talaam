@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { login } from '../../store/slices/authSlice'
 import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
 import { getTranslatedAuthMessage } from '../../utils/authMessages'
+import { isProfileComplete } from '../../utils/profileUtils'
 
 const Login = () => {
   const { language, t } = useLanguage()
@@ -153,7 +154,12 @@ const Login = () => {
             navigate('/admin', { replace: true })
           }
         } else if (role === 'student' || role === 'user') {
+          // Check if profile is complete for students
+          if (!isProfileComplete(user)) {
+            navigate('/complete-profile', { replace: true })
+          } else {
           navigate('/dashboard', { replace: true })
+          }
         } else if (role === 'gatherer') {
           navigate('/gatherer', { replace: true })
         } else if (role === 'creator') {
