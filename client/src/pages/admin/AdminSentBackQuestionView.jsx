@@ -81,6 +81,17 @@ const Dropdown = ({ label, value, options, onChange, placeholder }) => {
   );
 };
 
+// Helper function to extract option text (handles both string and object formats)
+const getOptionText = (optionValue) => {
+  if (!optionValue) return "";
+  if (typeof optionValue === 'string') return optionValue;
+  if (typeof optionValue === 'object') {
+    // Handle object format like {option: 'A', text: 'Some text'}
+    return optionValue.text || optionValue.option || String(optionValue);
+  }
+  return String(optionValue);
+};
+
 const AdminSentBackQuestionView = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -185,28 +196,34 @@ const AdminSentBackQuestionView = () => {
             // Check if it's True/False question
             if (question.questionType === "TRUE_FALSE") {
               setOptions({
-                A: question.options.A || "True",
-                B: question.options.B || "False",
+                A: getOptionText(question.options.A) || "True",
+                B: getOptionText(question.options.B) || "False",
                 C: "",
                 D: "",
               });
               // Map correct answer: "A" -> "True", "B" -> "False"
-              if (question.correctAnswer === "A") {
+              const correctAnswerLetter = typeof question.correctAnswer === 'object' 
+                ? (question.correctAnswer.option || question.correctAnswer.text || question.correctAnswer)
+                : question.correctAnswer;
+              if (correctAnswerLetter === "A") {
                 setCorrectAnswer("True");
-              } else if (question.correctAnswer === "B") {
+              } else if (correctAnswerLetter === "B") {
                 setCorrectAnswer("False");
               } else {
                 setCorrectAnswer("True");
               }
             } else {
               setOptions({
-                A: question.options.A || "",
-                B: question.options.B || "",
-                C: question.options.C || "",
-                D: question.options.D || "",
+                A: getOptionText(question.options.A) || "",
+                B: getOptionText(question.options.B) || "",
+                C: getOptionText(question.options.C) || "",
+                D: getOptionText(question.options.D) || "",
               });
               if (question.correctAnswer) {
-                setCorrectAnswer(`Option ${question.correctAnswer}`);
+                const correctAnswerLetter = typeof question.correctAnswer === 'object' 
+                  ? (question.correctAnswer.option || question.correctAnswer.text || question.correctAnswer)
+                  : question.correctAnswer;
+                setCorrectAnswer(`Option ${correctAnswerLetter}`);
               }
             }
           }

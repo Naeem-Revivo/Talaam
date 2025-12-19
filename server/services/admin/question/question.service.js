@@ -1791,11 +1791,40 @@ const approveQuestion = async (questionId, userId, assignedUserId = null, role =
     // Question has explanation - this is the final step, mark as completed
     nextStatus = 'completed';
   }
+  // PRIORITY 0.5: Check if assignedUserId is provided and is an explainer
+  // This allows admin/processor to explicitly send to explainer by selecting an explainer
+  // BUT: Skip if question has explanation (handled by PRIORITY 0)
+  else if (assignedUserId && !hasExplanation) {
+    const { prisma } = require('../../../config/db/prisma');
+    try {
+      const assignedUser = await prisma.user.findUnique({
+        where: { id: assignedUserId },
+        select: { id: true, adminRole: true, status: true }
+      });
+      
+      if (assignedUser && assignedUser.status === 'active') {
+        if (assignedUser.adminRole === 'explainer') {
+          // User explicitly selected an explainer - send to explainer
+          nextStatus = 'pending_explainer';
+        } else if (assignedUser.adminRole === 'creator') {
+          // User explicitly selected a creator - send to creator
+          nextStatus = 'pending_creator';
+        }
+        // If assignedUser is neither explainer nor creator, continue with normal logic below
+      }
+    } catch (userCheckError) {
+      console.error('[APPROVE QUESTION] Error checking assigned user:', userCheckError);
+      // If error checking user, continue with normal logic below
+    }
+  }
+  
+  // Only continue with normal routing logic if nextStatus hasn't been set yet
+  if (!nextStatus) {
   // PRIORITY 1: If question was updated after flag approval, route based on who flagged it
   // This ensures explainer-flagged questions go back to explainer, not creator
   // Student-flagged questions follow the same flow as creator-flagged questions after gatherer updates
   // BUT: Skip this if question has explanation (handled by PRIORITY 0)
-  else if (wasUpdatedAfterFlag && question.flagType) {
+  if (wasUpdatedAfterFlag && question.flagType) {
     if (question.flagType === 'student' || question.flagType === 'creator') {
       // Student or creator flagged - after gatherer updates, send to creator
       // Student flags follow the same flow as creator flags after gatherer updates
@@ -1887,6 +1916,7 @@ const approveQuestion = async (questionId, userId, assignedUserId = null, role =
     // Default fallback
     nextStatus = 'pending_creator';
   }
+  } // End of if (!nextStatus) block
 
   // Validate and assign creator/explainer/gatherer if provided
   // Only assign if not already assigned (assignment happens only once)

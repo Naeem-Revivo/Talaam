@@ -39,13 +39,8 @@ const mapStatusToDisplay = (status) => {
     return "Rejected";
   }
   
-  // Check for "sent back" status (usually when status contains "sent_back" or similar)
-  if (status.toLowerCase().includes('sent_back') || status.toLowerCase().includes('sentback')) {
-    return "Sent Back";
-  }
-  
   // Default to status as-is if it matches our display statuses
-  const displayStatuses = ["Pending", "Approved", "Rejected", "Sent Back"];
+  const displayStatuses = ["Pending", "Approved", "Rejected"];
   if (displayStatuses.includes(status)) {
     return status;
   }
@@ -89,7 +84,7 @@ const QuestionBankPage = () => {
   const [examOptions, setExamOptions] = useState([]);
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [topicOptions, setTopicOptions] = useState([]);
-  const [statusOptions] = useState(["Pending", "Approved", "Rejected", "Sent Back"]);
+  const [statusOptions] = useState(["Pending", "Approved", "Rejected"]);
 
   // Fetch questions from API
   useEffect(() => {
@@ -142,18 +137,21 @@ const QuestionBankPage = () => {
       if (filters.exam && filters.exam.trim()) params.exam = filters.exam.trim();
       if (filters.subject && filters.subject.trim()) params.subject = filters.subject.trim();
       if (filters.topic && filters.topic.trim()) params.topic = filters.topic.trim();
-      if (filters.status) {
+      if (filters.status && filters.status.trim() !== '') {
         // Map display status back to API status
         if (filters.status === "Pending") {
-          // Don't set status, let tab handle it (tab will filter by pending_* statuses)
+          // When "Pending" is explicitly selected, override tab and set tab to "pending"
+          // This will make the backend show all pending statuses
+          params.tab = "pending";
+          // Don't set status - let tab handle it
         } else if (filters.status === "Approved") {
           params.status = "completed";
+          // Override tab to show approved
+          params.tab = "approved";
         } else if (filters.status === "Rejected") {
           params.status = "rejected";
-        } else if (filters.status === "Sent Back") {
-          // "Sent Back" is not a valid API status, so don't send it
-          // This will show all questions and we can filter client-side if needed
-          // For now, just don't apply status filter for "Sent Back"
+          // Override tab to show rejected
+          params.tab = "rejected";
         } else {
           // Only send if it's a valid API status value
           const validApiStatuses = ['pending_processor', 'pending_creator', 'pending_explainer', 'completed', 'rejected'];
