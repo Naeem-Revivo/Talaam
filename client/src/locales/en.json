@@ -2095,6 +2095,8 @@
       "filters": {
         "planType": "Plan Type",
         "dateRange": "Date range",
+        "month": "Month",
+        "year": "Year",
         "last30Days": "Last 30 Days",
         "last7Days": "Last 7 Days",
         "last90Days": "Last 90 Days",
@@ -3887,5 +3889,21 @@
     "title": "Notifications",
     "noAnnouncements": "No announcements",
     "dismiss": "Dismiss"
+  },
+  "common": {
+    "months": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    }
   }
 }

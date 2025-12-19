@@ -2106,6 +2106,8 @@
       "filters": {
         "planType": "نوع الخطة",
         "dateRange": "نطاق التاريخ",
+        "month": "الشهر",
+        "year": "السنة",
         "last30Days": "آخر 30 يوم",
         "last7Days": "آخر 7 أيام",
         "last90Days": "آخر 90 يوم",
@@ -3890,5 +3892,21 @@
     "title": "الإشعارات",
     "noAnnouncements": "لا توجد إعلانات",
     "dismiss": "إخفاء"
+  },
+  "common": {
+    "months": {
+      "january": "يناير",
+      "february": "فبراير",
+      "march": "مارس",
+      "april": "أبريل",
+      "may": "مايو",
+      "june": "يونيو",
+      "july": "يوليو",
+      "august": "أغسطس",
+      "september": "سبتمبر",
+      "october": "أكتوبر",
+      "november": "نوفمبر",
+      "december": "ديسمبر"
+    }
   }
 }

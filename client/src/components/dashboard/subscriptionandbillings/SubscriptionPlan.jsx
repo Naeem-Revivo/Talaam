@@ -8,7 +8,7 @@ import paymentAPI from "../../../api/payment";
 import { showSuccessToast, showErrorToast } from "../../../utils/toastConfig";
 import Loader from "../../common/Loader";
 
-export default function SubscriptionPlan() {
+export default function SubscriptionPlan({ onSubscriptionChange }) {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [subscription, setSubscription] = useState(null);
@@ -27,9 +27,17 @@ export default function SubscriptionPlan() {
       const response = await subscriptionAPI.getMySubscription();
       if (response.success && response.data?.subscription) {
         setSubscription(response.data.subscription);
+        // Notify parent component of subscription change
+        if (onSubscriptionChange) {
+          onSubscriptionChange(response.data.subscription);
+        }
       } else {
         // No subscription found - component will show empty state
         setSubscription(null);
+        // Notify parent component that no subscription exists
+        if (onSubscriptionChange) {
+          onSubscriptionChange(null);
+        }
       }
     } catch (error) {
       console.error('Error fetching subscription:', error);
@@ -38,6 +46,10 @@ export default function SubscriptionPlan() {
         showErrorToast(error.message || 'Failed to load subscription');
       }
       setSubscription(null);
+      // Notify parent component that no subscription exists
+      if (onSubscriptionChange) {
+        onSubscriptionChange(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -62,12 +74,17 @@ export default function SubscriptionPlan() {
         showSuccessToast('Subscription cancelled successfully');
         // Update subscription state immediately with cancelled status
         if (response.data?.subscription) {
-          setSubscription(prev => ({
-            ...prev,
+          const updatedSubscription = {
+            ...subscription,
             paymentStatus: 'Cancelled',
             isActive: false,
             ...response.data.subscription
-          }));
+          };
+          setSubscription(updatedSubscription);
+          // Notify parent component of subscription change
+          if (onSubscriptionChange) {
+            onSubscriptionChange(updatedSubscription);
+          }
         }
         // Also refresh subscription data to ensure consistency
         await fetchSubscription();
