@@ -19,6 +19,9 @@ router.post('/study/session', questionController.saveStudySessionResults);
 // Study Mode: Get study history
 router.get('/study/history', questionController.getStudyHistory);
 
+// Study Mode: Get overall summary
+router.get('/study/summary', questionController.getStudySummary);
+
 // Sessions list and detail
 router.get('/sessions', questionController.getSessionHistory);
 router.get('/sessions/:sessionId/incorrect', questionController.getSessionIncorrect);

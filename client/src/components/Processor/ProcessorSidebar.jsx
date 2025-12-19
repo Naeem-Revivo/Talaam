@@ -117,6 +117,37 @@ const ChevronIcon = ({ isOpen }) => {
   );
 };
 
+const AnnouncementIcon = ({ active }) => {
+  const stroke = active ? "#032746" : "white";
+
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
+        stroke={stroke}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M13.73 21a2 2 0 0 1-3.46 0"
+        stroke={stroke}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
 const ProcessorSidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -169,6 +200,11 @@ const ProcessorSidebar = ({ isOpen, onClose }) => {
       labelKey: "processor.sidebar.questionBank",
       icon: QuestionBankIcon,
       submenuKey: "questionBank",
+    },
+    {
+      path: "/processor/announcements",
+      labelKey: "dashboard.sidebar.announcements",
+      icon: AnnouncementIcon,
     },
     {
       path: "/processor/profile",

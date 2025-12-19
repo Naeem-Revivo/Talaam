@@ -6,12 +6,13 @@ import topicsAPI from '../../api/topics';
 import studentQuestionsAPI from '../../api/studentQuestions';
 import subscriptionAPI from '../../api/subscription';
 import { showErrorToast } from '../../utils/toastConfig';
+import Loader from '../../components/common/Loader';
 
 const PracticePage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [sessionMode, setSessionMode] = useState('study'); // 'test' or 'study'
-  const [questionStatus, setQuestionStatus] = useState('new'); 
+  const [questionStatus, setQuestionStatus] = useState('solved'); 
   const [selectedStatuses, setSelectedStatuses] = useState({
     incorrect: false,
     flagged: false,
@@ -28,6 +29,9 @@ const PracticePage = () => {
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [checkingSubscription, setCheckingSubscription] = useState(true);
+  const [testSummary, setTestSummary] = useState(null);
+  const [studySummary, setStudySummary] = useState(null);
+  const [loadingSummary, setLoadingSummary] = useState(false);
 
   const selectedSubtopicCount = Object.values(selectedSubtopics).filter(Boolean).length;
   const parsedSessionSize = Number(sessionSize);
@@ -103,6 +107,40 @@ const PracticePage = () => {
     };
     checkSubscription();
   }, []);
+
+  // Fetch summary based on current session mode
+  useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        setLoadingSummary(true);
+        if (sessionMode === 'test') {
+          const response = await studentQuestionsAPI.getTestSummary();
+          if (response.success && response.data) {
+            setTestSummary(response.data);
+          } else {
+            setTestSummary(null);
+          }
+        } else {
+          const response = await studentQuestionsAPI.getStudySummary();
+          if (response.success && response.data) {
+            setStudySummary(response.data);
+          } else {
+            setStudySummary(null);
+          }
+        }
+      } catch (error) {
+        console.error(`Error fetching ${sessionMode} summary:`, error);
+        if (sessionMode === 'test') {
+          setTestSummary(null);
+        } else {
+          setStudySummary(null);
+        }
+      } finally {
+        setLoadingSummary(false);
+      }
+    };
+    fetchSummary();
+  }, [sessionMode]);
 
   // Fetch subjects on component mount
   useEffect(() => {
@@ -224,18 +262,8 @@ const PracticePage = () => {
     }
     
     setSessionMode(mode);
-    if (mode === 'study') {
-      // Study mode: automatically select 'new' and clear checkboxes
-      setQuestionStatus('new');
-      setSelectedStatuses({
-        incorrect: false,
-        flagged: false,
-        correct: false,
-      });
-    } else if (mode === 'test') {
-      // Test mode: automatically select 'solved'
-      setQuestionStatus('solved');
-    }
+    // Both modes use 'solved' status now
+    setQuestionStatus('solved');
   };
 
   return (
@@ -336,16 +364,6 @@ const PracticePage = () => {
         </h2>
         <div className="flex gap-2 mb-4">
           <button
-            onClick={() => setQuestionStatus('new')}
-            className={`px-4 py-2 rounded-full font-roboto font-normal text-[16px] leading-[24px] text-center transition-all duration-200 ${
-              questionStatus === 'new'
-                ? 'bg-cinnebar-red text-white'
-                : 'bg-white text-oxford-blue border border-[#E5E7EB]'
-            }`}
-          >
-            {t('dashboard.practice.questionStatus.new')}
-          </button>
-          <button
             onClick={() => setQuestionStatus('solved')}
             className={`px-4 py-2 rounded-full font-roboto font-normal text-[16px] leading-[24px] text-center transition-all duration-200 ${
               questionStatus === 'solved'
@@ -356,52 +374,36 @@ const PracticePage = () => {
             {t('dashboard.practice.questionStatus.solved')}
           </button>
         </div>
-        {questionStatus === 'solved' && (
-          <div className="space-y-3">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedStatuses.incorrect}
-                onChange={() => handleStatusChange('incorrect')}
-                className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red"
-              />
-              <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
-                {t('dashboard.practice.questionStatus.incorrect')}
-              </span>
-              <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
-                45
-              </span>
-            </label>
-            {/* <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedStatuses.flagged}
-                onChange={() => handleStatusChange('flagged')}
-                className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red"
-              />
-              <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
-                {t('dashboard.practice.questionStatus.flagged')}
-              </span>
-              <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
-                12
-              </span>
-            </label> */}
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedStatuses.correct}
-                onChange={() => handleStatusChange('correct')}
-                className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red"
-              />
-              <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
-                {t('dashboard.practice.questionStatus.correct')}
-              </span>
-              <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
-                128
-              </span>
-            </label>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
+              {t('dashboard.practice.questionStatus.incorrect')}
+            </span>
+            <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
+              {loadingSummary ? (
+                <Loader size="sm" color="moonstone-blue" className="inline-block" />
+              ) : sessionMode === 'test' ? (
+                testSummary?.totalIncorrectAnswers || 0
+              ) : (
+                studySummary?.totalIncorrectAnswers || 0
+              )}
+            </span>
           </div>
-        )}
+          <div className="flex items-center gap-3">
+            <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
+              {t('dashboard.practice.questionStatus.correct')}
+            </span>
+            <span className="font-roboto font-normal text-[16px] leading-[24px] tracking-[0%] text-moonstone-blue ml-auto">
+              {loadingSummary ? (
+                <Loader size="sm" color="moonstone-blue" className="inline-block" />
+              ) : sessionMode === 'test' ? (
+                testSummary?.totalCorrectAnswers || 0
+              ) : (
+                studySummary?.totalCorrectAnswers || 0
+              )}
+            </span>
+          </div>
+        </div>
         </div>
       </div>
 

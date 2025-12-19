@@ -4,12 +4,14 @@
       "gatherer": {
         "dashboard": "لوحة تحكم المجمع",
         "questionBank": "بنك الأسئلة",
+        "announcements": "الإعلانات",
         "profile": "الملف الشخصي",
         "default": "لوحة تحكم المجمع"
       },
       "creator": {
         "dashboard": "لوحة تحكم المنشئ",
         "questionBank": "بنك الأسئلة",
+        "announcements": "الإعلانات",
         "profile": "الملف الشخصي",
         "default": "لوحة تحكم المنشئ"
       },
@@ -20,12 +22,14 @@
         "creatorSubmission": "تقديم المنشئ",
         "explainerSubmission": "تقديم المشرح",
         "adminSubmission": "تقديم الإدارة",
+        "announcements": "الإعلانات",
         "profile": "الملف الشخصي",
         "default": "لوحة تحكم المعالج"
       },
       "explainer": {
         "dashboard": "لوحة تحكم المشرح",
         "questionBank": "بنك الأسئلة",
+        "announcements": "الإعلانات",
         "profile": "الملف الشخصي",
         "default": "لوحة تحكم المشرح"
       },
@@ -68,8 +72,9 @@
         "reviewSessions": "جلسات المراجعة",
         "sessionSummary": "ملخص الجلسة",
         "questionSession": "جلسة الأسئلة",
-        "subscriptionsBilling": "الاشتراكات والفواتير",
-        "default": "لوحة التحكم"
+      "subscriptionsBilling": "الاشتراكات والفواتير",
+      "announcements": "الإعلانات",
+      "default": "لوحة التحكم"
       }
     }
   },
@@ -633,7 +638,50 @@
       "reviewSessions": "مراجعة الجلسات",
       "sessionSummary": "ملخص الجلسة",
       "questionSession": "جلسة الأسئلة",
-      "subscriptionsBilling": "الاشتراك والفوترة"
+      "subscriptionsBilling": "الاشتراك والفوترة",
+      "announcements": "الإعلانات"
+    },
+    "announcements": {
+      "title": "الإعلانات",
+      "subtitle": "ابق على اطلاع بأحدث الإعلانات من المنصة",
+      "loading": "جاري التحميل...",
+      "noAnnouncements": "لا توجد إعلانات متاحة",
+      "unread": "غير مقروء",
+      "read": "مقروء",
+      "view": "عرض",
+      "delete": "حذف",
+      "deleteConfirm": "هل أنت متأكد من حذف هذا الإعلان؟ سيؤدي ذلك فقط إلى إخفائه من عرضك.",
+      "deleteError": "خطأ في حذف الإعلان. يرجى المحاولة مرة أخرى.",
+      "deleteModal": {
+        "title": "حذف الإعلان",
+        "message": "هل أنت متأكد من حذف \"{{title}}\"؟",
+        "subMessage": "سيؤدي ذلك فقط إلى إخفائه من عرضك.",
+        "confirmText": "حذف",
+        "cancelText": "إلغاء"
+      },
+      "viewTitle": "تفاصيل الإعلان",
+      "close": "إغلاق",
+      "table": {
+        "type": "النوع",
+        "title": "العنوان",
+        "message": "الرسالة",
+        "date": "التاريخ",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "status": {
+        "read": "مقروء",
+        "unread": "غير مقروء"
+      },
+      "actions": {
+        "view": "عرض",
+        "delete": "حذف"
+      },
+      "type": "النوع",
+      "message": "الرسالة",
+      "startDate": "تاريخ البداية",
+      "endDate": "تاريخ الانتهاء",
+      "createdAt": "تاريخ الإنشاء"
     },
     "title": {
       "dashboard": "لوحة التحكم",
@@ -1872,6 +1920,13 @@
         "emptyState": "لا توجد خطط تطابق المرشحات الحالية.",
         "deleteConfirm": "هل أنت متأكد أنك تريد حذف {{planName}}؟",
         "exportFileName": "خطط-الاشتراك.csv"
+      },
+      "deleteModal": {
+        "title": "حذف الخطة",
+        "message": "هل أنت متأكد أنك تريد حذف \"{{planName}}\"؟",
+        "subMessage": "لا يمكن التراجع عن هذا الإجراء.",
+        "confirmText": "حذف",
+        "cancelText": "إلغاء"
       }
     },
     "addNewPlan": {
@@ -2716,10 +2771,19 @@
           "title": "العنوان",
           "message": "الرسالة",
           "schedule": "الجدول الزمني",
+          "audience": "الجمهور المستهدف",
           "status": "الحالة",
+          "publish": "النشر",
           "actions": "الإجراءات"
         },
         "emptyMessage": "لم يتم العثور على إشعارات"
+      },
+      "deleteModal": {
+        "title": "حذف الإعلان",
+        "message": "هل أنت متأكد من حذف \"{{title}}\"؟",
+        "subMessage": "سيؤدي ذلك فقط إلى إخفائه من عرضك.",
+        "confirmText": "حذف",
+        "cancelText": "إلغاء"
       }
     },
     "languageManagement": {
@@ -2792,9 +2856,8 @@
       "options": {
         "targetAudience": {
           "allUsers": "جميع المستخدمين",
-          "administrators": "المسؤولون",
-          "members": "الأعضاء",
-          "guests": "الضيوف"
+          "adminRoles": "أدوار المسؤولين",
+          "students": "الطلاب"
         },
         "type": {
           "info": "معلومات",
@@ -2838,9 +2901,8 @@
       "options": {
         "targetAudience": {
           "allUsers": "جميع المستخدمين",
-          "administrators": "المسؤولون",
-          "members": "الأعضاء",
-          "guests": "الضيوف"
+          "adminRoles": "أدوار المسؤولين",
+          "students": "الطلاب"
         },
         "type": {
           "info": "معلومات",
@@ -3053,6 +3115,7 @@
         "lastUpdate": "آخر تحديث",
         "status": "الحالة",
         "indicators": "المؤشرات",
+        "flagsIssues": "الأعلام / المشاكل",
         "actions": "الإجراءات"
       },
       "rejectionReasonModal": {
@@ -3258,6 +3321,7 @@
         "status": "الحالة",
         "difficulty": "الصعوبة",
         "indicators": "المؤشرات",
+        "flagsIssues": "الأعلام / المشاكل",
         "updatedOn": "تم التحديث في",
         "actions": "الإجراءات"
       },
@@ -3819,5 +3883,10 @@
     "message": {
       "logoutSuccess": "تم تسجيل الخروج بنجاح."
     }
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "noAnnouncements": "لا توجد إعلانات",
+    "dismiss": "إخفاء"
   }
 }

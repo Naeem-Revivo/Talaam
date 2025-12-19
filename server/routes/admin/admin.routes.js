@@ -98,6 +98,18 @@ const planRoutes = require('./plan.routes');
 // Use plan routes
 router.use('/plans', planRoutes);
 
+// Import language routes
+const languageRoutes = require('./language.routes');
+
+// Use language routes
+router.use('/languages', languageRoutes);
+
+// Import announcement routes
+const announcementRoutes = require('./announcement.routes');
+
+// Use announcement routes
+router.use('/announcements', announcementRoutes);
+
 // Subscription Management Routes (all require superadmin access)
 router.get('/subscriptions', authMiddleware, superadminMiddleware, adminController.getAllUserSubscriptions);
 router.get('/subscriptions/:subscriptionId', authMiddleware, superadminMiddleware, adminController.getSubscriptionDetails);
@@ -118,6 +130,9 @@ router.get('/analytics/subscription/plan-distribution', authMiddleware, superadm
 
 // Practice Analytics
 router.get('/analytics/practice-distribution', authMiddleware, superadminMiddleware, adminController.getPracticeDistribution);
+
+// Export Reports
+router.post('/reports/export', authMiddleware, superadminMiddleware, adminController.exportReport);
 
 // Content Moderation Routes (all require superadmin access)
 const questionController = require('../../controllers/admin/question.controller');

@@ -40,7 +40,7 @@ const CreatorQuestionBank = () => {
     { key: 'subject', label: t("creator.assignedQuestionPage.table.subject") },
     { key: 'processor', label: t("creator.assignedQuestionPage.table.processor") },
     { key: 'status', label: t("creator.assignedQuestionPage.table.status") },
-    { key: 'indicators', label: t("creator.assignedQuestionPage.table.indicators") },
+    { key: 'indicators', label: t("creator.assignedQuestionPage.table.flagsIssues") },
     { key: 'updatedOn', label: t("creator.assignedQuestionPage.table.updatedOn") },
     { key: 'actions', label: t("creator.assignedQuestionPage.table.actions") }
   ];
@@ -118,6 +118,7 @@ const CreatorQuestionBank = () => {
       const isFlagged = question.isFlagged === true;
       const isRejected = question.status === 'rejected';
       const isVariant = question.isVariant === true || question.isVariant === 'true';
+      const isVariantCreatedByCreator = isVariant && (question.createdById || question.createdBy);
       
       const questionId = questionIdStr(question.id || question._id);
       const hasVariants = variantsByParentId.has(questionId) && variantsByParentId.get(questionId).length > 0;
@@ -155,7 +156,7 @@ const CreatorQuestionBank = () => {
           approved: isApproved || isVariantQuestion || isParentWithVariants || isSubmittedByCreator,
           flag: isFlagged,
           reject: isRejected,
-          variant: isVariant
+          variant: isVariantCreatedByCreator || isVariant
         },
         flagReason: question.flagReason || null,
         rejectionReason: question.rejectionReason || null,
@@ -181,6 +182,7 @@ const CreatorQuestionBank = () => {
           const isFlagged = q.isFlagged === true;
           const isRejected = q.status === 'rejected';
           const isVariantQuestion = q.status === 'pending_processor' && !isFlagged;
+          const isVariantCreatedByCreator = (q.createdById || q.createdBy);
           
           let status;
           if (isFlagged) {
@@ -209,7 +211,7 @@ const CreatorQuestionBank = () => {
               approved: isVariantQuestion || q.status === 'completed',
               flag: isFlagged,
               reject: isRejected,
-              variant: true
+              variant: isVariantCreatedByCreator
             },
             flagReason: q.flagReason || null,
             rejectionReason: q.rejectionReason || null,

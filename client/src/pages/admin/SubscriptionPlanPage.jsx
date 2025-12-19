@@ -5,6 +5,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import { DataTable } from "../../components/admin/SystemSetting/Table";
 import plansAPI from "../../api/plans";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
+import { ConfirmationModal } from "../../components/common/ConfirmationModal";
 
 const SubscriptionPlan = () => {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ const SubscriptionPlan = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [planToDelete, setPlanToDelete] = useState(null);
   const pageSize = 10;
 
   // Fetch plans from API
@@ -113,26 +116,33 @@ const SubscriptionPlan = () => {
     navigate("/admin/subscriptions/edit-plan", { state: { plan } });
   };
 
-  const handleDelete = async (plan) => {
-    // Handle delete plan (using onView prop from DataTable)
-    if (window.confirm(t('admin.subscriptionPlans.table.deleteConfirm').replace('{{planName}}', plan.planname))) {
-      try {
-        const planId = plan._original?.id || plan.id;
-        const response = await plansAPI.deletePlan(planId);
-        
-        if (response.success) {
-          showSuccessToast(response.message || "Plan deleted successfully");
-          // Refresh plans list
-          fetchPlans();
-          // Reset to first page if current page becomes empty
-          if (paginatedPlans.length === 1 && page > 1) {
-            setPage(page - 1);
-          }
+  const handleDeleteClick = (plan) => {
+    setPlanToDelete(plan);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!planToDelete) return;
+
+    try {
+      const planId = planToDelete._original?.id || planToDelete.id;
+      const response = await plansAPI.deletePlan(planId);
+      
+      if (response.success) {
+        showSuccessToast(response.message || "Plan deleted successfully");
+        // Refresh plans list
+        fetchPlans();
+        // Reset to first page if current page becomes empty
+        if (paginatedPlans.length === 1 && page > 1) {
+          setPage(page - 1);
         }
-      } catch (err) {
-        console.error("Error deleting plan:", err);
-        showErrorToast(err.message || "Failed to delete plan");
       }
+    } catch (err) {
+      console.error("Error deleting plan:", err);
+      showErrorToast(err.message || "Failed to delete plan");
+    } finally {
+      setIsDeleteModalOpen(false);
+      setPlanToDelete(null);
     }
   };
 
@@ -228,11 +238,26 @@ const SubscriptionPlan = () => {
             total={filteredPlans.length}
             onPageChange={setPage}
             onEdit={handleEdit}
-            onView={handleDelete}
+            onDelete={handleDeleteClick}
             emptyMessage={t('admin.subscriptionPlans.table.emptyState')}
           />
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setPlanToDelete(null);
+        }}
+        onConfirm={handleDelete}
+        title={t('admin.subscriptionPlans.deleteModal.title') || 'Delete Plan'}
+        message={planToDelete ? (t('admin.subscriptionPlans.deleteModal.message') || 'Are you sure you want to delete this plan?').replace('{{planName}}', planToDelete.planname) : (t('admin.subscriptionPlans.deleteModal.message') || 'Are you sure you want to delete this plan?')}
+        subMessage={t('admin.subscriptionPlans.deleteModal.subMessage') || 'This action cannot be undone.'}
+        confirmText={t('admin.subscriptionPlans.deleteModal.confirmText') || 'Delete'}
+        cancelText={t('admin.subscriptionPlans.deleteModal.cancelText') || 'Cancel'}
+      />
     </div>
   );
 };

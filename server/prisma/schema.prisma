@@ -49,6 +49,7 @@ model User {
   studentAnswers        StudentAnswer[]
   questionHistory       QuestionHistory[]
   questionComments      QuestionComment[]
+  announcementReads     AnnouncementRead[]
 
   @@index([googleId])
   @@index([linkedinId])
@@ -312,4 +313,59 @@ model StudentAnswerQuestion {
   @@index([studentAnswerId])
   @@index([questionId])
   @@map("student_answer_questions")
+}
+
+model Language {
+  id          String   @id @default(uuid())
+  name        String
+  code        String   @unique
+  isDefault   Boolean  @default(false) @map("is_default")
+  status      String   @default("active") // active, inactive
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([status])
+  @@index([isDefault])
+  @@map("languages")
+}
+
+model Announcement {
+  id            String   @id @default(uuid())
+  title         String
+  message       String
+  targetAudience String   @map("target_audience") // all_users, students, admin_roles
+  type          String   // info, warning, alert, success
+  startDate     DateTime @map("start_date") @db.Timestamptz
+  endDate       DateTime @map("end_date") @db.Timestamptz
+  isPublished   Boolean  @default(false) @map("is_published")
+  status        String   @default("inactive") // active, inactive (calculated based on dates and isPublished)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  readBy        AnnouncementRead[]
+
+  @@index([targetAudience])
+  @@index([isPublished])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@map("announcements")
+}
+
+model AnnouncementRead {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  announcementId String  @map("announcement_id")
+  readAt        DateTime @default(now()) @map("read_at") @db.Timestamptz
+  isDeleted     Boolean  @default(false) @map("is_deleted")
+
+  // Relations
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  announcement  Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, announcementId])
+  @@index([userId])
+  @@index([announcementId])
+  @@index([isDeleted])
+  @@map("announcement_reads")
 }

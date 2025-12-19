@@ -17,6 +17,7 @@ export const Loader = ({
     'oxford-blue': 'border-oxford-blue',
     'cinnebar-red': 'border-cinnebar-red',
     'red': 'border-[#ED4122]',
+    'moonstone-blue': 'border-moonstone-blue',
   };
 
   const spinner = (

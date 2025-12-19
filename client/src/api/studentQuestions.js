@@ -167,6 +167,25 @@ const studentQuestionsAPI = {
     }
   },
 
+  // Get study mode summary (for dashboard progress and accuracy)
+  // GET /api/student/questions/study/summary?exam=...
+  getStudySummary: async (params = {}) => {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params.exam) queryParams.append('exam', params.exam);
+
+      const url = queryParams.toString()
+        ? `/student/questions/study/summary?${queryParams.toString()}`
+        : '/student/questions/study/summary';
+
+      const response = await axiosClient.get(url);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to fetch study summary' };
+    }
+  },
+
   // Get performance data (last 10 sessions)
   // GET /api/student/questions/performance
   getPerformanceData: async () => {

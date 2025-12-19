@@ -1537,61 +1537,147 @@ const getSubscriptionTrendMetrics = async () => {
 
 /**
  * Get revenue trend chart data
+ * @param {number} month - Optional: Month (1-12) for daily data
+ * @param {number} year - Optional: Year for daily data
  */
-const getRevenueTrendChart = async () => {
-  // Get revenue data grouped by month for last 6 months
+const getRevenueTrendChart = async (month = null, year = null) => {
+  const { prisma } = require('../../config/db/prisma');
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+
+  // If month and year are provided, return daily data for that month
+  if (month && year) {
+    const startDate = new Date(year, month - 1, 1); // First day of the month
+    const endDate = new Date(year, month, 0, 23, 59, 59, 999); // Last day of the month
+
+    // Get paid subscriptions for the specific month
+    const paidSubscriptions = await prisma.subscription.findMany({
+      where: {
+        paymentStatus: 'Paid',
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      include: {
+        plan: {
+          select: {
+            price: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    // Group by day and calculate revenue
+    const revenueMap = new Map();
+    const daysInMonth = new Date(year, month, 0).getDate();
+
+    // Initialize all days in the month with 0 revenue
+    for (let day = 1; day <= daysInMonth; day++) {
+      const key = `${year}-${month}-${day}`;
+      revenueMap.set(key, {
+        year,
+        month,
+        day,
+        revenue: 0,
+        date: new Date(year, month - 1, day).toISOString().split('T')[0],
+      });
+    }
+
+    // Add actual revenue data
+    paidSubscriptions.forEach((sub) => {
+      const date = new Date(sub.createdAt);
+      const day = date.getDate();
+      const key = `${year}-${month}-${day}`;
+
+      if (revenueMap.has(key)) {
+        const entry = revenueMap.get(key);
+        entry.revenue += parseFloat(sub.plan?.price || 0);
+      }
+    });
+
+    // Convert to array and format
+    const formattedData = Array.from(revenueMap.values())
+      .sort((a, b) => a.day - b.day)
+      .map((item) => ({
+        day: item.day,
+        month: months[item.month - 1],
+        monthNumber: item.month,
+        year: item.year,
+        revenue: item.revenue,
+        date: item.date,
+        label: `${item.day}/${item.month}`,
+      }));
+
+    return {
+      title: `Revenue Trend - ${months[month - 1]} ${year}`,
+      data: formattedData,
+      type: 'daily',
+    };
+  }
+
+  // Default: Get revenue data grouped by month for last 6 months
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  sixMonthsAgo.setDate(1); // Start from first day of the month
 
-  // Get paid subscriptions from last 6 months using Prisma
-  const { prisma } = require('../../config/db/prisma');
   const paidSubscriptions = await prisma.subscription.findMany({
     where: {
-        paymentStatus: 'Paid',
+      paymentStatus: 'Paid',
       createdAt: { gte: sixMonthsAgo },
-      },
+    },
     include: {
       plan: {
         select: {
           price: true,
+        },
       },
-    },
     },
     orderBy: {
       createdAt: 'asc',
     },
   });
 
-  // Group by month/year and calculate revenue
+  // Initialize revenue map with all months in the last 6 months (including zeros)
   const revenueMap = new Map();
-  const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-  ];
+  const currentDate = new Date();
+  
+  // Generate all months from 6 months ago to current month
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(currentDate.getMonth() - i);
+    date.setDate(1);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const key = `${year}-${month}`;
+    
+    revenueMap.set(key, {
+      year,
+      month,
+      revenue: 0,
+      date: date.toISOString().split('T')[0],
+    });
+  }
 
+  // Add actual revenue data
   paidSubscriptions.forEach((sub) => {
     const date = new Date(sub.createdAt);
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const key = `${year}-${month}`;
 
-    if (!revenueMap.has(key)) {
-      revenueMap.set(key, {
-        year,
-        month,
-        revenue: 0,
-        date: sub.createdAt,
-      });
-    }
-
-    const entry = revenueMap.get(key);
-    entry.revenue += parseFloat(sub.plan?.price || 0);
-    if (new Date(sub.createdAt) < new Date(entry.date)) {
-      entry.date = sub.createdAt;
+    if (revenueMap.has(key)) {
+      const entry = revenueMap.get(key);
+      entry.revenue += parseFloat(sub.plan?.price || 0);
     }
   });
 
-  // Convert to array and format
+  // Convert to array and format (always 6 months)
   const formattedData = Array.from(revenueMap.values())
     .sort((a, b) => {
       if (a.year !== b.year) return a.year - b.year;
@@ -1599,14 +1685,17 @@ const getRevenueTrendChart = async () => {
     })
     .map((item) => ({
       month: months[item.month - 1],
+      monthNumber: item.month,
       year: item.year,
-    revenue: item.revenue,
-      date: new Date(item.date).toISOString().split('T')[0],
-  }));
+      revenue: item.revenue,
+      date: item.date,
+      label: `${months[item.month - 1]} ${item.year}`,
+    }));
 
   return {
-    title: 'Revenue Trend',
+    title: 'Revenue Trend (Last 6 Months)',
     data: formattedData,
+    type: 'monthly',
   };
 };
 
@@ -1835,6 +1924,176 @@ const getPlanWiseBreakdown = async (pagination = {}) => {
   };
 };
 
+/**
+ * Export report data in specified format
+ * @param {string} reportType - Type of report to export
+ * @param {string} format - Export format (CSV, Excel, PDF)
+ * @param {string} startDate - Start date filter (optional)
+ * @param {string} endDate - End date filter (optional)
+ */
+const exportReport = async (reportType, format = 'CSV', startDate = null, endDate = null) => {
+  try {
+    const { prisma } = require('../../config/db/prisma');
+    
+    // Parse date filters
+    const start = startDate ? new Date(startDate) : null;
+    const end = endDate ? new Date(endDate) : null;
+    if (end) {
+      end.setHours(23, 59, 59, 999); // End of day
+    }
+
+    let data = [];
+    let headers = [];
+    let filename = '';
+
+    switch (reportType) {
+      case 'User Growth':
+        filename = `user-growth-report-${new Date().toISOString().split('T')[0]}`;
+        const userGrowthData = await getUserGrowthChart();
+        const userGrowth = userGrowthData.data || [];
+        
+        // Filter by date range if provided
+        let filteredUserGrowth = userGrowth;
+        if (start || end) {
+          filteredUserGrowth = userGrowth.filter(item => {
+            const itemDate = new Date(item.date || item.month || item.year);
+            if (start && itemDate < start) return false;
+            if (end && itemDate > end) return false;
+            return true;
+          });
+        }
+        
+        headers = ['Date', 'New Users', 'Total Users'];
+        data = filteredUserGrowth.map(item => ({
+          date: item.date || item.month || item.label || 'N/A',
+          newusers: item.newUsers || item.count || item.new || 0,
+          totalusers: item.totalUsers || item.total || item.count || 0,
+        }));
+        break;
+
+      case 'Subscription Trends':
+        filename = `subscription-trends-report-${new Date().toISOString().split('T')[0]}`;
+        const [metrics, revenueData, planDist, planBreakdown] = await Promise.all([
+          getSubscriptionTrendMetrics(),
+          getRevenueTrendChart(),
+          getPlanDistribution(),
+          getPlanWiseBreakdown({ page: 1, limit: 1000 }),
+        ]);
+        
+        // Combine subscription data
+        headers = ['Month', 'Total Subscribers', 'Total Revenue', 'Renewal Rate', 'Churn Rate'];
+        const revenue = revenueData.data?.data || revenueData.data || [];
+        
+        // Filter by date range
+        let filteredRevenue = revenue;
+        if (start || end) {
+          filteredRevenue = revenue.filter(item => {
+            if (!item.date && !item.month && !item.year) return true;
+            const itemDate = new Date(item.date || item.year || new Date());
+            if (start && itemDate < start) return false;
+            if (end && itemDate > end) return false;
+            return true;
+          });
+        }
+        
+        data = filteredRevenue.map((item) => ({
+          month: item.month || item.label || item.date || 'N/A',
+          totalsubscribers: metrics.data?.totalSubscribers || metrics.totalSubscribers || 0,
+          totalrevenue: parseFloat(item.revenue) || 0,
+          renewalrate: metrics.data?.renewalRate || metrics.renewalRate || '0%',
+          churnrate: metrics.data?.churnRate || metrics.churnRate || '0%',
+        }));
+        break;
+
+      case 'Performance Analytics':
+        filename = `performance-analytics-report-${new Date().toISOString().split('T')[0]}`;
+        const performanceData = await getTopPerformanceUsers({ page: 1, limit: 1000 });
+        const users = performanceData.data?.users || [];
+        
+        // Filter by date range if provided
+        let filteredUsers = users;
+        if (start || end) {
+          filteredUsers = users.filter(user => {
+            if (!user.createdAt) return true;
+            const userDate = new Date(user.createdAt);
+            if (start && userDate < start) return false;
+            if (end && userDate > end) return false;
+            return true;
+          });
+        }
+        
+        headers = ['User ID', 'Name', 'Email', 'Total Practice Sessions', 'Average Score', 'Total Questions Answered', 'Created Date'];
+        data = filteredUsers.map(user => ({
+          userid: user.id || 'N/A',
+          name: user.name || user.fullName || 'N/A',
+          email: user.email || 'N/A',
+          totalpracticesessions: user.totalPracticeSessions || user.practiceSessions || 0,
+          averagescore: user.averageScore || user.avgScore || 0,
+          totalquestionsanswered: user.totalQuestionsAnswered || user.questionsAnswered || 0,
+          createddate: user.createdAt ? new Date(user.createdAt).toISOString().split('T')[0] : 'N/A',
+        }));
+        break;
+
+      default:
+        throw new Error(`Unknown report type: ${reportType}`);
+    }
+
+    // Generate export file based on format
+    if (format === 'CSV') {
+      return generateCSV(data, headers, filename);
+    } else if (format === 'Excel') {
+      // For now, return CSV as Excel (can be enhanced with exceljs library later)
+      return generateCSV(data, headers, filename.replace('.csv', '.xlsx'));
+    } else if (format === 'PDF') {
+      // For now, return CSV data (can be enhanced with pdfkit or puppeteer later)
+      return generateCSV(data, headers, filename.replace('.csv', '.pdf'));
+    } else {
+      throw new Error(`Unsupported export format: ${format}`);
+    }
+  } catch (error) {
+    console.error('Error exporting report:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generate CSV content from data
+ */
+const generateCSV = (data, headers, filename) => {
+  // Escape CSV values
+  const escapeCSV = (value) => {
+    if (value === null || value === undefined) return '';
+    const stringValue = String(value);
+    if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+      return `"${stringValue.replace(/"/g, '""')}"`;
+    }
+    return stringValue;
+  };
+
+  // Generate CSV header row
+  const headerRow = headers.map(escapeCSV).join(',');
+
+  // Generate CSV data rows
+  const dataRows = data.map(row => {
+    return headers.map(header => {
+      // Map header to data key (convert to camelCase or exact match)
+      const key = header.toLowerCase().replace(/\s+/g, '');
+      // Try multiple key variations
+      const value = row[key] || row[header] || row[header.toLowerCase()] || row[header.toUpperCase()] || '';
+      return escapeCSV(value);
+    }).join(',');
+  });
+
+  // Combine header and data
+  const csvContent = [headerRow, ...dataRows].join('\n');
+
+  return {
+    content: csvContent,
+    filename: filename.endsWith('.csv') ? filename : `${filename}.csv`,
+    mimeType: 'text/csv',
+  };
+};
+
 module.exports = {
   generatePassword,
   findUserByEmail,
@@ -1861,5 +2120,6 @@ module.exports = {
   getPlanWiseBreakdown,
   getPracticeDistribution,
   getPlanDistribution,
+  exportReport,
 };
 
