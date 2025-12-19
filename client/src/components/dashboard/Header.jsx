@@ -8,6 +8,9 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout as logoutAction } from '../../store/slices/authSlice';
 import { showLogoutToast } from '../../utils/toastConfig';
+import { getUserAnnouncements, markAnnouncementAsRead } from '../../api/announcements';
+import AnnouncementDropdown from './AnnouncementDropdown';
+import AnnouncementAlertCard from './AnnouncementAlertCard';
 
 const Header = ({ onToggleSidebar }) => {
   const { language, toggleLanguage, t } = useLanguage();
@@ -15,13 +18,22 @@ const Header = ({ onToggleSidebar }) => {
   const { user: authUser } = useSelector((state) => state.auth);
   const location = useLocation();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [announcements, setAnnouncements] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [newAnnouncements, setNewAnnouncements] = useState([]);
   const menuRef = useRef(null);
+  const notificationRef = useRef(null);
+  const previousAnnouncementIdsRef = useRef(new Set());
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
+      }
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setIsNotificationOpen(false);
       }
     };
 
@@ -30,6 +42,124 @@ const Header = ({ onToggleSidebar }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Fetch announcements and unread count
+  useEffect(() => {
+    if (!authUser) return;
+
+    const fetchAnnouncements = async () => {
+      try {
+        const announcementsRes = await getUserAnnouncements();
+
+        if (announcementsRes.success) {
+          const fetchedAnnouncements = announcementsRes.data.announcements;
+          setAnnouncements(fetchedAnnouncements);
+
+          // Calculate unread count for exam-related announcements only
+          // This must match the filter in AnnouncementDropdown exactly
+          const examUnreadAnnouncements = fetchedAnnouncements.filter(
+            (ann) => {
+              if (!ann.title) return false;
+              const titleLower = ann.title.toLowerCase();
+              const isExam = titleLower.includes('exam');
+              const isUnread = ann.isRead === false || ann.isRead === undefined;
+              return isExam && isUnread;
+            }
+          );
+          const examUnreadCount = examUnreadAnnouncements.length;
+          setUnreadCount(examUnreadCount);
+          
+          // Debug log (can be removed later)
+          console.log('Unread exam announcements count:', examUnreadCount, 'out of', fetchedAnnouncements.length, 'total');
+
+          // Check for new announcements (unread ones that weren't in previous fetch)
+          const currentIds = new Set(fetchedAnnouncements.map(a => a.id));
+          const newUnreadAnnouncements = fetchedAnnouncements.filter(
+            (ann) => !ann.isRead && !previousAnnouncementIdsRef.current.has(ann.id)
+          );
+
+          if (newUnreadAnnouncements.length > 0) {
+            setNewAnnouncements((prev) => {
+              const existingIds = prev.map((a) => a.id);
+              const toAdd = newUnreadAnnouncements.filter(
+                (a) => !existingIds.includes(a.id)
+              );
+              return [...prev, ...toAdd];
+            });
+          }
+
+          // Update the ref with current announcement IDs
+          previousAnnouncementIdsRef.current = currentIds;
+        }
+      } catch (error) {
+        console.error('Error fetching announcements:', error);
+      }
+    };
+
+    // Initial fetch
+    fetchAnnouncements();
+    
+    // Poll for updates every 30 seconds
+    const interval = setInterval(fetchAnnouncements, 30000);
+    
+    return () => clearInterval(interval);
+  }, [authUser]);
+
+  const handleNotificationClick = async () => {
+    // Refresh announcements when opening the dropdown to get latest data
+    if (!isNotificationOpen) {
+      try {
+        const announcementsRes = await getUserAnnouncements();
+        if (announcementsRes.success) {
+          const fetchedAnnouncements = announcementsRes.data.announcements;
+          setAnnouncements(fetchedAnnouncements);
+          
+          // Recalculate unread count for exam-related announcements only
+          // This must match the filter in AnnouncementDropdown exactly
+          const examUnreadAnnouncements = fetchedAnnouncements.filter(
+            (ann) => {
+              if (!ann.title) return false;
+              const titleLower = ann.title.toLowerCase();
+              const isExam = titleLower.includes('exam');
+              const isUnread = ann.isRead === false || ann.isRead === undefined;
+              return isExam && isUnread;
+            }
+          );
+          setUnreadCount(examUnreadAnnouncements.length);
+        }
+      } catch (error) {
+        console.error('Error refreshing announcements:', error);
+      }
+    }
+    setIsNotificationOpen(!isNotificationOpen);
+  };
+
+  const handleAnnouncementRead = (announcementId) => {
+    // Update local state
+    setAnnouncements((prev) => {
+      const updated = prev.map((ann) =>
+        ann.id === announcementId ? { ...ann, isRead: true } : ann
+      );
+      // Recalculate exam unread count - must match filter exactly
+      const examUnreadCount = updated.filter(
+        (ann) => {
+          if (!ann.title) return false;
+          const titleLower = ann.title.toLowerCase();
+          const isExam = titleLower.includes('exam');
+          const isUnread = ann.isRead === false || ann.isRead === undefined;
+          return isExam && isUnread;
+        }
+      ).length;
+      setUnreadCount(examUnreadCount);
+      return updated;
+    });
+    // Remove from new announcements if present
+    setNewAnnouncements((prev) => prev.filter((ann) => ann.id !== announcementId));
+  };
+
+  const handleDismissAlert = (announcementId) => {
+    setNewAnnouncements((prev) => prev.filter((ann) => ann.id !== announcementId));
+  };
 
   const handleMenuItemClick = (action) => {
     if (action === 'Logout') {
@@ -85,6 +215,7 @@ const Header = ({ onToggleSidebar }) => {
     if (pathname.startsWith('/gatherer')) {
     if (pathname === '/gatherer') return t('header.titles.gatherer.dashboard');
     if (pathname.includes('question-bank')) return t('header.titles.gatherer.questionBank');
+    if (pathname.includes('announcements')) return t('header.titles.gatherer.announcements');
     if (pathname.includes('profile')) return t('header.titles.gatherer.profile');
     return t('header.titles.gatherer.default');
   }
@@ -93,6 +224,7 @@ const Header = ({ onToggleSidebar }) => {
   if (pathname.startsWith('/creator')) {
     if (pathname === '/creator') return t('header.titles.creator.dashboard');
     if (pathname.includes('question-bank')) return t('header.titles.creator.questionBank');
+    if (pathname.includes('announcements')) return t('header.titles.creator.announcements');
     if (pathname.includes('profile')) return t('header.titles.creator.profile');
     return t('header.titles.creator.default');
   }
@@ -105,6 +237,7 @@ const Header = ({ onToggleSidebar }) => {
     if (pathname.includes('creator-submission')) return t('header.titles.processor.creatorSubmission');
     if (pathname.includes('explainer-submission')) return t('header.titles.processor.explainerSubmission');
     if (pathname.includes('admin-submission')) return t('header.titles.processor.adminSubmission');
+    if (pathname.includes('announcements')) return t('header.titles.processor.announcements');
     if (pathname.includes('profile')) return t('header.titles.processor.profile');
     return t('header.titles.processor.default');
   }
@@ -113,6 +246,7 @@ const Header = ({ onToggleSidebar }) => {
   if (pathname.startsWith('/explainer')) {
     if (pathname === '/explainer') return t('header.titles.explainer.dashboard');
     if (pathname.includes('question-bank')) return t('header.titles.explainer.questionBank');
+    if (pathname.includes('announcements')) return t('header.titles.explainer.announcements');
     if (pathname.includes('profile')) return t('header.titles.explainer.profile');
     return t('header.titles.explainer.default');
   }
@@ -177,6 +311,9 @@ const Header = ({ onToggleSidebar }) => {
   if (pathname.startsWith("/dashboard/subscription-billings"))
     return t("dashboard.sidebar.subscriptionsBilling");
 
+  if (pathname.startsWith("/dashboard/announcements"))
+    return t("dashboard.sidebar.announcements");
+
   return t("dashboard.header.title");
   };
 
@@ -224,7 +361,18 @@ const Header = ({ onToggleSidebar }) => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 h-[70.8px]">
+    <>
+      {/* Alert Cards for New Announcements */}
+      {newAnnouncements.map((announcement) => (
+        <AnnouncementAlertCard
+          key={announcement.id}
+          announcement={announcement}
+          onClose={() => handleDismissAlert(announcement.id)}
+          onRead={handleAnnouncementRead}
+        />
+      ))}
+      
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 h-[70.8px]">
       <div className="flex items-center justify-between px-4 md:px-8 h-full">
         {/* Left Side - Hamburger Menu & Title */}
         <div className="flex items-center gap-4">
@@ -243,7 +391,7 @@ const Header = ({ onToggleSidebar }) => {
           </h1>
         </div>
 
-        {/* Right Side - Language, Notifications, User */}
+        {/* Right Side - Language, User */}
         <div className="flex items-center gap-3 md:gap-5">
           {/* Language Toggle */}
           <button
@@ -269,11 +417,6 @@ const Header = ({ onToggleSidebar }) => {
               عربي
             </span>
           </button>
-
-          {/* Notifications */}
-          {/* <button className="relative p-2 rounded-lg hover:bg-gray-200 transition-colors">
-            <img src={notif} alt="Notifications" className="" />
-          </button> */}
 
           {/* User Info */}
           <div className="flex items-center relative" ref={menuRef}>
@@ -337,6 +480,7 @@ const Header = ({ onToggleSidebar }) => {
         </div>
       </div>
     </header>
+    </>
   );
 };
 

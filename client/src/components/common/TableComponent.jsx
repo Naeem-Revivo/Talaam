@@ -33,54 +33,26 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
         // Special rendering for indicators
         if (column.key === "indicators") {
           const indicators = item.indicators || {};
+          const isFlagged = indicators.flag === true;
+          const isApproved = indicators.approved === true;
+          const isVariant = indicators.variant === true;
+          
           return (
             <td key={column.key} className="px-6 py-8 text-center">
-              <div className="flex items-center justify-center gap-2 flex-wrap">
-                {indicators.approved && (
-                  <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-green-100 text-green-700">
-                    {t("creator.assignedQuestionPage.indicators.approved") || "Approved"}
-                  </span>
-                )}
-                {indicators.flag && (
-                  <div className="flex items-center gap-2">
+              <div className="flex flex-col items-center justify-center gap-1">
+                {isFlagged ? (
                   <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-red-100 text-red-700">
-                    {t("creator.assignedQuestionPage.indicators.flag") || "Flag"}
+                    🚩 Flagged
                   </span>
-                    {item.flagReason && onShowFlagReason && (
-                      <button
-                        type="button"
-                        onClick={() => onShowFlagReason(item.flagReason)}
-                        className="text-orange-dark text-[10px] font-normal leading-[16px] font-roboto hover:underline transition px-1 py-0"
-                        title={t("creator.assignedQuestionPage.flagReasonButton") || "View Flag Reason"}
-                      >
-                        {t("creator.assignedQuestionPage.reasonButton") || "Reason"}
-                      </button>
-                    )}
-                  </div>
-                )}
-                {indicators.reject && (
-                  <div className="flex items-center gap-2">
-                    <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-gray-100 text-gray-700">
-                      {t("creator.assignedQuestionPage.indicators.reject") || "Reject"}
-                    </span>
-                    {item.rejectionReason && onShowRejectionReason && (
-                      <button
-                        type="button"
-                        onClick={() => onShowRejectionReason(item.rejectionReason)}
-                        className="text-orange-dark text-[10px] font-normal leading-[16px] font-roboto hover:underline transition px-1 py-0"
-                        title={t("creator.assignedQuestionPage.rejectionReasonButton") || "View Rejection Reason"}
-                      >
-                        {t("creator.assignedQuestionPage.reasonButton") || "Reason"}
-                      </button>
-                    )}
-                  </div>
-                )}
-                {indicators.variant && (
+                ) : isVariant ? (
                   <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-blue-100 text-blue-700">
                     {t("creator.assignedQuestionPage.indicators.variant") || "Variant"}
                   </span>
-                )}
-                {!indicators.approved && !indicators.flag && !indicators.reject && !indicators.variant && (
+                ) : isApproved ? (
+                  <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-green-100 text-green-700">
+                    {t("creator.assignedQuestionPage.indicators.approved") || "Approved"}
+                  </span>
+                ) : (
                   <span className="text-gray-400">—</span>
                 )}
               </div>
@@ -395,57 +367,29 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
           // Special rendering for indicators
           if (column.key === "indicators") {
             const indicators = item.indicators || {};
+            const isFlagged = indicators.flag === true;
+            const isApproved = indicators.approved === true;
+            const isVariant = indicators.variant === true;
+            
             return (
               <div key={column.key} className="flex items-center gap-2">
                 <span className="text-[14px] font-normal text-oxford-blue">
                   {column.label}:
                 </span>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {indicators.approved && (
-                    <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-green-100 text-green-700">
-                      {t("creator.assignedQuestionPage.indicators.approved") || "Approved"}
-                    </span>
-                  )}
-                  {indicators.flag && (
-                    <div className="flex items-center gap-2">
+                <div className="flex flex-col items-start gap-1">
+                  {isFlagged ? (
                     <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-red-100 text-red-700">
-                      {t("creator.assignedQuestionPage.indicators.flag") || "Flag"}
+                      🚩 Flagged
                     </span>
-                      {item.flagReason && onShowFlagReason && (
-                        <button
-                          type="button"
-                          onClick={() => onShowFlagReason(item.flagReason)}
-                          className="text-orange-dark text-[10px] font-normal leading-[16px] font-roboto hover:underline transition px-1 py-0"
-                          title={t("creator.assignedQuestionPage.flagReasonButton") || "View Flag Reason"}
-                        >
-                          {t("creator.assignedQuestionPage.reasonButton") || "Reason"}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                  {indicators.reject && (
-                    <div className="flex items-center gap-2">
-                      <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-gray-100 text-gray-700">
-                        {t("creator.assignedQuestionPage.indicators.reject") || "Reject"}
-                      </span>
-                      {item.rejectionReason && onShowRejectionReason && (
-                        <button
-                          type="button"
-                          onClick={() => onShowRejectionReason(item.rejectionReason)}
-                          className="text-orange-dark text-[10px] font-normal leading-[16px] font-roboto hover:underline transition px-1 py-0"
-                          title={t("creator.assignedQuestionPage.rejectionReasonButton") || "View Rejection Reason"}
-                        >
-                          {t("creator.assignedQuestionPage.reasonButton") || "Reason"}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                  {indicators.variant && (
+                  ) : isVariant ? (
                     <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-blue-100 text-blue-700">
                       {t("creator.assignedQuestionPage.indicators.variant") || "Variant"}
                     </span>
-                  )}
-                  {!indicators.approved && !indicators.flag && !indicators.reject && !indicators.variant && (
+                  ) : isApproved ? (
+                    <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-green-100 text-green-700">
+                      {t("creator.assignedQuestionPage.indicators.approved") || "Approved"}
+                    </span>
+                  ) : (
                     <span className="text-gray-400">—</span>
                   )}
                 </div>

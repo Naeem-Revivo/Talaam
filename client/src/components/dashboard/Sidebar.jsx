@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { logodash, dashboardicon, practice, analytics, review, dashboardiconblue, practiceblue, blueanalytics, bluereview } from '../../assets/svg/dashboard/sidebar';
+import { notif } from '../../assets/svg/dashboard/header';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
@@ -37,6 +38,12 @@ const Sidebar = ({ isOpen, onClose }) => {
       icon: review,
       iconBlue: bluereview,
       label: 'dashboard.sidebar.subscriptionsBilling',
+    },
+    {
+      path: '/dashboard/announcements',
+      icon: notif,
+      iconBlue: notif,
+      label: 'dashboard.sidebar.announcements',
     },
   ];
 
@@ -80,7 +87,37 @@ const Sidebar = ({ isOpen, onClose }) => {
                   {active && (
                     <div className="absolute left-0 top-0 h-full w-[5px] bg-orange-dark rounded-l-lg"></div>
                   )}
-                  <img src={active ? item.iconBlue : item.icon} alt={t(item.label)} className="w-6 h-6" />
+                  {item.path === '/dashboard/announcements' ? (
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-6 h-6"
+                    >
+                      <path
+                        d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
+                        stroke={active ? '#032746' : '#FFFFFF'}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M13.73 21a2 2 0 0 1-3.46 0"
+                        stroke={active ? '#032746' : '#FFFFFF'}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  ) : (
+                    <img 
+                      src={active ? item.iconBlue : item.icon} 
+                      alt={t(item.label)} 
+                      className="w-6 h-6" 
+                    />
+                  )}
                   <span className="font-medium">{t(item.label)}</span>
                 </NavLink>
               );

@@ -134,9 +134,20 @@ const adminAPI = {
 
   // Get revenue trend chart
   // GET /api/admin/analytics/subscription/revenue-trend
-  getRevenueTrendChart: async () => {
+  // Params: { month: 1-12, year: 2024 } - optional, for daily data
+  getRevenueTrendChart: async (params = {}) => {
     try {
-      const response = await axiosClient.get('/admin/analytics/subscription/revenue-trend');
+      const { month, year } = params;
+      const queryParams = new URLSearchParams();
+      
+      if (month) queryParams.append('month', month);
+      if (year) queryParams.append('year', year);
+
+      const url = queryParams.toString()
+        ? `/admin/analytics/subscription/revenue-trend?${queryParams.toString()}`
+        : '/admin/analytics/subscription/revenue-trend';
+
+      const response = await axiosClient.get(url);
       return response.data;
     } catch (error) {
       const apiError = error.response?.data;
@@ -239,6 +250,66 @@ const adminAPI = {
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Failed to fetch payment history' };
+    }
+  },
+
+  // Export report
+  // POST /api/admin/reports/export
+  exportReport: async (params = {}) => {
+    try {
+      const { reportType, format, startDate, endDate } = params;
+      
+      const response = await axiosClient.post('/admin/reports/export', {
+        reportType,
+        format,
+        startDate,
+        endDate,
+      }, {
+        responseType: 'blob', // Important for file downloads
+      });
+
+      // Create a blob URL and trigger download
+      const blob = new Blob([response.data], { 
+        type: format === 'CSV' ? 'text/csv' : format === 'PDF' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Extract filename from Content-Disposition header or generate one
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = `report-${new Date().toISOString().split('T')[0]}.${format.toLowerCase() === 'excel' ? 'xlsx' : format.toLowerCase()}`;
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      return { success: true, filename };
+    } catch (error) {
+      const apiError = error.response?.data;
+      
+      // Handle blob error response
+      if (error.response?.data instanceof Blob) {
+        const text = await error.response.data.text();
+        try {
+          const jsonError = JSON.parse(text);
+          throw jsonError || { message: 'Failed to export report' };
+        } catch {
+          throw { message: 'Failed to export report' };
+        }
+      }
+      
+      throw apiError || { message: 'Failed to export report' };
     }
   },
 };

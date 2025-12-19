@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import AdminMetricCard from "../../components/admin/AdminMetricCard";
 import { useLanguage } from "../../context/LanguageContext";
 import Dropdown from "../../components/shared/Dropdown";
@@ -11,10 +11,38 @@ const SubscriptionTrendsPage = () => {
   const [planType, setPlanType] = useState("");
   const [dateRange, setDateRange] = useState("");
   
+  // Month/Year selection for daily revenue trend (empty = show monthly data)
+  const currentDate = new Date();
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [subscriptionData, setSubscriptionData] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Generate year options (last 3 years and next year)
+  const currentYear = currentDate.getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const year = currentYear - 2 + i;
+    return { value: year.toString(), label: year.toString() };
+  });
+
+  // Month options
+  const monthOptions = [
+    { value: "1", label: t('common.months.january') || 'January' },
+    { value: "2", label: t('common.months.february') || 'February' },
+    { value: "3", label: t('common.months.march') || 'March' },
+    { value: "4", label: t('common.months.april') || 'April' },
+    { value: "5", label: t('common.months.may') || 'May' },
+    { value: "6", label: t('common.months.june') || 'June' },
+    { value: "7", label: t('common.months.july') || 'July' },
+    { value: "8", label: t('common.months.august') || 'August' },
+    { value: "9", label: t('common.months.september') || 'September' },
+    { value: "10", label: t('common.months.october') || 'October' },
+    { value: "11", label: t('common.months.november') || 'November' },
+    { value: "12", label: t('common.months.december') || 'December' },
+  ];
 
   useEffect(() => {
     const fetchSubscriptionData = async () => {
@@ -22,13 +50,21 @@ const SubscriptionTrendsPage = () => {
         setLoading(true);
         setError(null);
         
+        // Prepare revenue chart params - if month and year are selected, use them
+        const revenueParams = selectedMonth && selectedYear 
+          ? { month: parseInt(selectedMonth, 10), year: parseInt(selectedYear, 10) }
+          : {};
+        
         const [metricsData, revenueData, planDistData, breakdownData] = await Promise.all([
           adminAPI.getSubscriptionTrendMetrics(),
-          adminAPI.getRevenueTrendChart(),
+          adminAPI.getRevenueTrendChart(revenueParams),
           adminAPI.getPlanDistribution(),
           adminAPI.getPlanWiseBreakdown({ page: currentPage, limit: 3 }),
         ]);
 
+        // Log for debugging
+        console.log('Revenue data received:', revenueData);
+        
         setSubscriptionData({
           metrics: metricsData.data,
           revenue: revenueData.data,
@@ -44,7 +80,7 @@ const SubscriptionTrendsPage = () => {
     };
 
     fetchSubscriptionData();
-  }, [currentPage]);
+  }, [currentPage, selectedMonth, selectedYear]);
 
   // Format currency
   const formatCurrency = (amount) => {
@@ -114,13 +150,78 @@ const SubscriptionTrendsPage = () => {
   ] : [];
 
   // Prepare Revenue Trend Chart Data from API
-  const revenueData = subscriptionData?.revenue?.data?.map(item => ({
-    month: item.month || item.monthName || 'N/A',
-    revenue: typeof item.revenue === 'string' ? parseFloat(item.revenue) : (item.revenue || 0),
-  })) || [];
+  const revenueData = useMemo(() => {
+    if (!subscriptionData?.revenue) {
+      console.log('No revenue data in subscriptionData:', subscriptionData);
+      return { data: [], type: 'monthly' };
+    }
+    
+    // Handle different possible data structures
+    const rawData = subscriptionData.revenue.data || subscriptionData.revenue || [];
+    const dataType = subscriptionData.revenue.type || 'monthly'; // 'daily' or 'monthly'
+    
+    if (!Array.isArray(rawData)) {
+      console.warn('Revenue data is not an array:', rawData);
+      return { data: [], type: 'monthly' };
+    }
+    
+    const mapped = rawData.map(item => {
+      const revenue = typeof item.revenue === 'string' ? parseFloat(item.revenue) || 0 : (Number(item.revenue) || 0);
+      
+      if (dataType === 'daily') {
+        // For daily data, use day number as label
+        return {
+          label: item.label || `${item.day}/${item.monthNumber}` || item.day?.toString() || 'N/A',
+          day: item.day,
+          month: item.month || item.monthName || 'N/A',
+          monthNumber: item.monthNumber,
+          year: item.year,
+          revenue,
+          date: item.date,
+        };
+      } else {
+        // For monthly data, use month/year
+        return {
+          label: item.label || `${item.month || item.monthName || 'N/A'} ${item.year || ''}`,
+          month: item.month || item.monthName || 'N/A',
+          monthNumber: item.monthNumber,
+          year: item.year,
+          revenue,
+          date: item.date,
+        };
+      }
+    });
+    
+    console.log('Processed revenue data:', mapped, 'Type:', dataType);
+    return { data: mapped, type: dataType };
+  }, [subscriptionData?.revenue]);
 
   // Prepare Plan Distribution from API
-  const planDistribution = subscriptionData?.planDistribution || [];
+  const planDistribution = useMemo(() => {
+    const data = subscriptionData?.planDistribution || [];
+    console.log('Plan distribution data:', data);
+    
+    // Ensure we have valid data
+    if (!Array.isArray(data) || data.length === 0) {
+      return [];
+    }
+    
+    // Validate and normalize percentages
+    const totalPercentage = data.reduce((sum, item) => sum + (parseFloat(item.percentage) || 0), 0);
+    
+    // If percentages don't add up to 100, normalize them
+    if (totalPercentage !== 100 && totalPercentage > 0) {
+      return data.map(item => ({
+        ...item,
+        percentage: Math.round((parseFloat(item.percentage) || 0) * 100 / totalPercentage),
+      }));
+    }
+    
+    return data.map(item => ({
+      ...item,
+      percentage: parseFloat(item.percentage) || 0,
+    }));
+  }, [subscriptionData?.planDistribution]);
 
   // Prepare Plan-Wise Breakdown from API
   const planBreakdown = subscriptionData?.breakdown?.plans?.map(plan => ({
@@ -134,32 +235,75 @@ const SubscriptionTrendsPage = () => {
 
   // Calculate donut chart path
   const getDonutPath = (percentage, startAngle, radius, innerRadius) => {
+    if (percentage <= 0) return '';
+    
     const angle = (percentage / 100) * 360;
     const endAngle = startAngle + angle;
     const startAngleRad = (startAngle * Math.PI) / 180;
     const endAngleRad = (endAngle * Math.PI) / 180;
 
-    const x1 = 100 + radius * Math.cos(startAngleRad);
-    const y1 = 100 + radius * Math.sin(startAngleRad);
-    const x2 = 100 + radius * Math.cos(endAngleRad);
-    const y2 = 100 + radius * Math.sin(endAngleRad);
+    // Center point
+    const cx = 100;
+    const cy = 100;
 
-    const x3 = 100 + innerRadius * Math.cos(endAngleRad);
-    const y3 = 100 + innerRadius * Math.sin(endAngleRad);
-    const x4 = 100 + innerRadius * Math.cos(startAngleRad);
-    const y4 = 100 + innerRadius * Math.sin(startAngleRad);
+    // Outer arc points
+    const x1 = cx + radius * Math.cos(startAngleRad);
+    const y1 = cy + radius * Math.sin(startAngleRad);
+    const x2 = cx + radius * Math.cos(endAngleRad);
+    const y2 = cy + radius * Math.sin(endAngleRad);
 
+    // Inner arc points
+    const x3 = cx + innerRadius * Math.cos(endAngleRad);
+    const y3 = cy + innerRadius * Math.sin(endAngleRad);
+    const x4 = cx + innerRadius * Math.cos(startAngleRad);
+    const y4 = cy + innerRadius * Math.sin(startAngleRad);
+
+    // Determine if we need large arc (for angles > 180)
     const largeArc = angle > 180 ? 1 : 0;
+    
+    // For 100% (full circle), use a simpler path that works correctly
+    if (percentage >= 100) {
+      // Full circle: draw outer circle and inner circle, then connect
+      // Use a point slightly before 360 to avoid overlap issues
+      const almostFullAngle = 359.9;
+      const almostFullEndAngle = startAngle + almostFullAngle;
+      const almostFullEndAngleRad = (almostFullEndAngle * Math.PI) / 180;
+      const x2Almost = cx + radius * Math.cos(almostFullEndAngleRad);
+      const y2Almost = cy + radius * Math.sin(almostFullEndAngleRad);
+      const x3Almost = cx + innerRadius * Math.cos(almostFullEndAngleRad);
+      const y3Almost = cy + innerRadius * Math.sin(almostFullEndAngleRad);
+      return `M ${x1} ${y1} A ${radius} ${radius} 0 1 1 ${x2Almost} ${y2Almost} L ${x3Almost} ${y3Almost} A ${innerRadius} ${innerRadius} 0 1 0 ${x4} ${y4} Z`;
+    }
 
+    // Normal path for segments < 100%
     return `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x4} ${y4} Z`;
   };
 
-  let currentAngle = -90;
-  const donutPaths = planDistribution.length > 0 ? planDistribution.map((item) => {
-    const path = getDonutPath(item.percentage, currentAngle, 60, 35);
-    currentAngle += (item.percentage / 100) * 360;
-    return { ...item, path };
-  }) : [];
+  // Generate donut paths
+  const donutPaths = useMemo(() => {
+    if (!planDistribution || planDistribution.length === 0) {
+      console.log('No plan distribution data available');
+      return [];
+    }
+    
+    let currentAngle = -90; // Start from top
+    const paths = planDistribution.map((item) => {
+      const percentage = parseFloat(item.percentage) || 0;
+      const path = getDonutPath(percentage, currentAngle, 60, 35);
+      const prevAngle = currentAngle;
+      currentAngle += (percentage / 100) * 360;
+      
+      return {
+        ...item,
+        path,
+        startAngle: prevAngle,
+        endAngle: currentAngle,
+      };
+    });
+    
+    console.log('Generated donut paths:', paths);
+    return paths;
+  }, [planDistribution]);
 
   // Loading state
   if (loading) {
@@ -260,6 +404,32 @@ const SubscriptionTrendsPage = () => {
               height="h-[50px]"
             />
           </div>
+
+          {/* Month Selector for Revenue Trend */}
+          <div className="w-full md:w-[150px] md:flex-shrink-0">
+            <Dropdown
+              value={selectedMonth || ""}
+              options={monthOptions}
+              onChange={(value) => setSelectedMonth(value)}
+              placeholder={t('admin.subscriptionTrends.filters.month') || 'Month'}
+              showDefaultOnEmpty={false}
+              className="!w-full md:!w-[150px]"
+              height="h-[50px]"
+            />
+          </div>
+
+          {/* Year Selector for Revenue Trend */}
+          <div className="w-full md:w-[120px] md:flex-shrink-0">
+            <Dropdown
+              value={selectedYear || ""}
+              options={yearOptions}
+              onChange={(value) => setSelectedYear(value)}
+              placeholder={t('admin.subscriptionTrends.filters.year') || 'Year'}
+              showDefaultOnEmpty={false}
+              className="!w-full md:!w-[120px]"
+              height="h-[50px]"
+            />
+          </div>
         </div>
 
         {/* Subscription KPI Cards */}
@@ -282,7 +452,7 @@ const SubscriptionTrendsPage = () => {
           {/* Revenue Trend Chart */}
           <div className="rounded-[12px] w-full border border-[#03274633] bg-white p-4 md:p-6 shadow-card">
             <h2 className="pt-3 font-archivo text-[18px] md:text-[20px] font-bold leading-[24px] md:leading-[28px] text-oxford-blue">
-              {t('admin.subscriptionTrends.charts.revenueTrend')}
+              {subscriptionData?.revenue?.title || t('admin.subscriptionTrends.charts.revenueTrend')}
             </h2>
             <div className="h-[250px] md:h-[322px] relative mt-4 md:mt-6">
               <svg width="100%" height="100%" viewBox="0 0 599 322" preserveAspectRatio="xMidYMid meet">
@@ -292,66 +462,184 @@ const SubscriptionTrendsPage = () => {
                     <stop offset="100%" stopColor="#ED4122" stopOpacity="0" />
                   </linearGradient>
                 </defs>
-                {/* Grid lines - horizontal */}
-                {[0, 5, 10, 15, 20, 25, 30, 35].map((val) => (
-                  <g key={val}>
-                    <line
-                      x1="50"
-                      y1={302 - (val / 35) * 260}
-                      x2="549"
-                      y2={302 - (val / 35) * 260}
-                      stroke="#E5E7EB"
-                      strokeWidth="1"
-                      strokeDasharray="2 2"
-                      opacity="0.5"
-                    />
-                  </g>
-                ))}
-                {/* Grid lines - vertical */}
-                {revenueData.map((data, index) => {
-                  const x = 50 + (index * 499) / (revenueData.length - 1);
+                {/* Grid lines - horizontal with Y-axis labels */}
+                {(() => {
+                  const chartData = revenueData.data || [];
+                  if (chartData.length === 0) {
+                    return [0, 5, 10, 15, 20, 25, 30, 35].map((val) => (
+                      <g key={val}>
+                        <line
+                          x1="50"
+                          y1={302 - (val / 35) * 260}
+                          x2="549"
+                          y2={302 - (val / 35) * 260}
+                          stroke="#E5E7EB"
+                          strokeWidth="1"
+                          strokeDasharray="2 2"
+                          opacity="0.5"
+                        />
+                      </g>
+                    ));
+                  }
+                  
+                  const maxRevenue = Math.max(...chartData.map(d => d.revenue), 1) || 35000;
+                  const minRevenue = Math.min(...chartData.map(d => d.revenue), 0);
+                  const revenueRange = maxRevenue - minRevenue || 1;
+                  const stepCount = 5;
+                  const stepValue = revenueRange / stepCount;
+                  
+                  return Array.from({ length: stepCount + 1 }, (_, i) => {
+                    const val = minRevenue + (stepValue * i);
+                    const yPos = 302 - ((val - minRevenue) / revenueRange) * 260;
+                    return (
+                      <g key={i}>
+                        <line
+                          x1="50"
+                          y1={yPos}
+                          x2="549"
+                          y2={yPos}
+                          stroke="#E5E7EB"
+                          strokeWidth="1"
+                          strokeDasharray="2 2"
+                          opacity="0.5"
+                        />
+                        <text
+                          x="45"
+                          y={yPos + 4}
+                          textAnchor="end"
+                          fill="#6B7280"
+                          fontSize="10"
+                          fontFamily="Roboto, sans-serif"
+                        >
+                          ${val.toFixed(0)}
+                        </text>
+                      </g>
+                    );
+                  });
+                })()}
+                {/* Grid lines - vertical and X-axis labels */}
+                {(() => {
+                  const chartData = revenueData.data || [];
+                  const isDaily = revenueData.type === 'daily';
+                  
+                  if (chartData.length === 0) return null;
+                  
                   return (
-                    <line
-                      key={`v-${index}`}
-                      x1={x}
-                      y1="42"
-                      x2={x}
-                      y2="302"
-                      stroke="#E5E7EB"
-                      strokeWidth="1"
-                      strokeDasharray="2 2"
-                      opacity="0.5"
-                    />
+                    <>
+                      {chartData.length > 0 && chartData.map((data, index) => {
+                        const x = 50 + (index * 499) / Math.max(chartData.length - 1, 1);
+                        // Show labels: every 5 days for daily data (or more frequently if less data), or every item for monthly
+                        let showLabel = false;
+                        if (isDaily) {
+                          if (chartData.length <= 31) {
+                            // Show every 3-5 days depending on month length
+                            const step = chartData.length > 20 ? 5 : 3;
+                            showLabel = (data.day % step === 0 || index === 0 || index === chartData.length - 1 || data.day === 1);
+                          } else {
+                            showLabel = (data.day % 7 === 0 || index === 0 || index === chartData.length - 1);
+                          }
+                        } else {
+                          // For monthly data, show all labels
+                          showLabel = true;
+                        }
+                        
+                        return (
+                          <g key={`v-${index}`}>
+                            <line
+                              x1={x}
+                              y1="42"
+                              x2={x}
+                              y2="302"
+                              stroke="#E5E7EB"
+                              strokeWidth="1"
+                              strokeDasharray="2 2"
+                              opacity="0.5"
+                            />
+                            {/* X-axis labels */}
+                            {showLabel && (
+                              <text
+                                x={x}
+                                y="315"
+                                textAnchor="middle"
+                                fill="#6B7280"
+                                fontSize="10"
+                                fontFamily="Roboto, sans-serif"
+                              >
+                                {isDaily ? data.day : (data.monthNumber ? `${data.monthNumber}/${data.year?.toString().slice(-2)}` : data.label)}
+                              </text>
+                            )}
+                          </g>
+                        );
+                      })}
+                    </>
                   );
-                })}
+                })()}
                 {/* Calculate smooth curve path */}
                 {(() => {
-                  if (revenueData.length === 0) return null;
-                  const maxRevenue = Math.max(...revenueData.map(d => d.revenue), 35000);
-                  const points = revenueData.map((data, index) => {
-                    const x = 50 + (index * 499) / Math.max(revenueData.length - 1, 1);
-                    const y = 302 - (data.revenue / maxRevenue) * 260;
-                    return { x, y };
+                  const chartData = revenueData.data || [];
+                  
+                  if (chartData.length === 0) {
+                    return (
+                      <text
+                        x="299.5"
+                        y="161"
+                        textAnchor="middle"
+                        fill="#6B7280"
+                        fontSize="14"
+                        fontFamily="Roboto, sans-serif"
+                      >
+                        No revenue data available
+                      </text>
+                    );
+                  }
+                  
+                  const maxRevenue = Math.max(...chartData.map(d => d.revenue), 1) || 35000;
+                  const minRevenue = Math.min(...chartData.map(d => d.revenue), 0);
+                  const revenueRange = maxRevenue - minRevenue || 1;
+                  
+                  const points = chartData.map((data, index) => {
+                    const x = 50 + (index * 499) / Math.max(chartData.length - 1, 1);
+                    const normalizedRevenue = revenueRange > 0 
+                      ? (data.revenue - minRevenue) / revenueRange 
+                      : 0;
+                    const y = 302 - (normalizedRevenue * 260);
+                    return { x, y, revenue: data.revenue, label: data.label };
                   });
 
-                  // Create smooth curve using cubic bezier
-                  let path = `M ${points[0].x} ${points[0].y}`;
-                  for (let i = 0; i < points.length - 1; i++) {
-                    const p0 = points[i];
-                    const p1 = points[i + 1];
-                    const cp1x = p0.x + (p1.x - p0.x) / 3;
-                    const cp1y = p0.y;
-                    const cp2x = p1.x - (p1.x - p0.x) / 3;
-                    const cp2y = p1.y;
-                    path += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p1.x} ${p1.y}`;
+                  // Always draw a trend line, even for single point (horizontal line)
+                  let path;
+                  if (points.length === 1) {
+                    // For single point, draw a horizontal line spanning the width
+                    const point = points[0];
+                    path = `M 50 ${point.y} L 549 ${point.y}`;
+                  } else {
+                    // Create smooth curve using cubic bezier for multiple points
+                    path = `M ${points[0].x} ${points[0].y}`;
+                    for (let i = 0; i < points.length - 1; i++) {
+                      const p0 = points[i];
+                      const p1 = points[i + 1];
+                      const cp1x = p0.x + (p1.x - p0.x) / 3;
+                      const cp1y = p0.y;
+                      const cp2x = p1.x - (p1.x - p0.x) / 3;
+                      const cp2y = p1.y;
+                      path += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p1.x} ${p1.y}`;
+                    }
                   }
 
-                  // Area path
-                  const areaPath = `${path} L ${points[points.length - 1].x} 302 L ${points[0].x} 302 Z`;
+                  // Area path - connect line to bottom
+                  let areaPath;
+                  if (points.length === 1) {
+                    // For single point, create area from left to right at the same height
+                    const point = points[0];
+                    areaPath = `M 50 ${point.y} L 549 ${point.y} L 549 302 L 50 302 Z`;
+                  } else {
+                    // For multiple points, create area under the curve
+                    areaPath = `${path} L ${points[points.length - 1].x} 302 L ${points[0].x} 302 Z`;
+                  }
 
                   return (
                     <>
-                      {/* Area chart */}
+                      {/* Area chart with gradient fill */}
                       <path
                         d={areaPath}
                         fill="url(#revenueGradient)"
@@ -365,6 +653,33 @@ const SubscriptionTrendsPage = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />
+                      {/* Data point markers - show for all points */}
+                      {points.map((point, index) => (
+                        <g key={index}>
+                          <circle
+                            cx={point.x}
+                            cy={point.y}
+                            r="5"
+                            fill="#ED4122"
+                            stroke="white"
+                            strokeWidth="2"
+                          />
+                          {/* Show value on hover/always for better visibility */}
+                          {points.length <= 10 && (
+                            <text
+                              x={point.x}
+                              y={point.y - 12}
+                              textAnchor="middle"
+                              fill="#032746"
+                              fontSize="10"
+                              fontFamily="Roboto, sans-serif"
+                              fontWeight="600"
+                            >
+                              ${point.revenue.toFixed(0)}
+                            </text>
+                          )}
+                        </g>
+                      ))}
                     </>
                   );
                 })()}
@@ -378,33 +693,65 @@ const SubscriptionTrendsPage = () => {
               {t('admin.subscriptionTrends.charts.planDistribution')}
             </h2>
             <div className="flex flex-col items-center justify-center gap-4 md:gap-6 mt-4 md:mt-6">
-              <div className="relative w-full max-w-[270px]">
+              <div className="relative w-full max-w-[270px] h-[270px] flex items-center justify-center">
                 {donutPaths.length > 0 ? (
-                  <svg width="100%" height="100%" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
-                    {donutPaths.map((item, index) => (
-                      <path
-                        key={index}
-                        d={item.path}
-                        fill={item.color}
-                      />
-                    ))}
+                  <svg 
+                    width="270" 
+                    height="270" 
+                    viewBox="0 0 200 200" 
+                    preserveAspectRatio="xMidYMid meet"
+                    className="w-full h-full"
+                  >
+                    {/* Render each segment of the donut chart */}
+                    {donutPaths.map((item, index) => {
+                      if (!item.path) return null;
+                      return (
+                        <path
+                          key={`segment-${index}-${item.plan}`}
+                          d={item.path}
+                          fill={item.color || '#9CA3AF'}
+                          stroke="#ffffff"
+                          strokeWidth="2"
+                          style={{
+                            transition: 'opacity 0.3s',
+                            cursor: 'pointer',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.opacity = '0.8';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.opacity = '1';
+                          }}
+                        />
+                      );
+                    })}
+                    {/* Center circle to create donut effect - optional, can be styled */}
+                    <circle
+                      cx="100"
+                      cy="100"
+                      r="35"
+                      fill="white"
+                    />
                   </svg>
                 ) : (
-                  <div className="w-full h-[200px] flex items-center justify-center text-dark-gray">
-                    No data
+                  <div className="w-full h-[270px] flex flex-col items-center justify-center text-dark-gray">
+                    <div className="text-center">
+                      <p className="font-roboto text-sm mb-2">No distribution data available</p>
+                      <p className="font-roboto text-xs text-gray-400">Add subscriptions to see plan distribution</p>
+                    </div>
                   </div>
                 )}
               </div>
               <div className="flex flex-col sm:flex-row justify-around gap-3 w-full max-w-[400px]">
                 {planDistribution.length > 0 ? planDistribution.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3">
+                  <div key={`legend-${index}-${item.plan}`} className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3">
                     <div className="flex items-center gap-2 sm:gap-3">
                       <div
                         className="w-4 h-4 rounded flex-shrink-0"
-                        style={{ backgroundColor: item.color }}
+                        style={{ backgroundColor: item.color || '#9CA3AF' }}
                       ></div>
                       <span className="font-roboto text-[13px] md:text-[14px] font-normal leading-[18px] md:leading-[20px] text-oxford-blue">
-                        {item.plan}
+                        {item.plan || 'Unknown'}
                       </span>
                     </div>
                     <span className="font-roboto pl-1.5 text-[13px] md:text-[14px] font-medium leading-[18px] md:leading-[20px] text-oxford-blue">
@@ -412,7 +759,7 @@ const SubscriptionTrendsPage = () => {
                     </span>
                   </div>
                 )) : (
-                  <p className="text-center text-dark-gray">No data available</p>
+                  <p className="text-center text-dark-gray w-full">No data available</p>
                 )}
               </div>
             </div>

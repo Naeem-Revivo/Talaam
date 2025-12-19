@@ -696,6 +696,113 @@ const getTestSummary = async (studentId, filters = {}) => {
 };
 
 /**
+ * Get overall study mode statistics for a student
+ */
+const getStudySummary = async (studentId, filters = {}) => {
+  const where = {
+    studentId: studentId,
+    mode: 'study',
+    status: 'completed',
+    answers: {
+      some: {}, // Only study sessions with at least one answer
+    },
+  };
+
+  // Only add examId filter if it's provided and valid
+  if (filters.exam && typeof filters.exam === 'string' && filters.exam.trim() !== '') {
+    where.examId = filters.exam.trim();
+  }
+
+  const studySessions = await prisma.studentAnswer.findMany({
+    where,
+    include: {
+      answers: {
+        include: {
+          question: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  if (studySessions.length === 0) {
+    return {
+      totalSessions: 0,
+      totalQuestionsAttempted: 0,
+      totalQuestionsAnswered: 0,
+      totalCorrectAnswers: 0,
+      totalIncorrectAnswers: 0,
+      accuracy: 0,
+      averagePercentage: 0,
+      lastStudyDate: null,
+    };
+  }
+
+  let totalQuestionsAttempted = 0;
+  let totalCorrectAnswers = 0;
+  let totalIncorrectAnswers = 0;
+  let totalPercentage = 0;
+  let lastStudyDate = null;
+  const uniqueQuestionsAttempted = new Set();
+
+  studySessions.forEach((session) => {
+    const sessionAnswers = session.answers || [];
+    const sessionTotalQuestions = sessionAnswers.length;
+    const sessionCorrectAnswers = sessionAnswers.filter(a => a.isCorrect).length;
+    const sessionIncorrectAnswers = sessionTotalQuestions - sessionCorrectAnswers;
+
+    totalQuestionsAttempted += sessionTotalQuestions;
+    totalCorrectAnswers += sessionCorrectAnswers;
+    totalIncorrectAnswers += sessionIncorrectAnswers;
+    
+    if (session.percentage !== null && session.percentage !== undefined) {
+      totalPercentage += session.percentage;
+    } else if (sessionTotalQuestions > 0) {
+      totalPercentage += (sessionCorrectAnswers / sessionTotalQuestions) * 100;
+    }
+
+    if (!lastStudyDate || session.createdAt > lastStudyDate) {
+      lastStudyDate = session.createdAt;
+    }
+
+    // Track unique questions
+    sessionAnswers.forEach((answer) => {
+      if (answer.questionId) {
+        uniqueQuestionsAttempted.add(answer.questionId.toString());
+      }
+    });
+  });
+
+  const totalSessions = studySessions.length;
+  const totalQuestionsAnswered = totalCorrectAnswers + totalIncorrectAnswers;
+  const accuracy =
+    totalQuestionsAttempted > 0
+      ? Number(((totalCorrectAnswers / totalQuestionsAttempted) * 100).toFixed(2))
+      : 0;
+  const averagePercentage = totalSessions > 0
+    ? Number((totalPercentage / totalSessions).toFixed(2))
+    : 0;
+
+  return {
+    totalSessions,
+    totalQuestionsAttempted,
+    totalQuestionsAnswered,
+    totalCorrectAnswers,
+    totalIncorrectAnswers,
+    accuracy,
+    averagePercentage,
+    lastStudyDate,
+    uniqueQuestionsAttempted: uniqueQuestionsAttempted.size,
+  };
+};
+
+/**
  * Get last 10 sessions (test + study) for performance chart
  */
 const getPerformanceData = async (studentId) => {
@@ -1600,6 +1707,7 @@ module.exports = {
   getStudyHistory,
   getTestResultById,
   getTestSummary,
+  getStudySummary,
   getPerformanceData,
   getTestModeAccuracyTrend,
   getSessionHistory,

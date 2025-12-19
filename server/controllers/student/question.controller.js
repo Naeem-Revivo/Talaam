@@ -253,6 +253,31 @@ const getTestSummary = async (req, res, next) => {
 };
 
 /**
+ * Get overall study mode summary for a student
+ * GET /api/student/questions/study/summary?exam=...
+ */
+const getStudySummary = async (req, res, next) => {
+  try {
+    const { exam } = req.query;
+    const studentId = req.user.id;
+    const filters = {};
+
+    if (exam) {
+      filters.exam = exam;
+    }
+
+    const summary = await questionService.getStudySummary(studentId, filters);
+
+    res.status(200).json({
+      success: true,
+      data: summary,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Get performance data (last 10 sessions) for dashboard
  * GET /api/student/questions/performance
  */
@@ -551,6 +576,7 @@ module.exports = {
   getTestHistory,
   getTestResultById,
   getTestSummary,
+  getStudySummary,
   getPerformanceData,
   getTestModeAccuracyTrend,
   getSessionHistory,

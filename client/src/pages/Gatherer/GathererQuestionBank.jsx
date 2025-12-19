@@ -42,7 +42,7 @@ const GathererQuestionBank = () => {
     { key: "processor", label: t("gatherer.questionBank.table.processor") },
     { key: "lastUpdate", label: t("gatherer.questionBank.table.lastUpdate") },
     { key: "status", label: t("gatherer.questionBank.table.status") },
-    { key: "indicators", label: t("gatherer.questionBank.table.indicators") || "Indicators" },
+    { key: "indicators", label: t("gatherer.questionBank.table.flagsIssues") || "FLAGS / ISSUES" },
     { key: "actions", label: t("gatherer.questionBank.table.actions") },
   ], [t]);
   

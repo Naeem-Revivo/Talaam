@@ -85,6 +85,10 @@ app.use('/api/gatherer', require('./routes/gatherer'));
 app.use('/api/explainer', require('./routes/explainer'));
 app.use('/api/processor', require('./routes/processor'));
 
+// Public language routes (for student signup/profile)
+const languageController = require('./controllers/admin/language.controller');
+app.get('/api/languages/active', languageController.getActiveLanguages);
+
 // Error handling middleware
 const errorHandler = require('./middlewares/error');
 app.use(errorHandler);

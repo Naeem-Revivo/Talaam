@@ -8,6 +8,7 @@ import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
 import { useNavigate } from 'react-router-dom'
 import ProfileDropdown from '../common/ProfileDropdown'
 import { getTranslatedAuthMessage } from '../../utils/authMessages'
+import languagesAPI from '../../api/languages'
 
 const Profile = () => {
   const { language, t } = useLanguage()
@@ -201,7 +202,39 @@ const Profile = () => {
 
   const countries = profileData.countries
   const timeZones = profileData.timeZones
-  const languages = profileData.languages
+  const [languages, setLanguages] = useState(profileData.languages) // Fallback to static data
+
+  // Fetch active languages from API
+  useEffect(() => {
+    const fetchActiveLanguages = async () => {
+      try {
+        const response = await languagesAPI.getActiveLanguages()
+        if (response.success && response.data.languages && response.data.languages.length > 0) {
+          // Transform API languages to match ProfileDropdown format (array of strings)
+          const transformedLanguages = response.data.languages.map(lang => lang.name)
+          setLanguages(transformedLanguages)
+          
+          // If current language is not in active languages, update to default or first active
+          setFormData(prev => {
+            const currentLang = prev.language
+            if (currentLang && !transformedLanguages.includes(currentLang)) {
+              const defaultLang = response.data.languages.find(lang => lang.isDefault)
+              if (defaultLang) {
+                return { ...prev, language: defaultLang.name }
+              } else if (transformedLanguages.length > 0) {
+                return { ...prev, language: transformedLanguages[0] }
+              }
+            }
+            return prev
+          })
+        }
+      } catch (error) {
+        console.error('Error fetching active languages:', error)
+        // Keep using static data as fallback
+      }
+    }
+    fetchActiveLanguages()
+  }, [])
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4" dir={dir}>

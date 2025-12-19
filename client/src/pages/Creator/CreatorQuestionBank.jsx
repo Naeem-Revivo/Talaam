@@ -3,7 +3,7 @@ import { OutlineButton } from "../../components/common/Button";
 import StatsCards from "../../components/common/StatsCards";
 import { Table } from "../../components/common/TableComponent";
 import SearchFilter from "../../components/common/SearchFilter";
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import WorkflowProgress from "../../components/gatherer/WorkflowProgress";
 import RecentActivity from "../../components/gatherer/RecentActiveity";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +40,7 @@ const CreatorQuestionBank = () => {
     { key: 'subject', label: t("creator.assignedQuestionPage.table.subject") },
     { key: 'processor', label: t("creator.assignedQuestionPage.table.processor") },
     { key: 'status', label: t("creator.assignedQuestionPage.table.status") },
-    { key: 'indicators', label: t("creator.assignedQuestionPage.table.indicators") },
+    { key: 'indicators', label: t("creator.assignedQuestionPage.table.flagsIssues") },
     { key: 'updatedOn', label: t("creator.assignedQuestionPage.table.updatedOn") },
     { key: 'actions', label: t("creator.assignedQuestionPage.table.actions") }
   ];
@@ -354,9 +354,10 @@ const CreatorQuestionBank = () => {
     //   fetchAssignedQuestions(false);
     // }, 30000); // 30 seconds minimum to reduce blinking
 
+    const intervalId = pollingIntervalRef.current;
     return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
+      if (intervalId) {
+        clearInterval(intervalId);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -576,7 +577,7 @@ const CreatorQuestionBank = () => {
           return 0;
         }
         return dateB - dateA;
-      } catch (error) {
+      } catch {
         return 0;
       }
     });

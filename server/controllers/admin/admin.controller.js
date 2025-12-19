@@ -2117,12 +2117,18 @@ const getSubscriptionTrendMetrics = async (req, res, next) => {
 /**
  * Get revenue trend chart data
  * Only superadmin can access this
+ * Query params: month (1-12), year (e.g., 2024) - optional, for daily data
  */
 const getRevenueTrendChart = async (req, res, next) => {
   try {
+    const month = req.query.month ? parseInt(req.query.month, 10) : null;
+    const year = req.query.year ? parseInt(req.query.year, 10) : null;
+
     console.log('[ANALYTICS] GET /admin/analytics/subscription/revenue-trend → requested', {
       requestedBy: req.user.id,
       requesterRole: req.user.role,
+      month,
+      year,
     });
 
     // Ensure only superadmin can access this
@@ -2133,7 +2139,22 @@ const getRevenueTrendChart = async (req, res, next) => {
       });
     }
 
-    const chartData = await adminService.getRevenueTrendChart();
+    // Validate month and year if provided
+    if (month && (month < 1 || month > 12)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid month. Must be between 1 and 12',
+      });
+    }
+
+    if (year && (year < 2000 || year > 2100)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid year',
+      });
+    }
+
+    const chartData = await adminService.getRevenueTrendChart(month, year);
 
     const formattedData = chartData.data.map((item) => ({
       ...item,
@@ -2145,12 +2166,14 @@ const getRevenueTrendChart = async (req, res, next) => {
       message: 'Revenue trend chart data retrieved successfully',
       data: {
         title: chartData.title,
+        type: chartData.type,
         data: formattedData,
       },
     };
 
     console.log('[ANALYTICS] GET /admin/analytics/subscription/revenue-trend → 200 (ok)', {
       dataPoints: formattedData.length,
+      type: chartData.type,
     });
     res.status(200).json(response);
   } catch (error) {
@@ -2538,14 +2561,83 @@ const updateStudentStatus = async (req, res, next) => {
   }
 };
 
+/**
+ * Export report
+ * POST /api/admin/reports/export
+ */
+const exportReport = async (req, res, next) => {
+  try {
+    console.log('[EXPORT] POST /admin/reports/export → requested', {
+      requestedBy: req.user.id,
+      requesterRole: req.user.role,
+      body: req.body,
+    });
+
+    // Ensure only superadmin can export reports
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only superadmin can export reports',
+      });
+    }
+
+    const { reportType, format, startDate, endDate } = req.body;
+
+    // Validate required fields
+    if (!reportType || !format) {
+      return res.status(400).json({
+        success: false,
+        message: 'Report type and format are required',
+      });
+    }
+
+    // Validate report type
+    const validReportTypes = ['User Growth', 'Subscription Trends', 'Performance Analytics'];
+    if (!validReportTypes.includes(reportType)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid report type. Must be one of: ${validReportTypes.join(', ')}`,
+      });
+    }
+
+    // Validate format
+    const validFormats = ['CSV', 'Excel', 'PDF'];
+    if (!validFormats.includes(format)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid format. Must be one of: ${validFormats.join(', ')}`,
+      });
+    }
+
+    // Export the report
+    const exportData = await adminService.exportReport(reportType, format, startDate, endDate);
+
+    // Set headers for file download
+    res.setHeader('Content-Type', exportData.mimeType);
+    res.setHeader('Content-Disposition', `attachment; filename="${exportData.filename}"`);
+
+    console.log('[EXPORT] POST /admin/reports/export → 200 (ok)', {
+      reportType,
+      format,
+      filename: exportData.filename,
+    });
+
+    // Send the file content
+    res.status(200).send(exportData.content);
+  } catch (error) {
+    console.error('[EXPORT] POST /admin/reports/export → error', error);
+    next(error);
+  }
+};
+
 module.exports = {
   createAdmin,
   updateUserStatus,
   getAllAdmins,
-  updateAdmin,
-  deleteAdmin,
   getDashboardStatistics,
+  updateAdmin,
   getUserManagementStatistics,
+  deleteAdmin,
   getClassificationStatistics,
   getSubjectsPaginated,
   getTopicsPaginated,
@@ -2558,19 +2650,19 @@ module.exports = {
   deleteTopic,
   getAllUserSubscriptions,
   getSubscriptionDetails,
-  getPaymentHistory,
   syncSubscriptionPayment,
+  getPaymentHistory,
   getUserAnalyticsHero,
   getUserGrowthChart,
   getTopPerformanceUsers,
   getSubscriptionTrendMetrics,
   getRevenueTrendChart,
-  getPlanWiseBreakdown,
   getPracticeDistribution,
   getPlanDistribution,
+  getPlanWiseBreakdown,
   getAllStudents,
   getStudentManagementStatistics,
   getStudentById,
   updateStudentStatus,
+  exportReport,
 };
-

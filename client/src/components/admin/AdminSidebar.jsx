@@ -422,11 +422,6 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       labelKey: "admin.sidebar.settings",
       icon: SettingsIcon,
     },
-    {
-      path: "/admin/security",
-      labelKey: "admin.sidebar.security",
-      icon: SecurityIcon,
-    },
   ];
 
   const isActive = (path) => {

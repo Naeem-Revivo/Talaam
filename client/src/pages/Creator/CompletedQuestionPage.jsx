@@ -1,7 +1,7 @@
 
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import SearchFilter from "../../components/common/SearchFilter";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
@@ -53,67 +53,80 @@ const CompletedQuestionPage = () => {
     }
   };
 
-  // Transform API response to table format
-  const transformQuestionData = async (questions) => {
-    const transformed = await Promise.all(
-      questions.map(async (question) => {
-        // Get processor name
-        const processorName = question.approvedBy?.name || question.assignedProcessor?.name || "—";
-        
-        // Extract question title from questionText (first 50 characters)
-        const questionTitle = question.questionText 
-          ? (question.questionText.length > 50 
-              ? question.questionText.substring(0, 50) + "..." 
-              : question.questionText)
-          : "—";
-
-        // Count variants for this question
-        let variantCount = 0;
+  // Fetch all creator questions once to count variants (memoized to prevent re-fetching)
+  const fetchAllCreatorQuestionsForVariants = useCallback(async () => {
+    try {
+      const statusesToFetch = ['pending_creator', 'pending_processor', 'completed', 'rejected'];
+      const allCreatorQuestions = [];
+      
+      for (const status of statusesToFetch) {
         try {
-          // Fetch all creator questions to find variants
-          const statusesToFetch = ['pending_creator', 'pending_processor', 'completed', 'rejected'];
-          const allCreatorQuestions = [];
-          
-          for (const status of statusesToFetch) {
-            try {
-              const response = await questionsAPI.getCreatorQuestions({ status });
-              if (response.success && response.data?.questions) {
-                allCreatorQuestions.push(...response.data.questions);
-              }
-            } catch (err) {
-              // Ignore errors
-            }
+          const response = await questionsAPI.getCreatorQuestions({ status });
+          if (response.success && response.data?.questions) {
+            allCreatorQuestions.push(...response.data.questions);
           }
-
-          const questionIdStr = String(question.id || question._id);
-          const variants = allCreatorQuestions.filter(
-            (q) => {
-              const isVariant = q.isVariant === true || q.isVariant === 'true';
-              const originalId = q.originalQuestionId || q.originalQuestion;
-              return isVariant && originalId && String(originalId) === questionIdStr;
-            }
-          );
-          variantCount = variants.length;
         } catch (err) {
-          console.warn(`Error counting variants for question ${question.id}:`, err);
+          // Ignore errors
         }
+      }
+      
+      return allCreatorQuestions;
+    } catch (err) {
+      console.warn('Error fetching creator questions for variants:', err);
+      return [];
+    }
+  }, []);
 
-        return {
-          id: question.id || question._id,
-          questionTitle: questionTitle,
-          processor: processorName,
-          variants: variantCount,
-          completedOn: formatDate(question.updatedAt),
-          actionType: 'view',
-          originalData: question
-        };
-      })
-    );
+  // Transform API response to table format
+  const transformQuestionData = async (questions, allCreatorQuestions = []) => {
+    // Build a map of variants by parent question ID for efficient lookup
+    const variantsByParentId = new Map();
+    allCreatorQuestions.forEach((q) => {
+      const isVariant = q.isVariant === true || q.isVariant === 'true';
+      if (isVariant) {
+        const originalId = q.originalQuestionId || q.originalQuestion;
+        if (originalId) {
+          const parentId = String(originalId);
+          if (!variantsByParentId.has(parentId)) {
+            variantsByParentId.set(parentId, []);
+          }
+          variantsByParentId.get(parentId).push(q);
+        }
+      }
+    });
+
+    const transformed = questions.map((question) => {
+      // Get processor name
+      const processorName = question.approvedBy?.name || question.assignedProcessor?.name || "—";
+      
+      // Extract question title from questionText (first 50 characters)
+      const questionTitle = question.questionText 
+        ? (question.questionText.length > 50 
+            ? question.questionText.substring(0, 50) + "..." 
+            : question.questionText)
+        : "—";
+
+      // Count variants for this question using the pre-built map
+      const questionIdStr = String(question.id || question._id);
+      const variants = variantsByParentId.get(questionIdStr) || [];
+      const variantCount = variants.length;
+
+      return {
+        id: question.id || question._id,
+        questionTitle: questionTitle,
+        processor: processorName,
+        variants: variantCount,
+        completedOn: formatDate(question.updatedAt),
+        actionType: 'view',
+        originalData: question
+      };
+    });
+    
     return transformed;
   };
 
   // Fetch completed questions from API
-  const fetchCompletedQuestions = async () => {
+  const fetchCompletedQuestions = useCallback(async () => {
     try {
       setError(null);
       setLoading(true);
@@ -123,10 +136,12 @@ const CompletedQuestionPage = () => {
       
       if (response.success && response.data?.questions) {
         const questions = response.data.questions;
-        const transformedData = await transformQuestionData(questions);
+        // Fetch all creator questions once for variant counting
+        const allCreatorQuestions = await fetchAllCreatorQuestionsForVariants();
+        const transformedData = await transformQuestionData(questions, allCreatorQuestions);
         setAllQuestionsData(transformedData);
         setTotalQuestions(transformedData.length);
-        applyFilters(transformedData);
+        // Don't call applyFilters here - let the useEffect handle it
       } else {
         setAllQuestionsData([]);
         setTotalQuestions(0);
@@ -140,10 +155,10 @@ const CompletedQuestionPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchAllCreatorQuestionsForVariants]);
 
-  // Apply client-side filters
-  const applyFilters = (data) => {
+  // Apply client-side filters (memoized to prevent unnecessary re-renders)
+  const applyFilters = useCallback((data) => {
     let filtered = [...data];
 
     // Filter by search term
@@ -166,31 +181,30 @@ const CompletedQuestionPage = () => {
     setQuestionsData(filtered);
     setTotalQuestions(filtered.length);
     setCurrentPage(1);
-  };
+  }, [search, subject, topic, subtopic]);
 
-  // Apply filters when filter values change
+  // Apply filters when filter values or data change
   useEffect(() => {
     if (allQuestionsData.length > 0) {
       applyFilters(allQuestionsData);
     }
-  }, [search, subject, topic, subtopic, allQuestionsData]);
+  }, [allQuestionsData, applyFilters]);
 
   // Set up polling for real-time updates
   useEffect(() => {
     fetchCompletedQuestions();
 
-    // Set up polling every 5 seconds
+    // Set up polling every 30 seconds (increased to reduce re-renders)
     pollingIntervalRef.current = setInterval(() => {
       fetchCompletedQuestions();
-    }, 5000);
+    }, 30000);
 
     return () => {
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchCompletedQuestions]);
 
   // Handler for view action
   const handleView = (item) => {

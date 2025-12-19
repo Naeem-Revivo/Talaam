@@ -4,6 +4,7 @@
       "gatherer": {
         "dashboard": "Gatherer Dashboard",
         "questionBank": "Question Bank",
+        "announcements": "Announcements",
         "profile": "Profile",
         "default": "Gatherer Dashboard"
       },
@@ -20,12 +21,14 @@
         "creatorSubmission": "Creator Submission",
         "explainerSubmission": "Explainer Submission",
         "adminSubmission": "Admin Submission",
+        "announcements": "Announcements",
         "profile": "Profile",
         "default": "Processor Dashboard"
       },
       "explainer": {
         "dashboard": "Explainer Dashboard",
         "questionBank": "Question Bank",
+        "announcements": "Announcements",
         "profile": "Profile",
         "default": "Explainer Dashboard"
       },
@@ -633,7 +636,50 @@
       "reviewSessions": "Review Sessions",
       "sessionSummary": "Session Summary",
       "questionSession": "Question Session",
-      "subscriptionsBilling": "Subscription & Billing"
+      "subscriptionsBilling": "Subscription & Billing",
+      "announcements": "Announcements"
+    },
+    "announcements": {
+      "title": "Announcements",
+      "subtitle": "Stay updated with the latest announcements from the platform",
+      "loading": "Loading...",
+      "noAnnouncements": "No announcements available",
+      "unread": "Unread",
+      "read": "Read",
+      "view": "View",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to delete this announcement? This will only hide it from your view.",
+      "deleteError": "Error deleting announcement. Please try again.",
+      "deleteModal": {
+        "title": "Delete Announcement",
+        "message": "Are you sure you want to delete \"{{title}}\"?",
+        "subMessage": "This will only hide it from your view.",
+        "confirmText": "Delete",
+        "cancelText": "Cancel"
+      },
+      "viewTitle": "Announcement Details",
+      "close": "Close",
+      "table": {
+        "type": "Type",
+        "title": "Title",
+        "message": "Message",
+        "date": "Date",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "read": "Read",
+        "unread": "Unread"
+      },
+      "actions": {
+        "view": "View",
+        "delete": "Delete"
+      },
+      "type": "Type",
+      "message": "Message",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "createdAt": "Created At"
     },
     "overview": {
       "title": "Overview",
@@ -1864,6 +1910,13 @@
         "emptyState": "No plans match the current filters.",
         "deleteConfirm": "Are you sure you want to delete {{planName}}?",
         "exportFileName": "subscription-plans.csv"
+      },
+      "deleteModal": {
+        "title": "Delete Plan",
+        "message": "Are you sure you want to delete \"{{planName}}\"?",
+        "subMessage": "This action cannot be undone.",
+        "confirmText": "Delete",
+        "cancelText": "Cancel"
       }
     },
     "addNewPlan": {
@@ -2042,6 +2095,8 @@
       "filters": {
         "planType": "Plan Type",
         "dateRange": "Date range",
+        "month": "Month",
+        "year": "Year",
         "last30Days": "Last 30 Days",
         "last7Days": "Last 7 Days",
         "last90Days": "Last 90 Days",
@@ -2708,10 +2763,19 @@
           "title": "Title",
           "message": "Message",
           "schedule": "Schedule",
+          "audience": "Target Audience",
           "status": "Status",
+          "publish": "Publish",
           "actions": "Actions"
         },
         "emptyMessage": "No notifications found"
+      },
+      "deleteModal": {
+        "title": "Delete Announcement",
+        "message": "Are you sure you want to delete \"{{title}}\"?",
+        "subMessage": "This will only hide it from your view.",
+        "confirmText": "Delete",
+        "cancelText": "Cancel"
       }
     },
     "languageManagement": {
@@ -2784,9 +2848,8 @@
       "options": {
         "targetAudience": {
           "allUsers": "All users",
-          "administrators": "Administrators",
-          "members": "Members",
-          "guests": "Guests"
+          "adminRoles": "Admin Roles",
+          "students": "Students"
         },
         "type": {
           "info": "Info",
@@ -2830,9 +2893,8 @@
       "options": {
         "targetAudience": {
           "allUsers": "All users",
-          "administrators": "Administrators",
-          "members": "Members",
-          "guests": "Guests"
+          "adminRoles": "Admin Roles",
+          "students": "Students"
         },
         "type": {
           "info": "Info",
@@ -3045,6 +3107,7 @@
         "lastUpdate": "LAST UPDATE",
         "status": "STATUS",
         "indicators": "INDICATORS",
+        "flagsIssues": "FLAGS / ISSUES",
         "actions": "ACTIONS"
       },
       "rejectionReasonModal": {
@@ -3250,6 +3313,7 @@
         "status": "STATUS",
         "difficulty": "DIFFICULTY",
         "indicators": "INDICATORS",
+        "flagsIssues": "FLAGS / ISSUES",
         "updatedOn": "UPDATED ON",
         "actions": "ACTIONS"
       },
@@ -3819,6 +3883,27 @@
     },
     "message": {
       "logoutSuccess": "You have been logged out successfully."
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "noAnnouncements": "No announcements",
+    "dismiss": "Dismiss"
+  },
+  "common": {
+    "months": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
     }
   }
 }

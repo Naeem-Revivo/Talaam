@@ -106,6 +106,8 @@ import ExplainerViewQuestion from '../pages/Explainer/ExplainerViewQuestion';
 import AccountSettingPage from '../pages/dashboard/AccountSettingPage';
 import ProcessorQuestionBank from '../pages/Processor/ProcessorQuestionBank';
 import SubscriptionBillingPage from '../pages/dashboard/SubscriptionBillingPage';
+import StudentAnnouncements from '../pages/dashboard/StudentAnnouncements';
+import AdminAnnouncements from '../pages/shared/AdminAnnouncements';
 import GathererProfile from '../pages/Gatherer/GathererProfile';
 import CreatorProfile from '../pages/Creator/CreatorProfile';
 import ProcessorProfile from '../pages/Processor/ProcessorProfile';
@@ -161,6 +163,7 @@ export const AppRoutes = () => {
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="review" element={<ReviewPage />} />
           <Route path="subscription-billings" element={<SubscriptionBillingPage />} />
+          <Route path="announcements" element={<StudentAnnouncements />} />
         </Route>
         {/* Review Pages - No sidebar */}
         <Route path="/dashboard/review-incorrect" element={<ReviewIncorrectPage />} />
@@ -245,7 +248,7 @@ export const AppRoutes = () => {
           <Route path="question-bank/Gatherer-editQuestion/:questionId" element={<GathererEditQuestionPage />} />
           <Route path="question-bank/Gatherer-QuestionDetail/:questionId" element={<GathererQuestionDetailsPage />} />
           <Route path="question-bank/Gatherer-QuestionDetail" element={<GathererQuestionDetailsPage />} />
-          {/* Add gatherer specific routes here */}
+          <Route path="announcements" element={<AdminAnnouncements />} />
         </Route>
       </Route>
 
@@ -261,6 +264,7 @@ export const AppRoutes = () => {
           <Route path="question-bank/explainer-submission" element={<ExplainerSubmission />} />
           <Route path="question-bank/admin-submission" element={<AdminSubmission />} />
           <Route path="question-bank/creator-submission" element={<CreaterSubmission />} />
+          <Route path="announcements" element={<AdminAnnouncements />} />
         </Route>
       </Route>
 
@@ -277,6 +281,7 @@ export const AppRoutes = () => {
           <Route path="question-bank/view-variant" element={<CreatorViewVariant />} />
           <Route path="question-bank/variants-list" element={<CreatorVariantsListPage />} />
           <Route path="question-bank/question/:questionId" element={<CreatorViewQuestion />} />
+          <Route path="announcements" element={<AdminAnnouncements />} />
         </Route>
       </Route>
 
@@ -291,6 +296,7 @@ export const AppRoutes = () => {
           <Route path="question-bank/draft-explanation" element={<DraftExplanationPage />} />
           <Route path="question-bank/assigned-questions" element={<ExplainerAssignedQuestions />} />
           <Route path="question-bank/question/:questionId" element={<ExplainerViewQuestion />} />
+          <Route path="announcements" element={<AdminAnnouncements />} />
         </Route>
       </Route>
       
