@@ -1212,6 +1212,7 @@
           "organization": "منظمة"
         }
       },
+      "loading": "جاري تحميل بيانات لوحة التحكم...",
       "sections": {
         "latestSignups": "أحدث التسجيلات",
         "systemNotifications": "إشعارات النظام"
@@ -1242,6 +1243,7 @@
         "title": "إدارة المستخدمين",
         "subtitle": "إدارة حسابات المستخدمين وأدوار سير العمل."
       },
+      "loading": "جاري التحميل...",
       "actions": {
         "addNewUser": "+ إضافة مستخدم جديد",
         "export": "تصدير"
@@ -1301,6 +1303,7 @@
           "title": "إدارة الطلاب",
           "subtitle": "إدارة حسابات الطلاب والاشتراكات وتحليلات النشاط."
         },
+        "loading": "جاري التحميل...",
         "summary": {
           "totalStudents": "إجمالي الطلاب",
           "activeStudents": "الطلاب النشطون",
@@ -1372,6 +1375,7 @@
           "title": "الملف الشخصي للطالب",
           "subtitle": "عرض معلومات الحساب والنشاط الكاملة"
         },
+        "loading": "جاري التحميل...",
         "studentId": "معرف الطالب",
         "emailAddress": "عنوان البريد الإلكتروني",
         "subscriptionPlan": "خطة الاشتراك",
@@ -1578,6 +1582,11 @@
         "ariaLabels": {
           "view": "عرض {{prompt}}"
         }
+      }
+    },
+    "sentBackQuestions": {
+      "view": {
+        "title": "عرض السؤال المرسل"
       }
     },
     "addNewQuestion": {
@@ -2113,6 +2122,7 @@
       "hero": {
         "title": "اتجاه الاشتراك"
       },
+      "loading": "جاري تحميل بيانات الاشتراك...",
       "actions": {
         "comparePeriod": "مقارنة الفترة",
         "exportReport": "تصدير التقرير"
@@ -2160,6 +2170,7 @@
         "title": "التقارير والتحليلات",
         "subtitle": "راقب أداء الطلاب واستخدام الأسئلة ونشاط الاختبارات."
       },
+      "loading": "جاري تحميل بيانات التحليلات...",
       "actions": {
         "exportReport": "تصدير التقرير"
       },
@@ -3009,6 +3020,7 @@
       "hero": {
         "title": "تفاصيل المحتوى"
       },
+      "loading": "جاري التحميل...",
       "sections": {
         "reportInformation": "معلومات التقرير",
         "content": "المحتوى",
@@ -3296,11 +3308,13 @@
       },
       "lastLogin": {
         "title": "آخر تسجيل دخول"
-      }
+      },
+      "loading": "جاري تحميل بيانات لوحة التحكم..."
     },
     "questionBank": {
       "title": "لوحة تحكم المنشئ",
       "subtitle": "تحسين الأسئلة وإنشاء متغيرات وتقديم نسخ محسنة للمراجعة النهائية.",
+      "loading": "جاري تحميل الأسئلة...",
       "completedQuestions": "الأسئلة المكتملة",
       "createVariants": "إنشاء متغيرات",
       "assignedQuestions": "الأسئلة المخصصة",
@@ -3666,7 +3680,8 @@
       },
       "lastLogin": {
         "title": "آخر تسجيل دخول"
-      }
+      },
+      "loading": "جاري تحميل بيانات لوحة التحكم..."
     },
     "questionBank": {
       "title": "لوحة تحكم المعالج",
@@ -3697,6 +3712,7 @@
     "creatorSubmission": {
       "title": "تقديمات المنشئ",
       "back": "رجوع",
+      "loading": "جاري التحميل...",
       "table": {
         "question": "السؤال",
         "creator": "المنشئ",
@@ -3725,6 +3741,7 @@
     "explainerSubmission": {
       "title": "تقديم المشرح",
       "back": "رجوع",
+      "loading": "جاري التحميل...",
       "searchPlaceholder": "البحث عن الأسئلة...",
       "table": {
         "question": "السؤال",
@@ -3740,6 +3757,7 @@
     "adminSubmission": {
       "title": "تقديم الإدارة",
       "back": "رجوع",
+      "loading": "جاري التحميل...",
       "table": {
         "question": "السؤال",
         "student": "الطالب",
@@ -3761,6 +3779,7 @@
     "allProcessedQuestions": {
       "title": "جميع الأسئلة المعالجة",
       "back": "رجوع",
+      "loading": "جاري التحميل...",
       "table": {
         "questionTitle": "السؤال",
         "status": "الحالة",
@@ -3798,6 +3817,9 @@
       "cancel": "إلغاء",
       "confirmReject": "تأكيد الرفض",
       "loading": "جاري تحميل السؤال...",
+      "processing": "جاري المعالجة...",
+      "loadingCreators": "جاري تحميل المنشئين...",
+      "loadingExplainers": "جاري تحميل المشرحين...",
       "noOptions": "لا توجد خيارات متاحة لهذا النوع من الأسئلة.",
       "approveReason": "الموافقة على السبب",
       "rejectReasonButton": "رفض السبب",
@@ -3908,6 +3930,7 @@
     "dismiss": "إخفاء"
   },
   "common": {
+    "loading": "جاري التحميل...",
     "months": {
       "january": "يناير",
       "february": "فبراير",

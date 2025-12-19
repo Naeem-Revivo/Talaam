@@ -351,6 +351,21 @@ const CreaterSubmission = () => {
           };
         });
 
+        // Sort: pending_processor questions first (newest first), then others (newest first)
+        transformedData.sort((a, b) => {
+          const isAPendingProcessor = a.originalData?.status === 'pending_processor';
+          const isBPendingProcessor = b.originalData?.status === 'pending_processor';
+          
+          // If one is pending_processor and the other isn't, pending_processor comes first
+          if (isAPendingProcessor && !isBPendingProcessor) return -1;
+          if (!isAPendingProcessor && isBPendingProcessor) return 1;
+          
+          // Both have same priority, sort by date (most recent first)
+          const dateA = new Date(a.originalData?.updatedAt || a.originalData?.createdAt);
+          const dateB = new Date(b.originalData?.updatedAt || b.originalData?.createdAt);
+          return dateB - dateA;
+        });
+
         setSubmissions(transformedData);
         setTotal(transformedData.length);
       } catch (error) {

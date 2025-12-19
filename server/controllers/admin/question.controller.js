@@ -1440,12 +1440,17 @@ const rejectQuestion = async (req, res, next) => {
       questionId,
       requestedBy: req.user.id,
       requesterRole: req.user.adminRole,
+      userRole: req.user.role,
     });
+
+    // For superAdmin, pass 'superadmin' as role; otherwise use adminRole
+    const userRole = req.user.role === 'superadmin' ? 'superadmin' : req.user.adminRole;
 
     const question = await questionService.rejectQuestion(
       questionId,
       rejectionReason,
-      req.user.id
+      req.user.id,
+      userRole
     );
 
     const response = {

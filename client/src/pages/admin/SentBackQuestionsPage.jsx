@@ -130,6 +130,7 @@ const SentBackQuestionsPage = () => {
         // Filter questions to show:
         // 1. Questions with status "pending_gatherer" (flagged and rejected questions sent back to gatherer)
         // 2. Questions created by admin that are flagged OR rejected
+        // 3. All rejected original questions (isVariant is false or not set)
         const allQuestions = response.data.questions || [];
         const filteredQuestions = allQuestions.filter((q) => {
           // Check if status is pending_gatherer
@@ -140,7 +141,11 @@ const SentBackQuestionsPage = () => {
           const isFlaggedOrRejected = (q.isFlagged === true) || (q.status === 'rejected');
           const isAdminCreatedFlaggedRejected = isCreatedByAdmin && isFlaggedOrRejected;
           
-          return isPendingGatherer || isAdminCreatedFlaggedRejected;
+          // Check if it's a rejected original question (not a variant)
+          const isOriginalQuestion = !q.isVariant || q.isVariant === false;
+          const isRejectedOriginal = isOriginalQuestion && q.status === 'rejected';
+          
+          return isPendingGatherer || isAdminCreatedFlaggedRejected || isRejectedOriginal;
         });
         
         // Transform API data to match table format
