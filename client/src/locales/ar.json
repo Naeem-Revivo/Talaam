@@ -337,6 +337,20 @@
       }
     }
   },
+  "questionBanks": {
+    "hero": {
+      "title": "بنوك الأسئلة الخاصة بك",
+      "subtitle": "الوصول إلى الامتحانات التي اشتركت فيها، أو قم بالترقية لإلغاء قفل المزيد."
+    },
+    "exams": {
+      "subscribed": "مشترك",
+      "notSubscribed": "غير مشترك",
+      "startStudying": "ابدأ الدراسة",
+      "upgradeToAccess": "ترقية للوصول",
+      "moreExamsComingSoon": "امتحانات أخرى قريباً",
+      "advancedFeatures": "ميزات متقدمة"
+    }
+  },
   "about": {
     "hero": {
       "title1": "عنا",

@@ -32,7 +32,7 @@ const ScienceStrategiesSection = () => {
           </div>
           
           {/* Right side - Text content */}
-          <div className="mobile:space-y-6 laptop:space-y-8 mobile:w-full mobile:max-w-[352px] laptop:w-auto laptop:ml-[300px]">
+          <div className={`mobile:space-y-6 laptop:space-y-8 mobile:w-full mobile:max-w-[352px] laptop:w-auto ${language === 'ar' ? 'laptop:mr-[300px]' : 'laptop:ml-[300px]'}`}>
             <h2 className="font-archivo font-bold mobile:text-[20px] text-center laptop:text-[40px] leading-[100%] tracking-[0] text-oxford-blue mobile:whitespace-nowrap">{t('howItWorks.scienceStrategies.title')}</h2>
             
             <div className="mobile:space-y-3 laptop:space-y-4">
