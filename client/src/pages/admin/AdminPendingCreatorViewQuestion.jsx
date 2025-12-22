@@ -991,7 +991,7 @@ const AdminPendingCreatorViewQuestion = () => {
                 {loading ? "Loading question..." : `Question ID: ${questionIdDisplay}`}
               </p>
             </div>
-            {!isEditMode && (
+            {(!isEditMode && !isFlagged) && (
             <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
               <button
                 type="button"

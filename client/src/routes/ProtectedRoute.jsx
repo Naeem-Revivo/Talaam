@@ -72,11 +72,11 @@ export const RoleRoute = ({ allow = [] }) => {
   }
 
   // For student/user routes, check if profile is complete
-  if (allow.includes('user') && (role === 'user' || role === 'student')) {
-    if (!isProfileComplete(user)) {
-      return <Navigate to="/complete-profile" replace />;
-    }
-  }
+  // if (allow.includes('user') && (role === 'user' || role === 'student')) {
+  //   if (!isProfileComplete(user)) {
+  //     return <Navigate to="/complete-profile" replace />;
+  //   }
+  // }
 
   return <Outlet />;
 };

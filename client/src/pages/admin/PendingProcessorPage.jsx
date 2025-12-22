@@ -66,7 +66,7 @@ const PendingProcessorPage = () => {
   const [examOptions, setExamOptions] = useState([]);
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [topicOptions, setTopicOptions] = useState([]);
-  const [statusOptions] = useState(["Pending", "Approved", "Rejected", "Sent Back"]);
+  const [statusOptions] = useState(["Pending", "Rejected"]);
 
   // Fetch questions from API
   useEffect(() => {
@@ -110,10 +110,29 @@ const PendingProcessorPage = () => {
     try {
       setLoading(true);
       const params = {
-        status: "pending_processor",
         page,
         limit: pageSize,
       };
+      
+      // Apply status filter - if status filter is selected, use it; otherwise default to pending_processor
+      if (filters.status && filters.status !== '') {
+        // Map display status back to API status
+        if (filters.status === "Pending") {
+          params.status = "pending_processor"; // For this page, "Pending" means pending_processor
+        } else if (filters.status === "Rejected") {
+          params.status = "rejected";
+        } else {
+          // Direct API status values - only allow pending_processor for this page
+          if (filters.status === 'pending_processor') {
+            params.status = "pending_processor";
+          } else if (filters.status === 'rejected') {
+            params.status = "rejected";
+          }
+        }
+      } else {
+        // No status filter selected - default to pending_processor for this page
+        params.status = "pending_processor";
+      }
       
       if (search && search.trim()) params.search = search.trim();
       if (filters.exam && filters.exam.trim()) params.exam = filters.exam.trim();
@@ -182,7 +201,21 @@ const PendingProcessorPage = () => {
           };
         }) || [];
         
-        setQuestions(transformed);
+        // Apply client-side filtering based on status filter
+        let filteredTransformed = transformed;
+        if (filters.status === "Pending" || !filters.status || filters.status === '') {
+          // When "Pending" is selected or no filter, ensure only pending_processor questions are shown
+          filteredTransformed = transformed.filter((q) => {
+            return q._original?.status === 'pending_processor';
+          });
+        } else if (filters.status === "Rejected") {
+          // When "Rejected" is selected, ensure only rejected questions are shown
+          filteredTransformed = transformed.filter((q) => {
+            return q._original?.status === 'rejected';
+          });
+        }
+        
+        setQuestions(filteredTransformed);
         setSummary(response.data.summary || { total: 0, pending: 0, approved: 0, rejected: 0 });
         setTotal(response.data.pagination?.totalItems || 0);
       }
