@@ -605,18 +605,23 @@ const PracticePage = () => {
               ) : subjects.length === 0 ? (
                 <div className="text-center py-4 text-oxford-blue">No subjects available</div>
               ) : (
-                subjects.map((subject) => (
+                subjects.map((subject) => {
+                  const subjectId = subject.id || subject._id;
+                  const isSelected = selectedSubjectId === subjectId;
+                  return (
                 <button
-                    key={subject.id || subject._id}
-                    onClick={() => toggleSubject(subject.id || subject._id)}
-                  className="w-full flex items-center justify-between rounded-lg transition-colors h-[44px] px-4 py-3 bg-white border border-[#E5E7EB]"
+                    key={subjectId}
+                    onClick={() => toggleSubject(subjectId)}
+                  className={`w-full flex items-center justify-between rounded-lg transition-colors h-[44px] px-4 py-3 bg-white border ${
+                    isSelected ? 'border-cinnebar-red border-2' : 'border-[#E5E7EB]'
+                  }`}
                 >
                   <span className="font-archivo font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
                       {subject.name}
                   </span>
                   <svg
                     className={`w-5 h-5 text-oxford-blue transition-transform ${
-                        expandedDomains[subject.id || subject._id] ? 'rotate-90' : ''
+                        expandedDomains[subjectId] ? 'rotate-90' : ''
                     }`}
                     fill="none"
                     stroke="currentColor"
@@ -625,7 +630,8 @@ const PracticePage = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
-                ))
+                );
+                })
               )}
             </div>
           </div>

@@ -176,7 +176,9 @@ const adminAPI = {
         : '/admin/questions/all';
 
       const response = await axiosClient.get(url);
+      console.log('Fetched questions:', response.data);
       return response.data;
+
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Failed to fetch questions' };

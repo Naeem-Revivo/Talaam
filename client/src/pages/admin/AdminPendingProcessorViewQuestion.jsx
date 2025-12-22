@@ -188,9 +188,9 @@ const AdminPendingProcessorViewQuestion = () => {
   // Determine next destination
   const getNextDestination = () => {
     if (question && wasUpdatedAfterFlag && question.flagType) {
-      if (question.flagType === 'creator') {
+      if (question.flagType === 'creator' && question.isFlagged === true) {
         return 'creator';
-      } else if (question.flagType === 'explainer') {
+      } else if (question.flagType === 'explainer' && question.isFlagged === true) {
         return 'explainer';
       }
     }
@@ -569,6 +569,12 @@ const AdminPendingProcessorViewQuestion = () => {
 
   const handleAcceptClick = () => {
     const nextDest = getNextDestination();
+    
+    // If question has explanation, it should be completed - no need for modals
+    if (nextDest === 'completed') {
+      handleAccept();
+      return;
+    }
     
     // Check if this is a variant from creator that needs explainer assignment
     const isVariantNeedingExplainer = isVariantFromCreator && !hasAssignedExplainer;
