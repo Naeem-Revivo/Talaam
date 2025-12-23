@@ -12,6 +12,7 @@ const ProcessorFilter = ({
   onSubtopicChange,
   searchPlaceholder,
   showRole=true,
+  showSubject=true,
   subjectOptions: customSubjectOptions,
   statusOptions: customStatusOptions
 }) => {
@@ -71,12 +72,13 @@ const getSubtopicOptions = (t) => [
         />}
 
         {/* Subject Dropdown - Third */}
+        {showSubject &&
         <Dropdown
           label="Subject"
           value={subjectValue}
           options={subjectOptions}
           onChange={onSubjectChange}
-        />
+        />}
 
         {/* Search Input - Last (Right) */}
         <div className="w-full lg:w-[580px] lg:ml-auto">

@@ -1,7 +1,7 @@
 
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import ProcessorFilter from "../../components/Processor/ProcessorFilter";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
@@ -15,13 +15,22 @@ const CreaterSubmission = () => {
   const [search, setSearch] = useState("");
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
-  const [subtopic, setSubtopic] = useState("");
+  const [subtopic, setSubtopic] = useState(""); // This is the processor status filter
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [submissions, setSubmissions] = useState([]);
+  const [filteredSubmissions, setFilteredSubmissions] = useState([]);
   const [total, setTotal] = useState(0);
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
   const [selectedFlagReason, setSelectedFlagReason] = useState("");
+
+  // Processor status options for the filter
+  const processorStatusOptions = useMemo(() => [
+    t("filter.status") || "All Status",
+    "Pending Review",
+    "Approved",
+    "Rejected"
+  ], [t]);
 
   const createSubmissionColumns = [
     { key: 'questionTitle', label: t("processor.creatorSubmission.table.question") },
@@ -269,12 +278,6 @@ const CreaterSubmission = () => {
                          'Unknown';
           }
 
-          // Check if question has a flag reason (for display purposes)
-          const hasFlagReason = question.flagReason !== null && 
-                               question.flagReason !== undefined && 
-                               typeof question.flagReason === 'string' &&
-                               question.flagReason.trim() !== '';
-
           // Check if question has variants created from it
           // Check if question has variants array with items, or if history shows variant_created action
           const hasVariants = (question.variants && Array.isArray(question.variants) && question.variants.length > 0) ||
@@ -367,7 +370,6 @@ const CreaterSubmission = () => {
         });
 
         setSubmissions(transformedData);
-        setTotal(transformedData.length);
       } catch (error) {
         console.error('Error fetching creator submissions:', error);
         setSubmissions([]);
@@ -378,7 +380,29 @@ const CreaterSubmission = () => {
     };
 
     fetchCreatorSubmissions();
-  }, [currentPage, search, subject, topic, subtopic]);
+  }, [currentPage, search, topic, subtopic]);
+
+  // Filter submissions based on processor status and search
+  useEffect(() => {
+    let filtered = [...submissions];
+
+    // Filter by processor status (subtopic)
+    if (subtopic && subtopic !== processorStatusOptions[0] && subtopic !== t("filter.status")) {
+      filtered = filtered.filter(item => item.processorStatus === subtopic);
+    }
+
+    // Filter by search term
+    if (search && search.trim() !== "") {
+      const searchLower = search.toLowerCase().trim();
+      filtered = filtered.filter(item => 
+        item.questionTitle?.toLowerCase().includes(searchLower) ||
+        item.creator?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    setFilteredSubmissions(filtered);
+    setTotal(filtered.length);
+  }, [submissions, subtopic, search, processorStatusOptions, t]);
 
   // Handler for review action
   const handleReview = (item) => {
@@ -438,6 +462,8 @@ const CreaterSubmission = () => {
         onTopicChange={setTopic}
         onSubtopicChange={setSubtopic}
         showRole={false}
+        showSubject={false}
+        statusOptions={processorStatusOptions}
       />
 
       {loading ? (
@@ -449,7 +475,7 @@ const CreaterSubmission = () => {
         />
       ) : (
         <Table
-          items={submissions}
+          items={filteredSubmissions}
           columns={createSubmissionColumns}
           page={currentPage}
           pageSize={10}
