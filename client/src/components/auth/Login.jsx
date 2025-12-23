@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { login } from '../../store/slices/authSlice'
 import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
 import { getTranslatedAuthMessage } from '../../utils/authMessages'
+import subscriptionAPI from '../../api/subscription'
 import { isProfileComplete } from '../../utils/profileUtils'
 
 const Login = () => {
@@ -136,6 +137,12 @@ const Login = () => {
           return
         }
 
+        // Helper to cache subscription status for subsequent guards
+        const cacheSubscriptionStatus = (isActive) => {
+          localStorage.setItem('hasActiveSubscription', isActive ? 'true' : 'false')
+          sessionStorage.setItem('hasActiveSubscription', isActive ? 'true' : 'false')
+        }
+
         // Map backend roles to routes
         if (role === 'superadmin') {
           navigate('/admin', { replace: true })
@@ -154,11 +161,12 @@ const Login = () => {
             navigate('/admin', { replace: true })
           }
         } else if (role === 'student' || role === 'user') {
-          // Check if profile is complete for students
+          // Profile completeness check first
           if (!isProfileComplete(user)) {
             navigate('/complete-profile', { replace: true })
           } else {
-          navigate('/dashboard', { replace: true })
+            // Redirect to subscription bridge page - it will check subscription and route accordingly
+            navigate('/subscription-bridge', { replace: true })
           }
         } else if (role === 'gatherer') {
           navigate('/gatherer', { replace: true })

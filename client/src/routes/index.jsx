@@ -92,7 +92,6 @@ import ProcessorViewQuestion from '../pages/Processor/ProcessorViewQuestion';
 import CreatorLayout from '../components/creator/CreatorLayout';
 import CreatorDashboard from '../pages/Creator/CreatorDashboard';
 import CreatorQuestionBank from '../pages/Creator/CreatorQuestionBank';
-import AssignedQuestionPage from '../pages/Creator/AssignedQuestionPage';
 import CompletedQuestionPage from '../pages/Creator/CompletedQuestionPage';
 import CreatorVariantsPage from '../pages/Creator/CreatorVariantsPage';
 import ExplainerDashboard from '../pages/Explainer/ExplainerDashbaord';
@@ -122,6 +121,7 @@ import CreatorViewQuestion from '../pages/Creator/CreatorViewQuestion';
 import ApprovedQuestions from '../pages/admin/ApprovedQuestions';
 import StudentManagementPage from '../pages/admin/StudentManagementPage';
 import StudentDetailPage from '../pages/admin/StudentDetailPage';
+import SubscriptionBridgePage from '../pages/SubscriptionBridgePage';
 
 export const AppRoutes = () => {
   return (
@@ -151,6 +151,7 @@ export const AppRoutes = () => {
       {/* Complete Profile page - protected route for authenticated users (especially students) */}
       <Route element={<ProtectedRoute />}>
         <Route path="/complete-profile" element={<CompleteProfilePage />} />
+        <Route path="/subscription-bridge" element={<SubscriptionBridgePage />} />
       </Route>
       <Route path="/moyassar-payment" element={<MoyassarPaymentPage />} />
       
@@ -206,10 +207,10 @@ export const AppRoutes = () => {
           <Route path="question-bank/pending-processor/view" element={<AdminPendingProcessorViewQuestion />} />
           <Route path="question-bank/pending-creator" element={<PendingCreatorPage />} />
           <Route path="question-bank/pending-creator/view" element={<AdminPendingCreatorViewQuestion />} />
-                <Route path="question-bank/pending-explainer" element={<PendingExplainerPage />} />
-                <Route path="question-bank/pending-explainer/view" element={<AdminPendingExplainerViewQuestion />} />
-                <Route path="question-bank/sent-back-questions" element={<SentBackQuestionsPage />} />
-                <Route path="question-bank/sent-back-questions/view" element={<AdminSentBackQuestionView />} />
+          <Route path="question-bank/pending-explainer" element={<PendingExplainerPage />} />
+          <Route path="question-bank/pending-explainer/view" element={<AdminPendingExplainerViewQuestion />} />
+          <Route path="question-bank/sent-back-questions" element={<SentBackQuestionsPage />} />
+          <Route path="question-bank/sent-back-questions/view" element={<AdminSentBackQuestionView />} />
           <Route path="question-management" element={<QuestionManagementPage />} />
           <Route path="question-bank/add-question" element={<AddNewQuestionPage />} />
           <Route path="question-bank/question-details" element={<QuestionDetailsPage />} />
