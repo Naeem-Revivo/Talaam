@@ -166,7 +166,7 @@ const Login = () => {
             navigate('/complete-profile', { replace: true })
           } else {
             // Redirect to subscription bridge page - it will check subscription and route accordingly
-            navigate('/subscription-bridge', { replace: true })
+            navigate('/dashboard', { replace: true })
           }
         } else if (role === 'gatherer') {
           navigate('/gatherer', { replace: true })

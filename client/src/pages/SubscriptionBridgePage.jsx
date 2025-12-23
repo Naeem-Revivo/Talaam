@@ -14,9 +14,11 @@ const SubscriptionBridgePage = () => {
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [error, setError] = useState(null);
+  const [loadcheckingSubscription, setLoadcheckingSubscription] = useState(false);
 
   // Check subscription status first - this is the bridge logic
   useEffect(() => {
+    setLoadcheckingSubscription(true);
     const checkSubscription = async () => {
       try {
         setCheckingSubscription(true);
@@ -43,6 +45,7 @@ const SubscriptionBridgePage = () => {
         setHasActiveSubscription(false);
       } finally {
         setCheckingSubscription(false);
+        setLoadcheckingSubscription(false);
       }
     };
 
