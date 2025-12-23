@@ -84,7 +84,8 @@
     "about": "عنا",
     "contact": "تواصل معنا",
     "signUp": "سجل",
-    "logIn": "تسجيل الدخول"
+    "logIn": "تسجيل الدخول",
+    "logout": "تسجيل الخروج"
   },
   "homepage": {
     "hero": {
@@ -1321,6 +1322,7 @@
         },
         "filters": {
           "searchPlaceholder": "البحث بالاسم أو البريد الإلكتروني أو المعرف",
+          "searchByIdPlaceholder": "ابحث بمعرف الطالب",
           "filter": "تصفية",
           "plan": "الخطة",
           "status": "الحالة",

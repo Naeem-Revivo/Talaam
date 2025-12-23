@@ -7,11 +7,16 @@ const { prisma } = require('../../config/db/prisma');
  * Get all students with filtering and pagination
  */
 const getAllStudents = async (filters = {}, pagination = {}) => {
-  const { status, plan, date, search } = filters;
+  const { status, plan, date, search, studentId } = filters;
   const { page = 1, limit = 5 } = pagination;
 
   // Build where clause
   const where = { role: 'student' };
+
+  // Filter by student ID (exact match)
+  if (studentId && studentId.trim()) {
+    where.id = studentId.trim();
+  }
 
   // Filter by status
   if (status && ['active', 'suspended'].includes(status.toLowerCase())) {
@@ -80,13 +85,14 @@ const getAllStudents = async (filters = {}, pagination = {}) => {
     }
   }
 
-  // Search by name or email
-  if (search && search.trim()) {
+  // Search by name or email or ID (when no explicit studentId filter)
+  if (!where.id && search && search.trim()) {
     const searchTerm = search.trim();
     where.OR = [
       { name: { contains: searchTerm, mode: 'insensitive' } },
       { fullName: { contains: searchTerm, mode: 'insensitive' } },
       { email: { contains: searchTerm, mode: 'insensitive' } },
+      { id: { equals: searchTerm } },
     ];
   }
 

@@ -19,6 +19,28 @@ const StudyModeHeader = ({
   const [flagReason, setFlagReason] = useState('');
   const [isFlagging, setIsFlagging] = useState(false);
   const dir = language === 'ar' ? 'rtl' : 'ltr';
+  const [studentId, setStudentId] = useState('');
+
+  // Load student id from stored user object
+  useEffect(() => {
+    try {
+      const stored =
+        localStorage.getItem('user') || sessionStorage.getItem('user');
+      if (stored) {
+        const user = JSON.parse(stored);
+        const id =
+          user?.studentId ||
+          user?.studentID ||
+          user?.id ||
+          user?._id ||
+          '';
+        setStudentId(id);
+      }
+    } catch (err) {
+      // Ignore parse errors; non-blocking for header
+      setStudentId('');
+    }
+  }, []);
   
   // Check if question is flagged
   const isFlagged = currentQuestion?.isFlagged || currentQuestion?.flagStatus;
@@ -113,7 +135,7 @@ const StudyModeHeader = ({
         </div>
 
         <div className="hidden md:flex items-center gap-4 flex-wrap flex-1 justify-center">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => onNavigate(-1)}
               disabled={currentIndex === 0}
@@ -140,6 +162,11 @@ const StudyModeHeader = ({
             <span className="sm:hidden">{t('dashboard.questionSession.formulaSheet')}</span>
           </button> */}
           <div className="hidden lg:flex items-center gap-2">
+          {studentId && (
+              <span className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto">
+                Student ID: <span className="font-semibold text-oxford-blue">{studentId}</span>
+              </span>
+            )}
             <span className="text-[12px] md:text-[14px] leading-[24px] font-normal text-black font-archivo border py-2 px-4 border-[#E5E7EB] rounded-lg flex flex-col">
               <span className="hidden sm:inline text-[10px] leading-[16px] font-roboto font-normal text-[#4B5563]">{t('dashboard.questionSession.timeRunning')} </span>
               <span className="text-[12px] font-bold">{timeRunning}</span>

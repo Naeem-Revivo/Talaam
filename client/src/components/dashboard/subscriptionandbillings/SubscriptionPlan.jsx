@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { useLanguage } from "../../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../../common/Button";
 import { ConfirmationModal } from "../../common/ConfirmationModal";
 import subscriptionAPI from "../../../api/subscription";
 import paymentAPI from "../../../api/payment";
-import { showSuccessToast, showErrorToast } from "../../../utils/toastConfig";
+import { showSuccessToast, showErrorToast, showLogoutToast } from "../../../utils/toastConfig";
+import { logout as logoutAction } from "../../../store/slices/authSlice";
 import Loader from "../../common/Loader";
 
 export default function SubscriptionPlan({ onSubscriptionChange }) {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -88,6 +91,16 @@ export default function SubscriptionPlan({ onSubscriptionChange }) {
         }
         // Also refresh subscription data to ensure consistency
         await fetchSubscription();
+        
+        // Logout user after successful cancellation
+        dispatch(logoutAction());
+        showLogoutToast(t('toast.message.logoutSuccess') || 'You have been logged out successfully.', {
+          title: t('toast.title.logout') || 'Logout Successful',
+          isAuth: true
+        });
+        setTimeout(() => {
+          navigate('/login', { replace: true });
+        }, 1500);
       } else {
         showErrorToast(response.message || 'Failed to cancel subscription');
       }

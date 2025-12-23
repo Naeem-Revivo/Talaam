@@ -3,7 +3,7 @@ import axios from 'axios';
 import { showErrorToast, showLogoutToast } from '../utils/toastConfig';
 
 //const API_URL ='https://many-flannelly-shatteringly.ngrok-free.dev/api';
-const API_URL ='http://192.168.1.187:5000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Create an Axios instance
 const axiosClient = axios.create({
@@ -50,12 +50,14 @@ axiosClient.interceptors.response.use(
     const isSubscriptionEndpoint = subscriptionEndpoints.some(endpoint => requestUrl.includes(endpoint));
     const shouldSkipToast = isAuthEndpoint || isAdminEndpoint || isSubscriptionEndpoint;
 
+    const hasToken = !!(localStorage.getItem('authToken') || sessionStorage.getItem('authToken'));
+
     if (error.response) {
       // Handle common response errors
       if (error.response.status === 401) {
         // Handle unauthorized error, e.g., redirect to login
         // Skip toast for auth/admin endpoints - handled by components
-        if (!shouldSkipToast) {
+        if (!shouldSkipToast && hasToken) {
           // Clear from both storages
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');

@@ -2330,7 +2330,7 @@ const getPlanWiseBreakdown = async (req, res, next) => {
  */
 const getAllStudents = async (req, res, next) => {
   try {
-    const { page, limit, status, plan, date, search } = req.query;
+    const { page, limit, status, plan, date, search, studentId } = req.query;
 
     console.log('[ADMIN] GET /admin/students → requested', {
       requestedBy: req.user.id,
@@ -2340,6 +2340,7 @@ const getAllStudents = async (req, res, next) => {
       plan,
       date,
       search,
+      studentId,
     });
 
     // Ensure only superadmin can access this endpoint
@@ -2375,6 +2376,7 @@ const getAllStudents = async (req, res, next) => {
       plan,
       date,
       search,
+      studentId,
     };
 
     // Build pagination

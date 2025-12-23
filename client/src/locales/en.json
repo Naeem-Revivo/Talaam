@@ -82,7 +82,8 @@
     "about": "About",
     "contact": "Contact",
     "signUp": "SIGN UP",
-    "logIn": "LOG IN"
+    "logIn": "LOG IN",
+    "logout": "Logout"
   },
   "homepage": {
     "hero": {
@@ -1310,6 +1311,7 @@
       },
       "filters": {
         "searchPlaceholder": "Search by name, email or ID",
+        "searchByIdPlaceholder": "Search by student ID",
         "filter": "Filter",
         "plan": "Plan",
         "status": "Status",

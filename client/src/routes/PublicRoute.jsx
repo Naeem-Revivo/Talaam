@@ -13,6 +13,9 @@ export const PublicRoute = () => {
   if (isAuthenticated) {
     const role = user?.role;
     const adminRole = user?.adminRole;
+    const hasActiveSubscription =
+      localStorage.getItem('hasActiveSubscription') === 'true' ||
+      sessionStorage.getItem('hasActiveSubscription') === 'true';
 
     // Determine redirect destination based on role
     if (role === 'superadmin') {
@@ -32,7 +35,8 @@ export const PublicRoute = () => {
         return <Navigate to="/admin" replace />;
       }
     } else if (role === 'student' || role === 'user') {
-      return <Navigate to="/dashboard" replace />;
+      // Redirect to subscription bridge - it will check subscription and route accordingly
+      return <Navigate to="/subscription-bridge" replace />;
     } else if (role === 'gatherer') {
       return <Navigate to="/gatherer" replace />;
     } else if (role === 'creator') {
