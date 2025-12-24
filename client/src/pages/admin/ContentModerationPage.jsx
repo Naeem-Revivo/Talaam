@@ -5,6 +5,7 @@ import Dropdown from "../../components/shared/Dropdown";
 import questionsAPI from "../../api/questions";
 import { toast } from "react-toastify";
 import Loader from "../../components/common/Loader";
+import { cleanHtmlForDisplay } from "../../utils/textUtils";
 
 const ContentModerationPage = () => {
   const navigate = useNavigate();
@@ -404,9 +405,12 @@ const ContentModerationPage = () => {
                     className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition"
                   >
                     <td className="px-4 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue w-[200px]">
-                      <div className="line-clamp-2">
-                        {item.question || item.questionText || "N/A"}
-                      </div>
+                      <div 
+                        className="line-clamp-2"
+                        dangerouslySetInnerHTML={{ 
+                          __html: cleanHtmlForDisplay(item.question || item.questionText || "N/A") 
+                        }}
+                      />
                     </td>
                     <td className="px-4 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue">
                       {getQuestionTypeDisplay(item.questionType)}
@@ -552,9 +556,12 @@ const ContentModerationPage = () => {
                   <p className="font-roboto text-[12px] font-medium leading-[16px] text-dark-gray mb-1">
                     {t('admin.contentModeration.table.columns.questionTitle') || "Question Title"}
                   </p>
-                  <p className="font-roboto text-[12px] font-normal leading-[16px] text-oxford-blue mb-2 line-clamp-2">
-                    {item.question || item.questionText || "N/A"}
-                  </p>
+                  <p 
+                    className="font-roboto text-[12px] font-normal leading-[16px] text-oxford-blue mb-2 line-clamp-2"
+                    dangerouslySetInnerHTML={{ 
+                      __html: cleanHtmlForDisplay(item.question || item.questionText || "N/A") 
+                    }}
+                  />
                   <p className="font-roboto text-[12px] font-normal leading-[16px] text-dark-gray">
                     {getQuestionTypeDisplay(item.questionType)}
                   </p>
@@ -718,7 +725,12 @@ const ContentModerationPage = () => {
             <div className="space-y-4">
               <div>
                 <p className="text-[14px] font-roboto font-medium text-dark-gray mb-1">Question:</p>
-                <p className="text-[16px] font-roboto text-oxford-blue">{selectedQuestion.question || selectedQuestion.questionText || "N/A"}</p>
+                <div 
+                  className="text-[16px] font-roboto text-oxford-blue"
+                  dangerouslySetInnerHTML={{ 
+                    __html: cleanHtmlForDisplay(selectedQuestion.question || selectedQuestion.questionText || "N/A") 
+                  }}
+                />
               </div>
               {selectedQuestion.options && (
                 <div>
