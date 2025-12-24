@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { flag, setting, listcheck } from '../icons';
 import { useLanguage } from '../../../../context/LanguageContext';
 import studentQuestionsAPI from '../../../../api/studentQuestions';
-import { toast } from 'react-toastify';
+import { showSuccessToast, showErrorToast } from '../../../../utils/toastConfig';
 
 const StudyModeHeader = ({
   currentIndex,
@@ -222,21 +222,21 @@ const StudyModeHeader = ({
               <button
                 onClick={async () => {
                   if (!flagReason.trim()) {
-                    toast.error(t('dashboard.questionSession.flagReasonRequired') || 'Please provide a reason');
+                    showErrorToast(t('dashboard.questionSession.flagReasonRequired') || 'Please provide a reason');
                     return;
                   }
                   if (!currentQuestion?.id) {
-                    toast.error('Question ID is missing');
+                    showErrorToast('Question ID is missing');
                     return;
                   }
                   setIsFlagging(true);
                   try {
                     await studentQuestionsAPI.flagQuestion(currentQuestion.id, flagReason);
-                    toast.success(t('dashboard.questionSession.flagSuccess') || 'Question flagged successfully');
+                    showSuccessToast(t('dashboard.questionSession.flagSuccess') || 'Question flagged successfully');
                     setShowFlagModal(false);
                     setFlagReason('');
                   } catch (error) {
-                    toast.error(error.message || t('dashboard.questionSession.flagError') || 'Failed to flag question');
+                    showErrorToast(error.message || t('dashboard.questionSession.flagError') || 'Failed to flag question');
                   } finally {
                     setIsFlagging(false);
                   }

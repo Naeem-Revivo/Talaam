@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import Dropdown from "../../components/shared/Dropdown";
 import questionsAPI from "../../api/questions";
-import { toast } from "react-toastify";
+import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 import Loader from "../../components/common/Loader";
 import { cleanHtmlForDisplay } from "../../utils/textUtils";
 
@@ -35,7 +35,7 @@ const ContentModerationPage = () => {
       setFlaggedContent(response.data.questions || []);
       setCurrentPage(1); // Reset to first page on new filter
     } catch (error) {
-      toast.error(error.message || "Failed to fetch flagged questions");
+      showErrorToast(error.message || "Failed to fetch flagged questions");
     } finally {
       setLoading(false);
     }
@@ -113,10 +113,10 @@ const ContentModerationPage = () => {
     setIsProcessing(true);
     try {
       await questionsAPI.approveStudentFlag(id);
-      toast.success("Flag approved. Question sent to processor.");
+      showSuccessToast("Flag approved. Question sent to processor.");
       fetchFlaggedQuestions();
     } catch (error) {
-      toast.error(error.message || "Failed to approve flag");
+      showErrorToast(error.message || "Failed to approve flag");
     } finally {
       setIsProcessing(false);
     }
@@ -133,7 +133,7 @@ const ContentModerationPage = () => {
 
   const handleRejectSubmit = async () => {
     if (!rejectReason.trim()) {
-      toast.error("Please provide a rejection reason");
+      showErrorToast("Please provide a rejection reason");
       return;
     }
     if (!selectedQuestion) return;
@@ -141,13 +141,13 @@ const ContentModerationPage = () => {
     setIsProcessing(true);
     try {
       await questionsAPI.rejectStudentFlag(selectedQuestion.id, rejectReason);
-      toast.success("Flag rejected. Student will be notified.");
+      showSuccessToast("Flag rejected. Student will be notified.");
       setShowRejectModal(false);
       setRejectReason("");
       setSelectedQuestion(null);
       fetchFlaggedQuestions();
     } catch (error) {
-      toast.error(error.message || "Failed to reject flag");
+      showErrorToast(error.message || "Failed to reject flag");
     } finally {
       setIsProcessing(false);
     }
@@ -198,7 +198,7 @@ const ContentModerationPage = () => {
       }
 
       if (!allFilteredData || allFilteredData.length === 0) {
-        toast.error("No data to export");
+        showErrorToast("No data to export");
         return;
       }
 
@@ -253,10 +253,10 @@ const ContentModerationPage = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      toast.success(`Exported ${allFilteredData.length} flagged questions successfully`);
+      showSuccessToast(`Exported ${allFilteredData.length} flagged questions successfully`);
     } catch (error) {
       console.error("Error exporting content moderation data:", error);
-      toast.error("Failed to export data. Please try again.");
+      showErrorToast("Failed to export data. Please try again.");
     }
   };
 
