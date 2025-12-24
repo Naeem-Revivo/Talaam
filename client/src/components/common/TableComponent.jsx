@@ -67,6 +67,7 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
           const baseValue = isVariantStatus ? value.replace(' - Variant', '').trim() : value;
           
           const isApproved = baseValue.toLowerCase() === "approved";
+          const isCompleted = baseValue.toLowerCase() === "completed";
           const isPending = baseValue.toLowerCase() === "pending" || baseValue.toLowerCase() === "pending review";
           const isSentBack = baseValue.toLowerCase() === "sent back";
           const isReject = baseValue.toLowerCase() === "reject" || baseValue.toLowerCase() === "rejected";
@@ -94,8 +95,8 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
                       ? "bg-red-100 text-red-700"
                       : isVariantCreated || isVariant
                       ? "bg-blue-100 text-blue-700"
-                      : isApproved
-                      ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : isApproved || isCompleted
+                      ? "bg-green-100 text-green-700"
                       : isPaid
                       ? "bg-[#FDF0D5] text-[#ED4122]"
                       : isFailed
@@ -404,6 +405,7 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
             const baseValue = isVariantStatus ? value.replace(' - Variant', '').trim() : value;
             
             const isApproved = baseValue.toLowerCase() === "approved";
+            const isCompleted = baseValue.toLowerCase() === "completed";
             const isPending = baseValue.toLowerCase() === "pending" || baseValue.toLowerCase() === "pending review";
             const isSentBack = baseValue.toLowerCase() === "sent back";
             const isReject = baseValue.toLowerCase() === "reject" || baseValue.toLowerCase() === "rejected";
@@ -431,8 +433,8 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
                         ? "bg-red-100 text-red-700"
                         : isVariantCreated || isVariant
                         ? "bg-blue-100 text-blue-700"
-                        : isApproved
-                        ? "bg-[#FDF0D5] text-[#ED4122]"
+                        : isApproved || isCompleted
+                        ? "bg-green-100 text-green-700"
                         : isaccept
                         ? "bg-[#FDF0D5] text-[#ED4122]"
                         : isVisible
@@ -782,21 +784,34 @@ export const Table = ({
   showPagination = true,
   onShowFlagReason,
   onShowRejectionReason,
+  loading = false,
+  loadingComponent,
 }) => {
   const { t, language } = useLanguage();
   const dir = language === "ar" ? "rtl" : "ltr";
   return (
     <section
       className={`w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard ${
-        items.length > 0 ? "min-h-auto" : "min-h-[300px]"
+        items.length > 0 || loading ? "min-h-auto" : "min-h-[300px]"
       }`}
       dir={dir}
     >
-      <div className={`hidden overflow-x-auto md:block ${items.length > 0 ? "" : "flex items-center justify-center min-h-[300px]"}`}>
-        <table className={`min-w-full border-collapse ${items.length > 0 ? "" : "h-full"}`}>
+      <div className={`hidden overflow-x-auto md:block ${items.length > 0 || loading ? "" : "flex items-center justify-center min-h-[300px]"}`}>
+        <table className={`min-w-full border-collapse ${items.length > 0 || loading ? "" : "h-full"}`}>
           <TableHeader columns={columns} />
           <tbody>
-            {items.length ? (
+            {loading ? (
+              <tr>
+                <td
+                  colSpan={columns.length}
+                  className="px-6 py-10 text-center text-sm text-dark-gray h-full"
+                >
+                  <div className="flex items-center justify-center min-h-[200px]">
+                    {loadingComponent || <div className="text-oxford-blue">Loading...</div>}
+                  </div>
+                </td>
+              </tr>
+            ) : items.length ? (
               items.map((item) => (
                 <TableRow
                   key={item.id}
@@ -824,8 +839,12 @@ export const Table = ({
           </tbody>
         </table>
       </div>
-      <div className={`flex flex-col gap-4 p-2 md:hidden ${items.length > 0 ? "" : "min-h-[300px] flex items-center justify-center"}`}>
-        {items.length ? (
+      <div className={`flex flex-col gap-4 p-2 md:hidden ${items.length > 0 || loading ? "" : "min-h-[300px] flex items-center justify-center"}`}>
+        {loading ? (
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-dark-gray shadow-empty min-h-[200px] flex items-center justify-center w-full">
+            {loadingComponent || <div className="text-oxford-blue">Loading...</div>}
+          </div>
+        ) : items.length ? (
           items.map((item) => (
             <MobileCard
               key={item.id}
@@ -844,7 +863,7 @@ export const Table = ({
           </div>
         )}
       </div>
-      {showPagination && (
+      {showPagination && !loading && (
         <Pagination
           page={page}
           pageSize={pageSize}

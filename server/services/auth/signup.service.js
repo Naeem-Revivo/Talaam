@@ -4,7 +4,7 @@ const { generateToken } = require('../../config/jwt');
 /**
  * Signup a new user
  */
-const signup = async (email, password, otp, otpExpiry, role = 'student') => {
+const signup = async (email, password, otp, otpExpiry, role = 'student', country, language, fullName) => {
   // Normalize email to lowercase and trim (preserve + aliases)
   const normalizedEmail = email ? email.trim().toLowerCase() : email;
 
@@ -19,6 +19,10 @@ const signup = async (email, password, otp, otpExpiry, role = 'student') => {
     throw new Error('Invalid role. Role must be either student or admin');
   }
 
+  const derivedName = fullName
+  ? fullName.trim().split(/\s+/)[0]
+  : null;
+
   // Create user data
   const userData = {
     email: normalizedEmail,
@@ -26,6 +30,10 @@ const signup = async (email, password, otp, otpExpiry, role = 'student') => {
     otp,
     otpExpiry,
     role: role || 'student',
+    country: country || 'unspecified',
+    language: language || 'en',
+    fullName: fullName || null,
+    name: derivedName || null,
   };
 
   // If role is admin, set default adminRole to null (superadmin will assign later)

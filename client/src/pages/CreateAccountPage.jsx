@@ -1,8 +1,9 @@
 import React from 'react';
 import CreateAccount from '../components/auth/CreateAccount';
+import UnifiedCreateAccount from '../components/auth/UnifiedCreateAccount';
 
 const CreateAccountPage = () => {
-  return <CreateAccount />;
+  return <UnifiedCreateAccount />;
 };
 
 export default CreateAccountPage;
