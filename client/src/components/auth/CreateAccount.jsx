@@ -307,7 +307,7 @@ const CreateAccount = () => {
             </div>
 
             {/* Password Requirements */}
-            <div className="grid grid-cols-3 gap-2">
+            {/* <div className="grid grid-cols-3 gap-2">
               <div className="flex items-center">
                 <span className={`mr-2 w-[10px] h-[10px] rounded-full ${passwordRequirements.minLength ? 'bg-green-500' : 'bg-[#D9D9D9]'}`}></span>
                 <span className="font-roboto font-normal text-[12px] leading-[100%] tracking-[0] text-dark-gray">
@@ -338,7 +338,7 @@ const CreateAccount = () => {
                   {t('createAccount.passwordRequirements.1number')}
                 </span>
               </div>
-            </div>
+            </div> */}
             
             {/* Password Requirements Error */}
             {errors.passwordRequirements && (

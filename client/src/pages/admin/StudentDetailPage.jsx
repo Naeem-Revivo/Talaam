@@ -514,7 +514,7 @@ const StudentDetailPage = () => {
           <button
             type="button"
             onClick={handleBack}
-            className="h-[36px] w-full sm:w-[113px] rounded-[8px] border border-[#E5E7EB] bg-white text-[16px] font-normal font-semibold text-oxford-blue transition hover:bg-[#F3F4F6]"
+            className="h-[36px] w-full sm:w-[113px] rounded-[8px] border border-[#E5E7EB] bg-white text-[16px] font-normal text-oxford-blue transition hover:bg-[#F3F4F6]"
           >
             {t('admin.studentDetail.actions.back')}
           </button>

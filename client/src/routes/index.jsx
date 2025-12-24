@@ -133,9 +133,9 @@ export const AppRoutes = () => {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/question-banks" element={<QuestionBankPage />} />
       {/* Public Auth Routes - Redirect authenticated users to dashboard */}
+      <Route path="/create-account" element={<CreateAccountPage />} />
       <Route element={<PublicRoute />}>
       <Route path="/signupfree" element={<SignUpFreePage />} />
-      <Route path="/create-account" element={<CreateAccountPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/forgot-modal" element={<ForgotModalPage />} />

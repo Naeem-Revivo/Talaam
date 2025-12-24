@@ -1,4 +1,6 @@
-const StatsCards = ({ stats }) => {
+import { memo } from "react";
+
+const StatsCards = memo(({ stats }) => {
   return (
     <div className="flex flex-col md:flex-row gap-4">
       {stats.map((item, index) => (
@@ -25,6 +27,8 @@ const StatsCards = ({ stats }) => {
       ))}
     </div>
   );
-};
+});
+
+StatsCards.displayName = "StatsCards";
 
 export default StatsCards;

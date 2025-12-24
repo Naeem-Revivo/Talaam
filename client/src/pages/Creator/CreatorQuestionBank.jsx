@@ -659,7 +659,7 @@ const CreatorQuestionBank = () => {
               items={questionsData.slice((currentPage - 1) * 10, currentPage * 10)}
               columns={QuestionsColumns}
               page={currentPage}
-            pageSize={10}
+              pageSize={10}
               total={totalQuestions}
               onPageChange={setCurrentPage}
               onView={handleView}
