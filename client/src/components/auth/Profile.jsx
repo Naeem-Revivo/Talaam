@@ -178,7 +178,8 @@ const Profile = () => {
         // Refresh user data to get updated profile
         await dispatch(fetchCurrentUser())
         
-        navigate('/dashboard', { replace: true })
+        // Redirect to subscription bridge - it will check subscription and route accordingly
+        navigate('/subscription-bridge', { replace: true })
       } else {
         // Extract error message from API response
         const errorMessage = 

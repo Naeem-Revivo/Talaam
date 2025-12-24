@@ -14,8 +14,9 @@ const plansAPI = {
     }
   },
 
-  // Get all plans
-  // GET /api/admin/plans
+  // Get all plans (public first, fallback to admin)
+  // Public: GET /api/public/plans (active plans only)
+  // Authenticated: GET /api/admin/plans
   getAllPlans: async (params = {}) => {
     try {
       const { status } = params;
@@ -23,12 +24,21 @@ const plansAPI = {
       
       if (status) queryParams.append('status', status);
 
-      const url = queryParams.toString()
-        ? `/admin/plans?${queryParams.toString()}`
-        : '/admin/plans';
-
-      const response = await axiosClient.get(url);
-      return response.data;
+      // Try public endpoint first (works without auth)
+      try {
+        const publicUrl = queryParams.toString()
+          ? `/public/plans?${queryParams.toString()}`
+          : '/public/plans';
+        const response = await axiosClient.get(publicUrl);
+        return response.data;
+      } catch (publicErr) {
+        // Fallback to authenticated admin endpoint
+        const url = queryParams.toString()
+          ? `/admin/plans?${queryParams.toString()}`
+          : '/admin/plans';
+        const response = await axiosClient.get(url);
+        return response.data;
+      }
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Failed to fetch plans' };

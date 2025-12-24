@@ -13,6 +13,28 @@ const TestModeHeader = ({
 }) => {
   const { t } = useLanguage();
   const [timeDisplay, setTimeDisplay] = useState('00:00:00');
+  const [studentId, setStudentId] = useState('');
+
+  // Load student id from stored user object
+  useEffect(() => {
+    try {
+      const stored =
+        localStorage.getItem('user') || sessionStorage.getItem('user');
+      if (stored) {
+        const user = JSON.parse(stored);
+        const id =
+          user?.studentId ||
+          user?.studentID ||
+          user?.id ||
+          user?._id ||
+          '';
+        setStudentId(id);
+      }
+    } catch (err) {
+      // Ignore parse errors; non-blocking for header
+      setStudentId('');
+    }
+  }, []);
 
   // Format time as HH:MM:SS
   const formatTime = (milliseconds) => {
@@ -83,7 +105,7 @@ const TestModeHeader = ({
         </div>
 
         <div className="hidden md:flex items-center gap-4 flex-wrap flex-1 justify-center">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => onNavigate(-1)}
               disabled={currentIndex === 0}
@@ -102,6 +124,11 @@ const TestModeHeader = ({
             >
               {t('dashboard.questionSession.actions.next')}
             </button>
+            {studentId && (
+              <span className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto">
+                Student ID: <span className="font-semibold text-oxford-blue">{studentId}</span>
+              </span>
+            )}
           </div>
         </div>
 

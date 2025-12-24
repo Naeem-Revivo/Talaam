@@ -5,7 +5,7 @@ const studentsAPI = {
   // Get all students with filtering and pagination
   getAllStudents: async (params = {}) => {
     try {
-      const { page = 1, limit = 5, status, plan, date, search } = params;
+      const { page = 1, limit = 5, status, plan, date, search, studentId } = params;
       const queryParams = new URLSearchParams();
       
       if (page) queryParams.append('page', page);
@@ -14,6 +14,7 @@ const studentsAPI = {
       if (plan) queryParams.append('plan', plan);
       if (date) queryParams.append('date', date);
       if (search) queryParams.append('search', search);
+      if (studentId) queryParams.append('studentId', studentId);
       
       const response = await axiosClient.get(`/admin/students?${queryParams.toString()}`);
       return response.data;

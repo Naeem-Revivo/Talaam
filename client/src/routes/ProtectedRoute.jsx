@@ -1,6 +1,8 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useState, useEffect } from 'react';
 import { isProfileComplete } from '../utils/profileUtils';
+import subscriptionAPI from '../api/subscription';
 
 // Guard that ONLY uses Redux auth state
 export const ProtectedRoute = () => {
@@ -15,6 +17,8 @@ export const ProtectedRoute = () => {
 // Role-based guard that ONLY uses Redux auth state
 export const RoleRoute = ({ allow = [] }) => {
   const { isAuthenticated, user } = useSelector((state) => state.auth || {});
+  const [checkingSubscription, setCheckingSubscription] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(null);
 
   // Normalize role from Redux user
   // Backend currently uses 'student' for regular users → map to 'user' to match existing routes
@@ -22,9 +26,55 @@ export const RoleRoute = ({ allow = [] }) => {
   const role =
     backendRole === 'student' ? 'user' : backendRole || null;
   const adminRole = user?.adminRole;
+  const isUserRole = allow.includes('user') && (role === 'user' || role === 'student');
+
+  // Check subscription for user/student routes
+  useEffect(() => {
+    if (!isAuthenticated || !isUserRole) {
+      return;
+    }
+
+    const checkSubscription = async () => {
+      try {
+        setCheckingSubscription(true);
+        const response = await subscriptionAPI.getMySubscription();
+        if (response.success && response.data?.subscription) {
+          const sub = response.data.subscription;
+          const isActive =
+            sub.isActive === true &&
+            sub.paymentStatus === 'Paid' &&
+            new Date(sub.expiryDate) > new Date();
+          setHasActiveSubscription(isActive);
+        } else {
+          setHasActiveSubscription(false);
+        }
+      } catch (error) {
+        console.error('Error checking subscription:', error);
+        setHasActiveSubscription(false);
+      } finally {
+        setCheckingSubscription(false);
+      }
+    };
+
+    checkSubscription();
+  }, [isAuthenticated, isUserRole]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Show loading while checking subscription for user routes
+  if (isUserRole && checkingSubscription) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-oxford-blue text-lg">Checking subscription...</div>
+      </div>
+    );
+  }
+
+  // For user/student routes, check subscription
+  if (isUserRole && hasActiveSubscription === false) {
+    return <Navigate to="/question-banks" replace />;
   }
 
   if (allow.length > 0) {

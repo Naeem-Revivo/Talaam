@@ -1,28 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { mind, book, add, feature, lock, arrowup, tick } from "../../assets/svg";
-import { useLanguage } from "../../context/LanguageContext";
-import plansAPI from "../../api/plans";
-import subscriptionAPI from "../../api/subscription";
-import { showErrorToast } from "../../utils/toastConfig";
-import Loader from "../common/Loader";
+import { useNavigate } from "react-router-dom";
+import { book, add, feature, lock, arrowup, tick } from "../assets/svg";
+import { useLanguage } from "../context/LanguageContext";
+import plansAPI from "../api/plans";
+import subscriptionAPI from "../api/subscription";
+import Loader from "../components/common/Loader";
 
-const QuestionBankDashboard = () => {
+const SubscriptionBridgePage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [checkingSub, setCheckingSub] = useState(false);
+  const [checkingSubscription, setCheckingSubscription] = useState(true);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [error, setError] = useState(null);
+  const [loadcheckingSubscription, setLoadcheckingSubscription] = useState(false);
 
+  // Check subscription status first - this is the bridge logic
+  useEffect(() => {
+    setLoadcheckingSubscription(true);
+    const checkSubscription = async () => {
+      try {
+        setCheckingSubscription(true);
+        const response = await subscriptionAPI.getMySubscription();
+        if (response.success && response.data?.subscription) {
+          const sub = response.data.subscription;
+          const isActive =
+            sub.isActive === true &&
+            sub.paymentStatus === "Paid" &&
+            new Date(sub.expiryDate) > new Date();
+          
+          if (isActive) {
+            // User has active subscription - redirect to dashboard
+            setHasActiveSubscription(true);
+            navigate("/dashboard", { replace: true });
+            return;
+          }
+        }
+        // No active subscription - stay on page to show plans
+        setHasActiveSubscription(false);
+      } catch (err) {
+        console.error("Error checking subscription:", err);
+        // If error (e.g., no subscription), stay on page to show plans
+        setHasActiveSubscription(false);
+      } finally {
+        setCheckingSubscription(false);
+        setLoadcheckingSubscription(false);
+      }
+    };
+
+    checkSubscription();
+  }, [navigate]);
+
+  // Load plans
   useEffect(() => {
     const loadPlans = async () => {
       try {
         setLoading(true);
         setError(null);
-        // Fetch active plans; backend should filter for non-admin users
         const response = await plansAPI.getAllPlans({ status: "active" });
         if (response.success && response.data?.plans) {
           setPlans(response.data.plans);
@@ -41,64 +76,12 @@ const QuestionBankDashboard = () => {
     loadPlans();
   }, []);
 
-  // Check subscription status when user is authenticated
-  useEffect(() => {
-    const token =
-      localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-    const user = localStorage.getItem("user") || sessionStorage.getItem("user");
-
-    if (!token || !user) {
-      return;
-    }
-
-    const checkSub = async () => {
-      try {
-        setCheckingSub(true);
-        const response = await subscriptionAPI.getMySubscription();
-        if (response.success && response.data?.subscription) {
-          const sub = response.data.subscription;
-          const isActive =
-            sub.isActive === true &&
-            sub.paymentStatus === "Paid" &&
-            new Date(sub.expiryDate) > new Date();
-          setHasActiveSubscription(isActive);
-        } else {
-          setHasActiveSubscription(false);
-        }
-      } catch (err) {
-        console.error("Error checking subscription:", err);
-        setHasActiveSubscription(false);
-      } finally {
-        setCheckingSub(false);
-      }
-    };
-
-    checkSub();
-  }, [searchParams]);
-
   const handleSubscribe = (planId) => {
     if (!planId) return;
-    const token =
-      localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-    const user = localStorage.getItem("user") || sessionStorage.getItem("user");
-
-    if (!token || !user) {
-      // Remember where to return after login/signup
-      const redirectTarget = `/question-banks?planId=${planId}`;
-      localStorage.setItem("redirectAfterLogin", redirectTarget);
-      sessionStorage.setItem("redirectAfterLogin", redirectTarget);
-      navigate("/login");
-      return;
-    }
-
-    // Authenticated: if already subscribed, go to dashboard; otherwise payment
-    if (hasActiveSubscription) {
-      navigate("/dashboard");
-    } else {
-      navigate(`/moyassar-payment?planId=${planId}`);
-    }
+    // User is authenticated (they reached this page), so go directly to payment
+    navigate(`/moyassar-payment?planId=${planId}`);
   };
-  
+
   const exams = [
     {
       id: 1,
@@ -113,6 +96,15 @@ const QuestionBankDashboard = () => {
       isPlaceholder: true,
     },
   ];
+
+  // Show loading while checking subscription
+  if (checkingSubscription) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader size="lg" text={t("dashboard.loading") || "Checking subscription..."} />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -141,17 +133,12 @@ const QuestionBankDashboard = () => {
             </div>
           ) : (
             plans.map((plan) => {
-              const isSubscribed = false; // Placeholder; can be wired to subscription status if available
-              const statusText = isSubscribed
-                ? t("questionBanks.exams.subscribed")
-                : t("questionBanks.exams.notSubscribed");
-              const buttonText = isSubscribed
-                ? t("questionBanks.exams.startStudying")
-                : t("questionBanks.exams.upgradeToAccess");
-              const statusColor = isSubscribed ? "bg-orange-dark" : "bg-[#FDF0D5]";
-              const textColor = isSubscribed ? "text-white" : "text-orange-dark";
-              const statusIcon = isSubscribed ? tick : lock;
-              const statusIconBg = isSubscribed ? "bg-white" : "bg-orange-dark";
+              const statusText = t("questionBanks.exams.notSubscribed");
+              const buttonText = t("questionBanks.exams.upgradeToAccess");
+              const statusColor = "bg-[#FDF0D5]";
+              const textColor = "text-orange-dark";
+              const statusIcon = lock;
+              const statusIconBg = "bg-orange-dark";
               const icon = plan.icon || book;
               const iconBgColor = "bg-oxford-blue";
 
@@ -239,9 +226,7 @@ const QuestionBankDashboard = () => {
                 ) : (
                   <>
                     {/* Top Section - Icon, Title, Status */}
-                    {/* All in one line */}
                     <div className="flex items-center justify-between mb-7 md:mb-auto lg:mb-auto w-full lg:w-[530px] pt-2 md:pt-4 lg:pt-5 gap-2 lg:gap-0">
-                      {/* Icon and Title */}
                       <div className="flex items-center gap-3 md:gap-6 lg:gap-7 flex-1 min-w-0">
                         <div
                           className={`${exam.iconBgColor} rounded-xl flex items-center justify-center flex-shrink-0 w-10 h-10 md:w-14 md:h-14 lg:w-auto lg:h-auto p-1.5 md:p-3 lg:p-0`}
@@ -252,30 +237,7 @@ const QuestionBankDashboard = () => {
                           {exam.name}
                         </h3>
                       </div>
-                      {/* Status Button */}
-                      <div
-                        className={`${exam.statusColor} px-2 py-1 md:px-2.5 md:py-1.5 lg:px-3 lg:py-1.5 rounded-full flex items-center gap-1 md:gap-1.5 lg:gap-1.5 ${
-                          exam.status === t("questionBanks.exams.notSubscribed") ? "w-[129px] md:w-auto" : "w-[105px] md:w-auto"
-                        } h-[24px] lg:w-auto lg:h-auto justify-center flex-shrink-0`}
-                      >
-                        <div className={`${exam.statusIconBg} w-4 h-4 md:w-5.5 md:h-5.5 lg:w-6 lg:h-6 rounded-full flex items-center justify-center`}>
-                          <img src={exam.statusIcon} alt="" className="w-[7px] h-[9px] md:w-[9px] md:h-[11px] lg:w-[10px] lg:h-[12px]" />
-                        </div>
-                        <span className={`${exam.textColor} font-roboto font-normal text-[11px] md:text-[14px] lg:text-[16px] leading-[100%] tracking-[0]`}>
-                          {exam.status}
-                        </span>
-                      </div>
                     </div>
-
-                    {/* Bottom Section - Action Button */}
-                    <button className="w-full lg:w-[530px] h-[40px] md:h-[52px] lg:h-[54px] rounded-lg bg-gradient-to-r from-orange-dark to-orange-light text-white hover:opacity-90 transition-opacity font-archivo font-semibold text-[11px] md:text-[13px] lg:text-[14px] leading-[14px] tracking-[0] align-middle uppercase">
-                      <div className="flex items-center justify-center gap-1.5">
-                        {exam.buttonText === t("questionBanks.exams.upgradeToAccess") && (
-                          <p><img src={arrowup} alt="" className="w-[9px] h-[11px] md:w-[11px] md:h-[13px] lg:w-[12px] lg:h-[14px]" /></p>
-                        )}
-                        <p className="">{exam.buttonText}</p>
-                      </div>
-                    </button>
                   </>
                 )}
               </div>
@@ -287,4 +249,5 @@ const QuestionBankDashboard = () => {
   );
 };
 
-export default QuestionBankDashboard;
+export default SubscriptionBridgePage;
+

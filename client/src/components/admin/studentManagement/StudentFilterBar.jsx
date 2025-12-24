@@ -6,10 +6,12 @@ import plansAPI from "../../../api/plans";
 
 const StudentFilterBar = ({
   searchValue,
+  studentIdValue,
   planValue,
   statusValue,
   dateValue,
   onSearchChange,
+  onStudentIdChange,
   onPlanChange,
   onStatusChange,
   onDateChange,
@@ -87,6 +89,7 @@ const StudentFilterBar = ({
 
   const handleRefresh = () => {
     onSearchChange?.("");
+    onStudentIdChange?.("");
     onPlanChange?.("");
     onStatusChange?.("");
     onDateChange?.("");
@@ -95,7 +98,8 @@ const StudentFilterBar = ({
 
   return (
     <section className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-4 xl:gap-6 2xl:gap-8">
-      <label className="relative flex items-center w-full lg:max-w-[400px] xl:max-w-[500px] 2xl:max-w-[600px]">
+      <div className="flex flex-col w-full lg:max-w-[400px] xl:max-w-[500px] 2xl:max-w-[600px] gap-2">
+        <label className="relative flex items-center w-full">
         <span className="sr-only">Search students</span>
         <input
           type="text"
@@ -119,7 +123,8 @@ const StudentFilterBar = ({
             strokeWidth="0.5"
           />
         </svg>
-      </label>
+        </label>
+      </div>
 
       {/* Mobile & Tablet filter trigger */}
       <div className="relative flex justify-start lg:hidden" ref={mobileFilterRef}>

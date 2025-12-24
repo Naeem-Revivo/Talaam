@@ -31,12 +31,14 @@ const StudentManagementPage = () => {
   // Local state for all filters and pagination
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
+  const [studentIdInput, setStudentIdInput] = useState("");
   const [planFilter, setPlanFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   
   // Debounce the search input (500ms delay)
   const debouncedSearch = useDebounce(searchInput, 500);
+  const debouncedStudentId = useDebounce(studentIdInput, 500);
   
   // Use ref to track previous values and prevent unnecessary API calls
   const prevParamsRef = useRef(null);
@@ -46,6 +48,9 @@ const StudentManagementPage = () => {
   const [pagination, setPagination] = useState(null);
   const [statistics, setStatistics] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
+
+
+  console.log("Students:", students);
 
   // Load statistics from API
   useEffect(() => {
@@ -82,7 +87,8 @@ const StudentManagementPage = () => {
       prevParamsRef.current.planFilter !== planFilter ||
       prevParamsRef.current.statusFilter !== statusFilter ||
       prevParamsRef.current.dateFilter !== dateFilter ||
-      prevParamsRef.current.debouncedSearch !== debouncedSearch;
+      prevParamsRef.current.debouncedSearch !== debouncedSearch ||
+      prevParamsRef.current.debouncedStudentId !== debouncedStudentId;
     
     if (!paramsChanged) {
       return;
@@ -91,6 +97,7 @@ const StudentManagementPage = () => {
     const isFilterOnly = !isFirstLoad && 
                          prevParamsRef.current.page === page &&
                          (prevParamsRef.current.debouncedSearch !== debouncedSearch ||
+                          prevParamsRef.current.debouncedStudentId !== debouncedStudentId ||
                           prevParamsRef.current.planFilter !== planFilter ||
                           prevParamsRef.current.statusFilter !== statusFilter ||
                           prevParamsRef.current.dateFilter !== dateFilter);
@@ -98,11 +105,12 @@ const StudentManagementPage = () => {
     const isPageOnly = !isFirstLoad &&
                        prevParamsRef.current.page !== page &&
                        prevParamsRef.current.debouncedSearch === debouncedSearch &&
+                       prevParamsRef.current.debouncedStudentId === debouncedStudentId &&
                        prevParamsRef.current.planFilter === planFilter &&
                        prevParamsRef.current.statusFilter === statusFilter &&
                        prevParamsRef.current.dateFilter === dateFilter;
     
-    prevParamsRef.current = { page, planFilter, statusFilter, dateFilter, debouncedSearch };
+    prevParamsRef.current = { page, planFilter, statusFilter, dateFilter, debouncedSearch, debouncedStudentId };
     
     const loadStudents = async () => {
       try {
@@ -110,7 +118,7 @@ const StudentManagementPage = () => {
           setLoading(true);
         }
         
-        const currentPage = (debouncedSearch || planFilter || statusFilter || dateFilter) ? 1 : page;
+        const currentPage = (debouncedSearch || debouncedStudentId || planFilter || statusFilter || dateFilter) ? 1 : page;
         
         // Map filter values to API format
         // Normalize date filter: "Today" -> "today", "This Week" -> "thisWeek", etc.
@@ -137,6 +145,7 @@ const StudentManagementPage = () => {
           ...(planFilter && planFilter.toLowerCase() !== 'all' && { plan: planFilter }),
           ...(normalizedDate && { date: normalizedDate }),
           ...(debouncedSearch && { search: debouncedSearch }),
+          ...(debouncedStudentId && { studentId: debouncedStudentId }),
         };
         
         const response = await studentsAPI.getAllStudents(params);
@@ -279,6 +288,10 @@ const StudentManagementPage = () => {
           dateValue={dateFilter}
           onSearchChange={(value) => {
             setSearchInput(value);
+          }}
+          studentIdValue={studentIdInput}
+          onStudentIdChange={(value) => {
+            setStudentIdInput(value);
           }}
           onPlanChange={(value) => {
             setPlanFilter(value);
