@@ -2,7 +2,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import { PrimaryButton } from "../../components/common/Button";
 import StatsCards from "../../components/common/StatsCards";
 import { Table } from "../../components/common/TableComponent";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import ReviewFeedback from "../../components/gatherer/ReviewFeedback";
 import WorkflowProgress from "../../components/gatherer/WorkflowProgress";
 import RecentActivity from "../../components/gatherer/RecentActiveity";
@@ -11,6 +11,7 @@ import { UploadFileModal } from "../../components/gatherer/UploadFileModal";
 import questionsAPI from "../../api/questions";
 import Dropdown from "../../components/shared/Dropdown";
 import Loader from "../../components/common/Loader";
+import ReasonModal from "../../components/common/ReasonModal";
 
 const GathererQuestionBank = () => {
   const { t } = useLanguage();
@@ -32,6 +33,7 @@ const GathererQuestionBank = () => {
     { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: 0, color: "red" },
     { label: t("gatherer.questionBank.stats.rejected"), value: 0, color: "red" },
   ]);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   const handleSubmit = (data) => {
     console.log("Submitted:", data);
@@ -88,7 +90,47 @@ const GathererQuestionBank = () => {
     return statusMap[status] || status;
   };
 
-  // Fetch questions from API
+  // Fetch stats separately - only once on mount, not affected by status filter
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
+        // Fetch stats without any status filter
+        const response = await questionsAPI.getGathererQuestions({ page: 1, limit: 1 });
+        
+        if (response.success && response.data) {
+          const pagination = response.data.pagination || {};
+          
+          // Get stats from API response if available
+          if (response.data.summary) {
+            const summary = response.data.summary;
+            setStats([
+              { label: t("gatherer.questionBank.stats.questionAdded"), value: summary.totalSubmitted || 0, color: "blue" },
+              { label: t("gatherer.questionBank.stats.pendingReview"), value: summary.totalPending || 0, color: "red" },
+              { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: summary.totalAccepted || 0, color: "red" },
+              { label: t("gatherer.questionBank.stats.rejected"), value: summary.totalRejected || 0, color: "red" },
+            ]);
+          } else {
+            // Fallback: use totalItems from pagination
+            setStats([
+              { label: t("gatherer.questionBank.stats.questionAdded"), value: pagination.totalItems || 0, color: "blue" },
+              { label: t("gatherer.questionBank.stats.pendingReview"), value: 0, color: "red" },
+              { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: 0, color: "red" },
+              { label: t("gatherer.questionBank.stats.rejected"), value: 0, color: "red" },
+            ]);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [t]); // Only fetch stats once on mount
+
+  // Fetch questions from API - affected by status filter and page
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
@@ -149,41 +191,10 @@ const GathererQuestionBank = () => {
           
           // Use pagination totalItems from API response
           setTotalQuestions(pagination.totalItems || 0);
-
-          // Get stats from API response if available, otherwise calculate from current page
-          if (response.data.summary) {
-            const summary = response.data.summary;
-            setStats([
-              { label: t("gatherer.questionBank.stats.questionAdded"), value: summary.totalSubmitted || 0, color: "blue" },
-              { label: t("gatherer.questionBank.stats.pendingReview"), value: summary.totalPending || 0, color: "red" },
-              { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: summary.totalAccepted || 0, color: "red" },
-              { label: t("gatherer.questionBank.stats.rejected"), value: summary.totalRejected || 0, color: "red" },
-            ]);
-          } else {
-            // Fallback: calculate stats from current page questions (not ideal but better than nothing)
-            const pendingReview = questions.filter(q => q.status === "pending_processor").length;
-            const acceptedByProcessor = questions.filter(q => 
-              q.status === "pending_creator" || q.status === "pending_explainer" || q.status === "completed"
-            ).length;
-            const rejected = questions.filter(q => q.status === "rejected").length;
-
-            setStats([
-              { label: t("gatherer.questionBank.stats.questionAdded"), value: pagination.totalItems || 0, color: "blue" },
-              { label: t("gatherer.questionBank.stats.pendingReview"), value: pendingReview, color: "red" },
-              { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: acceptedByProcessor, color: "red" },
-              { label: t("gatherer.questionBank.stats.rejected"), value: rejected, color: "red" },
-            ]);
-          }
         } else {
           // No questions found
           setGathererData([]);
           setTotalQuestions(0);
-          setStats([
-            { label: t("gatherer.questionBank.stats.questionAdded"), value: 0, color: "blue" },
-            { label: t("gatherer.questionBank.stats.pendingReview"), value: 0, color: "red" },
-            { label: t("gatherer.questionBank.stats.acceptedByProcessor"), value: 0, color: "red" },
-            { label: t("gatherer.questionBank.stats.rejected"), value: 0, color: "red" },
-          ]);
         }
       } catch (error) {
         console.error("Error fetching questions:", error);
@@ -195,7 +206,7 @@ const GathererQuestionBank = () => {
     };
 
     fetchQuestions();
-  }, [t, currentPage, statusFilter]);
+  }, [currentPage, statusFilter]); // Removed 't' dependency as it's stable
 
   const handleView = useCallback((item) => {
     if (item?.id) {
@@ -251,6 +262,16 @@ const GathererQuestionBank = () => {
     setSelectedFlagReason("");
   }, []);
 
+  // Memoize loading component for table
+  const tableLoadingComponent = useMemo(() => (
+    <Loader 
+      size="lg" 
+      color="oxford-blue" 
+      text={t("gatherer.questionBank.loading") || "Loading questions..."}
+      className="py-10"
+    />
+  ), [t]);
+
   const feedbackData = useMemo(() => ({}), []);
 
   const activityData = useMemo(() => [], []);
@@ -266,11 +287,7 @@ const GathererQuestionBank = () => {
   const handleDismiss = useCallback(() => {
     console.log("Dismissed");
   }, []);
-
-  const _handleEditNotification = useCallback(() => {
-    console.log("Edit Question");
-  }, []);
-
+  
   const statusFilterOptions = useMemo(() => [
     { value: "", label: "All" },
     { value: "pending_processor", label: "Pending Review" },
@@ -299,12 +316,6 @@ const GathererQuestionBank = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-3 justify-end">
-            {/* <OutlineButton
-              text={t("gatherer.questionBank.bulkUpload")}
-              onClick={() => setIsModalOpen(true)}
-              className="py-[10px] px-[14px]"
-            /> */}
-
             <PrimaryButton
               text={t("gatherer.questionBank.addNewQuestions")}
               className="py-[10px] px-5"
@@ -335,29 +346,22 @@ const GathererQuestionBank = () => {
               />
             </div>
           </div>
-          {loading ? (
-            <Loader 
-              size="lg" 
-              color="oxford-blue" 
-              text={t("gatherer.questionBank.loading") || "Loading questions..."}
-              className="py-10"
-            />
-          ) : (
-            <Table
-              items={gathererData}
-              columns={gathererColumns}
-              page={currentPage}
-              pageSize={10}
-              total={totalQuestions}
-              onPageChange={setCurrentPage}
-              onView={handleView}
-              onEdit={handleEdit}
-              onCustomAction={handleCustomAction}
-              emptyMessage={t("gatherer.questionBank.emptyMessage")}
-              onShowRejectionReason={handleShowRejectionReason}
-              onShowFlagReason={handleShowFlagReason}
-            />
-          )}
+          <Table
+            items={gathererData}
+            columns={gathererColumns}
+            page={currentPage}
+            pageSize={10}
+            total={totalQuestions}
+            onPageChange={setCurrentPage}
+            onView={handleView}
+            onEdit={handleEdit}
+            onCustomAction={handleCustomAction}
+            emptyMessage={t("gatherer.questionBank.emptyMessage")}
+            onShowRejectionReason={handleShowRejectionReason}
+            onShowFlagReason={handleShowFlagReason}
+            loading={loading}
+            loadingComponent={tableLoadingComponent}
+          />
         </div>
 
         <div className="">
@@ -422,64 +426,26 @@ const GathererQuestionBank = () => {
       />
 
       {/* Rejection Reason Modal */}
-      {isRejectionModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
-          <div className="bg-white rounded-lg shadow-xl max-w-[600px] w-full p-8">
-            <h2 className="text-[24px] leading-[100%] font-bold text-oxford-blue mb-2">
-              {t("gatherer.questionBank.rejectionReasonModal.title") || "Rejection Reason"}
-            </h2>
-            <p className="text-[16px] leading-[100%] font-normal text-dark-gray mb-6">
-              {t("gatherer.questionBank.rejectionReasonModal.subtitle") || "The question was rejected with the following reason:"}
-            </p>
-            <div className="mb-6">
-              <label className="block text-[16px] leading-[100%] font-roboto font-normal text-oxford-blue mb-2">
-                {t("gatherer.questionBank.rejectionReasonModal.reasonLabel") || "Reason"}
-              </label>
-              <div className="w-full min-h-[120px] rounded-[8px] border border-[#03274633] bg-white px-4 py-3 font-roboto text-[16px] leading-[20px] text-oxford-blue">
-                {selectedRejectionReason || t("gatherer.questionBank.rejectionReasonModal.noReason") || "No reason provided"}
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <button
-                onClick={handleCloseRejectionModal}
-                className="flex-1 font-roboto px-4 py-3 border-[0.5px] text-base font-normal border-[#032746] rounded-lg text-blue-dark hover:bg-gray-50 transition-colors"
-              >
-                {t("gatherer.questionBank.rejectionReasonModal.close") || "Close"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ReasonModal
+        isOpen={isRejectionModalOpen}
+        onClose={handleCloseRejectionModal}
+        title={t("gatherer.questionBank.rejectionReasonModal.title") || "Rejection Reason"}
+        subtitle={t("gatherer.questionBank.rejectionReasonModal.subtitle") || "The question was rejected with the following reason:"}
+        reason={selectedRejectionReason}
+        noReasonText={t("gatherer.questionBank.rejectionReasonModal.noReason") || "No reason provided"}
+        closeText={t("gatherer.questionBank.rejectionReasonModal.close") || "Close"}
+      />
 
       {/* Flag Reason Modal */}
-      {isFlagModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
-          <div className="bg-white rounded-lg shadow-xl max-w-[600px] w-full p-8">
-            <h2 className="text-[24px] leading-[100%] font-bold text-oxford-blue mb-2">
-              {t("gatherer.questionBank.flagReasonModal.title") || "Flag Reason"}
-            </h2>
-            <p className="text-[16px] leading-[100%] font-normal text-dark-gray mb-6">
-              {t("gatherer.questionBank.flagReasonModal.subtitle") || "The question was flagged with the following reason:"}
-            </p>
-            <div className="mb-6">
-              <label className="block text-[16px] leading-[100%] font-roboto font-normal text-oxford-blue mb-2">
-                {t("gatherer.questionBank.flagReasonModal.reasonLabel") || "Reason"}
-              </label>
-              <div className="w-full min-h-[120px] rounded-[8px] border border-[#03274633] bg-white px-4 py-3 font-roboto text-[16px] leading-[20px] text-oxford-blue">
-                {selectedFlagReason || t("gatherer.questionBank.flagReasonModal.noReason") || "No reason provided"}
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <button
-                onClick={handleCloseFlagModal}
-                className="flex-1 font-roboto px-4 py-3 border-[0.5px] text-base font-normal border-[#032746] rounded-lg text-blue-dark hover:bg-gray-50 transition-colors"
-              >
-                {t("gatherer.questionBank.flagReasonModal.close") || "Close"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ReasonModal
+        isOpen={isFlagModalOpen}
+        onClose={handleCloseFlagModal}
+        title={t("gatherer.questionBank.flagReasonModal.title") || "Flag Reason"}
+        subtitle={t("gatherer.questionBank.flagReasonModal.subtitle") || "The question was flagged with the following reason:"}
+        reason={selectedFlagReason}
+        noReasonText={t("gatherer.questionBank.flagReasonModal.noReason") || "No reason provided"}
+        closeText={t("gatherer.questionBank.flagReasonModal.close") || "Close"}
+      />
     </div>
   );
 };

@@ -5,7 +5,7 @@ const { generateToken } = require('../../config/jwt');
 // Signup
 const signup = async (req, res, next) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password, role, country, language, fullName } = req.body;
     console.log('[AUTH] POST /signup → requested', { email, role });
 
     // Generate OTP (optional verification)
@@ -13,7 +13,7 @@ const signup = async (req, res, next) => {
     const otpExpiry = authService.getOTPExpiry();
 
     // Create user and get token
-    const { user, token } = await authService.signup(email, password, otp, otpExpiry, role);
+    const { user, token } = await authService.signup(email, password, otp, otpExpiry, role, country, language, fullName);
 
     // Send OTP email (optional - non-blocking)
     // If email fails, user can still proceed

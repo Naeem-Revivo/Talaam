@@ -311,6 +311,8 @@ const GathererSubmission = () => {
     navigate("/processor/question-bank");
   };
 
+  console.log('Gatherer Submission Data:', gathererSubmissionData);
+
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6">
