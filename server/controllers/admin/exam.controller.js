@@ -6,10 +6,12 @@ const examService = require('../../services/admin');
  */
 const createExam = async (req, res, next) => {
   try {
-    const { name, status } = req.body;
+    const { name, description, status } = req.body;
 
     console.log('[EXAM] POST /admin/exams → requested', {
       name,
+      description,
+      status,
       requestedBy: req.user.id,
       requesterRole: req.user.role,
     });
@@ -53,6 +55,7 @@ const createExam = async (req, res, next) => {
     // Create exam
     const examData = {
       name: name.trim(),
+      description: description?.trim() || null,
       status: status || 'active',
     };
 
@@ -65,6 +68,7 @@ const createExam = async (req, res, next) => {
         exam: {
           id: exam.id,
           name: exam.name,
+          description: exam.description,
           status: exam.status,
           createdAt: exam.createdAt,
           updatedAt: exam.updatedAt,
@@ -117,6 +121,7 @@ const getAllExams = async (req, res, next) => {
         exams: exams.map((exam) => ({
           id: exam.id,
           name: exam.name,
+          description: exam.description,
           status: exam.status,
           createdAt: exam.createdAt,
           updatedAt: exam.updatedAt,
@@ -160,6 +165,7 @@ const getExamById = async (req, res, next) => {
         exam: {
           id: exam.id,
           name: exam.name,
+          description: exam.description,
           status: exam.status,
           createdAt: exam.createdAt,
           updatedAt: exam.updatedAt,
@@ -188,7 +194,7 @@ const getExamById = async (req, res, next) => {
 const updateExam = async (req, res, next) => {
   try {
     const { examId } = req.params;
-    const { name, status } = req.body;
+    const { name, description, status } = req.body;
 
     console.log('[EXAM] PUT /admin/exams/:examId → requested', {
       examId,
@@ -250,6 +256,9 @@ const updateExam = async (req, res, next) => {
     if (name !== undefined) {
       updateData.name = name.trim();
     }
+    if (description !== undefined) {
+      updateData.description = description?.trim() || null;
+    }
     if (status !== undefined) {
       updateData.status = status;
     }
@@ -263,6 +272,7 @@ const updateExam = async (req, res, next) => {
         exam: {
           id: updatedExam.id,
           name: updatedExam.name,
+          description: updatedExam.description,
           status: updatedExam.status,
           createdAt: updatedExam.createdAt,
           updatedAt: updatedExam.updatedAt,

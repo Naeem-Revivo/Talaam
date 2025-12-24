@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import enTranslations from '../locales/en.json';
 import arTranslations from '../locales/ar.json';
+import profileAPI from '../api/profile';
 
 const LanguageContext = createContext();
 
@@ -32,7 +33,7 @@ export const LanguageProvider = ({ children }) => {
     }
   }, []);
 
-  const toggleLanguage = () => {
+  const toggleLanguage = async () => {
     const newLanguage = language === 'en' ? 'ar' : 'en';
     setLanguage(newLanguage);
     setTranslations(newLanguage === 'ar' ? arTranslations : enTranslations);
@@ -41,6 +42,29 @@ export const LanguageProvider = ({ children }) => {
     // Update document direction for RTL support
     document.documentElement.dir = newLanguage === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = newLanguage;
+
+    // If user is authenticated, also update the backend profile
+    const authToken = localStorage.getItem('authToken');
+    if (authToken) {
+      try {
+        await profileAPI.updateProfile({ language: newLanguage });
+      } catch (error) {
+        // Silently fail - don't block language change if API call fails
+        console.error('Failed to sync language with backend:', error);
+      }
+    }
+  };
+
+  const changeLanguage = (newLanguage) => {
+    if (newLanguage === 'en' || newLanguage === 'ar') {
+      setLanguage(newLanguage);
+      setTranslations(newLanguage === 'ar' ? arTranslations : enTranslations);
+      localStorage.setItem('talaam-language', newLanguage);
+      
+      // Update document direction for RTL support
+      document.documentElement.dir = newLanguage === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.lang = newLanguage;
+    }
   };
 
   const t = (path, variables = {}) => {
@@ -60,7 +84,7 @@ export const LanguageProvider = ({ children }) => {
   };
 
   return (
-    <LanguageContext.Provider value={{ language, toggleLanguage, t }}>
+    <LanguageContext.Provider value={{ language, toggleLanguage, changeLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );

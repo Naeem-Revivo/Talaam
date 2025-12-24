@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { logodash } from "../../assets/svg/dashboard/sidebar";
@@ -117,11 +117,46 @@ const ChevronIcon = ({ isOpen }) => {
   );
 };
 
+const AnnouncementIcon = ({ active }) => {
+  const stroke = active ? "#032746" : "white";
+
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
+        stroke={stroke}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M13.73 21a2 2 0 0 1-3.46 0"
+        stroke={stroke}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
 const ProcessorSidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [openSubmenus, setOpenSubmenus] = useState({});
+
+  // Get source from query params to determine which submenu should be active
+  const searchParams = new URLSearchParams(location.search);
+  const source = searchParams.get("source");
 
   const submenuItems = {
     questionBank: [
@@ -129,18 +164,27 @@ const ProcessorSidebar = ({ isOpen, onClose }) => {
         path: "/processor/question-bank",
         labelKey: "processor.sidebar.questionBank",
         isMain: true,
+        sourceMatch: null, // Main page doesn't have a source
       },
       {
         path: "/processor/question-bank/gatherer-submission",
         labelKey: "processor.sidebar.gathererSubmission",
+        sourceMatch: "gatherer-submission",
       },
       {
         path: "/processor/question-bank/creator-submission",
         labelKey: "processor.sidebar.creatorSubmission",
+        sourceMatch: "creator-submission",
       },
       {
         path: "/processor/question-bank/explainer-submission",
         labelKey: "processor.sidebar.explainerSubmission",
+        sourceMatch: "explainer-submission",
+      },
+      {
+        path: "/processor/question-bank/admin-submission",
+        labelKey: "processor.sidebar.adminSubmission",
+        sourceMatch: "admin-submission",
       },
     ],
   };
@@ -158,24 +202,40 @@ const ProcessorSidebar = ({ isOpen, onClose }) => {
       submenuKey: "questionBank",
     },
     {
+      path: "/processor/announcements",
+      labelKey: "dashboard.sidebar.announcements",
+      icon: AnnouncementIcon,
+    },
+    {
       path: "/processor/profile",
       labelKey: "processor.sidebar.profile",
       icon: ProfileIcon,
     },
   ];
 
-  const isActive = (path) => {
+  const isActive = (path, sourceMatch = null) => {
     if (path === "/processor") {
       return location.pathname === "/processor";
     }
-    return (
-      location.pathname === path || location.pathname.startsWith(path + "/")
-    );
+    
+    // If viewing a question (Processed-ViewQuestion), check source parameter
+    if (location.pathname.includes("Processed-ViewQuestion")) {
+      if (sourceMatch) {
+        // For submenu items, check if source matches
+        return source === sourceMatch;
+      } else {
+        // For main menu items, check if we're in the question bank section
+        return path === "/processor/question-bank";
+      }
+    }
+    
+    // Check if pathname matches
+    return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
   const isSubmenuActive = (submenuKey) => {
     const subItems = submenuItems[submenuKey];
-    return subItems ? subItems.some((item) => isActive(item.path)) : false;
+    return subItems ? subItems.some((item) => isActive(item.path, item.sourceMatch)) : false;
   };
 
   const handleLinkClick = () => {
@@ -206,6 +266,23 @@ const ProcessorSidebar = ({ isOpen, onClose }) => {
     }));
   };
 
+  // Keep submenu open if any of its items are active
+  useEffect(() => {
+    const newOpenSubmenus = {};
+    menuItems.forEach((item) => {
+      if (item.submenuKey) {
+        const isActive = isSubmenuActive(item.submenuKey);
+        if (isActive) {
+          newOpenSubmenus[item.submenuKey] = true;
+        }
+      }
+    });
+    setOpenSubmenus((prev) => ({
+      ...prev,
+      ...newOpenSubmenus,
+    }));
+  }, [location.pathname, location.search]);
+
   const renderSubmenu = (submenuKey) => {
     const items = submenuItems[submenuKey];
     if (!items) return null;
@@ -216,7 +293,7 @@ const ProcessorSidebar = ({ isOpen, onClose }) => {
     return (
       <div className="ml-8 mt-2 space-y-1">
         {subItems.map((subItem) => {
-          const subActive = isActive(subItem.path);
+          const subActive = isActive(subItem.path, subItem.sourceMatch);
           return (
             <NavLink
               key={subItem.path}

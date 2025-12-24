@@ -13,13 +13,14 @@ export default function AddNewExam() {
     
     const [examName, setExamName] = useState("");
     const [description, setDescription] = useState("");
+    const [status, setStatus] = useState("active");
 
     // Handle success
     useEffect(() => {
         if (success) {
             showSuccessToast("Exam created successfully");
             dispatch(clearSuccess());
-            navigate("/admin/classification");
+            navigate("/admin/classification?tab=Exams");
         }
     }, [success, navigate, dispatch]);
 
@@ -35,7 +36,8 @@ export default function AddNewExam() {
         e.preventDefault();
         const examData = {
             name: examName,
-            status: 'active',
+            description: description,
+            status: status,
         };
         
         dispatch(createExam(examData));
@@ -91,6 +93,37 @@ export default function AddNewExam() {
                                 rows="4"
                                 className="w-full h-[160px] border border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
                             ></textarea>
+                        </div>
+
+                        {/* Status Toggle */}
+                        <div>
+                            <label className="block text-base font-normal text-blue-dark mb-3">
+                                {t('admin.addExam.fields.status') || 'Status'}
+                            </label>
+                            <div className="flex items-center gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setStatus("active")}
+                                    className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all ${
+                                        status === "active"
+                                            ? "bg-[#ED4122] text-white border-[#ED4122]"
+                                            : "bg-white text-oxford-blue border-[#E5E7EB] hover:border-[#ED4122]"
+                                    }`}
+                                >
+                                    {t('admin.addExam.status.active') || 'Active'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setStatus("inactive")}
+                                    className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all ${
+                                        status === "inactive"
+                                            ? "bg-[#ED4122] text-white border-[#ED4122]"
+                                            : "bg-white text-oxford-blue border-[#E5E7EB] hover:border-[#ED4122]"
+                                    }`}
+                                >
+                                    {t('admin.addExam.status.suspend') || 'Suspend'}
+                                </button>
+                            </div>
                         </div>
 
                         {/* Buttons */}

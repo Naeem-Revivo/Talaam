@@ -1,125 +1,60 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
+import { OutlineButton } from "../../components/common/Button";
 import QuestionBankTabs from "../../components/admin/questionBank/QuestionBankTabs";
 import QuestionBankFilters from "../../components/admin/questionBank/QuestionBankFilters";
 import QuestionBankSummaryCards from "../../components/admin/questionBank/QuestionBankSummaryCards";
 import QuestionBankTable from "../../components/admin/questionBank/QuestionBankTable";
+import adminAPI from "../../api/admin";
+import examsAPI from "../../api/exams";
+import subjectsAPI from "../../api/subjects";
+import topicsAPI from "../../api/topics";
+import { showErrorToast } from "../../utils/toastConfig";
 
 const pageSize = 5;
 
 const getTabs = (t) => [
   { label: t('admin.questionBank.tabs.all'), value: "all" },
-  { label: t('admin.questionBank.tabs.variantPending'), value: "variantPending" },
+  { label: t('admin.questionBank.tabs.variantPending') || "Pending", value: "pending" },
   { label: t('admin.questionBank.tabs.rejected'), value: "rejected" },
 ];
 
-const mockQuestions = [
-  {
-    id: "q-1",
-    prompt: "Which of the following is NOT a characteristic of a mammal?",
-    type: "Multiple Choice",
-    subject: "Biology",
-    topic: "Animal Kingdom",
-    level: "Analyze",
-    createdBy: "Admin",
-    status: "Active",
-    stage: "rawPending",
-    exam: "Qudrat",
-  },
-  {
-    id: "q-2",
-    prompt: "Explain the process of photosynthesis.",
-    type: "Essay",
-    subject: "Biology",
-    topic: "Plant Biology",
-    level: "Remember",
-    createdBy: "Admin",
-    status: "Active",
-    stage: "rawPending",
-    exam: "Tahseely",
-  },
-  {
-    id: "q-3",
-    prompt: "What is the capital of Japan?",
-    type: "Short Answer",
-    subject: "Geography",
-    topic: "World Capitals",
-    level: "Understand",
-    createdBy: "Admin",
-    status: "Pending",
-    stage: "rawPending",
-    exam: "Tahseely",
-  },
-  {
-    id: "q-4",
-    prompt: "Analyze the main causes of World War I.",
-    type: "Essay",
-    subject: "History",
-    topic: "Animal Kingdom",
-    level: "Remember",
-    createdBy: "Admin",
-    status: "Inactive",
-    stage: "variantPending",
-    exam: "Qudrat",
-  },
-  {
-    id: "q-5",
-    prompt: "Explain the process of photosynthesis.",
-    type: "Essay",
-    subject: "Biology",
-    topic: "Plant Biology",
-    level: "Analyze",
-    createdBy: "Admin",
-    status: "Active",
-    stage: "all",
-    exam: "Qudrat",
-  },
-  {
-    id: "q-6",
-    prompt: "What is the capital of Japan?",
-    type: "Short Answer",
-    subject: "Geography",
-    topic: "World Capitals",
-    level: "Remember",
-    createdBy: "Admin",
-    status: "Active",
-    stage: "all",
-    exam: "Exam",
-  },
-  {
-    id: "q-7",
-    prompt: "Analyze the main causes of World War I.",
-    type: "Essay",
-    subject: "History",
-    topic: "Animal Kingdom",
-    level: "Understand",
-    createdBy: "Admin",
-    status: "Active",
-    stage: "rawPending",
-    exam: "Exam",
-  },
-  {
-    id: "q-8",
-    prompt: "Explain the greenhouse effect and its impact on climate.",
-    type: "Essay",
-    subject: "Environmental Science",
-    topic: "Climate Change",
-    level: "Analyze",
-    createdBy: "Admin",
-    status: "Rejected",
-    stage: "rejected",
-    exam: "Exam",
-  },
-];
+// Map status to display status
+const mapStatusToDisplay = (status) => {
+  if (!status) return "Pending";
+  
+  // Map pending_* statuses to "Pending"
+  if (status.startsWith('pending_')) {
+    return "Pending";
+  }
+  
+  // Map completed to "Approved"
+  if (status === 'completed') {
+    return "Approved";
+  }
+  
+  // Map rejected to "Rejected"
+  if (status === 'rejected') {
+    return "Rejected";
+  }
+  
+  // Default to status as-is if it matches our display statuses
+  const displayStatuses = ["Pending", "Approved", "Rejected"];
+  if (displayStatuses.includes(status)) {
+    return status;
+  }
+  
+  // Default fallback
+  return "Pending";
+};
 
-const getTabCounts = (questions, t) => {
+const getTabCounts = (summary, t) => {
   const tabs = getTabs(t);
   const baseCounts = {
-    all: questions.length,
-    rawPending: questions.filter((item) => item.stage === "rawPending").length,
-    variantPending: questions.filter((item) => item.stage === "variantPending").length,
-    rejected: questions.filter((item) => item.stage === "rejected").length,
+    all: summary?.total || 0,
+    pending: summary?.pending || 0,
+    rejected: summary?.rejected || 0,
   };
 
   return tabs.map((tab) => ({
@@ -140,58 +75,172 @@ const QuestionBankPage = () => {
     status: "",
   });
   const [page, setPage] = useState(1);
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
+  const [total, setTotal] = useState(0);
+  
+  // Filter options
+  const [examOptions, setExamOptions] = useState([]);
+  const [subjectOptions, setSubjectOptions] = useState([]);
+  const [topicOptions, setTopicOptions] = useState([]);
+  const [statusOptions] = useState(["Pending", "Approved", "Rejected"]);
 
-  const tabbedQuestions = useMemo(() => {
-    if (activeTab === "all") {
-      return mockQuestions;
+  // Fetch questions from API
+  useEffect(() => {
+    fetchQuestions();
+  }, [activeTab, search, filters, page]);
+
+  // Fetch filter options on mount
+  useEffect(() => {
+    fetchFilterOptions();
+  }, []);
+
+  const fetchFilterOptions = async () => {
+    try {
+      // Fetch all exams
+      const examsResponse = await examsAPI.getAllExams({ status: "active" });
+      if (examsResponse.success && examsResponse.data?.exams) {
+        setExamOptions(examsResponse.data.exams.map(e => ({ id: e.id, name: e.name })));
+      }
+      
+      // Fetch all subjects (show all available subjects)
+      const subjectsResponse = await subjectsAPI.getAllSubjects();
+      if (subjectsResponse.success && subjectsResponse.data?.subjects) {
+        setSubjectOptions(subjectsResponse.data.subjects.map(s => ({ id: s.id, name: s.name })));
+      }
+      
+      // Fetch all topics (show all available topics)
+      const topicsResponse = await topicsAPI.getAllTopics();
+      if (topicsResponse.success && topicsResponse.data?.topics) {
+        setTopicOptions(topicsResponse.data.topics.map(t => ({ id: t.id, name: t.name })));
+      } else if (Array.isArray(topicsResponse.data)) {
+        // Handle case where API returns array directly
+        setTopicOptions(topicsResponse.data.map(t => ({ id: t.id || t._id, name: t.name })));
+      }
+    } catch (error) {
+      console.error("Error fetching filter options:", error);
+      showErrorToast(error.response?.data?.message || "Failed to fetch filter options");
     }
-    return mockQuestions.filter((question) => question.stage === activeTab);
-  }, [activeTab]);
+  };
 
-  const filteredQuestions = useMemo(() => {
-    return tabbedQuestions.filter((question) => {
-      const matchesSearch = search
-        ? question.prompt.toLowerCase().includes(search.toLowerCase())
-        : true;
-      const matchesExam = filters.exam ? question.exam === filters.exam : true;
-      const matchesSubject = filters.subject ? question.subject === filters.subject : true;
-      const matchesTopic = filters.topic ? question.topic === filters.topic : true;
-      const matchesStatus = filters.status ? question.status === filters.status : true;
+  const fetchQuestions = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        tab: activeTab,
+        page,
+        limit: pageSize,
+      };
+      
+      if (search && search.trim()) params.search = search.trim();
+      if (filters.exam && filters.exam.trim()) params.exam = filters.exam.trim();
+      if (filters.subject && filters.subject.trim()) params.subject = filters.subject.trim();
+      if (filters.topic && filters.topic.trim()) params.topic = filters.topic.trim();
+      if (filters.status && filters.status.trim() !== '') {
+        // Map display status back to API status
+        if (filters.status === "Pending") {
+          // When "Pending" is explicitly selected, override tab and set tab to "pending"
+          // This will make the backend show all pending statuses
+          params.tab = "pending";
+          // Don't set status - let tab handle it
+        } else if (filters.status === "Approved") {
+          params.status = "completed";
+          // Override tab to show approved
+          params.tab = "approved";
+        } else if (filters.status === "Rejected") {
+          params.status = "rejected";
+          // Override tab to show rejected
+          params.tab = "rejected";
+        } else {
+          // Only send if it's a valid API status value
+          const validApiStatuses = ['pending_processor', 'pending_creator', 'pending_explainer', 'completed', 'rejected'];
+          if (validApiStatuses.includes(filters.status)) {
+            params.status = filters.status;
+          }
+        }
+      }
 
-      return (
-        matchesSearch &&
-        matchesExam &&
-        matchesSubject &&
-        matchesTopic &&
-        matchesStatus
-      );
-    });
-  }, [filters, search, tabbedQuestions]);
+      const response = await adminAPI.getAllQuestions(params);
+      
+      if (response.success && response.data) {
+        // Transform API data to match table format
+        const transformed = response.data.questions?.map((q) => {
+          // Get last action from history
+          const lastHistory = q.history && q.history.length > 0 ? q.history[0] : null;
+          let lastAction = null;
+          if (lastHistory) {
+            const timestamp = lastHistory.timestamp || lastHistory.createdAt;
+            const dateStr = timestamp ? new Date(timestamp).toLocaleDateString('en-GB', { 
+              day: '2-digit', 
+              month: '2-digit', 
+              year: 'numeric' 
+            }) : "N/A";
+            
+            // Format action: replace underscores with spaces
+            let actionText = lastHistory.action || "N/A";
+            if (actionText !== "N/A") {
+              // Replace underscores with spaces
+              actionText = actionText.replace(/_/g, ' ');
+              // Check if it's a student flag action
+              if (q.flagType === 'student' && (actionText.toLowerCase().includes('flag') || actionText.toLowerCase().includes('flagged'))) {
+                actionText = "Flagged by student";
+              }
+            }
+            
+            lastAction = {
+              action: actionText,
+              by: lastHistory.performedBy?.name || lastHistory.performedBy?.fullName || "N/A",
+              when: dateStr,
+            };
+          } else if (q.flagType === 'student' && q.isFlagged) {
+            // If no history but flagged by student, show "Flagged by student"
+            lastAction = {
+              action: "Flagged by student",
+              by: q.flaggedBy?.name || q.flaggedBy?.fullName || "Student",
+              when: q.flaggedAt ? new Date(q.flaggedAt).toLocaleDateString('en-GB', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+              }) : "N/A",
+            };
+          }
 
-  const paginatedQuestions = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filteredQuestions.slice(start, start + pageSize);
-  }, [filteredQuestions, page]);
-
-  const examOptions = useMemo(() => Array.from(new Set(mockQuestions.map((item) => item.exam))).filter(Boolean), []);
-  const subjectOptions = useMemo(
-    () => Array.from(new Set(mockQuestions.map((item) => item.subject))).filter(Boolean),
-    []
-  );
-  const topicOptions = useMemo(
-    () => Array.from(new Set(mockQuestions.map((item) => item.topic))).filter(Boolean),
-    []
-  );
-  const statusOptions = useMemo(
-    () => Array.from(new Set(mockQuestions.map((item) => item.status))).filter(Boolean),
-    []
-  );
+          return {
+            id: q.id,
+            prompt: q.question?.text || "N/A",
+            type: q.question?.type === "MCQ" ? "Multiple Choice" : q.question?.type === "TRUE_FALSE" ? "True/False" : q.question?.type || "N/A",
+            subject: q.subject?.name || "N/A",
+            topic: q.topic?.name || "N/A",
+            exam: q.stage?.name || "N/A",
+            createdBy: q.createdBy?.name || "N/A",
+            status: mapStatusToDisplay(q.status),
+            isFlagged: q.isFlagged || false,
+            flagReason: q.flagReason || null,
+            flagType: q.flagType || null,
+            lastAction: lastAction,
+            _original: q,
+          };
+        }) || [];
+        
+        setQuestions(transformed);
+        setSummary(response.data.summary || { total: 0, pending: 0, approved: 0, rejected: 0 });
+        setTotal(response.data.pagination?.totalItems || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+      showErrorToast(error.message || "Failed to fetch questions");
+      setQuestions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const stats = useMemo(
     () => [
       {
         label: t('admin.questionBank.stats.totalQuestions'),
-        value: 8,
+        value: summary.total || 0,
         iconBg: "#FFF1E6",
       icon: (
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -205,7 +254,7 @@ const QuestionBankPage = () => {
       },
       {
         label: t('admin.questionBank.stats.pending'),
-        value: 4,
+        value: summary.pending || 0,
         iconBg: "#E8F3FF",
       icon: (
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -219,7 +268,7 @@ const QuestionBankPage = () => {
       },
       {
         label: t('admin.questionBank.stats.approved'),
-        value: 0,
+        value: summary.approved || 0,
         iconBg: "#E8F7F0",
       labelClassName: "text-[#ED4122]",
       icon: (
@@ -233,10 +282,10 @@ const QuestionBankPage = () => {
       ),
       },
     ],
-    [t]
+    [t, summary]
   );
 
-  const tabDefinitions = useMemo(() => getTabCounts(mockQuestions, t), [t]);
+  const tabDefinitions = useMemo(() => getTabCounts(summary, t), [summary, t]);
 
   const handleTabChange = (value) => {
     setActiveTab(value);
@@ -249,7 +298,65 @@ const QuestionBankPage = () => {
   };
 
   const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+    setFilters((prev) => {
+      const newFilters = { ...prev };
+      
+      // If value is empty, clear the filter
+      if (!value || value.trim() === "") {
+        newFilters[key] = "";
+        // Reset dependent filters
+        if (key === 'exam') {
+          newFilters.subject = "";
+          newFilters.topic = "";
+        } else if (key === 'subject') {
+          newFilters.topic = "";
+        }
+        return newFilters;
+      }
+      
+      // If filtering by exam name, convert to ID
+      if (key === 'exam') {
+        const exam = examOptions.find(e => e.name === value);
+        if (exam) {
+          newFilters.exam = exam.id;
+          // Reset subject and topic when exam changes
+          newFilters.subject = "";
+          newFilters.topic = "";
+        } else {
+          // If exam not found, don't update (keep current or empty)
+          newFilters.exam = "";
+        }
+      }
+      
+      // If filtering by subject name, convert to ID
+      else if (key === 'subject') {
+        const subject = subjectOptions.find(s => s.name === value);
+        if (subject) {
+          newFilters.subject = subject.id;
+          // Reset topic when subject changes
+          newFilters.topic = "";
+        } else {
+          newFilters.subject = "";
+        }
+      }
+      
+      // If filtering by topic name, convert to ID
+      else if (key === 'topic') {
+        const topic = topicOptions.find(t => t.name === value);
+        if (topic) {
+          newFilters.topic = topic.id;
+        } else {
+          newFilters.topic = "";
+        }
+      }
+      
+      // For status, just set the value directly (it's already a display value)
+      else {
+        newFilters[key] = value;
+      }
+      
+      return newFilters;
+    });
     setPage(1);
   };
 
@@ -285,6 +392,11 @@ const QuestionBankPage = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-4">
+            <OutlineButton
+              text={t('admin.questionBank.actions.sentBackQuestions') || "Sent Back Questions"}
+              onClick={() => navigate("/admin/question-bank/sent-back-questions")}
+              className="h-[36px] px-4"
+            />
             <button
               type="button"
               onClick={() => navigate("/admin/question-bank/add-question")}
@@ -316,26 +428,37 @@ const QuestionBankPage = () => {
 
         <QuestionBankFilters
           searchValue={search}
-          filters={filters}
+          filters={{
+            exam: filters.exam ? (examOptions.find(e => e.id === filters.exam)?.name || "") : "",
+            subject: filters.subject ? (subjectOptions.find(s => s.id === filters.subject)?.name || "") : "",
+            topic: filters.topic ? (topicOptions.find(t => t.id === filters.topic)?.name || "") : "",
+            status: filters.status || "",
+          }}
           onSearchChange={handleSearchChange}
           onFilterChange={handleFilterChange}
           onReset={handleResetFilters}
-          examOptions={examOptions}
-          subjectOptions={subjectOptions}
-          topicOptions={topicOptions}
+          examOptions={examOptions.map(e => e.name)}
+          subjectOptions={subjectOptions.map(s => s.name)}
+          topicOptions={topicOptions.map(t => t.name)}
           statusOptions={statusOptions}
         >
           <QuestionBankSummaryCards stats={stats} />
         </QuestionBankFilters>
 
-        <QuestionBankTable
-          questions={paginatedQuestions}
-          page={page}
-          pageSize={pageSize}
-          total={filteredQuestions.length}
-          onPageChange={setPage}
-          onView={(question) => navigate(`/admin/question-bank/question-details?id=${question.id}`)}
-        />
+        {loading ? (
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-8 text-center">
+            <p className="text-dark-gray">{t('admin.questionBank.loading') || 'Loading questions...'}</p>
+          </div>
+        ) : (
+          <QuestionBankTable
+            questions={questions}
+            page={page}
+            pageSize={pageSize}
+            total={total}
+            onPageChange={setPage}
+            onView={(question) => navigate(`/admin/question-bank/question-details?id=${question.id}`)}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,129 +1,262 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import Dropdown from "../../components/shared/Dropdown";
+import questionsAPI from "../../api/questions";
+import { toast } from "react-toastify";
+import Loader from "../../components/common/Loader";
 
 const ContentModerationPage = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState("flagged");
+  const { t, language } = useLanguage();
   const [status, setStatus] = useState("");
   const [contentType, setContentType] = useState("");
   const [dateRange, setDateRange] = useState("");
+  const [flaggedContent, setFlaggedContent] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
 
-  // Mock data for flagged content
-  const flaggedContent = [
-    {
-      id: "0001",
-      contentType: "Question",
-      submittedBy: "Sarah Khan",
-      flagReason: "Inappropriate Content",
-      dateReported: "15-01-2024",
-      status: "Flagged",
-      question: "What is the capital of France?",
-      options: ["Berlin", "Paris", "Rome", "Madrid"],
-      correctAnswer: "Paris",
-      explanation: "Paris is the capital of France and also its largest city. Situated on the River Seine, in northern France, at the heart of the Île-de-France region, Paris has the reputation of being the most beautiful and romantic of all cities, brimming with historic associations and remaining vastly influential in the realms of culture, art, fashion, food and design.",
-      approvedCount: 120,
-      rejectedCount: 30,
-    },
-    {
-      id: "0002",
-      contentType: "Question",
-      submittedBy: "Ali Raza",
-      flagReason: "Copyright Violation",
-      dateReported: "16-01-2024",
-      status: "Flagged",
-      question: "What is the capital of Germany?",
-      options: ["Berlin", "Munich", "Hamburg", "Frankfurt"],
-      correctAnswer: "Berlin",
-      explanation: "Berlin is the capital and largest city of Germany. It is located in northeastern Germany on the banks of the rivers Spree and Havel.",
-      approvedCount: 95,
-      rejectedCount: 25,
-    },
-    {
-      id: "0003",
-      contentType: "Question",
-      submittedBy: "Sarah khan",
-      flagReason: "Spam",
-      dateReported: "17-01-2024",
-      status: "Flagged",
-      question: "What is the capital of Italy?",
-      options: ["Milan", "Rome", "Naples", "Turin"],
-      correctAnswer: "Rome",
-      explanation: "Rome is the capital city of Italy and the seat of the Roman Catholic Church. It is located in the central-western portion of the Italian Peninsula.",
-      approvedCount: 110,
-      rejectedCount: 20,
-    },
-    {
-      id: "0004",
-      contentType: "Question",
-      submittedBy: "Sofia Clark",
-      flagReason: "Harassment",
-      dateReported: "17-01-2024",
-      status: "Flagged",
-      question: "What is the capital of Spain?",
-      options: ["Barcelona", "Madrid", "Valencia", "Seville"],
-      correctAnswer: "Madrid",
-      explanation: "Madrid is the capital and largest city of Spain. It is located in the center of the Iberian Peninsula.",
-      approvedCount: 105,
-      rejectedCount: 15,
-    },
-    {
-      id: "0005",
-      contentType: "Question",
-      submittedBy: "Laim Harper",
-      flagReason: "Misinformation",
-      dateReported: "18-01-2024",
-      status: "Flagged",
-      question: "What is the capital of Portugal?",
-      options: ["Porto", "Lisbon", "Coimbra", "Braga"],
-      correctAnswer: "Lisbon",
-      explanation: "Lisbon is the capital and largest city of Portugal. It is located on the Atlantic coast of the Iberian Peninsula.",
-      approvedCount: 98,
-      rejectedCount: 22,
-    },
-    {
-      id: "0006",
-      contentType: "Question",
-      submittedBy: "Ava Foster",
-      flagReason: "Hate Speech",
-      dateReported: "19-01-2024",
-      status: "Flagged",
-      question: "What is the capital of Greece?",
-      options: ["Thessaloniki", "Athens", "Patras", "Heraklion"],
-      correctAnswer: "Athens",
-      explanation: "Athens is the capital and largest city of Greece. It is one of the world's oldest cities, with a recorded history spanning over 3,400 years.",
-      approvedCount: 115,
-      rejectedCount: 18,
-    },
-    {
-      id: "0007",
-      contentType: "Question",
-      submittedBy: "Liam Harper",
-      flagReason: "Violence",
-      dateReported: "20-01-2024",
-      status: "Flagged",
-      question: "What is the capital of Netherlands?",
-      options: ["Rotterdam", "Amsterdam", "Utrecht", "The Hague"],
-      correctAnswer: "Amsterdam",
-      explanation: "Amsterdam is the capital and most populous city of the Netherlands. It is located in the province of North Holland.",
-      approvedCount: 100,
-      rejectedCount: 28,
-    },
-  ];
+  // Fetch flagged questions
+  useEffect(() => {
+    fetchFlaggedQuestions();
+  }, [status]);
 
-  const handleView = (id) => {
-    const content = flaggedContent.find((item) => item.id === id);
-    navigate("/admin/moderation/details", { state: { content } });
+  const fetchFlaggedQuestions = async () => {
+    setLoading(true);
+    try {
+      const response = await questionsAPI.getFlaggedQuestionsForModeration({ status: status || undefined });
+      setFlaggedContent(response.data.questions || []);
+      setCurrentPage(1); // Reset to first page on new filter
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch flagged questions");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleApprove = (id) => {
-    console.log("Approve content:", id);
+  // Filter and paginate data
+  const filteredAndPaginatedData = useMemo(() => {
+    let filtered = [...flaggedContent];
+
+    // Filter by contentType (question type)
+    if (contentType) {
+      if (contentType === "mcq") {
+        filtered = filtered.filter(item => item.questionType === "MCQ" || item.questionType === "MULTIPLE_CHOICE");
+      } else if (contentType === "truefalse") {
+        filtered = filtered.filter(item => item.questionType === "TRUE_FALSE" || item.questionType === "True/False");
+      }
+    }
+
+    // Filter by date range
+    if (dateRange) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      filtered = filtered.filter(item => {
+        const itemDate = new Date(item.dateReported || item.createdAt);
+        const itemDateOnly = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
+        
+        if (dateRange === "today") {
+          return itemDateOnly.getTime() === today.getTime();
+        } else if (dateRange === "week") {
+          const weekAgo = new Date(today);
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          return itemDateOnly >= weekAgo;
+        } else if (dateRange === "month") {
+          const monthAgo = new Date(today);
+          monthAgo.setMonth(monthAgo.getMonth() - 1);
+          return itemDateOnly >= monthAgo;
+        }
+        return true;
+      });
+    }
+
+    // Paginate
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginated = filtered.slice(startIndex, endIndex);
+
+    return {
+      data: paginated,
+      total: filtered.length,
+      totalPages: Math.ceil(filtered.length / pageSize),
+    };
+  }, [flaggedContent, contentType, dateRange, currentPage, pageSize]);
+
+  // Get question type display text
+  const getQuestionTypeDisplay = (questionType) => {
+    if (!questionType) return "N/A";
+    if (questionType === "MCQ" || questionType === "MULTIPLE_CHOICE") return "MCQ";
+    if (questionType === "TRUE_FALSE" || questionType === "True/False") return "True/False";
+    return questionType;
+  };
+
+  const handleView = (id) => {
+    const item = flaggedContent.find(q => q.id === id);
+    if (item) {
+      setSelectedQuestion(item);
+      setShowViewModal(true);
+    }
+  };
+
+  const handleApprove = async (id) => {
+    if (!window.confirm("Are you sure you want to approve this flag? The question will be sent to processor.")) {
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      await questionsAPI.approveStudentFlag(id);
+      toast.success("Flag approved. Question sent to processor.");
+      fetchFlaggedQuestions();
+    } catch (error) {
+      toast.error(error.message || "Failed to approve flag");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleReject = (id) => {
-    console.log("Reject content:", id);
+    const content = flaggedContent.find((item) => item.id === id);
+    if (content) {
+      setSelectedQuestion(content);
+      setRejectReason("");
+      setShowRejectModal(true);
+    }
+  };
+
+  const handleRejectSubmit = async () => {
+    if (!rejectReason.trim()) {
+      toast.error("Please provide a rejection reason");
+      return;
+    }
+    if (!selectedQuestion) return;
+
+    setIsProcessing(true);
+    try {
+      await questionsAPI.rejectStudentFlag(selectedQuestion.id, rejectReason);
+      toast.success("Flag rejected. Student will be notified.");
+      setShowRejectModal(false);
+      setRejectReason("");
+      setSelectedQuestion(null);
+      fetchFlaggedQuestions();
+    } catch (error) {
+      toast.error(error.message || "Failed to reject flag");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" });
+  };
+
+  const handleExport = () => {
+    try {
+      // Get all filtered data (not just paginated)
+      let allFilteredData = [...flaggedContent];
+
+      // Filter by contentType (question type)
+      if (contentType) {
+        if (contentType === "mcq") {
+          allFilteredData = allFilteredData.filter(item => item.questionType === "MCQ" || item.questionType === "MULTIPLE_CHOICE");
+        } else if (contentType === "truefalse") {
+          allFilteredData = allFilteredData.filter(item => item.questionType === "TRUE_FALSE" || item.questionType === "True/False");
+        }
+      }
+
+      // Filter by date range
+      if (dateRange) {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        allFilteredData = allFilteredData.filter(item => {
+          const itemDate = new Date(item.dateReported || item.createdAt);
+          const itemDateOnly = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
+          
+          if (dateRange === "today") {
+            return itemDateOnly.getTime() === today.getTime();
+          } else if (dateRange === "week") {
+            const weekAgo = new Date(today);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return itemDateOnly >= weekAgo;
+          } else if (dateRange === "month") {
+            const monthAgo = new Date(today);
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            return itemDateOnly >= monthAgo;
+          }
+          return true;
+        });
+      }
+
+      if (!allFilteredData || allFilteredData.length === 0) {
+        toast.error("No data to export");
+        return;
+      }
+
+      // Define CSV headers
+      const headers = [
+        "Question Title",
+        "Content Type",
+        "Submitted By",
+        "Flag Reason",
+        "Date Reported",
+        "Status"
+      ];
+
+      // Helper function to escape CSV values
+      const escapeCSV = (value) => {
+        if (value === null || value === undefined) return "";
+        const stringValue = String(value);
+        // If value contains comma, quote, or newline, wrap in quotes and escape quotes
+        if (stringValue.includes(",") || stringValue.includes('"') || stringValue.includes("\n")) {
+          return `"${stringValue.replace(/"/g, '""')}"`;
+        }
+        return stringValue;
+      };
+
+      // Create CSV rows
+      const csvRows = [
+        headers.join(","),
+        ...allFilteredData.map((item) => {
+          return [
+            escapeCSV(item.question || item.questionText || "N/A"),
+            escapeCSV(getQuestionTypeDisplay(item.questionType)),
+            escapeCSV(item.submittedBy || "Unknown"),
+            escapeCSV(item.flagReason || ""),
+            escapeCSV(formatDate(item.dateReported || item.createdAt)),
+            escapeCSV(item.status === "pending" ? "Flagged" : item.status || "N/A")
+          ].join(",");
+        }),
+      ];
+
+      // Create blob and download
+      const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      
+      // Generate filename
+      const timestamp = new Date().toISOString().split("T")[0];
+      link.download = `content_moderation_${timestamp}.csv`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(`Exported ${allFilteredData.length} flagged questions successfully`);
+    } catch (error) {
+      console.error("Error exporting content moderation data:", error);
+      toast.error("Failed to export data. Please try again.");
+    }
   };
 
   return (
@@ -143,45 +276,8 @@ const ContentModerationPage = () => {
             <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
               <button
                 type="button"
-                className="flex flex-1 sm:flex-initial h-[36px] items-center justify-center gap-2 rounded-[8px] border border-[#03274633] bg-white px-3 md:px-5 text-[12px] sm:text-[14px] md:text-[16px] font-roboto font-semibold leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  className="sm:w-4 sm:h-4"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M15.2381 1.52455V5.33408C15.2381 5.75465 14.8975 6.09598 14.4762 6.09598H10.6667C10.2453 6.09598 9.90476 5.75465 9.90476 5.33408C9.90476 4.91351 10.2453 4.57217 10.6667 4.57217H12.8837C11.8117 2.71693 9.81867 1.52455 7.61905 1.52455C4.25829 1.52455 1.52381 4.25903 1.52381 7.61979C1.52381 10.9806 4.25829 13.715 7.61905 13.715C9.94895 13.715 12.0404 12.4175 13.0774 10.3283C13.264 9.95193 13.7226 9.79656 14.0982 9.98475C14.4754 10.1722 14.6294 10.6294 14.442 11.0058C13.146 13.6168 10.531 15.2381 7.61905 15.2381C3.4179 15.2381 0 11.8202 0 7.61905C0 3.4179 3.4179 0 7.61905 0C10.0594 0 12.3025 1.16957 13.7143 3.05376V1.52455C13.7143 1.10398 14.0549 0.762649 14.4762 0.762649C14.8975 0.762649 15.2381 1.10398 15.2381 1.52455Z"
-                    fill="#25314C"
-                  />
-                </svg>
-                <span className="hidden sm:inline">{t('admin.contentModeration.actions.refresh')}</span>
-              </button>
-              <button
-                type="button"
-                className="flex flex-1 sm:flex-initial h-[36px] items-center justify-center gap-2 rounded-[8px] bg-[#ED4122] px-3 md:px-5 text-[12px] sm:text-[14px] md:text-[16px] font-roboto font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  className="sm:w-3.5 sm:h-4"
-                  viewBox="0 0 14 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M8.6 16C8.4728 16 8.34644 15.9582 8.24004 15.8769L5.04004 13.4154C4.88964 13.2989 4.8 13.1167 4.8 12.9231V9.64103C4.8 9.47692 4.73762 9.32184 4.62402 9.20533L0.527246 5.00348C0.187246 4.65394 0 4.19117 0 3.69804V1.84615C0 0.827897 0.808 0 1.8 0H12.2C13.192 0 14 0.827897 14 1.84615V3.69804C14 4.19117 13.8128 4.65476 13.4728 5.00348L9.37598 9.20533C9.26238 9.32184 9.2 9.4761 9.2 9.64103V15.3846C9.2 15.6176 9.07197 15.831 8.86797 15.9352C8.78317 15.9787 8.6912 16 8.6 16ZM6 12.6154L8 14.1538V9.64103C8 9.1479 8.18725 8.68431 8.52725 8.33559L12.624 4.13374C12.7376 4.01723 12.8 3.86297 12.8 3.69804V1.84615C12.8 1.50646 12.5304 1.23077 12.2 1.23077H1.8C1.4696 1.23077 1.2 1.50646 1.2 1.84615V3.69804C1.2 3.86214 1.26238 4.01723 1.37598 4.13374L5.47275 8.33559C5.81275 8.68513 6 9.1479 6 9.64103V12.6154Z"
-                    fill="white"
-                  />
-                </svg>
-                <span className="hidden sm:inline">{t('admin.contentModeration.actions.filter')}</span>
-              </button>
-              <button
-                type="button"
-                className="flex flex-1 sm:flex-initial h-[36px] items-center justify-center gap-2 rounded-[8px] border border-[#03274633] bg-[#ED4122] px-3 md:px-5 text-[12px] sm:text-[14px] md:text-[16px] font-roboto font-semibold leading-[16px] text-white transition hover:bg-[#F9FAFB]"
+                onClick={handleExport}
+                className="flex flex-1 sm:flex-initial h-[36px] items-center justify-center gap-2 rounded-[8px] border border-[#03274633] bg-[#ED4122] px-3 md:px-5 text-[12px] sm:text-[14px] md:text-[16px] font-roboto font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]"
               >
                 <svg
                   width="14"
@@ -201,54 +297,20 @@ const ContentModerationPage = () => {
             </div>
           </div>
 
-          {/* Navigation Tabs */}
-          <div className="flex gap-2 my-4 md:my-8 overflow-x-auto pb-2 scrollbar-hide">
-            <button
-              type="button"
-              onClick={() => setActiveTab("flagged")}
-              className={`px-4 sm:px-6 py-2 rounded-[8px] font-roboto text-[14px] sm:text-[16px] font-medium leading-[20px] transition border border-[#E5E7EB] whitespace-nowrap ${
-                activeTab === "flagged"
-                  ? "bg-[#ED4122] text-white"
-                  : "bg-[#FFFFFF] text-oxford-blue hover:bg-[#E5E7EB]"
-              }`}
-            >
-              {t('admin.contentModeration.tabs.flaggedContent')}
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("pending")}
-              className={`px-4 sm:px-6 py-2 rounded-[8px] font-roboto text-[14px] sm:text-[16px] font-medium leading-[20px] transition border border-[#E5E7EB] whitespace-nowrap ${
-                activeTab === "pending"
-                  ? "bg-[#ED4122] text-white"
-                  : "bg-[#FFFFFF] text-oxford-blue hover:bg-[#E5E7EB]"
-              }`}
-            >
-              {t('admin.contentModeration.tabs.pendingApproval')}
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("reports")}
-              className={`px-4 sm:px-6 py-2 rounded-[8px] font-roboto text-[14px] sm:text-[16px] font-medium leading-[20px] transition border border-[#E5E7EB] whitespace-nowrap ${
-                activeTab === "reports"
-                  ? "bg-[#ED4122] text-white"
-                  : "bg-[#FFFFFF] text-oxford-blue hover:bg-[#E5E7EB]"
-              }`}
-            >
-              {t('admin.contentModeration.tabs.userReports')}
-            </button>
-          </div>
-
           {/* Filter Dropdowns */}
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-4 md:mb-6">
             <div className="w-full sm:w-[184px]">
               <Dropdown
                 value={status || ""}
                 options={[
-                  { value: "flagged", label: t('admin.contentModeration.filters.flagged') },
+                  { value: "pending", label: t('admin.contentModeration.filters.flagged') },
                   { value: "approved", label: t('admin.contentModeration.filters.approved') },
                   { value: "rejected", label: t('admin.contentModeration.filters.rejected') },
                 ]}
-                onChange={(value) => setStatus(value)}
+                onChange={(value) => {
+                  setStatus(value);
+                  setCurrentPage(1);
+                }}
                 placeholder={t('admin.contentModeration.filters.status')}
                 showDefaultOnEmpty={false}
                 className="w-full"
@@ -259,11 +321,13 @@ const ContentModerationPage = () => {
               <Dropdown
                 value={contentType || ""}
                 options={[
-                  { value: "video", label: t('admin.contentModeration.filters.video') },
-                  { value: "image", label: t('admin.contentModeration.filters.image') },
-                  { value: "text", label: t('admin.contentModeration.filters.text') },
+                  { value: "mcq", label: "MCQ" },
+                  { value: "truefalse", label: "True/False" },
                 ]}
-                onChange={(value) => setContentType(value)}
+                onChange={(value) => {
+                  setContentType(value);
+                  setCurrentPage(1);
+                }}
                 placeholder={t('admin.contentModeration.filters.contentType')}
                 showDefaultOnEmpty={false}
                 className="w-full"
@@ -278,7 +342,10 @@ const ContentModerationPage = () => {
                   { value: "week", label: t('admin.contentModeration.filters.thisWeek') },
                   { value: "month", label: t('admin.contentModeration.filters.thisMonth') },
                 ]}
-                onChange={(value) => setDateRange(value)}
+                onChange={(value) => {
+                  setDateRange(value);
+                  setCurrentPage(1);
+                }}
                 placeholder={t('admin.contentModeration.filters.dateRange')}
                 showDefaultOnEmpty={false}
                 className="w-full"
@@ -294,8 +361,8 @@ const ContentModerationPage = () => {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-oxford-blue text-center">
-                  <th className="px-3 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
-                    {t('admin.contentModeration.table.columns.number')}
+                  <th className="px-4 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white w-[200px]">
+                    {t('admin.contentModeration.table.columns.questionTitle') || "Question"}
                   </th>
                   <th className="px-4 py-4 text-[16px] font-archivo font-medium leading-[16px] text-white">
                     {t('admin.contentModeration.table.columns.contentType')}
@@ -318,16 +385,31 @@ const ContentModerationPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {flaggedContent.map((item) => (
+                {loading ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-4 text-center">
+                      <Loader size="md" color="oxford-blue" />
+                    </td>
+                  </tr>
+                ) : filteredAndPaginatedData.data.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-4 text-center text-oxford-blue">
+                      No flagged questions found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredAndPaginatedData.data.map((item) => (
                   <tr
                     key={item.id}
                     className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition"
                   >
-                    <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue">
-                      {item.id}
+                    <td className="px-4 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue w-[200px]">
+                      <div className="line-clamp-2">
+                        {item.question || item.questionText || "N/A"}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue">
-                      {item.contentType}
+                    <td className="px-4 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue">
+                      {getQuestionTypeDisplay(item.questionType)}
                     </td>
                     <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue">
                       {item.submittedBy}
@@ -336,13 +418,19 @@ const ContentModerationPage = () => {
                       {item.flagReason}
                     </td>
                     <td className="px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue">
-                      {item.dateReported}
+                      {formatDate(item.dateReported || item.createdAt)}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span
-                        className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] text-center w-[70px] h-5 rounded-[6px] border-[0.5px] border-[#ED4122] bg-[#FEF2F2] text-[10px] text-[#ED4122]"
+                        className={`inline-flex items-center justify-center font-roboto font-normal leading-[100%] text-center w-[70px] h-5 rounded-[6px] border-[0.5px] text-[10px] ${
+                          item.status === "approved"
+                            ? "border-[#10B981] bg-[#ECFDF5] text-[#047857]"
+                            : item.status === "rejected"
+                            ? "border-[#6B7280] bg-[#F3F4F6] text-[#6B7280]"
+                            : "border-[#ED4122] bg-[#FEF2F2] text-[#ED4122]"
+                        }`}
                       >
-                        {item.status}
+                        {item.status === "pending" ? "Flagged" : item.status}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -354,49 +442,133 @@ const ContentModerationPage = () => {
                         >
                           {t('admin.contentModeration.table.actions.view')}
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleApprove(item.id)}
-                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition py-1 px-[10px] bg-[#FDF0D5] text-[#ED4122] h-[22px]"
-                        >
-                          {t('admin.contentModeration.table.actions.approve')}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleReject(item.id)}
-                          className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition py-1 px-[10px] bg-[#ED4122] text-white h-[22px]"
-                        >
-                          {t('admin.contentModeration.table.actions.reject')}
-                        </button>
+                        {item.status === "pending" && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleApprove(item.id)}
+                              disabled={isProcessing}
+                              className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition py-1 px-[10px] bg-[#FDF0D5] text-[#ED4122] h-[22px] disabled:opacity-50"
+                            >
+                              {t('admin.contentModeration.table.actions.approve')}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleReject(item.id)}
+                              disabled={isProcessing}
+                              className="inline-flex items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition py-1 px-[10px] bg-[#ED4122] text-white h-[22px] disabled:opacity-50"
+                            >
+                              {t('admin.contentModeration.table.actions.reject')}
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
+          {/* Pagination */}
+          {filteredAndPaginatedData.totalPages > 0 && (
+            <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-3 sm:px-4 py-4 text-oxford-blue lg:flex-row lg:items-center lg:justify-between lg:bg-oxford-blue lg:px-6 lg:text-white">
+              <p className="text-[11px] sm:text-[12px] font-roboto font-medium leading-[18px] tracking-[3%] text-center lg:text-left">
+                {t('admin.contentModeration.pagination.showing')
+                  .replace('{{from}}', filteredAndPaginatedData.total > 0 ? ((currentPage - 1) * pageSize + 1).toString() : '0')
+                  .replace('{{to}}', Math.min(currentPage * pageSize, filteredAndPaginatedData.total).toString())
+                  .replace('{{total}}', filteredAndPaginatedData.total.toString())}
+              </p>
+              <div className="flex items-center justify-center gap-1 sm:gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className={`flex h-[27px] w-[70px] sm:w-[78px] items-center justify-center rounded border text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] transition-colors ${
+                    currentPage === 1
+                      ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] lg:border-transparent lg:bg-white/20 lg:text-white/70"
+                      : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] lg:border-white"
+                  }`}
+                >
+                  {t('admin.contentModeration.pagination.previous')}
+                </button>
+                {Array.from({ length: Math.min(filteredAndPaginatedData.totalPages, 5) }, (_, i) => {
+                  let pageNum;
+                  if (filteredAndPaginatedData.totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= filteredAndPaginatedData.totalPages - 2) {
+                    pageNum = filteredAndPaginatedData.totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      type="button"
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded border text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] transition-colors ${
+                        pageNum === currentPage
+                          ? "border-[#ED4122] bg-[#ED4122] text-white"
+                          : "border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] lg:border-[#032746]"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(prev => Math.min(filteredAndPaginatedData.totalPages, prev + 1))}
+                  disabled={currentPage === filteredAndPaginatedData.totalPages}
+                  className={`flex h-[27px] w-[70px] sm:w-[78px] items-center justify-center rounded border text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] transition-colors ${
+                    currentPage === filteredAndPaginatedData.totalPages
+                      ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF] lg:border-transparent lg:bg-white/20 lg:text-white/70"
+                      : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] lg:border-white"
+                  }`}
+                >
+                  {t('admin.contentModeration.pagination.next')}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Content Cards - Mobile/Tablet View */}
         <div className="lg:hidden space-y-4">
-          {flaggedContent.map((item) => (
+          {loading ? (
+            <Loader size="lg" color="oxford-blue" className="py-8" />
+          ) : filteredAndPaginatedData.data.length === 0 ? (
+            <div className="text-center py-8 text-oxford-blue">No flagged questions found</div>
+          ) : (
+            filteredAndPaginatedData.data.map((item) => (
             <div
               key={item.id}
               className="rounded-[12px] border border-[#03274633] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] p-4"
             >
               <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="font-archivo text-[14px] font-medium leading-[16px] text-oxford-blue mb-1">
-                    #{item.id}
+                <div className="flex-1">
+                  <p className="font-roboto text-[12px] font-medium leading-[16px] text-dark-gray mb-1">
+                    {t('admin.contentModeration.table.columns.questionTitle') || "Question Title"}
+                  </p>
+                  <p className="font-roboto text-[12px] font-normal leading-[16px] text-oxford-blue mb-2 line-clamp-2">
+                    {item.question || item.questionText || "N/A"}
                   </p>
                   <p className="font-roboto text-[12px] font-normal leading-[16px] text-dark-gray">
-                    {item.contentType}
+                    {getQuestionTypeDisplay(item.questionType)}
                   </p>
                 </div>
                 <span
-                  className="inline-flex items-center justify-center font-roboto font-normal leading-[100%] text-center w-[70px] h-5 rounded-[6px] border-[0.5px] border-[#ED4122] bg-[#FEF2F2] text-[10px] text-[#ED4122]"
+                  className={`inline-flex items-center justify-center font-roboto font-normal leading-[100%] text-center w-[70px] h-5 rounded-[6px] border-[0.5px] text-[10px] ml-2 ${
+                    item.status === "approved"
+                      ? "border-[#10B981] bg-[#ECFDF5] text-[#047857]"
+                      : item.status === "rejected"
+                      ? "border-[#6B7280] bg-[#F3F4F6] text-[#6B7280]"
+                      : "border-[#ED4122] bg-[#FEF2F2] text-[#ED4122]"
+                  }`}
                 >
-                  {item.status}
+                  {item.status === "pending" ? "Flagged" : item.status}
                 </span>
               </div>
               
@@ -422,7 +594,7 @@ const ContentModerationPage = () => {
                     {t('admin.contentModeration.mobile.dateReported')}
                   </p>
                   <p className="font-roboto text-[12px] font-normal leading-[16px] text-oxford-blue flex-1">
-                    {item.dateReported}
+                    {formatDate(item.dateReported || item.createdAt)}
                   </p>
                 </div>
               </div>
@@ -435,66 +607,192 @@ const ContentModerationPage = () => {
                 >
                   {t('admin.contentModeration.table.actions.view')}
                 </button>
+                {item.status === "pending" && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleApprove(item.id)}
+                      disabled={isProcessing}
+                      className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2 bg-[#FDF0D5] text-[#ED4122] min-h-[32px] disabled:opacity-50"
+                    >
+                      {t('admin.contentModeration.table.actions.approve')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleReject(item.id)}
+                      disabled={isProcessing}
+                      className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2 bg-[#ED4122] text-white min-h-[32px] disabled:opacity-50"
+                    >
+                      {t('admin.contentModeration.table.actions.reject')}
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+            ))
+          )}
+          {/* Mobile Pagination */}
+          {filteredAndPaginatedData.totalPages > 0 && (
+            <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-3 sm:px-4 py-4 text-oxford-blue rounded-[12px] border border-[#03274633] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
+              <p className="text-[11px] sm:text-[12px] font-roboto font-medium leading-[18px] tracking-[3%] text-center">
+                {t('admin.contentModeration.pagination.showing')
+                  .replace('{{from}}', filteredAndPaginatedData.total > 0 ? ((currentPage - 1) * pageSize + 1).toString() : '0')
+                  .replace('{{to}}', Math.min(currentPage * pageSize, filteredAndPaginatedData.total).toString())
+                  .replace('{{total}}', filteredAndPaginatedData.total.toString())}
+              </p>
+              <div className="flex items-center justify-center gap-1 sm:gap-2">
                 <button
                   type="button"
-                  onClick={() => handleApprove(item.id)}
-                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2 bg-[#FDF0D5] text-[#ED4122] min-h-[32px]"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className={`flex h-[27px] w-[70px] sm:w-[78px] items-center justify-center rounded border text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] transition-colors ${
+                    currentPage === 1
+                      ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF]"
+                      : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6]"
+                  }`}
                 >
-                  {t('admin.contentModeration.table.actions.approve')}
+                  {t('admin.contentModeration.pagination.previous')}
                 </button>
+                {Array.from({ length: Math.min(filteredAndPaginatedData.totalPages, 5) }, (_, i) => {
+                  let pageNum;
+                  if (filteredAndPaginatedData.totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= filteredAndPaginatedData.totalPages - 2) {
+                    pageNum = filteredAndPaginatedData.totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      type="button"
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded border text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] transition-colors ${
+                        pageNum === currentPage
+                          ? "border-[#ED4122] bg-[#ED4122] text-white"
+                          : "border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6]"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
                 <button
                   type="button"
-                  onClick={() => handleReject(item.id)}
-                  className="inline-flex flex-1 sm:flex-initial items-center justify-center font-roboto font-normal text-[12px] leading-[100%] text-center rounded-[6px] transition px-3 py-2 bg-[#ED4122] text-white min-h-[32px]"
+                  onClick={() => setCurrentPage(prev => Math.min(filteredAndPaginatedData.totalPages, prev + 1))}
+                  disabled={currentPage === filteredAndPaginatedData.totalPages}
+                  className={`flex h-[27px] w-[70px] sm:w-[78px] items-center justify-center rounded border text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] transition-colors ${
+                    currentPage === filteredAndPaginatedData.totalPages
+                      ? "cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] text-[#9CA3AF]"
+                      : "border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6]"
+                  }`}
                 >
-                  {t('admin.contentModeration.table.actions.reject')}
+                  {t('admin.contentModeration.pagination.next')}
                 </button>
               </div>
             </div>
-          ))}
+          )}
         </div>
+      </div>
 
-        {/* Pagination */}
-        <div className="rounded-[12px] border border-[#03274633] bg-white shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)] mt-4 lg:mt-0 lg:border-t-0 lg:rounded-t-none">
-          <div className="flex flex-col gap-4 border-t border-[#E5E7EB] bg-white px-3 sm:px-4 py-4 text-oxford-blue lg:flex-row lg:items-center lg:justify-between lg:bg-oxford-blue lg:px-6 lg:text-white">
-            <p className="text-[11px] sm:text-[12px] font-roboto font-medium leading-[18px] tracking-[3%] text-center lg:text-left">
-              {t('admin.contentModeration.pagination.showing').replace('{{from}}', '1').replace('{{to}}', '3').replace('{{total}}', '25')}
+      {/* View Question Modal */}
+      {showViewModal && selectedQuestion && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-[20px] font-archivo font-bold text-oxford-blue">
+                Question Details
+              </h3>
+              <button
+                onClick={() => {
+                  setShowViewModal(false);
+                  setSelectedQuestion(null);
+                }}
+                className="text-oxford-blue hover:text-[#ED4122] text-[24px]"
+              >
+                ×
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <p className="text-[14px] font-roboto font-medium text-dark-gray mb-1">Question:</p>
+                <p className="text-[16px] font-roboto text-oxford-blue">{selectedQuestion.question || selectedQuestion.questionText || "N/A"}</p>
+              </div>
+              {selectedQuestion.options && (
+                <div>
+                  <p className="text-[14px] font-roboto font-medium text-dark-gray mb-2">Options:</p>
+                  <div className="space-y-2">
+                    {Object.entries(selectedQuestion.options).map(([key, value]) => (
+                      <div key={key} className="flex items-center gap-2">
+                        <span className="font-medium text-oxford-blue w-6">{key}:</span>
+                        <span className="text-[14px] font-roboto text-oxford-blue">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {selectedQuestion.explanation && (
+                <div>
+                  <p className="text-[14px] font-roboto font-medium text-dark-gray mb-1">Explanation:</p>
+                  <p className="text-[14px] font-roboto text-oxford-blue">{selectedQuestion.explanation}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-[14px] font-roboto font-medium text-dark-gray mb-1">Flag Reason:</p>
+                <p className="text-[14px] font-roboto text-[#ED4122]">{selectedQuestion.flagReason}</p>
+              </div>
+              <div>
+                <p className="text-[14px] font-roboto font-medium text-dark-gray mb-1">Flagged By:</p>
+                <p className="text-[14px] font-roboto text-oxford-blue">
+                  {selectedQuestion.submittedBy || selectedQuestion.flaggedBy?.name || "Unknown"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {showRejectModal && selectedQuestion && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-[18px] font-archivo font-bold text-oxford-blue mb-4">
+              Reject Flag
+            </h3>
+            <p className="text-[14px] font-roboto text-dark-gray mb-4">
+              Please provide a reason for rejecting this flag. This reason will be shown to the student.
             </p>
-            <div className="flex items-center justify-center gap-1 sm:gap-2">
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Enter rejection reason..."
+              className="w-full h-32 p-3 border border-[#E5E7EB] rounded-lg text-[14px] font-roboto text-oxford-blue mb-4 resize-none"
+            />
+            <div className="flex gap-3 justify-end">
               <button
-                type="button"
-                className="flex h-[27px] w-[70px] sm:w-[78px] items-center justify-center rounded border text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] lg:border-white"
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectReason("");
+                  setSelectedQuestion(null);
+                }}
+                className="px-4 py-2 text-[14px] font-roboto text-oxford-blue border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] transition"
+                disabled={isProcessing}
               >
-                {t('admin.contentModeration.pagination.previous')}
+                Cancel
               </button>
               <button
-                type="button"
-                className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded border border-[#ED4122] bg-[#ED4122] text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] text-white transition-colors"
+                onClick={handleRejectSubmit}
+                disabled={isProcessing || !rejectReason.trim()}
+                className="px-4 py-2 text-[14px] font-roboto text-white bg-[#ED4122] rounded-lg hover:bg-[#d43a1f] transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                1
-              </button>
-              <button
-                type="button"
-                className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded border border-[#E5E7EB] bg-white text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] text-oxford-blue transition-colors hover:bg-[#F3F4F6] lg:border-[#032746]"
-              >
-                2
-              </button>
-              <button
-                type="button"
-                className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded border border-[#E5E7EB] bg-white text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] text-oxford-blue transition-colors hover:bg-[#F3F4F6] lg:border-[#032746]"
-              >
-                3
-              </button>
-              <button
-                type="button"
-                className="flex h-[27px] w-[70px] sm:w-[78px] items-center justify-center rounded border text-[12px] sm:text-[14px] font-archivo font-semibold leading-[16px] transition-colors border-[#032746] bg-white text-oxford-blue hover:bg-[#F3F4F6] lg:border-white"
-              >
-                {t('admin.contentModeration.pagination.next')}
+                {isProcessing ? "Rejecting..." : "Reject Flag"}
               </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

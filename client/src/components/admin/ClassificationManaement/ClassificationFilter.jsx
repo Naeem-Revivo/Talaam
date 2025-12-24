@@ -10,10 +10,14 @@ const ClassificationFilter = ({
   subjectValue,
   topicValue,
   subtopicValue,
+  examValue,
   onSearchChange,
   onSubjectChange,
   onTopicChange,
   onSubtopicChange,
+  onExamChange,
+  activeTab,
+  exams = [],
   searchPlaceholder,
 }) => {
   const { t } = useLanguage();
@@ -21,10 +25,30 @@ const ClassificationFilter = ({
   const subjectOptions = getSubjectOptions(t);
   const topicOptions = getTopicOptions(t);
   const subtopicOptions = getSubtopicOptions(t);
+  
+  // Build exam options: "ALL" + available exams
+  const examOptions = [
+    { value: "ALL", label: t('admin.classificationManagement.filters.allExams') || "All Exams" },
+    ...exams.map((exam) => ({
+      value: exam.id,
+      label: exam.name || "",
+    })),
+  ];
 
   return (
     <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
       <div className="flex flex-col lg:flex-row items-center gap-7 w-full">
+        {/* Exam Dropdown - Only show for Subject tab */}
+        {activeTab === "Subject" && (
+          <Dropdown
+            label={t('admin.classificationManagement.filters.selectExam') || "Select Exam"}
+            value={examValue}
+            options={examOptions}
+            onChange={onExamChange}
+            className="w-[180px]"
+          />
+        )}
+
         {/* Subject Dropdown */}
         {/* <Dropdown
           label={t('admin.classificationManagement.filters.selectSubject')}
@@ -70,6 +94,11 @@ const ClassificationFilter = ({
               type="text"
               value={searchValue}
               onChange={(e) => onSearchChange?.(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                }
+              }}
               placeholder={placeholder}
               className="flex-1 h-full rounded-lg bg-transparent px-3 text-sm font-roboto text-oxford-blue placeholder:text-[#9CA3AF] focus:outline-none"
             />

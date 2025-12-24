@@ -1,146 +1,257 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   headcard1,
   headcard2,
   headcard3,
   headcard4,
-  threebar,
   alert,
   sclock,
   blacktick,
 } from "../../assets/svg/dashboard/admin";
 import AdminMetricCard from "../../components/admin/AdminMetricCard";
 import { useLanguage } from "../../context/LanguageContext";
+import adminAPI from "../../api/admin";
+import Loader from "../../components/common/Loader";
 
-const growthMonths = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-const growthValues = [
-  1, 1.4, 2.1, 3.8, 4.6, 6.1, 7.3, 8.8, 10.6, 11.9, 13.1, 14.3,
-];
 const growthYAxis = [0, 2.5, 5, 7.5, 10, 12.5, 15];
+
+// Avatar colors for user avatars
+const avatarColors = [
+  "bg-[#FDE68A]",
+  "bg-[#BFDBFE]",
+  "bg-[#C4B5FD]",
+  "bg-[#FECACA]",
+  "bg-[#D1FAE5]",
+  "bg-[#FEF3C7]",
+];
 
 const AdminDashboardPage = () => {
   const { t, language } = useLanguage();
-  const dir = language === 'ar' ? 'rtl' : 'ltr'
+  const dir = language === 'ar' ? 'rtl' : 'ltr';
 
-  const stats = [
-    {
-      title: t('admin.dashboard.stats.totalUsers'),
-      value: "12,800",
-      delta: t('admin.dashboard.stats.fromLastMonth'),
-      deltaColor: "text-[#ED4122]",
-      icon: headcard1,
-    },
-    {
-      title: t('admin.dashboard.stats.verifiedUsers'),
-      value: "9,234",
-      delta: t('admin.dashboard.stats.verificationRate'),
-      deltaColor: "text-dark-gray",
-      icon: headcard2,
-    },
-    {
-      title: t('admin.dashboard.stats.activeSubscriptions'),
-      value: "3,456",
-      delta: t('admin.dashboard.stats.thisWeek'),
-      deltaColor: "text-dark-gray",
-      icon: headcard3,
-    },
-    {
-      title: t('admin.dashboard.stats.revenue'),
-      value: "$89,432",
-      delta: t('admin.dashboard.stats.thisMonth'),
-      deltaColor: "text-dark-gray",
-      icon: headcard4,
-    },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [timeFilter, setTimeFilter] = useState('all'); // 'all', 'week', 'month', 'year'
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const subscriptionSegments = useMemo(() => [
-    { label: t('admin.dashboard.charts.planLabels.free'), value: 70.8, color: "#E5E7EB", isBase: true },
-    { label: t('admin.dashboard.charts.planLabels.premium'), value: 21.1, color: "#ED4122" },
-    { label: t('admin.dashboard.charts.planLabels.organization'), value: 5.1, color: "#6CA6C1" },
-  ], [t]);
 
-  const latestSignups = [
-    {
-      name: "Sarah Ahmad",
-      email: "sarah.ahmad@gmail.com",
-      time: t('admin.dashboard.time.minAgo').replace('{{count}}', '2'),
-      avatarColor: "bg-[#FDE68A]",
-    },
-    {
-      name: "Emily Davis",
-      email: "emilydavis@gmail.com",
-      time: t('admin.dashboard.time.minAgo').replace('{{count}}', '15'),
-      avatarColor: "bg-[#BFDBFE]",
-    },
-    {
-      name: "Emily Davis",
-      email: "emilydavis@gmail.com",
-      time: t('admin.dashboard.time.minAgo').replace('{{count}}', '30'),
-      avatarColor: "bg-[#C4B5FD]",
-    },
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await adminAPI.getDashboardStatistics();
+        if (response.success) {
+          setDashboardData(response.data);
+        } else {
+          setError(response.message || 'Failed to load dashboard data');
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError(err.message || 'Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const notifications = [
-    {
-      title: t('admin.dashboard.notifications.highServerLoad.title'),
-      description: t('admin.dashboard.notifications.highServerLoad.description'),
-      time: t('admin.dashboard.notifications.highServerLoad.description'),
-      bg: "bg-[#FEF2F2]",
-      border: "border-[#F97316]",
-      iconBg: "bg-[#EF4444]",
-      titleColor: "text-[#EF4444]",
-      descriptionColor: "text-[#EF4444]",
-      timeColor: "text-[#EF4444]",
-      icon: alert,
-      titleClass: "text-[16px] leading-[16px]",
-      descriptionClass: "text-[12px] leading-[16px]",
-      timeClass: "text-[8px] leading-[12px]",
-    },
-    {
-      title: t('admin.dashboard.notifications.scheduledMaintenance.title'),
-      description: t('admin.dashboard.notifications.scheduledMaintenance.description'),
-      time: t('admin.dashboard.notifications.scheduledMaintenance.time'),
-      bg: "bg-[#FEFCE8]",
-      border: "border-[#FAFF70]",
-      iconBg: "bg-[#60A5FA]",
-      titleColor: "text-[#6CA6C1]",
-      descriptionColor: "text-[#6CA6C1]",
-      timeColor: "text-[#6CA6C1]",
-      icon: sclock,
-      titleClass: "text-[16px] leading-[16px]",
-      descriptionClass: "text-[12px] leading-[16px]",
-      timeClass: "text-[8px] leading-[14px]",
-    },
-    {
-      title: t('admin.dashboard.notifications.backupCompleted.title'),
-      description: t('admin.dashboard.notifications.backupCompleted.description'),
-      time: t('admin.dashboard.notifications.backupCompleted.time'),
-      bg: "bg-[#F0FDF4]",
-      border: "border-[#BAFFCB]",
-      iconBg: "bg-[#0F172A]",
-      titleColor: "text-oxford-blue",
-      descriptionColor: "text-oxford-blue",
-      timeColor: "text-oxford-blue",
-      icon: blacktick,
-      titleClass: "text-[16px] leading-[16px]",
-      descriptionClass: "text-[12px] leading-[16px]",
-      timeClass: "text-[8px] leading-[14px]",
-    },
-  ];
-  const { linePath, points } = useMemo(() => {
+    fetchDashboardData();
+  }, []);
+
+  // Format number with commas
+  const formatNumber = (num) => {
+    return num?.toLocaleString() || '0';
+  };
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    return `$${amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}`;
+  };
+
+  // Calculate percentage change (placeholder - you may want to add this to the API)
+  const calculatePercentageChange = (current, previous) => {
+    if (!previous || previous === 0) return null;
+    const change = ((current - previous) / previous) * 100;
+    return change > 0 ? `+${change.toFixed(0)}%` : `${change.toFixed(0)}%`;
+  };
+
+  // Prepare stats from API data
+  const stats = useMemo(() => {
+    if (!dashboardData?.statistics) return [];
+
+    const { totalStudents, verifiedEmailStudents, activeSubscriptions, totalRevenue } = dashboardData.statistics;
+    const verificationRate = totalStudents > 0 ? ((verifiedEmailStudents / totalStudents) * 100).toFixed(0) : 0;
+
+    return [
+      {
+        title: t('admin.dashboard.stats.totalUsers'),
+        value: formatNumber(totalStudents),
+        delta: t('admin.dashboard.stats.fromLastMonth'),
+        deltaColor: "text-[#ED4122]",
+        icon: headcard1,
+      },
+      {
+        title: t('admin.dashboard.stats.verifiedUsers'),
+        value: formatNumber(verifiedEmailStudents),
+        delta: `${verificationRate}% ${t('admin.dashboard.stats.verificationRate')}`,
+        deltaColor: "text-dark-gray",
+        icon: headcard2,
+      },
+      {
+        title: t('admin.dashboard.stats.activeSubscriptions'),
+        value: formatNumber(activeSubscriptions),
+        delta: t('admin.dashboard.stats.thisWeek'),
+        deltaColor: "text-dark-gray",
+        icon: headcard3,
+      },
+      {
+        title: t('admin.dashboard.stats.revenue'),
+        value: formatCurrency(totalRevenue),
+        delta: t('admin.dashboard.stats.thisMonth'),
+        deltaColor: "text-dark-gray",
+        icon: headcard4,
+      },
+    ];
+  }, [dashboardData, t]);
+
+  // Prepare subscription segments from API data - filter to show Free and Premium
+  const subscriptionSegments = useMemo(() => {
+    if (!dashboardData?.subscriptionPlanBreakdown) return [];
+
+    return dashboardData.subscriptionPlanBreakdown
+      .filter((segment) => {
+        const label = segment.label.toLowerCase();
+        return label === 'free' || label === 'premium';
+      })
+      .map((segment) => ({
+        label: t(`admin.dashboard.charts.planLabels.${segment.label.toLowerCase()}`),
+        value: segment.value,
+        color: segment.color,
+        isBase: segment.isBase || false,
+      }));
+  }, [dashboardData, t]);
+
+  // Prepare latest signups from API data
+  const latestSignups = useMemo(() => {
+    if (!dashboardData?.latestSignups) return [];
+
+    return dashboardData.latestSignups.map((user, index) => ({
+      name: user.name,
+      email: user.email,
+      time: user.timeAgo,
+      avatarColor: avatarColors[index % avatarColors.length],
+    }));
+  }, [dashboardData]);
+
+  // Prepare subscription notifications from API data
+  const notifications = useMemo(() => {
+    if (!dashboardData?.subscriptionNotifications || dashboardData.subscriptionNotifications.length === 0) {
+      // Return default success notification if no notifications
+      return [{
+        title: 'All Subscriptions Active',
+        description: 'All subscriptions are active and up to date.',
+        time: 'System healthy',
+        bg: "bg-[#F0FDF4]",
+        border: "border-[#10B981]",
+        iconBg: "bg-[#10B981]",
+        titleColor: "text-[#032746]",
+        descriptionColor: "text-[#032746]",
+        timeColor: "text-[#032746]",
+        icon: blacktick,
+        titleClass: "text-[16px] leading-[16px]",
+        descriptionClass: "text-[12px] leading-[16px]",
+        timeClass: "text-[8px] leading-[14px]",
+      }];
+    }
+
+    // Map API notifications to UI format
+    return dashboardData.subscriptionNotifications.map((notification) => {
+      // Select icon based on notification type
+      let icon = blacktick; // default
+      if (notification.type === 'error') {
+        icon = alert;
+      } else if (notification.type === 'warning') {
+        icon = sclock;
+      } else if (notification.type === 'info') {
+        icon = sclock;
+      } else if (notification.type === 'success') {
+        icon = blacktick;
+      }
+
+      return {
+        title: notification.title,
+        description: notification.description,
+        time: notification.time,
+        bg: notification.bg,
+        border: notification.border,
+        iconBg: notification.iconBg,
+        // Use the colors from API (already set correctly per type)
+        titleColor: notification.titleColor,
+        descriptionColor: notification.descriptionColor,
+        timeColor: notification.timeColor,
+        icon: icon,
+        titleClass: "text-[16px] leading-[16px]",
+        descriptionClass: "text-[12px] leading-[16px]",
+        timeClass: "text-[8px] leading-[14px]",
+      };
+    });
+  }, [dashboardData]);
+
+  useEffect(() => {
+    if (!isFilterOpen) return;
+    
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.relative')) {
+        setIsFilterOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isFilterOpen]);
+  // Filter user growth data based on time filter
+  const filteredGrowthData = useMemo(() => {
+    if (!dashboardData?.userGrowthData || dashboardData.userGrowthData.length === 0) {
+      return [];
+    }
+
+    const now = new Date();
+    let filteredData = [...dashboardData.userGrowthData];
+
+    switch (timeFilter) {
+      case 'week': {
+        // Show last 4 weeks (approximately 1 month of data)
+        // Since we have monthly data, we'll show the most recent month
+        filteredData = filteredData.slice(-1);
+        break;
+      }
+      case 'month': {
+        // Show last month
+        filteredData = filteredData.slice(-1);
+        break;
+      }
+      case 'year': {
+        // Show last 12 months (all available data)
+        filteredData = filteredData.slice(-12);
+        break;
+      }
+      case 'all':
+      default: {
+        // Show all data
+        filteredData = dashboardData.userGrowthData;
+        break;
+      }
+    }
+
+    return filteredData;
+  }, [dashboardData, timeFilter]);
+
+  // Prepare growth chart data from filtered data
+  const { linePath, points, growthMonths, growthValues, maxValue } = useMemo(() => {
+    if (!filteredGrowthData || filteredGrowthData.length === 0) {
+      return { linePath: '', points: [], growthMonths: [], growthValues: [], maxValue: 15 };
+    }
+
     const chartWidth = 460;
     const chartHeight = 240;
     const leftPadding = 50;
@@ -150,9 +261,16 @@ const AdminDashboardPage = () => {
     const usableWidth = chartWidth - leftPadding - rightPadding;
     const usableHeight = chartHeight - topPadding - bottomPadding;
 
-    const maxValue = 15;
-    const pointCoords = growthValues.map((value, index) => {
-      const x = leftPadding + (usableWidth / (growthValues.length - 1)) * index;
+    // Extract months and cumulative counts from filtered data
+    const months = filteredGrowthData.map(item => item.month);
+    const values = filteredGrowthData.map(item => item.cumulativeCount / 1000); // Convert to thousands
+
+    // Find max value for scaling - round up to nearest 2.5k for better Y-axis labels
+    const rawMax = Math.max(...values, 15);
+    const maxValue = Math.ceil(rawMax / 2.5) * 2.5; // Round up to nearest 2.5k
+
+    const pointCoords = values.map((value, index) => {
+      const x = leftPadding + (usableWidth / Math.max(values.length - 1, 1)) * index;
       const y = topPadding + usableHeight - (value / maxValue) * usableHeight;
       return { x, y, value };
     });
@@ -166,8 +284,8 @@ const AdminDashboardPage = () => {
       )
       .join(" ");
 
-    return { linePath: d, points: pointCoords };
-  }, []);
+    return { linePath: d, points: pointCoords, growthMonths: months, growthValues: values, maxValue };
+  }, [filteredGrowthData]);
 
   const donutData = useMemo(() => {
     const radius = 90;
@@ -207,6 +325,35 @@ const AdminDashboardPage = () => {
       highlighted,
     };
   }, [subscriptionSegments]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <Loader
+        fullScreen={true}
+        size="lg"
+        color="oxford-blue"
+        text="Loading dashboard data..."
+      />
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-8 2xl:px-16 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-[#EF4444] font-roboto text-lg">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-oxford-blue text-white rounded-lg hover:bg-opacity-90 transition"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-8 2xl:px-16">
@@ -248,10 +395,60 @@ const AdminDashboardPage = () => {
                   {t('admin.dashboard.charts.userGrowthTrend.subtitle')}
                 </p> */}
               </div>
-              <button className="w-10 h-10 flex items-center justify-center rounded-xl transition">
-                <span className="sr-only">More</span>
-                <img src={threebar} alt="menu" />
-              </button>
+              {/* Time Filter */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-roboto rounded-lg bg-white border border-[#E5E7EB] text-oxford-blue hover:bg-gray-50 transition"
+                >
+                  <span>
+                    {timeFilter === 'all' ? 'All' : timeFilter === 'month' ? 'This month' : 'This year'}
+                  </span>
+                  <svg
+                    className={`w-4 h-4 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {isFilterOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-[150px] bg-white border border-[#E5E7EB] rounded-lg shadow-lg z-10">
+                    <button
+                      onClick={() => {
+                        setTimeFilter('all');
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 text-left text-sm font-roboto hover:bg-gray-50 transition first:rounded-t-lg ${timeFilter === 'all' ? 'bg-gray-50 text-oxford-blue font-medium' : 'text-dark-gray'
+                        }`}
+                    >
+                      All
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTimeFilter('month');
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 text-left text-sm font-roboto hover:bg-gray-50 transition ${timeFilter === 'month' ? 'bg-gray-50 text-oxford-blue font-medium' : 'text-dark-gray'
+                        }`}
+                    >
+                      This month
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTimeFilter('year');
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 text-left text-sm font-roboto hover:bg-gray-50 transition last:rounded-b-lg ${timeFilter === 'year' ? 'bg-gray-50 text-oxford-blue font-medium' : 'text-dark-gray'
+                        }`}
+                    >
+                      This year
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="mt-6 sm:mt-8">
               <div className="relative h-[300px] sm:h-[348px]">
@@ -275,76 +472,89 @@ const AdminDashboardPage = () => {
                       <stop offset="100%" stopColor="#1D4ED8" stopOpacity="0" />
                     </linearGradient>
                   </defs>
-                  {/* Grid lines */}
-                  {growthYAxis.map((value) => {
+                  {/* Grid lines - dynamically generate based on maxValue */}
+                  {(() => {
                     const chartHeight = 240;
                     const topPadding = 20;
                     const bottomPadding = 30;
-                    const usableHeight =
-                      chartHeight - topPadding - bottomPadding;
-                    const y =
-                      topPadding + usableHeight - (value / 15) * usableHeight;
-                    return (
-                      <g key={value}>
-                        <line
-                          x1={50}
-                          x2={440}
-                          y1={y}
-                          y2={y}
-                          stroke="#E5E7EB"
-                          strokeWidth="1"
-                          strokeDasharray="4 4"
-                          opacity="0.8"
-                        />
-                        <text
-                          x={30}
-                          y={y + 4}
-                          fill="#9CA3AF"
-                          fontSize="12"
-                          fontFamily="Roboto"
-                          textAnchor="end"
-                        >
-                          {value === 0 ? "0" : `${value}k`}
-                        </text>
-                      </g>
-                    );
-                  })}
+                    const usableHeight = chartHeight - topPadding - bottomPadding;
+
+                    // Generate Y-axis labels based on maxValue
+                    const steps = 6; // Number of grid lines
+                    const stepValue = maxValue / (steps - 1);
+                    const yAxisValues = [];
+
+                    for (let i = 0; i < steps; i++) {
+                      yAxisValues.push(i * stepValue);
+                    }
+
+                    return yAxisValues.map((value) => {
+                      const y = topPadding + usableHeight - (value / maxValue) * usableHeight;
+                      return (
+                        <g key={value}>
+                          <line
+                            x1={50}
+                            x2={440}
+                            y1={y}
+                            y2={y}
+                            stroke="#E5E7EB"
+                            strokeWidth="1"
+                            strokeDasharray="4 4"
+                            opacity="0.8"
+                          />
+                          <text
+                            x={30}
+                            y={y + 4}
+                            fill="#9CA3AF"
+                            fontSize="12"
+                            fontFamily="Roboto"
+                            textAnchor="end"
+                          >
+                            {value === 0 ? "0" : `${value.toFixed(1)}k`}
+                          </text>
+                        </g>
+                      );
+                    });
+                  })()}
 
                   {/* Area */}
-                  <path
-                    d={`M${points[0].x} ${points[0].y} ${points
-                      .map((point) => `L${point.x} ${point.y}`)
-                      .join(" ")} L${points[points.length - 1].x} 230 L${
-                      points[0].x
-                    } 230 Z`}
-                    fill="url(#growthGradient)"
-                  />
-                  {/* Line */}
-                  <path
-                    d={linePath}
-                    fill="none"
-                    stroke="#60A5FA"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  {/* Points */}
-                  {points.map((point, index) => (
-                    <circle
-                      key={index}
-                      cx={point.x}
-                      cy={point.y}
-                      r="4.5"
-                      fill="#60A5FA"
-                      stroke="#FFFFFF"
-                      strokeWidth="2"
-                    />
-                  ))}
+                  {points.length > 0 && (
+                    <>
+                      <path
+                        d={`M${points[0].x} ${points[0].y} ${points
+                          .map((point) => `L${point.x} ${point.y}`)
+                          .join(" ")} L${points[points.length - 1].x} 230 L${points[0].x
+                          } 230 Z`}
+                        fill="url(#growthGradient)"
+                      />
+                      {/* Line */}
+                      <path
+                        d={linePath}
+                        fill="none"
+                        stroke="#60A5FA"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      {/* Points */}
+                      {points.map((point, index) => (
+                        <circle
+                          key={index}
+                          cx={point.x}
+                          cy={point.y}
+                          r="4.5"
+                          fill="#60A5FA"
+                          stroke="#FFFFFF"
+                          strokeWidth="2"
+                        />
+                      ))}
+                    </>
+                  )}
                   {/* Month Labels */}
-                  {growthMonths.map((label, idx) => (
+                  {growthMonths && growthMonths.length > 0 && points.length > 0 && growthMonths.map((label, idx) => (
                     <text
-                      key={label}
-                      x={points[idx].x}
+                      key={`${label}-${idx}`}
+                      x={points[idx]?.x || 0}
                       y={230}
                       textAnchor="middle"
                       fill="#9CA3AF"
@@ -368,10 +578,6 @@ const AdminDashboardPage = () => {
                   {t('admin.dashboard.charts.subscriptionPlans.subtitle')}
                 </p> */}
               </div>
-              <button className="w-10 h-10 flex items-center justify-center rounded-xl transition">
-                <span className="sr-only">More</span>
-                <img src={threebar} alt="menu" />
-              </button>
             </div>
             <div className="flex flex-1 items-center justify-center">
               <div className="relative">
@@ -395,9 +601,8 @@ const AdminDashboardPage = () => {
                       fill="none"
                       strokeLinecap="butt"
                       strokeDasharray={segment.dasharray}
-                      transform={`rotate(${
-                        segment.rotation * 360 - 90
-                      } 130 130)`}
+                      transform={`rotate(${segment.rotation * 360 - 90
+                        } 130 130)`}
                     />
                   ))}
                   <circle

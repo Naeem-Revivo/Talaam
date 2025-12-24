@@ -1,23 +1,60 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { useLanguage } from "../../context/LanguageContext";
+import { fetchSubjects } from "../../store/slices/subjectsSlice";
+import { createTopic, clearError, clearSuccess } from "../../store/slices/topicsSlice";
+import { showErrorToast, showSuccessToast } from "../../utils/toastConfig";
 
 export default function AddTopicPage() {
     const { t } = useLanguage();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { subjects: subjectsData, loading: subjectsLoading } = useSelector((state) => state.subjects);
+    const { loading, error, success } = useSelector((state) => state.topics);
+    
     const [topicName, setTopicName] = useState("");
-    const [subjectName, setSubjectName] = useState("");
+    const [parentSubject, setParentSubject] = useState("");
     const [description, setDescription] = useState("");
 
-    const handleSubmit = (e) => {
+    // Fetch subjects on component mount
+    useEffect(() => {
+        dispatch(fetchSubjects());
+    }, [dispatch]);
+
+    // Handle success
+    useEffect(() => {
+        if (success) {
+            showSuccessToast("Topic created successfully");
+            dispatch(clearSuccess());
+            navigate("/admin/classification?tab=Topics");
+        }
+    }, [success, navigate, dispatch]);
+
+    // Handle error
+    useEffect(() => {
+        if (error) {
+            showErrorToast(error);
+            dispatch(clearError());
+        }
+    }, [error, dispatch]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const projectData = { subjectName, description, topicName };
-        console.log("Created Project:", projectData);
-        // TODO: Add API call or database save logic here
+        if (!parentSubject) {
+            showErrorToast("Please select a subject");
+            return;
+        }
+        const topicData = {
+            parentSubject: parentSubject,
+            name: topicName,
+            description: description,
+        };
+        dispatch(createTopic(topicData));
     };
 
     const handleCancel = () => {
-        setTopicName("");
-        setDescription("");
-        setSubjectName("");
+        navigate("/admin/classification");
     };
 
     return (
@@ -37,19 +74,27 @@ export default function AddTopicPage() {
                     {t('admin.addTopic.sections.addNewTopic')}
                 </h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Subject Name */}
+                    {/* Subject Dropdown */}
                     <div>
                         <label className="block text-base font-normal text-blue-dark mb-3">
                             {t('admin.addTopic.fields.parentSubject')}
                         </label>
-                        <input
-                            type="text"
-                            placeholder={t('admin.addTopic.placeholders.subjectName')}
-                            value={subjectName}
-                            onChange={(e) => setSubjectName(e.target.value)}
-                            className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark"
+                        <select
+                            value={parentSubject}
+                            onChange={(e) => setParentSubject(e.target.value)}
+                            className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark bg-white"
                             required
-                        />
+                            disabled={subjectsLoading}
+                        >
+                            <option value="">
+                                {subjectsLoading ? t('admin.addTopic.placeholders.loadingSubjects') || 'Loading subjects...' : t('admin.addTopic.placeholders.selectSubject') || 'Select a subject'}
+                            </option>
+                            {subjectsData.map((subject) => (
+                                <option key={subject.id} value={subject.id}>
+                                    {subject.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                      <div>
@@ -85,15 +130,17 @@ export default function AddTopicPage() {
                         <button
                             type="button"
                             onClick={handleCancel}
-                            className="px-4 sm:w-[120px] py-2 border border-[#E5E7EB] w-full rounded-lg text-base text-blue-dark font-medium bg-white hover:bg-gray-100 transition"
+                            disabled={loading}
+                            className="px-4 sm:w-[120px] py-2 border border-[#E5E7EB] w-full rounded-lg text-base text-blue-dark font-medium bg-white hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {t('admin.addTopic.buttons.cancel')}
                         </button>
                         <button
                             type="submit"
-                            className="sm:w-[120px] py-2 bg-orange-dark w-full text-white text-base font-medium rounded-md hover:bg-orange-600 transition"
+                            disabled={loading || subjectsLoading}
+                            className="sm:w-[120px] py-2 bg-orange-dark w-full text-white text-base font-medium rounded-md hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {t('admin.addTopic.buttons.create')}
+                            {loading ? 'Creating...' : t('admin.addTopic.buttons.create')}
                         </button>
                     </div>
                 </form>

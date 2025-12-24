@@ -28,6 +28,10 @@ app.use('/api/admin', require('../routes/admin'));
 app.use('/api/student', require('../routes/student'));
 app.use('/api/subscription', require('../routes/subscription'));
 
+// Public language routes (for student signup/profile)
+const languageController = require('../controllers/admin/language.controller');
+app.get('/api/languages/active', languageController.getActiveLanguages);
+
 // Error handling middleware
 const errorHandler = require('../middlewares/error');
 app.use(errorHandler);

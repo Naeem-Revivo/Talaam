@@ -34,6 +34,16 @@
     "price": "Starting at $199/month",
     "popular": false,
     "iconName": "phoneIcon"
+  },
+  {
+    "id": 5,
+    "name": "Moyassar Taalam",
+    "description": "Premium subscription plan with access to all question banks, advanced analytics, and priority support.",
+    "features": ["All Question Banks", "Advanced Analytics", "Priority Support", "Unlimited Access"],
+    "price": "Custom Pricing",
+    "popular": false,
+    "iconName": "checkCircleIcon",
+    "isMoyassar": true
   }
 ]
 

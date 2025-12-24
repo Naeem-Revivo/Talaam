@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../../context/LanguageContext';
 import { Table } from '../../common/TableComponent';
+import subscriptionAPI from '../../../api/subscription';
+import { showErrorToast } from '../../../utils/toastConfig';
+import Loader from '../../common/Loader';
 
 const BillingHistoryTable = () => {
   const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState(1);
+  const [billingHistoryData, setBillingHistoryData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Define columns for the billing history table
   const billingHistoryColumns = [
@@ -15,47 +20,48 @@ const BillingHistoryTable = () => {
     { key: 'actions', label: t("dashboard.subscriptionBilling.billingHistory.columns.actions") }
   ];
 
-  // Sample data matching the image with updated status
-  const billingHistoryData = [
-    {
-      id: 1,
-      invoice: '#NV - 0091',
-      amount: '$24.99',
-      date: '12 Jan 2025',
-      status: "Paid",
-      actionType: 'download'
-    },
-    {
-      id: 2,
-      invoice: '#NV - 0092',
-      amount: '$24.99',
-      date: '12 Jan 2025',
-      status: "Paid",
-      actionType: 'download'
-    },
-    {
-      id: 3,
-      invoice: '#NV - 0093',
-      amount: '$24.99',
-      date: '12 Jan 2025',
-      status: "Failed",
-      actionType: 'download'
-    },
-    {
-      id: 4,
-      invoice: '#NV - 0094',
-      amount: '$24.99',
-      date: '12 Jan 2025',
-      status: "Failed",
-      actionType: 'download'
-    }
-  ];
+  // Fetch billing history on component mount
+  useEffect(() => {
+    const fetchBillingHistory = async () => {
+      try {
+        setLoading(true);
+        const response = await subscriptionAPI.getMyBillingHistory();
+        
+        if (response.success && response.data) {
+          // Transform data to include actionType for the table
+          const transformedData = response.data.billingHistory.map(item => ({
+            ...item,
+            actionType: 'download'
+          }));
+          setBillingHistoryData(transformedData);
+        }
+      } catch (error) {
+        console.error('Error fetching billing history:', error);
+        showErrorToast(error.message || 'Failed to fetch billing history');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBillingHistory();
+  }, []);
 
   // Handler for download action
   const handleDownload = (item) => {
     console.log('Download invoice:', item);
-    // Add your download logic here
+    // TODO: Add invoice download logic here
+    // You can use the transactionId or subscription id to generate/download invoice
   };
+
+  if (loading) {
+    return (
+      <Loader 
+        size="md" 
+        color="red" 
+        className="py-8"
+      />
+    );
+  }
 
   return (
     <div className="">
@@ -64,11 +70,11 @@ const BillingHistoryTable = () => {
         columns={billingHistoryColumns}
         page={currentPage}
         pageSize={10}
-        total={4}
+        total={billingHistoryData.length}
         onPageChange={setCurrentPage}
         onCustomAction={handleDownload}
         emptyMessage={t("dashboard.subscriptionBilling.billingHistory.emptyMessage")}
-        showPagination={false}
+        showPagination={billingHistoryData.length > 10}
       />
     </div>
   );

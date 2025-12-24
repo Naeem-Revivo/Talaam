@@ -1,65 +1,272 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLanguage } from "../../context/LanguageContext";
 import { PrimaryButton } from "../../components/common/Button";
 import Dropdown from "../../components/shared/Dropdown";
+import profileAPI from "../../api/profile";
+import authAPI from "../../api/auth";
+import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 
 const ExplainerProfile = () => {
-  const { t, language } = useLanguage();
+  const { t, language, changeLanguage } = useLanguage();
+  const [loading, setLoading] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [islanguage, setIsLanguage] = useState("English (US)");
+  const [islanguage, setIsLanguage] = useState("en");
   const [profileData, setProfileData] = useState({
-    name: "John Doe",
-    email: "johndoe@gmail.com",
-    phone: "+1 (555) 123-4567"
+    name: "",
+    email: "",
+    phone: "",
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     email: "",
     code: "",
     newPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
-  const dir = language === 'ar' ? 'rtl' : 'ltr'
+  const dir = language === "ar" ? "rtl" : "ltr";
 
   const isRTL = dir === "rtl";
 
   const languageOptions = [
-    { value: t("explainer.profile.languageOptions.english"), label: t("explainer.profile.languageOptions.english") },
-    { value: t("explainer.profile.languageOptions.arabic"), label: t("explainer.profile.languageOptions.arabic") },
+    {
+      value: "en",
+      label: t("explainer.profile.languageOptions.english"),
+    },
+    {
+      value: "ar",
+      label: t("explainer.profile.languageOptions.arabic"),
+    },
   ];
 
-  const handleSaveChanges = () => {
-    // Handle profile save logic
-    console.log("Saving profile changes...", profileData);
+  // Fetch profile data on component mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        // Try to get user from localStorage first for faster initial load
+        const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        if (storedUser.email || storedUser.fullName) {
+          setProfileData({
+            name: storedUser.fullName || storedUser.name || "",
+            email: storedUser.email || "",
+            phone: storedUser.phone || "",
+          });
+          setPasswordData(prev => ({
+            ...prev,
+            email: storedUser.email || "",
+          }));
+        }
+
+        // Then fetch fresh data from API
+        const response = await profileAPI.getProfile();
+        if (response.success && response.data?.profile) {
+          const profile = response.data.profile;
+          setProfileData({
+            name: profile.fullName || profile.name || "",
+            email: profile.email || "",
+            phone: profile.phone || "",
+          });
+          setPasswordData(prev => ({
+            ...prev,
+            email: profile.email || "",
+          }));
+          // Set language preference if available
+          // Only update if localStorage doesn't have a more recent language preference
+          const savedLanguage = localStorage.getItem('talaam-language');
+          if (profile.language) {
+            const profileLanguage = profile.language === "ar" ? "ar" : "en";
+            // Use localStorage language if it exists and is different from profile (user just changed it)
+            const languageToUse = savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ar') 
+              ? savedLanguage 
+              : profileLanguage;
+            
+            setIsLanguage(languageToUse);
+            // Only update context if it's different from current language
+            if (changeLanguage && languageToUse !== language) {
+              changeLanguage(languageToUse);
+            }
+          } else if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ar')) {
+            // If no profile language but localStorage has one, use that
+            setIsLanguage(savedLanguage);
+            if (changeLanguage && savedLanguage !== language) {
+              changeLanguage(savedLanguage);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        // Only show error if we don't have cached data
+        const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        if (!storedUser.email && !storedUser.fullName) {
+          showErrorToast(error.message || "Failed to load profile data");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [t, changeLanguage, language]);
+
+  const handleSaveChanges = async () => {
+    try {
+      setLoading(true);
+      const updateData = {
+        fullName: profileData.name,
+        // Note: email and phone might not be updatable via profile API
+        // Adjust based on your API requirements
+      };
+      
+      const response = await profileAPI.updateProfile(updateData);
+      if (response.success) {
+        showSuccessToast(response.message || "Profile updated successfully");
+        // Update local storage if user data is returned
+        if (response.data?.profile) {
+          const user = JSON.parse(localStorage.getItem("user") || "{}");
+          localStorage.setItem("user", JSON.stringify({
+            ...user,
+            fullName: response.data.profile.fullName,
+            name: response.data.profile.fullName,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      showErrorToast(error.message || "Failed to update profile");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleUpdatePassword = () => {
-    // Handle password update logic
-    console.log("Updating password...", passwordData);
+  const handleSendCode = async () => {
+    if (!passwordData.email) {
+      showErrorToast("Please enter your email address");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await authAPI.forgotPasswordOTP({ email: passwordData.email });
+      if (response.success) {
+        showSuccessToast(response.message || "OTP code sent to your email");
+      }
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      showErrorToast(error.message || "Failed to send OTP code");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSendCode = () => {
-    // Handle send code logic
-    console.log("Sending verification code...");
+  const handleUpdatePassword = async () => {
+    if (!passwordData.email || !passwordData.code || !passwordData.newPassword || !passwordData.confirmPassword) {
+      showErrorToast("Please fill in all required fields");
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      showErrorToast("New password and confirm password do not match");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await authAPI.resetPasswordOTP({
+        email: passwordData.email,
+        otp: passwordData.code,
+        password: passwordData.newPassword,
+      });
+      
+      if (response.success) {
+        showSuccessToast(response.message || "Password updated successfully");
+        // Reset password form
+        setPasswordData({
+          currentPassword: "",
+          email: "",
+          code: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      }
+    } catch (error) {
+      console.error("Error updating password:", error);
+      showErrorToast(error.message || "Failed to update password");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSaveApplicationSettings = () => {
-    // Handle application settings save logic
-    console.log("Saving application settings...");
+  const handleLanguageChange = async (selectedLanguage) => {
+    setIsLanguage(selectedLanguage);
+    
+    // Immediately change the language in the context
+    if (changeLanguage) {
+      changeLanguage(selectedLanguage);
+    }
+    
+    // Save to backend
+    try {
+      setLoading(true);
+      const updateData = {
+        language: selectedLanguage,
+      };
+      
+      const response = await profileAPI.updateProfile(updateData);
+      if (response.success) {
+        showSuccessToast("Language updated successfully");
+      }
+    } catch (error) {
+      console.error("Error updating language:", error);
+      showErrorToast(error.message || "Failed to update language");
+      // Revert language change on error
+      const previousLanguage = selectedLanguage === "ar" ? "en" : "ar";
+      if (changeLanguage) {
+        changeLanguage(previousLanguage);
+      }
+      // Revert dropdown selection
+      setIsLanguage(previousLanguage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveApplicationSettings = async () => {
+    try {
+      setLoading(true);
+      const updateData = {
+        language: islanguage,
+        // Note: notifications might need a separate API endpoint
+        // Adjust based on your API requirements
+      };
+      
+      const response = await profileAPI.updateProfile(updateData);
+      if (response.success) {
+        showSuccessToast("Application settings saved successfully");
+        // Update language context if needed
+        if (islanguage !== language && changeLanguage) {
+          changeLanguage(islanguage);
+        }
+      }
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      showErrorToast(error.message || "Failed to save application settings");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleProfileChange = (field, value) => {
-    setProfileData(prev => ({
+    setProfileData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handlePasswordChange = (field, value) => {
-    setPasswordData(prev => ({
+    setPasswordData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -85,7 +292,7 @@ const ExplainerProfile = () => {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-[50px] pb-[35px] px-[65px]">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-[50px] pb-[35px] px-[65px]">
             {/* Name */}
             <div>
               <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
@@ -94,21 +301,9 @@ const ExplainerProfile = () => {
               <input
                 type="text"
                 value={profileData.name}
-                onChange={(e) => handleProfileChange('name', e.target.value)}
+                onChange={(e) => handleProfileChange("name", e.target.value)}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] font-normal rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
-            </div>
-
-            {/* Current Plan */}
-            <div>
-              <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
-                {t("explainer.profile.currentPlan")}
-              </label>
-              <div className="p-3 rounded-[12px] shadow-sm border border-[#03274633]">
-                <span className="font-roboto text-[14px] text-[#6B7280] font-normal">
-                  Professional Plan
-                </span>
-              </div>
             </div>
 
             {/* Email */}
@@ -119,7 +314,7 @@ const ExplainerProfile = () => {
               <input
                 type="email"
                 value={profileData.email}
-                onChange={(e) => handleProfileChange('email', e.target.value)}
+                onChange={(e) => handleProfileChange("email", e.target.value)}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
             </div>
@@ -132,16 +327,17 @@ const ExplainerProfile = () => {
               <input
                 type="tel"
                 value={profileData.phone}
-                onChange={(e) => handleProfileChange('phone', e.target.value)}
+                onChange={(e) => handleProfileChange("phone", e.target.value)}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
             </div>
 
-            <div className="mt-[70px] w-full flex justify-end col-span-2">
+            <div className="mt-[10px] w-full flex justify-end col-span-3">
               <PrimaryButton
                 text={t("explainer.profile.saveChanges")}
                 className="py-[10px] px-7 text-nowrap"
                 onClick={handleSaveChanges}
+                disabled={loading}
               />
             </div>
           </div>
@@ -164,32 +360,34 @@ const ExplainerProfile = () => {
               <input
                 type="password"
                 value={passwordData.currentPassword}
-                onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
+                onChange={(e) =>
+                  handlePasswordChange("currentPassword", e.target.value)
+                }
                 placeholder={t("explainer.profile.placeholders.currentPassword")}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
             </div>
 
             <div>
-                <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
-                  {t("explainer.profile.enterEmail")}
-                </label>
-                <input
-                  type="email"
-                  value={passwordData.email}
-                  onChange={(e) => handlePasswordChange('email', e.target.value)}
-                  placeholder={t("explainer.profile.placeholders.email")}
-                  className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
-                />
-              </div>
-              <div className="flex justify-end">
-                <PrimaryButton
-                  text={t("explainer.profile.sendCode")}
-                  className="py-[10px] px-7 text-nowrap"
-                  onClick={handleSendCode}
-                />
-              </div>
-
+              <label className="block font-roboto text-[16px] leading-[100%] font-normal text-oxford-blue mb-3">
+                {t("explainer.profile.enterEmail")}
+              </label>
+              <input
+                type="email"
+                value={passwordData.email}
+                onChange={(e) => handlePasswordChange("email", e.target.value)}
+                placeholder={t("explainer.profile.placeholders.email")}
+                className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
+              />
+            </div>
+            <div className="flex justify-end">
+              <PrimaryButton
+                text={t("explainer.profile.sendCode")}
+                className="py-[10px] px-7 text-nowrap"
+                onClick={handleSendCode}
+                disabled={loading}
+              />
+            </div>
 
             {/* Verification Code */}
             <div>
@@ -199,7 +397,7 @@ const ExplainerProfile = () => {
               <input
                 type="text"
                 value={passwordData.code}
-                onChange={(e) => handlePasswordChange('code', e.target.value)}
+                onChange={(e) => handlePasswordChange("code", e.target.value)}
                 placeholder={t("explainer.profile.placeholders.code")}
                 className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
               />
@@ -214,7 +412,9 @@ const ExplainerProfile = () => {
                 <input
                   type="password"
                   value={passwordData.newPassword}
-                  onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                  onChange={(e) =>
+                    handlePasswordChange("newPassword", e.target.value)
+                  }
                   placeholder={t("explainer.profile.placeholders.newPassword")}
                   className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
                 />
@@ -227,7 +427,9 @@ const ExplainerProfile = () => {
                 <input
                   type="password"
                   value={passwordData.confirmPassword}
-                  onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
+                  onChange={(e) =>
+                    handlePasswordChange("confirmPassword", e.target.value)
+                  }
                   placeholder={t("explainer.profile.placeholders.confirmPassword")}
                   className="w-full p-3 placeholder:text-[#6B7280] placeholder:text-[14px] rounded-[12px] shadow-sm border border-[#03274633] font-roboto text-[14px] text-[#6B7280] focus:outline-none"
                 />
@@ -239,6 +441,7 @@ const ExplainerProfile = () => {
                 text={t("explainer.profile.updatePassword")}
                 className="py-[10px] px-7 text-nowrap"
                 onClick={handleUpdatePassword}
+                disabled={loading}
               />
             </div>
           </div>
@@ -264,7 +467,7 @@ const ExplainerProfile = () => {
                 <Dropdown
                   value={islanguage}
                   options={languageOptions}
-                  onChange={setIsLanguage}
+                  onChange={handleLanguageChange}
                   height="h-[50px]"
                   textClassName="font-roboto text-[16px] text-oxford-blue"
                 />
@@ -308,6 +511,7 @@ const ExplainerProfile = () => {
                 text={t("explainer.profile.saveSettings")}
                 className="py-[10px] px-7 text-nowrap"
                 onClick={handleSaveApplicationSettings}
+                disabled={loading}
               />
             </div>
           </div>

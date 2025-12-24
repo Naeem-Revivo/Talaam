@@ -1,37 +1,101 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { setting, flag } from '../../assets/svg/dashboard';
 import { useLanguage } from '../../context/LanguageContext';
+import studentQuestionsAPI from '../../api/studentQuestions';
+import { showErrorToast } from '../../utils/toastConfig';
 
 const ReviewAllPage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const _sessionId = searchParams.get('sessionId') || 'S001';
+  const sessionId = searchParams.get('sessionId');
   
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(2); // 0-based, showing question 3
-  const [selectedAnswer, setSelectedAnswer] = useState('E'); // User's selected answer
-  const [visitedQuestions, setVisitedQuestions] = useState(new Set([2])); // Track visited questions
-  const [showQuestionNav, setShowQuestionNav] = useState(false); // Mobile question navigation
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [visitedQuestions, setVisitedQuestions] = useState(new Set([0]));
+  const [showQuestionNav, setShowQuestionNav] = useState(false);
 
-  // Sample question data
-  const questions = [
-    {
-      id: 2,
-      question: "A 25-year-old woman presents with sudden onset fever, chills, and painful urination. Urinalysis shows positive leukocyte esterase and nitrites. A urine culture grows gram-negative rods.",
-      options: [
-        { id: 'A', text: "Inhibits DNA gyrase and topoisomerase IV" },
-        { id: 'B', text: "Inhibits protein synthesis by binding to 30S ribosomal subunit" },
-        { id: 'C', text: "Inhibits cell wall synthesis by binding to D-alanyl-D-alanine" },
-        { id: 'D', text: "Inhibits folate synthesis by blocking dihydropteroate synthase" },
-        { id: 'E', text: "Inhibits peptidoglycan cross-linking by binding PBPs" }
-      ],
-    },
-    // Add more sample questions as needed
-  ];
+  // Fetch session data
+  useEffect(() => {
+    const fetchSessionData = async () => {
+      if (!sessionId) {
+        showErrorToast('Session ID is required');
+        navigate('/dashboard/review');
+        return;
+      }
 
-  const totalQuestions = 20;
-  const currentQuestion = questions[0]; // For now, using the same question
+      try {
+        setLoading(true);
+        const response = await studentQuestionsAPI.getSessionDetail(sessionId);
+
+        if (response.success && response.data) {
+          const sessionData = response.data;
+          let formattedQuestions = [];
+
+          // Check if results array exists (works for both test and study modes)
+          // This is the primary way to get questions for both test and study modes
+          if (sessionData.results && Array.isArray(sessionData.results) && sessionData.results.length > 0) {
+            // Process results array - works for both test and study modes
+            formattedQuestions = sessionData.results
+              .filter(result => result && result.questionText) // Filter out any null/invalid results
+              .map((result, index) => {
+                const optionsObj = result.options || {};
+                const options = ['A', 'B', 'C', 'D', 'E'].map((key) => ({
+                  id: key,
+                  text: optionsObj[key] || '',
+                })).filter(opt => opt.text);
+
+                return {
+                  id: result.questionId || `q-${index + 1}`,
+                  question: result.questionText || '',
+                  options,
+                  correctAnswer: result.correctAnswer,
+                  selectedAnswer: result.selectedAnswer || '',
+                  isCorrect: result.isCorrect,
+                  explanation: result.explanation || '',
+                };
+              });
+          } else if (sessionData.mode === 'study' && sessionData.question) {
+            // Old format: single question for study mode
+            const optionsObj = sessionData.question.options || {};
+            const options = ['A', 'B', 'C', 'D', 'E'].map((key) => ({
+              id: key,
+              text: optionsObj[key] || '',
+            })).filter(opt => opt.text);
+
+            formattedQuestions = [{
+              id: sessionData.question.id || 1,
+              question: sessionData.question.questionText || '',
+              options,
+              correctAnswer: sessionData.question.correctAnswer,
+              selectedAnswer: sessionData.selectedAnswer || '',
+              isCorrect: sessionData.isCorrect,
+              explanation: sessionData.question.explanation || '',
+            }];
+          }
+
+          setQuestions(formattedQuestions);
+          if (formattedQuestions.length > 0) {
+            setCurrentQuestionIndex(0);
+            setVisitedQuestions(new Set([0]));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching session data:', error);
+        showErrorToast(error.message || 'Failed to load session data');
+        navigate('/dashboard/review');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSessionData();
+  }, [sessionId, navigate]);
+
+  const totalQuestions = questions.length;
+  const currentQuestion = questions[currentQuestionIndex] || null;
 
   const handleQuestionClick = (index) => {
     setCurrentQuestionIndex(index);
@@ -60,6 +124,28 @@ const ReviewAllPage = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-oxford-blue text-lg">Loading session data...</div>
+      </div>
+    );
+  }
+
+  if (!currentQuestion || questions.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <div className="text-oxford-blue text-lg">No questions found in this session</div>
+        <button
+          onClick={() => navigate('/dashboard/review')}
+          className="px-4 py-2 bg-cinnebar-red text-white rounded-lg"
+        >
+          Back to Review
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Top Header Bar */}
@@ -71,7 +157,7 @@ const ReviewAllPage = () => {
               {t('dashboard.reviewAll.item').replace('{{current}}', (currentQuestionIndex + 1).toString()).replace('{{total}}', totalQuestions.toString())}
             </div>
             <div className="hidden lg:block text-[14px] md:text-[16px] leading-[100%] font-normal text-blue-dark font-roboto">
-              {t('dashboard.reviewAll.questionId')} {currentQuestion.id}
+              {t('dashboard.reviewAll.questionId')} {currentQuestion.id || currentQuestionIndex + 1}
             </div>
             <button className="hidden lg:block text-oxford-blue hover:opacity-70">
               <img src={flag} alt="Flag" className="" />
@@ -223,7 +309,7 @@ const ReviewAllPage = () => {
           <div className="max-w-4xl mx-auto lg:ml-5">
             {/* Question Id - Mobile */}
             <div className="lg:hidden text-[14px] font-normal text-dark-gray font-roboto mb-2">
-              {t('dashboard.reviewAll.questionId')} {currentQuestion.id}
+              {t('dashboard.reviewAll.questionId')} {currentQuestion.id || currentQuestionIndex + 1}
             </div>
 
             {/* Title */}
@@ -246,41 +332,47 @@ const ReviewAllPage = () => {
             {/* Answer Options */}
             <div className="mb-4 md:mb-6">
               <div className="space-y-3 mb-6 md:mb-10 w-full min-h-[300px] md:min-h-[400px] flex flex-col items-start justify-center p-4 md:pl-8 bg-white shadow-content rounded-lg">
-                {currentQuestion.options.map((option) => (
-                  <div
-                    key={option.id}
-                    className={`w-full min-h-[50px] rounded-lg border-2 flex items-center px-3 md:px-4 py-2 ${
-                      option.id === selectedAnswer
-                        ? 'border-[#ED4122] bg-white'
-                        : 'border-[#E5E7EB] bg-white'
-                    }`}
-                  >
-                    <label className="flex items-center gap-2 md:gap-3 cursor-pointer w-full">
-                      <input
-                        type="radio"
-                        name="answer"
-                        value={option.id}
-                        checked={option.id === selectedAnswer}
-                        onChange={(e) => setSelectedAnswer(e.target.value)}
-                        className="w-4 h-4 md:w-5 md:h-5 text-[#EF4444] border-[#EF4444] focus:ring-[#EF4444] flex-shrink-0"
-                      />
-                      <span className="text-[14px] md:text-[16px] font-normal text-oxford-blue font-roboto flex-1">
-                        <span className="font-medium">{option.id}.</span> {option.text}
-                      </span>
-                    </label>
-                  </div>
-                ))}
+                {currentQuestion.options.map((option) => {
+                  const isSelected = option.id === currentQuestion.selectedAnswer;
+                  const isCorrect = option.id === currentQuestion.correctAnswer;
+                  
+                  return (
+                    <div
+                      key={option.id}
+                      className={`w-full min-h-[50px] rounded-lg border-2 flex items-center px-3 md:px-4 py-2 ${
+                        isSelected
+                          ? 'border-[#ED4122] bg-white'
+                          : 'border-[#E5E7EB] bg-white'
+                      }`}
+                    >
+                      <label className="flex items-center gap-2 md:gap-3 cursor-pointer w-full">
+                        <input
+                          type="radio"
+                          name="answer"
+                          value={option.id}
+                          checked={isSelected}
+                          readOnly
+                          className="w-4 h-4 md:w-5 md:h-5 text-[#EF4444] border-[#EF4444] focus:ring-[#EF4444] flex-shrink-0"
+                        />
+                        <span className="text-[14px] md:text-[16px] font-normal text-oxford-blue font-roboto flex-1">
+                          <span className="font-medium">{option.id}.</span> {option.text}
+                        </span>
+                      </label>
+                    </div>
+                  );
+                })}
               </div>
               
               {/* Next Question Button */}
-              <button 
-                onClick={handleNextQuestion}
-                disabled={currentQuestionIndex === totalQuestions - 1}
-                className="w-full md:w-[316px] mb-6 md:mb-10 h-[50px] md:h-[60px] bg-[#ED4122] text-white rounded-[8px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span className="hidden md:inline">{t('dashboard.reviewAll.nextQuestion')}</span>
-                <span className="md:hidden">{t('dashboard.reviewAll.newQuestion')}</span>
-              </button>
+              {currentQuestionIndex < totalQuestions - 1 && (
+                <button 
+                  onClick={handleNextQuestion}
+                  className="w-full md:w-[316px] mb-6 md:mb-10 h-[50px] md:h-[60px] bg-[#ED4122] text-white rounded-[8px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] flex items-center justify-center hover:opacity-90 transition-opacity"
+                >
+                  <span className="hidden md:inline">{t('dashboard.reviewAll.nextQuestion')}</span>
+                  <span className="md:hidden">{t('dashboard.reviewAll.newQuestion')}</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -319,12 +411,14 @@ const ReviewAllPage = () => {
           <button className="w-full sm:w-auto px-4 py-2 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity">
             {t('dashboard.reviewAll.actions.studyMode')}
           </button>
-          <button 
-            onClick={() => navigate(`/dashboard/review-incorrect?sessionId=${_sessionId}`)}
-            className="w-full sm:w-auto px-4 py-2 bg-[#C6D8D3] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity"
-          >
-            {t('dashboard.reviewAll.actions.reviewIncorrect')}
-          </button>
+          {sessionId && (
+            <button 
+              onClick={() => navigate(`/dashboard/review-incorrect?sessionId=${sessionId}`)}
+              className="w-full sm:w-auto px-4 py-2 bg-[#C6D8D3] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity"
+            >
+              {t('dashboard.reviewAll.actions.reviewIncorrect')}
+            </button>
+          )}
           <button
             onClick={() => navigate('/dashboard/review')}
             className="w-full sm:w-auto px-4 py-2 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity"

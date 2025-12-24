@@ -1,8 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { bookIcon, videoIcon, checkCircleIcon, phoneIcon, check } from '../../assets/svg';
 import productsData from '../../data/productsData.json';
 
 const ProductsGrid = () => {
+  const navigate = useNavigate();
   const iconMap = {
     bookIcon,
     videoIcon,
@@ -14,6 +16,27 @@ const ProductsGrid = () => {
     ...product,
     icon: <img src={iconMap[product.iconName]} alt="" className="w-12 h-12" />
   }));
+
+  const handleSubscribe = (product) => {
+    if (product.isMoyassar) {
+      // Check if user is logged in
+      const token = localStorage.getItem('authToken');
+      const user = localStorage.getItem('user');
+      
+      if (!token || !user) {
+        // Store the intended destination in localStorage
+        localStorage.setItem('redirectAfterLogin', '/moyassar-payment');
+        // Navigate to login
+        navigate('/login');
+      } else {
+        // User is logged in, navigate to Moyassar payment page
+        navigate('/moyassar-payment');
+      }
+    } else {
+      // Handle other products
+      console.log('Subscribe to:', product.name);
+    }
+  };
 
   return (
     <section className="py-20">
@@ -75,12 +98,15 @@ const ProductsGrid = () => {
                   <button className="flex-1 bg-oxford-blue hover:bg-[#021f38] text-white px-4 py-2 rounded-md font-medium transition duration-200">
                     Learn More
                   </button>
-                  <button className={`flex-1 px-4 py-2 rounded-md font-medium transition duration-200 ${
-                    product.popular 
+                  <button 
+                    onClick={() => handleSubscribe(product)}
+                    className={`flex-1 px-4 py-2 rounded-md font-medium transition duration-200 ${
+                      product.popular || product.isMoyassar
                       ? 'bg-gradient-to-r from-[#ED4122] to-[#FF8B67] hover:from-[#d6341f] hover:to-[#e67a5a] text-white' 
                       : 'border border-[#032746] text-oxford-blue hover:bg-oxford-blue hover:text-white'
-                  }`}>
-                    {product.popular ? 'Get Started' : 'Try Free'}
+                    }`}
+                  >
+                    {product.isMoyassar ? 'Subscribe' : product.popular ? 'Get Started' : 'Try Free'}
                   </button>
                 </div>
               </div>

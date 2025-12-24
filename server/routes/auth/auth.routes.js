@@ -9,6 +9,7 @@ const {
   validateResendOTP,
   validateForgotPassword,
   validateResetPassword,
+  validateResetPasswordOTP,
 } = require('../../middlewares/auth');
 const handleValidationErrors = require('../../middlewares/validation');
 
@@ -25,6 +26,10 @@ router.post('/resend-otp', validateResendOTP, handleValidationErrors, authContro
 // Password reset routes
 router.post('/forgot-password', validateForgotPassword, handleValidationErrors, authController.forgotPassword);
 router.post('/reset-password', validateResetPassword, handleValidationErrors, authController.resetPassword);
+
+// Password reset OTP routes (for profile page)
+router.post('/forgot-password-otp', validateForgotPassword, handleValidationErrors, authController.forgotPasswordOTP);
+router.post('/reset-password-otp', validateResetPasswordOTP, handleValidationErrors, authController.resetPasswordOTP);
 
 // User route (protected)
 router.get('/me', authMiddleware, authController.getCurrentUser);

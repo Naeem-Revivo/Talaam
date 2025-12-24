@@ -11,6 +11,10 @@ const User = {
     if (data.password) {
       data.password = await bcrypt.hash(data.password, 12);
     }
+    // Normalize email to lowercase and trim (preserve + aliases)
+    if (data.email) {
+      data.email = data.email.trim().toLowerCase();
+    }
     return await prisma.user.create({ data });
   },
 
@@ -21,7 +25,9 @@ const User = {
 
   // Find user by email
   async findByEmail(email) {
-    return await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+    // Normalize email to lowercase and trim (preserve + aliases)
+    const normalizedEmail = email ? email.trim().toLowerCase() : email;
+    return await prisma.user.findFirst({ where: { email: normalizedEmail } });
   },
 
   // Find user by Google ID

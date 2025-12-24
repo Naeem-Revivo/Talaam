@@ -1,10 +1,77 @@
+import { useState, useEffect } from "react";
 import { useLanguage } from "../../context/LanguageContext";
 import { RoleCard } from "../../components/common/RoleCard";
 import { PerformanceCard } from "../../components/gatherer/performanceCard";
 import { LastLoginCard } from "../../components/gatherer/LastLogin";
+import axiosClient from "../../api/client";
+import Loader from "../../components/common/Loader";
 
 const GathererDashboard = () => {
   const { t } = useLanguage();
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Format date to readable string
+  const formatLastLogin = (dateString) => {
+    if (!dateString) return "Never";
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now - date;
+    const diffInHours = diffInMs / (1000 * 60 * 60);
+    const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+    if (diffInHours < 1) {
+      const minutes = Math.floor(diffInMs / (1000 * 60));
+      return minutes <= 1 ? "Just now" : `${minutes} minutes ago`;
+    } else if (diffInHours < 24) {
+      const hours = Math.floor(diffInHours);
+      return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
+    } else if (diffInDays < 2) {
+      return "Yesterday";
+    } else if (diffInDays < 7) {
+      const days = Math.floor(diffInDays);
+      return `${days} days ago`;
+    } else {
+      // Format as "DD/MM/YYYY at HH:MM"
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${day}/${month}/${year} at ${hours}:${minutes}`;
+    }
+  };
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await axiosClient.get('/gatherer/dashboard');
+        
+        if (response.data.success) {
+          setDashboardData(response.data.data);
+        } else {
+          setError('Failed to load dashboard data');
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError(err.response?.data?.message || 'Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+    
+    // Refresh data every 30 seconds for real-time updates
+    const interval = setInterval(fetchDashboardData, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   const roleData = {
     role: t("gatherer.dashboard.role"),
     tasks: [
@@ -13,18 +80,46 @@ const GathererDashboard = () => {
       t("gatherer.dashboard.tasks.task3"),
       t("gatherer.dashboard.tasks.task4"),
     ],
-    pendingCount: 3,
+    pendingCount: dashboardData?.pendingTasks || 0,
   };
 
-  const performanceData = {
-    acceptanceRate: 89,
-    rejectionRate: 11,
-    daysRange: 50,
-  };
+  const performanceData = dashboardData?.performance ? {
+    acceptanceRate: dashboardData.performance.acceptanceRate || 0,
+    rejectionRate: dashboardData.performance.rejectionRate || 0,
+    daysRange: dashboardData.performance.daysRange || 30,
+    fields: [
+      { key: 'acceptanceRate', label: t('gatherer.dashboard.performance.acceptanceRate'), format: 'percentage' },
+      { key: 'rejectionRate', label: t('gatherer.dashboard.performance.rejectionRate'), format: 'percentage' }
+    ]
+  } : null;
 
   const lastLoginData = {
-    loginTime: "Today at 09:05 PM",
+    loginTime: dashboardData?.lastLogin ? formatLastLogin(dashboardData.lastLogin) : "Never"
   };
+
+  if (loading) {
+    return (
+      <Loader 
+        fullScreen={true}
+        size="lg" 
+        color="oxford-blue" 
+        text="Loading dashboard data..."
+        className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6"
+      />
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6">
+        <div className="mx-auto flex max-w-[1200px] flex-col gap-5">
+          <div className="flex items-center justify-center h-64">
+            <p className="text-[18px] text-red-600">Error: {error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6">
@@ -53,13 +148,11 @@ const GathererDashboard = () => {
 
           {/* Right Column - Performance and Last Login Cards */}
           <div className="space-y-6">
-            <PerformanceCard 
-              data={performanceData}
-              fields={[
-                { key: 'rejectionRate', label: t('gatherer.dashboard.performance.rejectionRate'), format: 'percentage' },
-                { key: 'acceptanceRate', label: t('gatherer.dashboard.performance.acceptanceRate'), format: 'percentage' }
-              ]}
-            />
+            {performanceData && (
+              <PerformanceCard 
+                data={performanceData}
+              />
+            )}
 
             <LastLoginCard loginTime={lastLoginData.loginTime} />
           </div>

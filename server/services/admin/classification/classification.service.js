@@ -6,14 +6,21 @@ const Topic = require('../../../models/topic');
  * Get all classification data (exams, subjects, topics)
  */
 const getClassification = async () => {
-  // Get all active exams
-  const exams = await Exam.find({ status: 'active' }).sort({ createdAt: -1 });
+  // Get all active exams using Prisma
+  const exams = await Exam.findMany({
+    where: { status: 'active' },
+    orderBy: { createdAt: 'desc' }
+  });
   
-  // Get all subjects
-  const subjects = await Subject.find({}).sort({ createdAt: -1 });
+  // Get all subjects using Prisma
+  const subjects = await Subject.findMany({
+    orderBy: { createdAt: 'desc' }
+  });
   
-  // Get all topics with their parent subjects
-  const topics = await Topic.find({}).populate('parentSubject', 'name').sort({ createdAt: -1 });
+  // Get all topics with their parent subjects using Prisma
+  const topics = await Topic.findMany({
+    orderBy: { createdAt: 'desc' }
+  });
   
   return {
     exams,
@@ -26,16 +33,15 @@ const getClassification = async () => {
  * Get topics by subject ID along with subject details
  */
 const getTopicsBySubject = async (subjectId) => {
-  // Get the subject
+  // Get the subject using Prisma
   const subject = await Subject.findById(subjectId);
   
   if (!subject) {
     return { subject: null, topics: [] };
   }
   
-  // Get all topics for this subject
-  const topics = await Topic.find({ parentSubject: subjectId })
-    .sort({ createdAt: -1 });
+  // Get all topics for this subject using Prisma
+  const topics = await Topic.findBySubject(subjectId);
   
   return {
     subject,
@@ -46,15 +52,20 @@ const getTopicsBySubject = async (subjectId) => {
 /**
  * Get all exams
  */
-const getAllExams = async () => {
-  return await Exam.find({ status: 'active' }).sort({ createdAt: -1 });
+const getAllExams = async (filter = {}) => {
+  return await Exam.findMany({
+    where: filter,
+    orderBy: { createdAt: 'desc' }
+  });
 };
 
 /**
  * Get all subjects
  */
 const getAllSubjects = async () => {
-  return await Subject.find({}).sort({ createdAt: -1 });
+  return await Subject.findMany({
+    orderBy: { createdAt: 'desc' }
+  });
 };
 
 module.exports = {

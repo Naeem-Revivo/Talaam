@@ -35,8 +35,13 @@ const validateProfile = [
   body('timezone').optional().trim().notEmpty().withMessage('Timezone cannot be empty'),
   body('language')
     .optional()
-    .isIn(['English', 'العربية'])
-    .withMessage('Language must be either English or العربية'),
+    .custom((value) => {
+      const validLanguages = ['English', 'العربية', 'en', 'ar'];
+      if (!validLanguages.includes(value)) {
+        throw new Error('Language must be either English, العربية, en, or ar');
+      }
+      return true;
+    }),
 ];
 
 module.exports = {

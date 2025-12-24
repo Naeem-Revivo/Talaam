@@ -94,7 +94,7 @@ const login = async (req, res, next) => {
         message: error.message,
       });
     }
-    if (error.message === 'Your account has been suspended. Please contact administrator.') {
+    if (error.message === 'Account suspended. Please contact support team.') {
       return res.status(403).json({
         success: false,
         message: error.message,
@@ -145,7 +145,7 @@ const verifyOTP = async (req, res, next) => {
         message: error.message,
       });
     }
-    if (error.message === 'Your account has been suspended. Please contact administrator.') {
+    if (error.message === 'Account suspended. Please contact support team.') {
       return res.status(403).json({
         success: false,
         message: error.message,
@@ -194,7 +194,7 @@ const resendOTP = async (req, res, next) => {
   }
 };
 
-// Forgot Password
+// Forgot Password (sends reset link)
 const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -217,7 +217,33 @@ const forgotPassword = async (req, res, next) => {
   }
 };
 
-// Reset Password
+// Forgot Password OTP (sends OTP for profile page)
+const forgotPasswordOTP = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    console.log(`[AUTH] POST /forgot-password-otp → requested for: ${email}`);
+
+    await authService.forgotPasswordOTP(email);
+
+    const response = {
+      success: true,
+      message: 'OTP code sent to your email.',
+    };
+    console.log(`[AUTH] POST /forgot-password-otp → 200`, { response });
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error('[AUTH] POST /forgot-password-otp → error:', error);
+    if (error.message === 'User not found') {
+      return res.status(404).json({ success: false, message: error.message });
+    }
+    if (error.message === 'Failed to send OTP email') {
+      return res.status(500).json({ success: false, message: 'Failed to send OTP email.' });
+    }
+    next(error);
+  }
+};
+
+// Reset Password (using token from link)
 const resetPassword = async (req, res, next) => {
   try {
     const { token, password } = req.body;
@@ -231,6 +257,32 @@ const resetPassword = async (req, res, next) => {
     console.error('[AUTH] POST /reset-password → error:', error);
     if (error.message === 'Invalid or expired token') {
       console.log('[AUTH] POST /reset-password → 400 (invalid/expired token)');
+      return res.status(400).json({ success: false, message: error.message });
+    }
+    next(error);
+  }
+};
+
+// Reset Password OTP (using OTP from profile page)
+const resetPasswordOTP = async (req, res, next) => {
+  try {
+    const { email, otp, password } = req.body;
+    console.log('[AUTH] POST /reset-password-otp → requested');
+
+    await authService.resetPasswordOTP(email, otp, password);
+
+    console.log('[AUTH] POST /reset-password-otp → 200 (password updated)');
+    return res.status(200).json({ success: true, message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('[AUTH] POST /reset-password-otp → error:', error);
+    const errorMessages = [
+      'User not found',
+      'OTP not found. Please request a new OTP',
+      'OTP has expired. Please request a new OTP',
+      'Invalid OTP',
+    ];
+    if (errorMessages.includes(error.message)) {
+      console.log(`[AUTH] POST /reset-password-otp → 400 (${error.message})`);
       return res.status(400).json({ success: false, message: error.message });
     }
     next(error);
@@ -255,6 +307,7 @@ const getCurrentUser = async (req, res, next) => {
           isEmailVerified: user.isEmailVerified,
           fullName: user.fullName,
           dateOfBirth: user.dateOfBirth,
+          phone: user.phone,
           country: user.country,
           timezone: user.timezone,
           language: user.language,
@@ -404,7 +457,9 @@ module.exports = {
   verifyOTP,
   resendOTP,
   forgotPassword,
+  forgotPasswordOTP,
   resetPassword,
+  resetPasswordOTP,
   getCurrentUser,
   getGoogleAuthUrl,
   googleAuth,

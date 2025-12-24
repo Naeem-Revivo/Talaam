@@ -11,9 +11,40 @@ require('./config/passport'); // Initialize Passport strategies
 const app = express();
 
 // Middlewares
+// CORS configuration - allow multiple origins for development
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://192.168.1.80:5173',
+  'http://192.168.1.136:5173',
+  'http://127.0.0.1:5173'
+].filter(Boolean); // Remove undefined values
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      // For development, allow any localhost or local network IP
+      const isLocalhost = origin.includes('localhost') || 
+                         origin.includes('127.0.0.1') || 
+                         origin.match(/^http:\/\/192\.168\.\d+\.\d+:\d+$/);
+      
+      if (isLocalhost || process.env.NODE_ENV !== 'production') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning', 'Ngrok-Skip-Browser-Warning']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -25,6 +56,23 @@ app.use(session(sessionConfig));
 app.use(passport.initialize());
 app.use(passport.session()); // Enable session support for OAuth flows
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Request logging middleware (for debugging - only log API requests)
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api') || req.path === '/health') {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.headers.origin || 'none'}`);
+  }
+  next();
+});
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api', require('./routes/profile'));
@@ -32,6 +80,15 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/student', require('./routes/student'));
 app.use('/api/subscription', require('./routes/subscription'));
 app.use('/api/payment', require('./routes/payment'));
+app.use('/api/creator', require('./routes/creator'));
+app.use('/api/gatherer', require('./routes/gatherer'));
+app.use('/api/explainer', require('./routes/explainer'));
+app.use('/api/processor', require('./routes/processor'));
+app.use('/api/public', require('./routes/public'));
+
+// Public language routes (for student signup/profile)
+const languageController = require('./controllers/admin/language.controller');
+app.get('/api/languages/active', languageController.getActiveLanguages);
 
 // Error handling middleware
 const errorHandler = require('./middlewares/error');
@@ -65,9 +122,12 @@ if (process.env.VERCEL !== '1') {
       await connectDBOnce();
       
       const PORT = process.env.PORT || 5000;
-      const HOST = process.env.HOST || 'localhost';
+      // Sanitize HOST: remove protocol prefixes (http://, https://) and trailing slashes
+      let HOST = process.env.HOST || '0.0.0.0';
+      HOST = HOST.replace(/^https?:\/\//, '').replace(/\/$/, '');
       app.listen(PORT, HOST, () => {
         console.log(`Server running on http://${HOST}:${PORT}`);
+        console.log(`Server accessible on network at http://${HOST}:${PORT}`);
       });
     } catch (error) {
       console.error('Failed to start server:', error);

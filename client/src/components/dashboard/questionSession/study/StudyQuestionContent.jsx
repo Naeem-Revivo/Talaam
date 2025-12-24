@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { analytics, watch, tick, cross } from '../icons';
 import { useLanguage } from '../../../../context/LanguageContext';
+import studentQuestionsAPI from '../../../../api/studentQuestions';
+import { toast } from 'react-toastify';
 
 const OptionCard = ({ option, groupName, isSelected, disabled, onOptionChange, highlight }) => {
   const language = useLanguage();
@@ -31,9 +33,10 @@ const OptionCard = ({ option, groupName, isSelected, disabled, onOptionChange, h
     </div>
   );
 };
-const ReviewOptionCard = ({ option, groupName, isCorrect, isUserAnswer }) => {
+const ReviewOptionCard = ({ option, groupName, isCorrect, isUserAnswer, userAnswerIsCorrect }) => {
   const isChecked = isCorrect; // ONLY correct answer gets full checked look
-  const isWrong = isUserAnswer && !isCorrect;
+  // Only show incorrect styling if user selected this option AND their overall answer was incorrect
+  const isWrong = isUserAnswer && !isCorrect && !userAnswerIsCorrect;
 
   // Card background + border
   const cardClass = isCorrect
@@ -111,6 +114,9 @@ const StudyQuestionContent = ({
 }) => {
   const { t, language } = useLanguage();
   const dir = language === 'ar' ? 'rtl' : 'ltr'
+  const [showFlagModal, setShowFlagModal] = useState(false);
+  const [flagReason, setFlagReason] = useState('');
+  const [isFlagging, setIsFlagging] = useState(false);
   const statusButtonClass = isCorrect ? 'bg-[#10B981] text-white' : 'bg-[#ED4122] text-white';
   const statusButtonLabel = isCorrect ? t('dashboard.questionSession.correctAnswer') : t('dashboard.questionSession.incorrectAnswer');
   const infoContainerClass = isCorrect ? 'bg-[#ECFDF5] border-l-4 border-[#10B981]' : 'bg-[#FDF0D5] border-l-4 border-[#ED4122]';
@@ -164,11 +170,20 @@ const StudyQuestionContent = ({
         </div>
       )}
 
-      {showReview && (
+      {showReview && isCorrect && (
+        <div className="w-full md:w-[316px] mb-6 md:mb-10 h-[50px] md:h-[60px] rounded-[8px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] flex items-center justify-center text-center transition-colors shadow-button">
+          <span className="w-full h-full flex items-center justify-center gap-2 rounded-[8px] bg-[#10B981] text-white">
+            <img src={tick} alt="Correct" className="h-4 w-4" />
+            {t('dashboard.questionSession.correctAnswer')}
+          </span>
+        </div>
+      )}
+
+      {showReview && !isCorrect && (
         <>
           <div className="w-full md:w-[316px] mb-6 md:mb-10 h-[50px] md:h-[60px] rounded-[8px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] flex items-center justify-center text-center transition-colors shadow-button">
             <span className={`w-full h-full flex items-center justify-center gap-2 rounded-[8px] ${statusButtonClass}`}>
-              <img src={isCorrect ? tick : cross} alt={isCorrect ? 'Correct' : 'Incorrect'} className="h-4 w-4" />
+              <img src={cross} alt="Incorrect" className="h-4 w-4" />
               {statusButtonLabel}
             </span>
           </div>
@@ -214,6 +229,7 @@ const StudyQuestionContent = ({
                   groupName={reviewGroupName}
                   isCorrect={option.id === currentQuestion.correctAnswer}
                   isUserAnswer={option.id === selectedOption?.id}
+                  userAnswerIsCorrect={isCorrect}
                 />
               ))}
             </div>
@@ -223,6 +239,8 @@ const StudyQuestionContent = ({
         </>
       )}
 
+      {showReview && (
+        <>
       <button
         onClick={onToggleExplanationPanel}
         className="lg:hidden w-full mb-4 px-4 py-3 bg-[#F3F4F6] text-oxford-blue rounded-lg text-[14px] font-normal font-roboto hover:opacity-90 transition-opacity flex items-center justify-between"
@@ -235,7 +253,6 @@ const StudyQuestionContent = ({
 
       {showExplanationPanel && (
         <div className="lg:hidden mb-4 p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB]">
-          {showReview ? (
             <div className="space-y-6">
               <div>
                 <h4 className="text-[14px] md:text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-3">
@@ -248,7 +265,7 @@ const StudyQuestionContent = ({
                   {t('dashboard.questionSession.explanation.explanationLabel')}
                 </h5>
                 <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
-                  {correctOption?.explanation || 'This answer choice aligns with the underlying concept tested in the question.'}
+                  {currentState?.explanation || currentQuestion?.explanation || (correctOption && correctOption.explanation) || 'This answer choice aligns with the underlying concept tested in the question.'}
                 </p>
               </div>
 
@@ -293,11 +310,114 @@ const StudyQuestionContent = ({
                 )}
               </div>
             </div>
-          ) : (
-            <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
-              {t('dashboard.questionSession.submitToView')}
-            </p>
+        </div>
           )}
+        </>
+      )}
+
+      {/* Flag Question Button and Rejection Notice */}
+      {showReview && (
+        <div className="mt-4 space-y-3">
+          {/* Show rejection reason if flag was rejected */}
+          {currentQuestion.flagStatus === 'rejected' && currentQuestion.flagRejectionReason && (
+            <div className="bg-[#FDF0D5] border border-[#ED4122] rounded-lg p-4">
+              <div className="flex items-start gap-2">
+                <span className="text-[#ED4122] text-[18px]">⚠</span>
+                <div>
+                  <p className="text-[14px] font-roboto font-medium text-[#ED4122] mb-1">
+                    {t('dashboard.questionSession.flagRejected') || 'Your flag was rejected'}
+                  </p>
+                  <p className="text-[12px] font-roboto text-oxford-blue">
+                    <span className="font-medium">{t('dashboard.questionSession.adminReason') || 'Admin reason:'} </span>
+                    {currentQuestion.flagRejectionReason}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Show flag button only if not already flagged or if rejected */}
+          {(!currentQuestion.isFlagged || currentQuestion.flagStatus === 'rejected') && (
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowFlagModal(true)}
+                className="px-4 py-2 text-[14px] font-roboto text-[#ED4122] border border-[#ED4122] rounded-lg hover:bg-[#FEF2F2] transition"
+              >
+                {t('dashboard.questionSession.flagQuestion') || 'Flag Question'}
+              </button>
+            </div>
+          )}
+          {/* Show pending status if flag is pending */}
+          {currentQuestion.isFlagged && currentQuestion.flagStatus === 'pending' && (
+            <div className="flex justify-end">
+              <div className="px-4 py-2 text-[14px] font-roboto text-[#ED4122] border border-[#ED4122] rounded-lg bg-[#FEF2F2]">
+                {t('dashboard.questionSession.flagPending') || 'Flag pending review'}
+              </div>
+            </div>
+          )}
+          {/* Show approved status if flag is approved */}
+          {currentQuestion.flagStatus === 'approved' && (
+            <div className="flex justify-end">
+              <div className="px-4 py-2 text-[14px] font-roboto text-[#047857] border border-[#10B981] rounded-lg bg-[#ECFDF5]">
+                {t('dashboard.questionSession.flagApproved') || 'Flag approved - Question under review'}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Flag Modal */}
+      {showFlagModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6" dir={dir}>
+            <h3 className="text-[18px] font-archivo font-bold text-oxford-blue mb-4">
+              {t('dashboard.questionSession.flagQuestion') || 'Flag Question'}
+            </h3>
+            <p className="text-[14px] font-roboto text-dark-gray mb-4">
+              {t('dashboard.questionSession.flagReasonLabel') || 'Please provide a reason for flagging this question:'}
+            </p>
+            <textarea
+              value={flagReason}
+              onChange={(e) => setFlagReason(e.target.value)}
+              placeholder={t('dashboard.questionSession.flagReasonPlaceholder') || 'Enter reason...'}
+              className="w-full h-32 p-3 border border-[#E5E7EB] rounded-lg text-[14px] font-roboto text-oxford-blue mb-4 resize-none"
+              dir={dir}
+            />
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowFlagModal(false);
+                  setFlagReason('');
+                }}
+                className="px-4 py-2 text-[14px] font-roboto text-oxford-blue border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] transition"
+                disabled={isFlagging}
+              >
+                {t('dashboard.questionSession.cancel') || 'Cancel'}
+              </button>
+              <button
+                onClick={async () => {
+                  if (!flagReason.trim()) {
+                    toast.error(t('dashboard.questionSession.flagReasonRequired') || 'Please provide a reason');
+                    return;
+                  }
+                  setIsFlagging(true);
+                  try {
+                    await studentQuestionsAPI.flagQuestion(currentQuestion.id, flagReason);
+                    toast.success(t('dashboard.questionSession.flagSuccess') || 'Question flagged successfully');
+                    setShowFlagModal(false);
+                    setFlagReason('');
+                  } catch (error) {
+                    toast.error(error.message || t('dashboard.questionSession.flagError') || 'Failed to flag question');
+                  } finally {
+                    setIsFlagging(false);
+                  }
+                }}
+                disabled={isFlagging || !flagReason.trim()}
+                className="px-4 py-2 text-[14px] font-roboto text-white bg-[#ED4122] rounded-lg hover:bg-[#d43a1f] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isFlagging ? (t('dashboard.questionSession.flagging') || 'Flagging...') : (t('dashboard.questionSession.submitFlag') || 'Submit')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

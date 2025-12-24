@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import {
   fb,
   hamburger,
@@ -9,11 +10,52 @@ import {
   youtube,
 } from "../assets/svg";
 import { useLanguage } from "../context/LanguageContext";
+import { logout as logoutAction } from "../store/slices/authSlice";
+import { showLogoutToast } from "../utils/toastConfig";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { language, toggleLanguage, t } = useLanguage();
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  // Check authentication status from both localStorage and sessionStorage
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+      setIsAuthenticated(!!token);
+    };
+
+    // Check on mount
+    checkAuth();
+
+    // Listen for storage changes (in case user logs in/out in another tab)
+    const handleStorageChange = () => {
+      checkAuth();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also check on location change (in case user navigates after login/logout)
+    checkAuth();
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [location.pathname]);
+
+  const handleLogout = () => {
+    dispatch(logoutAction());
+    showLogoutToast(t('toast.message.logoutSuccess') || 'You have been logged out successfully.', {
+      title: t('toast.title.logout') || 'Logout Successful',
+      isAuth: true
+    });
+    setTimeout(() => {
+      navigate('/login', { replace: true });
+    }, 1500);
+  };
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -130,21 +172,33 @@ const Navbar = () => {
                 </span>
               </button>
 
-              {/* SIGN UP Button - Desktop only */}
-              <Link 
-                to="/signupfree"
-                className="hidden lg:flex bg-gradient-to-r from-orange-dark to-orange-light w-[105px] h-[40px] text-white  py-2.5 rounded-md text-xs md:text-sm font-medium text-center items-center justify-center"
-              >
-                {t('navbar.signUp')}
-              </Link>
+              {/* Show Logout button if authenticated, otherwise show Login/Signup */}
+              {isAuthenticated ? (
+                <button
+                  onClick={handleLogout}
+                  className="hidden lg:flex bg-cinnebar-red w-[105px] h-[40px] text-white py-2 rounded-md text-xs md:text-sm font-medium text-center items-center justify-center hover:bg-[#d43a1f] transition-colors"
+                >
+                  {t('navbar.logout')}
+                </button>
+              ) : (
+                <>
+                  {/* SIGN UP Button - Desktop only */}
+                  <Link 
+                    to="/signupfree"
+                    className="hidden lg:flex bg-gradient-to-r from-orange-dark to-orange-light w-[105px] h-[40px] text-white  py-2.5 rounded-md text-xs md:text-sm font-medium text-center items-center justify-center"
+                  >
+                    {t('navbar.signUp')}
+                  </Link>
 
-              {/* Log In Button */}
-              <Link 
-                to="/login"
-                className="bg-gradient-to-r from-blue-dark to-moonstone-blue w-[90px] md:w-[105px] h-[40px] text-white py-2 rounded-md text-xs md:text-sm font-medium text-center flex items-center justify-center"
-              >
-                {t('navbar.logIn')}
-              </Link>
+                  {/* Log In Button - Hidden on small screens, shown on large screens */}
+                  <Link 
+                    to="/login"
+                    className="hidden lg:flex bg-gradient-to-r from-blue-dark to-moonstone-blue w-[90px] md:w-[105px] h-[40px] text-white py-2 rounded-md text-xs md:text-sm font-medium text-center items-center justify-center"
+                  >
+                    {t('navbar.logIn')}
+                  </Link>
+                </>
+              )}
 
               {/* Hamburger Menu button */}
               <button
@@ -208,16 +262,34 @@ const Navbar = () => {
 
             {/* Buttons in Mobile Menu */}
             <div className="flex flex-col space-y-2 px-3">
-              <Link 
-                to="/signupfree"
-                className="bg-gradient-to-r from-orange-dark to-orange-light text-white px-4 py-2 rounded-md text-sm font-medium text-center"
-                onClick={toggleMenu}
-              >
-                {t('navbar.signUp')}
-              </Link>
-              <button className="bg-gradient-to-r from-blue-dark to-moonstone-blue text-white px-4 py-2 rounded-md text-sm font-medium">
-                {t('navbar.logIn')}
-              </button>
+              {isAuthenticated ? (
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    toggleMenu();
+                  }}
+                  className="bg-cinnebar-red text-white px-4 py-2 rounded-md text-sm font-medium text-center hover:bg-[#d43a1f] transition-colors"
+                >
+                  {t('navbar.logout')}
+                </button>
+              ) : (
+                <>
+                  <Link 
+                    to="/signupfree"
+                    className="bg-gradient-to-r from-orange-dark to-orange-light text-white px-4 py-2 rounded-md text-sm font-medium text-center"
+                    onClick={toggleMenu}
+                  >
+                    {t('navbar.signUp')}
+                  </Link>
+                  <Link 
+                    to="/login"
+                    className="bg-gradient-to-r from-blue-dark to-moonstone-blue text-white px-4 py-2 rounded-md text-sm font-medium text-center"
+                    onClick={toggleMenu}
+                  >
+                    {t('navbar.logIn')}
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -35,7 +35,8 @@ const mapApiUserToFrontend = (apiUser) => {
     status: apiUser.status ? apiUser.status.charAt(0).toUpperCase() + apiUser.status.slice(1) : null,
     // Only include fields that come from the API
     notes: apiUser.notes || null,
-    lastLogin: apiUser.lastLogin || null,
+    // Backend uses updatedAt as proxy for lastLogin (like dashboard services)
+    lastLogin: apiUser.lastLogin || apiUser.updatedAt || null,
     dateCreated: apiUser.dateCreated || apiUser.createdAt || null,
     activityLog: apiUser.activityLog || null,
   };
@@ -85,10 +86,13 @@ export const AdminUsersProvider = ({ children }) => {
         setUsers((prev) => [newUser, ...prev]);
         return newUser;
       }
-      throw new Error(response.message || "Failed to create user");
+      // Create error object with full response data
+      const error = new Error(response.message || "Failed to create user");
+      error.response = { data: response };
+      throw error;
     } catch (err) {
-      const errorMessage = err.message || err.response?.data?.message || "Failed to create user";
-      setError(errorMessage);
+      // Don't set error state here - let the component handle error display
+      // Just pass through the error with all its data
       throw err;
     }
   };

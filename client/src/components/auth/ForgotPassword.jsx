@@ -4,6 +4,7 @@ import { useLanguage } from '../../context/LanguageContext'
 import { useDispatch, useSelector } from 'react-redux'
 import { forgotPassword } from '../../store/slices/authSlice'
 import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
+import { getTranslatedAuthMessage } from '../../utils/authMessages'
 
 const ForgotPassword = () => {
   const { language, t } = useLanguage()
@@ -18,10 +19,10 @@ const ForgotPassword = () => {
   // Email validation function
   const validateEmail = (email) => {
     if (!email.trim()) {
-      return 'Email is required'
+      return t('forgotPassword.validation.emailRequired')
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return 'Please enter a valid email address'
+      return t('forgotPassword.validation.emailInvalid')
     }
     return ''
   }
@@ -56,26 +57,25 @@ const ForgotPassword = () => {
       const resultAction = await dispatch(forgotPassword({ email }))
 
       if (forgotPassword.fulfilled.match(resultAction)) {
-        const msg =
-          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
-          resultAction.payload?.message ||
-          t('forgotPassword.success') ||
-          'If an account exists, a reset link has been sent.'
+        const backendMessage = resultAction.payload?.message || 'If an account with that email exists, a reset link was sent.'
+        const msg = getTranslatedAuthMessage(backendMessage, t, 'forgotPassword.success') || t('forgotPassword.success') || 'If an account exists for that email, a reset link has been sent.'
         showSuccessToast(msg, { title: t('forgotPassword.successTitle') || 'Reset Email Sent', isAuth: true })
         navigate('/forgot-modal')
       } else {
-        const msg =
+        const backendMessage = 
           (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
-          t('forgotPassword.errors.generic') ||
-          'Failed to request password reset.'
+          null
+        
+        const msg = backendMessage
+          ? getTranslatedAuthMessage(backendMessage, t, 'forgotPassword.errors.generic')
+          : t('forgotPassword.errors.generic') || 'Failed to request password reset. Please try again.'
+        
         showErrorToast(msg, { title: t('forgotPassword.errors.title') || 'Reset Failed', isAuth: true })
       }
     } catch {
-      showErrorToast(
-        t('forgotPassword.errors.generic') || 'Failed to request password reset.',
-        { title: t('forgotPassword.errors.title') || 'Reset Failed', isAuth: true }
-      )
+      const defaultError = t('auth.errors.default') || 'An unexpected error occurred. Please try again.'
+      showErrorToast(defaultError, { title: t('forgotPassword.errors.title') || 'Reset Failed', isAuth: true })
     }
   }
 

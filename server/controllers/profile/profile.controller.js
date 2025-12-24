@@ -6,15 +6,24 @@ const getProfile = async (req, res, next) => {
     console.log('[PROFILE] GET /profile → requested', { userId: req.user && req.user.id });
     const user = await profileService.getProfile(req.user.id);
 
+    // Normalize language from database format to frontend format
+    let normalizedLanguage = user.language;
+    if (user.language === 'English') {
+      normalizedLanguage = 'en';
+    } else if (user.language === 'العربية') {
+      normalizedLanguage = 'ar';
+    }
+
     const response = {
       success: true,
       data: {
         profile: {
           fullName: user.fullName,
           dateOfBirth: user.dateOfBirth,
+          phone: user.phone,
           country: user.country,
           timezone: user.timezone,
-          language: user.language,
+          language: normalizedLanguage,
           email: user.email,
         },
       },
@@ -37,15 +46,26 @@ const getProfile = async (req, res, next) => {
 const updateProfile = async (req, res, next) => {
   try {
     console.log('[PROFILE] PUT /profile → requested', { userId: req.user && req.user.id });
-    const { fullName, dateOfBirth, country, timezone, language } = req.body;
+    const { fullName, name, dateOfBirth, phone, country, timezone, language, email } = req.body;
 
     const user = await profileService.updateProfile(req.user.id, {
       fullName,
+      name,
       dateOfBirth,
+      phone,
       country,
       timezone,
       language,
+      email,
     });
+
+    // Normalize language from database format to frontend format
+    let normalizedLanguage = user.language;
+    if (user.language === 'English') {
+      normalizedLanguage = 'en';
+    } else if (user.language === 'العربية') {
+      normalizedLanguage = 'ar';
+    }
 
     const response = {
       success: true,
@@ -54,9 +74,10 @@ const updateProfile = async (req, res, next) => {
         profile: {
           fullName: user.fullName,
           dateOfBirth: user.dateOfBirth,
+          phone: user.phone,
           country: user.country,
           timezone: user.timezone,
-          language: user.language,
+          language: normalizedLanguage,
           email: user.email,
         },
       },
@@ -79,15 +100,24 @@ const updateProfile = async (req, res, next) => {
 const completeProfile = async (req, res, next) => {
   try {
     console.log('[PROFILE] POST /profile/complete → requested', { userId: req.user && req.user.id });
-    const { fullName, dateOfBirth, country, timezone, language } = req.body;
+    const { fullName, dateOfBirth, phone, country, timezone, language } = req.body;
 
     const user = await profileService.completeProfile(req.user.id, {
       fullName,
       dateOfBirth,
+      phone,
       country,
       timezone,
       language,
     });
+
+    // Normalize language from database format to frontend format
+    let normalizedLanguage = user.language;
+    if (user.language === 'English') {
+      normalizedLanguage = 'en';
+    } else if (user.language === 'العربية') {
+      normalizedLanguage = 'ar';
+    }
 
     const response = {
       success: true,
@@ -96,9 +126,10 @@ const completeProfile = async (req, res, next) => {
         profile: {
           fullName: user.fullName,
           dateOfBirth: user.dateOfBirth,
+          phone: user.phone,
           country: user.country,
           timezone: user.timezone,
-          language: user.language,
+          language: normalizedLanguage,
           email: user.email,
         },
       },

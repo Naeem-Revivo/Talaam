@@ -9,12 +9,14 @@ import SignUpFreePage from '../pages/SignUpFreePage';
 import CreateAccountPage from '../pages/CreateAccountPage';
 import VerifyEmailPage from '../pages/VerifyEmailPage';
 import ProfilePage from '../pages/ProfilePage';
+import CompleteProfilePage from '../pages/CompleteProfilePage';
 import LoginPage from '../pages/LoginPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import ForgotModalPage from '../pages/ForgotModalPage';
 import SetNewPasswordPage from '../pages/SetNewPasswordPage';
 import PasswordResetPage from '../pages/PasswordResetPage';
 import AuthCallbackPage from '../pages/AuthCallbackPage';
+import MoyassarPaymentPage from '../pages/MoyassarPaymentPage';
 import DashboardLayout from '../pages/dashboard/DashboardLayout';
 import DashboardPage from '../pages/dashboard/DashboardPage';
 import PracticePage from '../pages/dashboard/PracticePage';
@@ -30,12 +32,21 @@ import UserManagementPage from '../pages/admin/UserManagementPage';
 import AddUserPage from '../pages/admin/AddUserPage';
 import EditUserPage from '../pages/admin/EditUserPage';
 import UserDetailPage from '../pages/admin/UserDetailPage';
-import { RoleRoute } from './ProtectedRoute';
+import { RoleRoute, ProtectedRoute } from './ProtectedRoute';
+import { PublicRoute } from './PublicRoute';
 import ClassificationManagement from '../pages/admin/ClassificationManagementPage';
 import AdminQuestionBankPage from '../pages/admin/QuestionBankPage';
 import QuestionManagementPage from '../pages/admin/QuestionManagementPage';
 import AddNewQuestionPage from '../pages/admin/AddNewQuestionPage';
 import QuestionDetailsPage from '../pages/admin/QuestionDetailsPage';
+import PendingProcessorPage from '../pages/admin/PendingProcessorPage';
+import PendingCreatorPage from '../pages/admin/PendingCreatorPage';
+import PendingExplainerPage from '../pages/admin/PendingExplainerPage';
+import SentBackQuestionsPage from '../pages/admin/SentBackQuestionsPage';
+import AdminPendingProcessorViewQuestion from '../pages/admin/AdminPendingProcessorViewQuestion';
+import AdminPendingCreatorViewQuestion from '../pages/admin/AdminPendingCreatorViewQuestion';
+import AdminPendingExplainerViewQuestion from '../pages/admin/AdminPendingExplainerViewQuestion';
+import AdminSentBackQuestionView from '../pages/admin/AdminSentBackQuestionView';
 import CreateVariantPage from '../pages/admin/CreateVariantPage';
 import VariantQuestionReviewPage from '../pages/admin/VariantQuestionReviewPage';
 import AddSubjectPage from '../pages/admin/AddSubjectPage';
@@ -68,18 +79,19 @@ import GathererLayout from '../components/gatherer/GathererLayout';
 import GathererDashboard from '../pages/Gatherer/GathererDashboard';
 import GathererQuestionBank from '../pages/Gatherer/GathererQuestionBank';
 import GathererAddNewQuestionPage from '../pages/Gatherer/GathererAddNewQuestion';
+import GathererEditQuestionPage from '../pages/Gatherer/GathererEditQuestion';
 import GathererQuestionDetailsPage from '../pages/Gatherer/GathererQuestionDetail';
 import ProcessorDashboard from '../pages/Processor/ProcessorDashboard';
 import ProcessorLayout from '../components/Processor/ProcessorLayout';
 import AllProcessedQuestion from '../pages/Processor/AllProcessedQuestion';
 import GathererSubmission from '../pages/Processor/GathererSubmission';
 import ExplainerSubmission from '../pages/Processor/ExplainerSubmission';
+import AdminSubmission from '../pages/Processor/AdminSubmission';
 import CreaterSubmission from '../pages/Processor/CreatorSubmission';
 import ProcessorViewQuestion from '../pages/Processor/ProcessorViewQuestion';
 import CreatorLayout from '../components/creator/CreatorLayout';
 import CreatorDashboard from '../pages/Creator/CreatorDashboard';
 import CreatorQuestionBank from '../pages/Creator/CreatorQuestionBank';
-import AssignedQuestionPage from '../pages/Creator/AssignedQuestionPage';
 import CompletedQuestionPage from '../pages/Creator/CompletedQuestionPage';
 import CreatorVariantsPage from '../pages/Creator/CreatorVariantsPage';
 import ExplainerDashboard from '../pages/Explainer/ExplainerDashbaord';
@@ -88,16 +100,28 @@ import ExplainerQuestionBank from '../pages/Explainer/ExplainerQuestionBank';
 import AddExplanationPage from '../pages/Explainer/AddExplanationPage';
 import CompletedExplanationPage from '../pages/Explainer/CompletedExplanation';
 import DraftExplanationPage from '../pages/Explainer/DraftExplanation';
+import ExplainerAssignedQuestions from '../pages/Explainer/ExplainerAssignedQuestions';
+import ExplainerViewQuestion from '../pages/Explainer/ExplainerViewQuestion';
 import AccountSettingPage from '../pages/dashboard/AccountSettingPage';
 import ProcessorQuestionBank from '../pages/Processor/ProcessorQuestionBank';
 import SubscriptionBillingPage from '../pages/dashboard/SubscriptionBillingPage';
+import StudentAnnouncements from '../pages/dashboard/StudentAnnouncements';
+import AdminAnnouncements from '../pages/shared/AdminAnnouncements';
 import GathererProfile from '../pages/Gatherer/GathererProfile';
 import CreatorProfile from '../pages/Creator/CreatorProfile';
 import ProcessorProfile from '../pages/Processor/ProcessorProfile';
 import ExplainerProfile from '../pages/Explainer/ExplainerProfile';
 import AddNewExam from '../pages/admin/AddNewExam';
+import EditExam from '../pages/admin/EditExam';
+import EditSubject from '../pages/admin/EditSubject';
+import EditTopic from '../pages/admin/EditTopic';
 import CreatorViewVariant from '../pages/Creator/CreatorViewVariant';
+import CreatorVariantsListPage from '../pages/Creator/CreatorVariantsListPage';
+import CreatorViewQuestion from '../pages/Creator/CreatorViewQuestion';
 import ApprovedQuestions from '../pages/admin/ApprovedQuestions';
+import StudentManagementPage from '../pages/admin/StudentManagementPage';
+import StudentDetailPage from '../pages/admin/StudentDetailPage';
+import SubscriptionBridgePage from '../pages/SubscriptionBridgePage';
 
 export const AppRoutes = () => {
   return (
@@ -108,16 +132,28 @@ export const AppRoutes = () => {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/question-banks" element={<QuestionBankPage />} />
+      {/* Public Auth Routes - Redirect authenticated users to dashboard */}
+      <Route element={<PublicRoute />}>
       <Route path="/signupfree" element={<SignUpFreePage />} />
       <Route path="/create-account" element={<CreateAccountPage />} />
-      <Route path="/verify-email" element={<VerifyEmailPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/forgot-modal" element={<ForgotModalPage />} />
       <Route path="/set-new-password" element={<SetNewPasswordPage />} />
       <Route path="/password-reset" element={<PasswordResetPage />} />
+      </Route>
+      
+      {/* Profile page - can be accessed by authenticated users or during signup flow */}
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      
+      {/* Complete Profile page - protected route for authenticated users (especially students) */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/complete-profile" element={<CompleteProfilePage />} />
+        <Route path="/subscription-bridge" element={<SubscriptionBridgePage />} />
+      </Route>
+      <Route path="/moyassar-payment" element={<MoyassarPaymentPage />} />
       
       {/* Dashboard Routes (User) */}
       <Route element={<RoleRoute allow={['user']} />}>
@@ -128,6 +164,7 @@ export const AppRoutes = () => {
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="review" element={<ReviewPage />} />
           <Route path="subscription-billings" element={<SubscriptionBillingPage />} />
+          <Route path="announcements" element={<StudentAnnouncements />} />
         </Route>
         {/* Review Pages - No sidebar */}
         <Route path="/dashboard/review-incorrect" element={<ReviewIncorrectPage />} />
@@ -136,7 +173,7 @@ export const AppRoutes = () => {
         <Route path="/dashboard/session-summary" element={<QuestionSessionSummaryPage />} />
       </Route>
       
-      {/* Admin Routes */}
+      {/* Admin Routes - Only for admin/superadmin without adminRole */}
       <Route element={<RoleRoute allow={['admin', 'superadmin']} />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
@@ -162,7 +199,18 @@ export const AppRoutes = () => {
           <Route path="classification/add-subtopic" element={<AddSubTopicPage />} />
           <Route path="classification/add-concept" element={<AddConceptPage />} />
           <Route path="classification/add-exam" element={<AddNewExam />} />
+          <Route path="classification/edit-exam/:examId" element={<EditExam />} />
+          <Route path="classification/edit-subject/:subjectId" element={<EditSubject />} />
+          <Route path="classification/edit-topic/:topicId" element={<EditTopic />} />
           <Route path="question-bank" element={<AdminQuestionBankPage />} />
+          <Route path="question-bank/pending-processor" element={<PendingProcessorPage />} />
+          <Route path="question-bank/pending-processor/view" element={<AdminPendingProcessorViewQuestion />} />
+          <Route path="question-bank/pending-creator" element={<PendingCreatorPage />} />
+          <Route path="question-bank/pending-creator/view" element={<AdminPendingCreatorViewQuestion />} />
+          <Route path="question-bank/pending-explainer" element={<PendingExplainerPage />} />
+          <Route path="question-bank/pending-explainer/view" element={<AdminPendingExplainerViewQuestion />} />
+          <Route path="question-bank/sent-back-questions" element={<SentBackQuestionsPage />} />
+          <Route path="question-bank/sent-back-questions/view" element={<AdminSentBackQuestionView />} />
           <Route path="question-management" element={<QuestionManagementPage />} />
           <Route path="question-bank/add-question" element={<AddNewQuestionPage />} />
           <Route path="question-bank/question-details" element={<QuestionDetailsPage />} />
@@ -173,7 +221,7 @@ export const AppRoutes = () => {
           <Route path="reports/subscription-trends" element={<SubscriptionTrendsPage />} />
           <Route path="reports/export" element={<ExportReportsPage />} />
           <Route path="moderation" element={<ContentModerationPage />} />
-          <Route path="moderation/details" element={<ContentDetailsPage />} />
+          <Route path="moderation/details/:questionId" element={<ContentDetailsPage />} />
           <Route path="settings" element={<SystemSettingPlan />} />
           <Route path="settings/language-management" element={<LanguageManagement />} />
           <Route path="settings/roles-permissions" element={<AdminRolePermissions />} />
@@ -186,22 +234,26 @@ export const AppRoutes = () => {
           <Route path="security/view-logs" element={<ViewLogDetails />} />
           <Route path="security/roles-permissions" element={<RolesPermissionsPage />} />
           <Route path="approved-questions" element={<ApprovedQuestions />} />
+          <Route path="students" element={<StudentManagementPage />} />
+          <Route path="students/:id" element={<StudentDetailPage />} />
         </Route>
       </Route>
 
-      {/* Gatherer Routes */}
+      {/* Gatherer Routes - Allow gatherer role or admin with gatherer adminRole */}
       <Route element={<RoleRoute allow={['gatherer']} />}>
         <Route path="/gatherer" element={<GathererLayout />}>
           <Route index element={<GathererDashboard />} />
           <Route path="profile" element={<GathererProfile />} />
           <Route path="question-bank" element={<GathererQuestionBank />} />
           <Route path="question-bank/Gatherer-addQuestion" element={<GathererAddNewQuestionPage />} />
+          <Route path="question-bank/Gatherer-editQuestion/:questionId" element={<GathererEditQuestionPage />} />
+          <Route path="question-bank/Gatherer-QuestionDetail/:questionId" element={<GathererQuestionDetailsPage />} />
           <Route path="question-bank/Gatherer-QuestionDetail" element={<GathererQuestionDetailsPage />} />
-          {/* Add gatherer specific routes here */}
+          <Route path="announcements" element={<AdminAnnouncements />} />
         </Route>
       </Route>
 
-      {/* Processer dashboard */}
+      {/* Processor Routes - Allow processor role or admin with processor adminRole */}
       <Route element={<RoleRoute allow={['processor']} />}>
         <Route path="/processor" element={<ProcessorLayout />}>
           <Route index element={<ProcessorDashboard />} />
@@ -211,22 +263,30 @@ export const AppRoutes = () => {
           <Route path="Processed-ViewQuestion" element={<ProcessorViewQuestion />} />
           <Route path="question-bank/gatherer-submission" element={<GathererSubmission />} />
           <Route path="question-bank/explainer-submission" element={<ExplainerSubmission />} />
+          <Route path="question-bank/admin-submission" element={<AdminSubmission />} />
           <Route path="question-bank/creator-submission" element={<CreaterSubmission />} />
+          <Route path="announcements" element={<AdminAnnouncements />} />
         </Route>
       </Route>
 
+      {/* Creator Routes - Allow creator role or admin with creator adminRole */}
       <Route element={<RoleRoute allow={['creator']} />}>
         <Route path="/creator" element={<CreatorLayout />}>
           <Route index element={<CreatorDashboard />} />
           <Route path="profile" element={<CreatorProfile />} />
           <Route path="question-bank" element={<CreatorQuestionBank />} />
-          <Route path="question-bank/assigned-question" element={<AssignedQuestionPage />} />
+          {/* <Route path="question-bank/assigned-question" element={<AssignedQuestionPage />} /> */}
           <Route path="question-bank/completed-question" element={<CompletedQuestionPage />} />
           <Route path="question-bank/create-variants" element={<CreatorVariantsPage />} />
+          <Route path="question-bank/edit-variant" element={<CreatorVariantsPage />} />
           <Route path="question-bank/view-variant" element={<CreatorViewVariant />} />
+          <Route path="question-bank/variants-list" element={<CreatorVariantsListPage />} />
+          <Route path="question-bank/question/:questionId" element={<CreatorViewQuestion />} />
+          <Route path="announcements" element={<AdminAnnouncements />} />
         </Route>
       </Route>
 
+      {/* Explainer Routes - Allow explainer role or admin with explainer adminRole */}
       <Route element={<RoleRoute allow={['explainer']} />}>
         <Route path="/explainer" element={<ExplainerLayout />}>
           <Route index element={<ExplainerDashboard />} />
@@ -235,6 +295,9 @@ export const AppRoutes = () => {
           <Route path="question-bank/add-explanation" element={<AddExplanationPage />} />
           <Route path="question-bank/completed-explanation" element={<CompletedExplanationPage />} />
           <Route path="question-bank/draft-explanation" element={<DraftExplanationPage />} />
+          <Route path="question-bank/assigned-questions" element={<ExplainerAssignedQuestions />} />
+          <Route path="question-bank/question/:questionId" element={<ExplainerViewQuestion />} />
+          <Route path="announcements" element={<AdminAnnouncements />} />
         </Route>
       </Route>
       

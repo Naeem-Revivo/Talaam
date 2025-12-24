@@ -1,4 +1,5 @@
 const adminService = require('../../services/admin');
+const studentService = require('../../services/admin/student.service');
 const subjectService = require('../../services/admin/subject');
 const topicService = require('../../services/admin/topic');
 
@@ -283,11 +284,13 @@ const getAllAdmins = async (req, res, next) => {
       search,
     });
 
-    // Ensure only superadmin can access this
-    if (req.user.role !== 'superadmin') {
+    // Allow all admin roles (gatherer, processor, creator, explainer, superadmin) to access this endpoint
+    // This is needed for gatherers to select processors when creating questions
+    // and for other admin roles to view users in their workflow
+    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Only superadmin can view all admin users',
+        message: 'Access denied. Admin privileges required.',
       });
     }
 
@@ -358,12 +361,31 @@ const getAllAdmins = async (req, res, next) => {
       success: true,
       message: 'Admin users retrieved successfully',
       data: {
+        users: result.admins.map((admin) => ({
+          id: admin.id,
+          name: admin.fullName || admin.name || 'N/A',
+          fullName: admin.fullName || admin.name || 'N/A',
+          email: admin.email,
+          workflowRole: admin.adminRole || null,
+          adminRole: admin.adminRole || null,
+          status: admin.status,
+          // Use updatedAt as proxy for lastLogin (like dashboard services do)
+          lastLogin: admin.updatedAt || admin.createdAt || null,
+          createdAt: admin.createdAt || null,
+          updatedAt: admin.updatedAt || null,
+        })),
         admins: result.admins.map((admin) => ({
           id: admin.id,
           username: admin.fullName || admin.name || 'N/A',
+          name: admin.fullName || admin.name || 'N/A',
           email: admin.email,
           workflowRole: admin.adminRole || null,
+          adminRole: admin.adminRole || null,
           status: admin.status,
+          // Use updatedAt as proxy for lastLogin (like dashboard services do)
+          lastLogin: admin.updatedAt || admin.createdAt || null,
+          createdAt: admin.createdAt || null,
+          updatedAt: admin.updatedAt || null,
         })),
         pagination: {
           ...result.pagination,
@@ -420,6 +442,8 @@ const getDashboardStatistics = async (req, res, next) => {
         },
         userGrowthData: statistics.userGrowthData,
         latestSignups: statistics.latestSignups,
+        subscriptionPlanBreakdown: statistics.subscriptionPlanBreakdown,
+        subscriptionNotifications: statistics.subscriptionNotifications,
       },
     };
 
@@ -482,12 +506,37 @@ const updateAdmin = async (req, res, next) => {
       }
     }
 
+    // Store old role before update
+    const oldRole = user.adminRole;
+
     const updatedUser = await adminService.updateAdminDetails(user, {
       name,
       email,
       status,
       adminRole,
     });
+
+    // Send role change email if adminRole was changed
+    if (adminRole !== undefined && adminRole !== oldRole && adminRole !== null) {
+      console.log('[ADMIN] Role changed detected. Old role:', oldRole, 'New role:', adminRole);
+      try {
+        const { sendRoleChangeEmail } = require('../../config/nodemailer/emailTemplates');
+        const emailResult = await sendRoleChangeEmail(
+          updatedUser.email,
+          updatedUser.name || updatedUser.fullName,
+          oldRole,
+          adminRole
+        );
+        console.log('[ADMIN] Role change email sent successfully to:', updatedUser.email, 'MessageId:', emailResult?.messageId);
+      } catch (emailError) {
+        // Log error but don't fail the user update
+        console.error('[ADMIN] Failed to send role change email:', {
+          error: emailError.message,
+          userId: updatedUser.id,
+          email: updatedUser.email,
+        });
+      }
+    }
 
     const response = {
       success: true,
@@ -1545,8 +1594,8 @@ const getAllUserSubscriptions = async (req, res, next) => {
             id: sub.planId?.id || sub.planId?._id,
             name: sub.planName || sub.planId?.name,
           },
-          startDate: adminService.formatDateDDMMYYYY(sub.startDate),
-          expiryDate: adminService.formatDateDDMMYYYY(sub.expiryDate),
+          startDate: adminService.formatDateDDMMYYYY(sub.startDate) || null,
+          expiryDate: adminService.formatDateDDMMYYYY(sub.expiryDate) || null,
           paymentStatus: sub.paymentStatus,
           isActive: sub.isActive,
         })),
@@ -1682,6 +1731,63 @@ const getSubscriptionDetails = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         message: 'Invalid subscription ID',
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * Sync payment status for a subscription (Admin only)
+ * POST /api/admin/subscriptions/:subscriptionId/sync-payment
+ */
+const syncSubscriptionPayment = async (req, res, next) => {
+  try {
+    const { subscriptionId } = req.params;
+
+    console.log('[SUBSCRIPTION] POST /admin/subscriptions/:subscriptionId/sync-payment → requested', {
+      subscriptionId,
+      requestedBy: req.user.id,
+    });
+
+    // Ensure only superadmin can access this
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only superadmin can sync payment status',
+      });
+    }
+
+    // Sync payment status
+    const moyassarService = require('../../services/payment/moyassar.service');
+    const syncResult = await moyassarService.syncPaymentStatus(subscriptionId);
+
+    if (syncResult.wasUpdated) {
+      // Re-fetch subscription details
+      const subscription = await adminService.getSubscriptionDetails(subscriptionId);
+      
+      res.status(200).json({
+        success: true,
+        message: syncResult.message || 'Payment status synced successfully',
+        data: {
+          subscription,
+        },
+      });
+    } else {
+      res.status(200).json({
+        success: syncResult.success,
+        message: syncResult.message || 'Payment status is already up to date',
+        data: {
+          subscription: syncResult.subscription,
+        },
+      });
+    }
+  } catch (error) {
+    console.error('[SUBSCRIPTION] POST /admin/subscriptions/:subscriptionId/sync-payment → error', error);
+    if (error.message === 'Subscription not found' || error.message === 'No Moyassar payment ID found for this subscription') {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
       });
     }
     next(error);
@@ -1959,7 +2065,7 @@ const getTopPerformanceUsers = async (req, res, next) => {
 
     console.log('[ANALYTICS] GET /admin/analytics/user/performance → 200 (ok)', {
       count: formattedUsers.length,
-      totalItems: totalCount,
+      totalItems: result.pagination.totalItems,
     });
     res.status(200).json(response);
   } catch (error) {
@@ -2011,12 +2117,18 @@ const getSubscriptionTrendMetrics = async (req, res, next) => {
 /**
  * Get revenue trend chart data
  * Only superadmin can access this
+ * Query params: month (1-12), year (e.g., 2024) - optional, for daily data
  */
 const getRevenueTrendChart = async (req, res, next) => {
   try {
+    const month = req.query.month ? parseInt(req.query.month, 10) : null;
+    const year = req.query.year ? parseInt(req.query.year, 10) : null;
+
     console.log('[ANALYTICS] GET /admin/analytics/subscription/revenue-trend → requested', {
       requestedBy: req.user.id,
       requesterRole: req.user.role,
+      month,
+      year,
     });
 
     // Ensure only superadmin can access this
@@ -2027,7 +2139,22 @@ const getRevenueTrendChart = async (req, res, next) => {
       });
     }
 
-    const chartData = await adminService.getRevenueTrendChart();
+    // Validate month and year if provided
+    if (month && (month < 1 || month > 12)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid month. Must be between 1 and 12',
+      });
+    }
+
+    if (year && (year < 2000 || year > 2100)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid year',
+      });
+    }
+
+    const chartData = await adminService.getRevenueTrendChart(month, year);
 
     const formattedData = chartData.data.map((item) => ({
       ...item,
@@ -2039,16 +2166,90 @@ const getRevenueTrendChart = async (req, res, next) => {
       message: 'Revenue trend chart data retrieved successfully',
       data: {
         title: chartData.title,
+        type: chartData.type,
         data: formattedData,
       },
     };
 
     console.log('[ANALYTICS] GET /admin/analytics/subscription/revenue-trend → 200 (ok)', {
       dataPoints: formattedData.length,
+      type: chartData.type,
     });
     res.status(200).json(response);
   } catch (error) {
     console.error('[ANALYTICS] GET /admin/analytics/subscription/revenue-trend → error', error);
+    next(error);
+  }
+};
+
+/**
+ * Get practice distribution by subject
+ * Only superadmin can access this
+ */
+const getPracticeDistribution = async (req, res, next) => {
+  try {
+    console.log('[ANALYTICS] GET /admin/analytics/practice-distribution → requested', {
+      requestedBy: req.user.id,
+      requesterRole: req.user.role,
+    });
+
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only superadmin can access practice distribution data',
+      });
+    }
+
+    const distribution = await adminService.getPracticeDistribution();
+
+    const response = {
+      success: true,
+      message: 'Practice distribution retrieved successfully',
+      data: distribution,
+    };
+
+    console.log('[ANALYTICS] GET /admin/analytics/practice-distribution → 200 (ok)', {
+      subjects: distribution.length,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[ANALYTICS] GET /admin/analytics/practice-distribution → error', error);
+    next(error);
+  }
+};
+
+/**
+ * Get plan distribution for donut chart
+ * Only superadmin can access this
+ */
+const getPlanDistribution = async (req, res, next) => {
+  try {
+    console.log('[ANALYTICS] GET /admin/analytics/subscription/plan-distribution → requested', {
+      requestedBy: req.user.id,
+      requesterRole: req.user.role,
+    });
+
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only superadmin can access plan distribution data',
+      });
+    }
+
+    const distribution = await adminService.getPlanDistribution();
+
+    const response = {
+      success: true,
+      message: 'Plan distribution retrieved successfully',
+      data: distribution,
+    };
+
+    console.log('[ANALYTICS] GET /admin/analytics/subscription/plan-distribution → 200 (ok)', {
+      plans: distribution.length,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[ANALYTICS] GET /admin/analytics/subscription/plan-distribution → error', error);
     next(error);
   }
 };
@@ -2123,14 +2324,322 @@ const getPlanWiseBreakdown = async (req, res, next) => {
   }
 };
 
+/**
+ * Get all students with filtering and pagination
+ * Only superadmin can access this
+ */
+const getAllStudents = async (req, res, next) => {
+  try {
+    const { page, limit, status, plan, date, search, studentId } = req.query;
+
+    console.log('[ADMIN] GET /admin/students → requested', {
+      requestedBy: req.user.id,
+      page,
+      limit,
+      status,
+      plan,
+      date,
+      search,
+      studentId,
+    });
+
+    // Ensure only superadmin can access this endpoint
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Superadmin privileges required.',
+      });
+    }
+
+    // Parse pagination parameters
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 5;
+
+    // Validate pagination
+    if (pageNum < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Page number must be greater than 0',
+      });
+    }
+
+    if (limitNum < 1 || limitNum > 100) {
+      return res.status(400).json({
+        success: false,
+        message: 'Limit must be between 1 and 100',
+      });
+    }
+
+    // Build filters
+    const filters = {
+      status,
+      plan,
+      date,
+      search,
+      studentId,
+    };
+
+    // Build pagination
+    const pagination = {
+      page: pageNum,
+      limit: limitNum,
+    };
+
+    // Get paginated students
+    const result = await studentService.getAllStudents(filters, pagination);
+
+    const response = {
+      success: true,
+      message: 'Students retrieved successfully',
+      data: {
+        students: result.students,
+        pagination: result.pagination,
+        filters: result.filters,
+      },
+    };
+
+    console.log('[ADMIN] GET /admin/students → 200 (ok)', {
+      count: result.students.length,
+      totalItems: result.pagination.totalItems,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[ADMIN] GET /admin/students → error', error);
+    next(error);
+  }
+};
+
+/**
+ * Get student management statistics
+ * Only superadmin can access this
+ */
+const getStudentManagementStatistics = async (req, res, next) => {
+  try {
+    console.log('[ADMIN] GET /admin/students/management → requested', {
+      requestedBy: req.user.id,
+    });
+
+    // Ensure only superadmin can access this endpoint
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Superadmin privileges required.',
+      });
+    }
+
+    // Get statistics
+    const statistics = await studentService.getStudentManagementStatistics();
+
+    const response = {
+      success: true,
+      message: 'Student management statistics retrieved successfully',
+      data: {
+        statistics,
+      },
+    };
+
+    console.log('[ADMIN] GET /admin/students/management → 200 (ok)', statistics);
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[ADMIN] GET /admin/students/management → error', error);
+    next(error);
+  }
+};
+
+/**
+ * Get student details by ID
+ * Only superadmin can access this
+ */
+const getStudentById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    console.log('[ADMIN] GET /admin/students/:id → requested', {
+      requestedBy: req.user.id,
+      studentId: id,
+    });
+
+    // Ensure only superadmin can access this endpoint
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Superadmin privileges required.',
+      });
+    }
+
+    // Get student details
+    const student = await studentService.getStudentById(id);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found',
+      });
+    }
+
+    const response = {
+      success: true,
+      message: 'Student details retrieved successfully',
+      data: {
+        student,
+      },
+    };
+
+    console.log('[ADMIN] GET /admin/students/:id → 200 (ok)', { studentId: id });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[ADMIN] GET /admin/students/:id → error', error);
+    next(error);
+  }
+};
+
+/**
+ * Update student status (suspend/activate)
+ * Only superadmin can access this
+ */
+const updateStudentStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    console.log('[ADMIN] PUT /admin/students/:id/status → requested', {
+      studentId: id,
+      status,
+      requestedBy: req.user.id,
+    });
+
+    // Ensure only superadmin can access this endpoint
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Superadmin privileges required.',
+      });
+    }
+
+    // Validate status
+    if (!status || !['active', 'suspended'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [
+          {
+            field: 'status',
+            message: 'Status must be either active or suspended',
+          },
+        ],
+      });
+    }
+
+    // Update student status
+    const updatedStudent = await studentService.updateStudentStatus(id, status);
+
+    const response = {
+      success: true,
+      message: `Student status updated to ${status} successfully`,
+      data: {
+        student: {
+          id: updatedStudent.id,
+          name: updatedStudent.fullName || updatedStudent.name,
+          email: updatedStudent.email,
+          status: updatedStudent.status,
+        },
+      },
+    };
+
+    console.log('[ADMIN] PUT /admin/students/:id/status → 200 (updated)', { 
+      studentId: id, 
+      status 
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[ADMIN] PUT /admin/students/:id/status → error', error);
+    if (error.message === 'Student not found' || error.message === 'User is not a student') {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * Export report
+ * POST /api/admin/reports/export
+ */
+const exportReport = async (req, res, next) => {
+  try {
+    console.log('[EXPORT] POST /admin/reports/export → requested', {
+      requestedBy: req.user.id,
+      requesterRole: req.user.role,
+      body: req.body,
+    });
+
+    // Ensure only superadmin can export reports
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only superadmin can export reports',
+      });
+    }
+
+    const { reportType, format, startDate, endDate } = req.body;
+
+    // Validate required fields
+    if (!reportType || !format) {
+      return res.status(400).json({
+        success: false,
+        message: 'Report type and format are required',
+      });
+    }
+
+    // Validate report type
+    const validReportTypes = ['User Growth', 'Subscription Trends', 'Performance Analytics'];
+    if (!validReportTypes.includes(reportType)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid report type. Must be one of: ${validReportTypes.join(', ')}`,
+      });
+    }
+
+    // Validate format
+    const validFormats = ['CSV', 'Excel', 'PDF'];
+    if (!validFormats.includes(format)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid format. Must be one of: ${validFormats.join(', ')}`,
+      });
+    }
+
+    // Export the report
+    const exportData = await adminService.exportReport(reportType, format, startDate, endDate);
+
+    // Set headers for file download
+    res.setHeader('Content-Type', exportData.mimeType);
+    res.setHeader('Content-Disposition', `attachment; filename="${exportData.filename}"`);
+
+    console.log('[EXPORT] POST /admin/reports/export → 200 (ok)', {
+      reportType,
+      format,
+      filename: exportData.filename,
+    });
+
+    // Send the file content
+    res.status(200).send(exportData.content);
+  } catch (error) {
+    console.error('[EXPORT] POST /admin/reports/export → error', error);
+    next(error);
+  }
+};
+
 module.exports = {
   createAdmin,
   updateUserStatus,
   getAllAdmins,
-  updateAdmin,
-  deleteAdmin,
   getDashboardStatistics,
+  updateAdmin,
   getUserManagementStatistics,
+  deleteAdmin,
   getClassificationStatistics,
   getSubjectsPaginated,
   getTopicsPaginated,
@@ -2143,12 +2652,19 @@ module.exports = {
   deleteTopic,
   getAllUserSubscriptions,
   getSubscriptionDetails,
+  syncSubscriptionPayment,
   getPaymentHistory,
   getUserAnalyticsHero,
   getUserGrowthChart,
   getTopPerformanceUsers,
   getSubscriptionTrendMetrics,
   getRevenueTrendChart,
+  getPracticeDistribution,
+  getPlanDistribution,
   getPlanWiseBreakdown,
+  getAllStudents,
+  getStudentManagementStatistics,
+  getStudentById,
+  updateStudentStatus,
+  exportReport,
 };
-

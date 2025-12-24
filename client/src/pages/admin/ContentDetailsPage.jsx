@@ -1,60 +1,161 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
+import questionsAPI from "../../api/questions";
+import { toast } from "react-toastify";
+import Loader from "../../components/common/Loader";
 
 const ContentDetailsPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { questionId } = useParams();
   const { t } = useLanguage();
   
-  // Get content data from navigation state or use mock data
-  const contentData = location.state?.content || {
-    id: "0001",
-    contentType: "Question",
-    submittedBy: "Sarah Khan",
-    dateReported: "15-01-2024",
-    flagReason: "Inappropriate Content",
-    question: "What is the capital of France?",
-    options: ["Berlin", "Paris", "Rome", "Madrid"],
-    correctAnswer: "Paris",
-    explanation: "Paris is the capital of France and also its largest city. Situated on the River Seine, in northern France, at the heart of the Île-de-France region, Paris has the reputation of being the most beautiful and romantic of all cities, brimming with historic associations and remaining vastly influential in the realms of culture, art, fashion, food and design.",
-    approvedCount: 120,
-    rejectedCount: 30,
+  const [contentData, setContentData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [moderatorComments, setModeratorComments] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+
+  useEffect(() => {
+    fetchQuestionDetails();
+  }, [questionId]);
+
+  const fetchQuestionDetails = async () => {
+    setLoading(true);
+    try {
+      const response = await questionsAPI.getFlaggedQuestionsForModeration();
+      const questions = response.data?.questions || [];
+      const question = questions.find((q) => q.id === questionId);
+      
+      if (question) {
+        setContentData(question);
+      } else {
+        toast.error("Question not found");
+        navigate("/admin/moderation");
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch question details");
+      navigate("/admin/moderation");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const [moderatorComments, setModeratorComments] = useState("");
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" });
+  };
 
-  const handleApprove = () => {
-    console.log("Approve content:", contentData.id);
-    // Navigate back or show success message
-    navigate("/admin/moderation");
+  const handleApprove = async () => {
+    if (!contentData) return;
+    
+    if (!window.confirm("Are you sure you want to approve this flag? The question will be sent to processor.")) {
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      await questionsAPI.approveStudentFlag(contentData.id);
+      toast.success("Flag approved. Question sent to processor.");
+      navigate("/admin/moderation");
+    } catch (error) {
+      toast.error(error.message || "Failed to approve flag");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleReject = () => {
-    console.log("Reject content:", contentData.id);
-    // Navigate back or show success message
-    navigate("/admin/moderation");
+    setShowRejectModal(true);
+    setRejectReason("");
+  };
+
+  const handleRejectSubmit = async () => {
+    if (!rejectReason.trim()) {
+      toast.error("Please provide a rejection reason");
+      return;
+    }
+    if (!contentData) return;
+
+    setIsProcessing(true);
+    try {
+      await questionsAPI.rejectStudentFlag(contentData.id, rejectReason);
+      toast.success("Flag rejected. Student will be notified.");
+      setShowRejectModal(false);
+      setRejectReason("");
+      navigate("/admin/moderation");
+    } catch (error) {
+      toast.error(error.message || "Failed to reject flag");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleRequestChange = () => {
-    console.log("Request change for content:", contentData.id);
-    // Navigate back or show success message
-    navigate("/admin/moderation");
+    // This functionality can be implemented later if needed
+    toast.info("Request change functionality coming soon");
   };
 
   const handleRevisionHistory = () => {
-    console.log("View revision history");
-    // Navigate to revision history page
+    // This functionality can be implemented later if needed
+    toast.info("Revision history functionality coming soon");
   };
+
+  // Convert options object to array for display
+  const getOptionsArray = (options) => {
+    if (!options) return [];
+    if (Array.isArray(options)) return options;
+    if (typeof options === 'object') {
+      return Object.entries(options)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([, value]) => value);
+    }
+    return [];
+  };
+
+  if (loading) {
+    return (
+      <Loader 
+        fullScreen={true}
+        size="lg" 
+        color="oxford-blue" 
+        text="Loading..."
+        className="min-h-screen bg-gray-50 p-3 sm:p-4 md:p-6"
+      />
+    );
+  }
+
+  if (!contentData) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-3 sm:p-4 md:p-6 flex items-center justify-center">
+        <div className="text-oxford-blue text-[18px] font-roboto">Question not found</div>
+      </div>
+    );
+  }
+
+  const optionsArray = getOptionsArray(contentData.options);
+  const status = contentData.status || contentData.flagStatus || 'pending';
 
   return (
     <div className="min-h-screen bg-gray-50 p-3 sm:p-4 md:p-6">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 lg:px-12">
         {/* Header Section */}
         <div className="mb-4 md:mb-6">
-          <h1 className="font-archivo text-[24px] sm:text-[28px] md:text-[36px] font-bold leading-[28px] sm:leading-[32px] md:leading-[40px] text-oxford-blue mb-2">
-            {t('admin.contentDetails.hero.title')}
-          </h1>
+          <div className="flex items-center gap-4 mb-2">
+            <button
+              onClick={() => navigate("/admin/moderation")}
+              className="text-oxford-blue hover:text-[#ED4122] transition"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            <h1 className="font-archivo text-[24px] sm:text-[28px] md:text-[36px] font-bold leading-[28px] sm:leading-[32px] md:leading-[40px] text-oxford-blue">
+              {t('admin.contentDetails.hero.title')}
+            </h1>
+          </div>
         </div>
 
         {/* Main Content */}
@@ -80,7 +181,7 @@ const ContentDetailsPage = () => {
                       {t('admin.contentDetails.fields.contentType')}
                     </p>
                     <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-oxford-blue">
-                      {contentData.contentType}
+                      {contentData.contentType || "Question"}
                     </p>
                   </div>
                   <div>
@@ -88,9 +189,19 @@ const ContentDetailsPage = () => {
                       {t('admin.contentDetails.fields.dateReported')}
                     </p>
                     <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-oxford-blue">
-                      {contentData.dateReported}
+                      {formatDate(contentData.dateReported || contentData.createdAt)}
                     </p>
                   </div>
+                  {contentData.exam && (
+                    <div>
+                      <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-dark-gray mb-1">
+                        Exam
+                      </p>
+                      <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-oxford-blue">
+                        {contentData.exam?.name || "N/A"}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-3 sm:space-y-4">
                   <div>
@@ -98,7 +209,7 @@ const ContentDetailsPage = () => {
                       {t('admin.contentDetails.fields.reportedBy')}
                     </p>
                     <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-oxford-blue">
-                      {contentData.submittedBy || contentData.reportedBy}
+                      {contentData.submittedBy || contentData.flaggedBy?.name || contentData.flaggedBy?.fullName || contentData.flaggedBy?.email || "Unknown"}
                     </p>
                   </div>
                   <div>
@@ -106,11 +217,57 @@ const ContentDetailsPage = () => {
                       {t('admin.contentDetails.fields.flagReason')}
                     </p>
                     <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-oxford-blue">
-                      {contentData.flagReason}
+                      {contentData.flagReason || "N/A"}
                     </p>
                   </div>
+                  <div>
+                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-dark-gray mb-1">
+                      Status
+                    </p>
+                    <span
+                      className={`inline-flex items-center justify-center font-roboto font-normal leading-[100%] text-center px-3 py-1 rounded-[6px] border-[0.5px] text-[12px] ${
+                        status === "approved"
+                          ? "border-[#10B981] bg-[#ECFDF5] text-[#047857]"
+                          : status === "rejected"
+                          ? "border-[#6B7280] bg-[#F3F4F6] text-[#6B7280]"
+                          : "border-[#ED4122] bg-[#FEF2F2] text-[#ED4122]"
+                      }`}
+                    >
+                      {status === "pending" ? "Flagged" : status}
+                    </span>
+                  </div>
+                  {contentData.subject && (
+                    <div>
+                      <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-dark-gray mb-1">
+                        Subject
+                      </p>
+                      <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-oxford-blue">
+                        {contentData.subject?.name || "N/A"}
+                      </p>
+                    </div>
+                  )}
+                  {contentData.topic && (
+                    <div>
+                      <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-dark-gray mb-1">
+                        Topic
+                      </p>
+                      <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] sm:leading-[24px] text-oxford-blue">
+                        {contentData.topic?.name || "N/A"}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
+              {contentData.flagRejectionReason && (
+                <div className="mt-4 p-3 rounded-lg bg-[#FDF0D5] border border-[#ED4122]">
+                  <p className="font-roboto text-[14px] font-bold text-[#ED4122] mb-1">
+                    Admin Rejection Reason:
+                  </p>
+                  <p className="font-roboto text-[14px] text-[#ED4122]">
+                    {contentData.flagRejectionReason}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Content Card */}
@@ -149,53 +306,37 @@ const ContentDetailsPage = () => {
               <div className="space-y-3 sm:space-y-4">
                 <div>
                   <p className="font-roboto text-[16px] sm:text-[18px] font-medium leading-[22px] sm:leading-[24px] text-oxford-blue mb-2 sm:mb-3">
-                    {t('admin.contentDetails.fields.question')} {contentData.question}
+                    {t('admin.contentDetails.fields.question')} {contentData.question || contentData.questionText}
                   </p>
-                  <div className="space-y-2 sm:space-y-3 py-2 sm:py-3 ml-2 sm:ml-4">
-                    {contentData.options.map((option, index) => (
-                      <p
-                        key={index}
-                        className="font-roboto text-[14px] sm:text-[16px] leading-[20px] sm:leading-[100%] text-oxford-blue"
-                      >
-                        <span className="font-medium">{String.fromCharCode(65 + index)}.</span>{" "}
-                        <span className="font-normal">{option}</span>
-                      </p>
-                    ))}
+                  {optionsArray.length > 0 && (
+                    <div className="space-y-2 sm:space-y-3 py-2 sm:py-3 ml-2 sm:ml-4">
+                      {optionsArray.map((option, index) => (
+                        <p
+                          key={index}
+                          className="font-roboto text-[14px] sm:text-[16px] leading-[20px] sm:leading-[100%] text-oxford-blue"
+                        >
+                          <span className="font-medium">{String.fromCharCode(65 + index)}.</span>{" "}
+                          <span className="font-normal">{option}</span>
+                          {contentData.correctAnswer && 
+                           (contentData.correctAnswer === String.fromCharCode(65 + index) || 
+                            (typeof contentData.correctAnswer === 'string' && contentData.correctAnswer.toUpperCase() === String.fromCharCode(65 + index))) && (
+                            <span className="ml-2 text-[#10B981] font-medium">✓ Correct</span>
+                          )}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {contentData.explanation && (
+                  <div>
+                    <p className="font-roboto text-[16px] sm:text-[18px] font-medium leading-[20px] text-oxford-blue mb-2">
+                      {t('admin.contentDetails.fields.explanation')}
+                    </p>
+                    <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue">
+                      {contentData.explanation}
+                    </p>
                   </div>
-                </div>
-                <div>
-                  <p className="font-roboto text-[16px] sm:text-[18px] font-medium leading-[20px] text-oxford-blue mb-2">
-                    {t('admin.contentDetails.fields.explanation')}
-                  </p>
-                  <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[20px] text-oxford-blue">
-                    {contentData.explanation}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* User's Moderation Record Card */}
-            <div>
-              <h2 className="font-archivo pt-1 text-[18px] sm:text-[20px] font-semibold leading-[24px] sm:leading-[28px] text-oxford-blue mb-3 sm:mb-4">
-                {t('admin.contentDetails.sections.usersModerationRecord')}
-              </h2>
-              <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
-                <div className="rounded-[8px] border w-full border-[#E5E7EB] bg-white p-3 sm:p-4 text-center shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-                  <p className="font-archivo text-[24px] sm:text-[30px] font-semibold leading-[32px] sm:leading-[40px] text-oxford-blue mb-1">
-                    {contentData.approvedCount || 120}
-                  </p>
-                  <p className="font-roboto text-[14px] sm:text-[16px] font-normal leading-[18px] sm:leading-[20px] text-dark-gray">
-                    {t('admin.contentDetails.labels.approved')}
-                  </p>
-                </div>
-                <div className="rounded-[8px] border border-[#E5E7EB] bg-white p-3 sm:p-4 text-center shadow-[6px_6px_54px_0px_rgba(0,0,0,0.05)]">
-                  <p className="font-archivo text-[24px] sm:text-[32px] font-semibold leading-[32px] sm:leading-[40px] text-oxford-blue mb-1">
-                    {contentData.rejectedCount || 30}
-                  </p>
-                  <p className="font-roboto text-[14px] font-normal leading-[18px] sm:leading-[20px] text-dark-gray">
-                    {t('admin.contentDetails.labels.rejected')}
-                  </p>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -229,103 +370,124 @@ const ContentDetailsPage = () => {
                     }}
                   />
                 </div>
-                <div className="space-y-[10px] pt-4 sm:pt-6 xl:pt-[340px]">
-                  <button
-                    type="button"
-                    onClick={handleApprove}
-                    className="flex items-center justify-center gap-2 rounded-[8px] border font-roboto text-[14px] sm:text-[16px] font-medium leading-[100%] text-center transition w-full"
-                    style={{
-                      height: "42px",
-                      backgroundColor: "#FDF0D5",
-                      color: "#ED4122",
-                      borderWidth: "0.5px",
-                    }}
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      className="sm:w-4 sm:h-4"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
+                {status === "pending" && (
+                  <div className="space-y-[10px] pt-4 sm:pt-6">
+                    <button
+                      type="button"
+                      onClick={handleApprove}
+                      disabled={isProcessing}
+                      className="flex items-center justify-center gap-2 rounded-[8px] border font-roboto text-[14px] sm:text-[16px] font-medium leading-[100%] text-center transition w-full disabled:opacity-50"
+                      style={{
+                        height: "42px",
+                        backgroundColor: "#FDF0D5",
+                        color: "#ED4122",
+                        borderWidth: "0.5px",
+                      }}
                     >
-                      <circle cx="8" cy="8" r="7" stroke="#ED4122" strokeWidth="1.5" fill="none" />
-                      <path
-                        d="M5 8L7 10L11 6"
-                        stroke="#ED4122"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    {t('admin.contentDetails.buttons.approve')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleReject}
-                    className="flex items-center justify-center gap-2 rounded-[8px] font-roboto text-[14px] sm:text-[16px] font-medium leading-[100%] text-center transition w-full"
-                    style={{
-                      height: "42px",
-                      backgroundColor: "#ED4122",
-                      color: "#FFFFFF",
-                    }}
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      className="sm:w-4 sm:h-4"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
+                      <svg
+                        width="14"
+                        height="14"
+                        className="sm:w-4 sm:h-4"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <circle cx="8" cy="8" r="7" stroke="#ED4122" strokeWidth="1.5" fill="none" />
+                        <path
+                          d="M5 8L7 10L11 6"
+                          stroke="#ED4122"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      {isProcessing ? "Processing..." : t('admin.contentDetails.buttons.approve')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleReject}
+                      disabled={isProcessing}
+                      className="flex items-center justify-center gap-2 rounded-[8px] font-roboto text-[14px] sm:text-[16px] font-medium leading-[100%] text-center transition w-full disabled:opacity-50"
+                      style={{
+                        height: "42px",
+                        backgroundColor: "#ED4122",
+                        color: "#FFFFFF",
+                      }}
                     >
-                      <circle cx="8" cy="8" r="7" stroke="#FFFFFF" strokeWidth="1.5" fill="none" />
-                      <path
-                        d="M5 5L11 11M11 5L5 11"
-                        stroke="#FFFFFF"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    {t('admin.contentDetails.buttons.reject')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleRequestChange}
-                    className="flex items-center justify-center gap-2 rounded-[8px] font-roboto text-[14px] sm:text-[16px] font-medium leading-[100%] text-center transition w-full"
-                    style={{
-                      height: "42px",
-                      backgroundColor: "#6CA6C1",
-                      color: "#032746",
-                    }}
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      className="sm:w-4 sm:h-4"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M11.3333 2.00001C11.5084 1.82491 11.7163 1.686 11.9452 1.59129C12.174 1.49659 12.4188 1.44775 12.6667 1.44775C12.9146 1.44775 13.1594 1.49659 13.3882 1.59129C13.6171 1.686 13.825 1.82491 14 2.00001C14.1751 2.1751 14.314 2.38304 14.4087 2.61189C14.5034 2.84074 14.5522 3.08558 14.5522 3.33334C14.5522 3.58111 14.5034 3.82595 14.4087 4.0548C14.314 4.28365 14.1751 4.49159 14 4.66668L5.00001 13.6667L1.33334 14.6667L2.33334 11L11.3333 2.00001Z"
-                        stroke="#032746"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    {t('admin.contentDetails.buttons.requestChange')}
-                  </button>
-                </div>
+                      <svg
+                        width="14"
+                        height="14"
+                        className="sm:w-4 sm:h-4"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <circle cx="8" cy="8" r="7" stroke="#FFFFFF" strokeWidth="1.5" fill="none" />
+                        <path
+                          d="M5 5L11 11M11 5L5 11"
+                          stroke="#FFFFFF"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      {t('admin.contentDetails.buttons.reject')}
+                    </button>
+                  </div>
+                )}
+                {status !== "pending" && (
+                  <div className="pt-4 sm:pt-6">
+                    <p className="font-roboto text-[14px] text-dark-gray text-center">
+                      This flag has been {status === "approved" ? "approved" : "rejected"}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-[18px] font-archivo font-bold text-oxford-blue mb-4">
+              Reject Flag
+            </h3>
+            <p className="text-[14px] font-roboto text-dark-gray mb-4">
+              Please provide a reason for rejecting this flag. This reason will be shown to the student.
+            </p>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Enter rejection reason..."
+              className="w-full h-32 p-3 border border-[#E5E7EB] rounded-lg text-[14px] font-roboto text-oxford-blue mb-4 resize-none"
+            />
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectReason("");
+                }}
+                className="px-4 py-2 text-[14px] font-roboto text-oxford-blue border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] transition"
+                disabled={isProcessing}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRejectSubmit}
+                disabled={isProcessing || !rejectReason.trim()}
+                className="px-4 py-2 text-[14px] font-roboto text-white bg-[#ED4122] rounded-lg hover:bg-[#d43a1f] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isProcessing ? "Rejecting..." : "Reject Flag"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default ContentDetailsPage;
-

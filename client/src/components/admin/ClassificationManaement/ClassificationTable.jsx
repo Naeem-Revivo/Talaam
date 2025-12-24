@@ -16,7 +16,7 @@ const TableHeader = ({ columns }) => (
 );
 
 // Table Row
-const TableRow = ({ item, columns, onView, onEdit, t }) => {
+const TableRow = ({ item, columns, onView, onEdit, onStatusToggle, t, activeTab }) => {
     // Get the field key from column name (e.g., "Created By" -> "createdby")
     const getFieldKey = (columnName) => {
         const key = columnName.toLowerCase().replace(/ /g, "");
@@ -30,14 +30,44 @@ const TableRow = ({ item, columns, onView, onEdit, t }) => {
     return (
         <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row">
             {columns.slice(0, -1).map((column) => {
+                // Special handling for status column
+                if (column.key === "status" && activeTab === "Exams") {
+                    return (
+                        <td
+                            key={column.key}
+                            className={`px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center`}
+                        >
+                            <button
+                                type="button"
+                                onClick={() => onStatusToggle?.(item)}
+                                aria-label={`Toggle status for ${item.name} from ${item.status === "active" ? "active" : "inactive"} to ${item.status === "active" ? "inactive" : "active"}`}
+                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                                    item.status === "active"
+                                        ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                }`}
+                            >
+                                {item.status === "active" ? "Active" : "Suspend"}
+                            </button>
+                        </td>
+                    );
+                }
+                
                 const value = item[column.key] || "—";
+                const isDescription = column.key === "description";
 
                 return (
                     <td
                         key={column.key}
-                        className={`px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center`}
+                        className={`px-6 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center ${isDescription ? "max-w-[200px]" : ""}`}
                     >
-                        {value}
+                        {isDescription ? (
+                            <div className="max-w-[200px] mx-auto truncate" title={value}>
+                                {value}
+                            </div>
+                        ) : (
+                            value
+                        )}
                     </td>
                 );
             })}
@@ -101,7 +131,7 @@ const iconMap = {
     datecreated: <CalendarDays size={16} className="text-oxford-blue" />,
 };
 
-const MobileCard = ({ item, columns, onView, onEdit, t }) => {
+const MobileCard = ({ item, columns, onView, onEdit, onStatusToggle, t, activeTab }) => {
     const displayColumns = columns.slice(0, -1); // Exclude "Actions"
 
     // Normalize column name to match item key
@@ -115,15 +145,43 @@ const MobileCard = ({ item, columns, onView, onEdit, t }) => {
         <article className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] bg-white px-5 py-4 shadow-empty md:hidden">
             <div className="flex flex-col gap-3 text-oxford-blue">
                 {displayColumns.map((column) => {
+                    // Special handling for status column
+                    if (column.key === "status" && activeTab === "Exams") {
+                        return (
+                            <div key={column.key} className="flex items-start gap-2">
+                                <FileText size={16} className="text-oxford-blue" />
+                                <div className="flex-1">
+                                    <p className="text-[14px] font-roboto text-[#1F2937]">
+                                        <span className="font-semibold capitalize">{column.label}:</span>{" "}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => onStatusToggle?.(item)}
+                                        className={`mt-1 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                                            item.status === "active"
+                                                ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                        }`}
+                                    >
+                                        {item.status === "active" ? "Active" : "Suspend"}
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    }
+                    
                     const value = item[column.key] || "—"; 
                     const icon = iconMap[column.key.toLowerCase()] || <FileText size={16} className="text-oxford-blue" />;
+                    const isDescription = column.key === "description";
 
                     return (
                         <div key={column.key} className="flex items-start gap-2">
                             {icon}
-                            <p className="text-[14px] font-roboto text-[#1F2937]">
+                            <p className={`text-[14px] font-roboto text-[#1F2937] ${isDescription ? "flex-1 min-w-0" : ""}`}>
                                 <span className="font-semibold capitalize">{column.label}:</span>{" "}
-                                <span className="text-[#374151]">{value}</span>
+                                <span className={`text-[#374151] ${isDescription ? "block truncate" : ""}`} title={isDescription ? value : undefined}>
+                                    {value}
+                                </span>
                             </p>
                         </div>
                     );
@@ -143,7 +201,7 @@ const MobileCard = ({ item, columns, onView, onEdit, t }) => {
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth={1.5}
+                        strokeWidth="1.5"
                         className="h-5 w-5"
                     >
                         <path
@@ -259,12 +317,14 @@ const ClassificationTable = ({
     onPageChange,
     onView,
     onEdit,
+    onStatusToggle,
     emptyMessage,
+    activeTab,
 }) => {
     const { t } = useLanguage();
 
     return (
-        <section className="w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard md:min-h-[348px]">
+        <section className={`w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard ${items.length === 0 ? "md:min-h-[280px]" : ""}`}>
             <div className="hidden overflow-x-auto md:block">
                 <table className="min-w-full border-collapse">
                     <TableHeader columns={columns} />
@@ -277,16 +337,20 @@ const ClassificationTable = ({
                                     columns={columns}
                                     onView={onView}
                                     onEdit={onEdit}
+                                    onStatusToggle={onStatusToggle}
                                     t={t}
+                                    activeTab={activeTab}
                                 />
                             ))
                         ) : (
                             <tr>
                                 <td
                                     colSpan={columns.length}
-                                    className="px-6 py-10 text-center text-sm text-dark-gray"
+                                    className="p-4 text-center text-sm text-dark-gray"
                                 >
-                                    {emptyMessage}
+                                    <div className="flex items-center justify-center min-h-[180px]">
+                                        {emptyMessage}
+                                    </div>
                                 </td>
                             </tr>
                         )}
@@ -302,7 +366,9 @@ const ClassificationTable = ({
                             columns={columns}
                             onView={onView}
                             onEdit={onEdit}
+                            onStatusToggle={onStatusToggle}
                             t={t}
+                            activeTab={activeTab}
                         />
                     ))
                 ) : (

@@ -11,7 +11,14 @@ const {
 // Routes (all require superadmin access)
 router.get('/dashboard/statistics', authMiddleware, superadminMiddleware, adminController.getDashboardStatistics);
 router.get('/users/management', authMiddleware, superadminMiddleware, adminController.getUserManagementStatistics);
-router.get('/users', authMiddleware, superadminMiddleware, adminController.getAllAdmins);
+// Allow all admin roles to get users (for processor selection, etc.)
+router.get('/users', authMiddleware, adminController.getAllAdmins);
+
+// Student Management Routes (all require superadmin access)
+router.get('/students/management', authMiddleware, superadminMiddleware, adminController.getStudentManagementStatistics);
+router.get('/students', authMiddleware, superadminMiddleware, adminController.getAllStudents);
+router.get('/students/:id', authMiddleware, superadminMiddleware, adminController.getStudentById);
+router.put('/students/:id/status', authMiddleware, superadminMiddleware, adminController.updateStudentStatus);
 router.post(
   '/create',
   authMiddleware,
@@ -91,9 +98,22 @@ const planRoutes = require('./plan.routes');
 // Use plan routes
 router.use('/plans', planRoutes);
 
+// Import language routes
+const languageRoutes = require('./language.routes');
+
+// Use language routes
+router.use('/languages', languageRoutes);
+
+// Import announcement routes
+const announcementRoutes = require('./announcement.routes');
+
+// Use announcement routes
+router.use('/announcements', announcementRoutes);
+
 // Subscription Management Routes (all require superadmin access)
 router.get('/subscriptions', authMiddleware, superadminMiddleware, adminController.getAllUserSubscriptions);
 router.get('/subscriptions/:subscriptionId', authMiddleware, superadminMiddleware, adminController.getSubscriptionDetails);
+router.post('/subscriptions/:subscriptionId/sync-payment', authMiddleware, superadminMiddleware, adminController.syncSubscriptionPayment);
 router.get('/payments/history', authMiddleware, superadminMiddleware, adminController.getPaymentHistory);
 
 // Analytics & Reports Routes (all require superadmin access)
@@ -106,6 +126,19 @@ router.get('/analytics/user/performance', authMiddleware, superadminMiddleware, 
 router.get('/analytics/subscription/trend', authMiddleware, superadminMiddleware, adminController.getSubscriptionTrendMetrics);
 router.get('/analytics/subscription/revenue-trend', authMiddleware, superadminMiddleware, adminController.getRevenueTrendChart);
 router.get('/analytics/subscription/plan-breakdown', authMiddleware, superadminMiddleware, adminController.getPlanWiseBreakdown);
+router.get('/analytics/subscription/plan-distribution', authMiddleware, superadminMiddleware, adminController.getPlanDistribution);
+
+// Practice Analytics
+router.get('/analytics/practice-distribution', authMiddleware, superadminMiddleware, adminController.getPracticeDistribution);
+
+// Export Reports
+router.post('/reports/export', authMiddleware, superadminMiddleware, adminController.exportReport);
+
+// Content Moderation Routes (all require superadmin access)
+const questionController = require('../../controllers/admin/question.controller');
+router.get('/moderation/flagged', authMiddleware, superadminMiddleware, questionController.getFlaggedQuestionsForModeration);
+router.post('/moderation/:questionId/approve', authMiddleware, superadminMiddleware, questionController.approveStudentFlag);
+router.post('/moderation/:questionId/reject', authMiddleware, superadminMiddleware, questionController.rejectStudentFlag);
 
 module.exports = router;
 

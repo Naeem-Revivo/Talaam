@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const questionController = require('../../controllers/admin/question.controller');
-const { authMiddleware, superadminMiddleware } = require('../../middlewares/auth');
+const { authMiddleware, superadminMiddleware, adminOrSuperadminMiddleware } = require('../../middlewares/auth');
 const {
   gathererMiddleware,
   creatorMiddleware,
@@ -10,12 +10,12 @@ const {
   workflowRoleMiddleware,
 } = require('../../middlewares/auth/role.middleware');
 
-// Get topics by subject (accessible by all workflow roles)
+// Get topics by subject (accessible by all workflow roles and superadmin)
 // This must be before /:questionId route to avoid conflicts
 router.get(
   '/topics/:subjectId',
   authMiddleware,
-  workflowRoleMiddleware,
+  adminOrSuperadminMiddleware,
   questionController.getTopicsBySubject
 );
 
@@ -41,6 +41,22 @@ router.post(
   questionController.addCommentToQuestion
 );
 
+// Approved questions route (for superadmin dashboard)
+router.get(
+  '/approved',
+  authMiddleware,
+  superadminMiddleware,
+  questionController.getApprovedQuestions
+);
+
+// Toggle question visibility
+router.put(
+  '/:questionId/visibility',
+  authMiddleware,
+  superadminMiddleware,
+  questionController.toggleQuestionVisibility
+);
+
 // Gatherer routes
 router.get(
   '/gatherer/stats',
@@ -59,8 +75,15 @@ router.get(
 router.post(
   '/',
   authMiddleware,
-  gathererMiddleware,
+  adminOrSuperadminMiddleware,
   questionController.createQuestion
+);
+
+router.post(
+  '/completed',
+  authMiddleware,
+  adminOrSuperadminMiddleware,
+  questionController.createQuestionWithCompletedStatus
 );
 
 router.get(
@@ -68,6 +91,20 @@ router.get(
   authMiddleware,
   gathererMiddleware,
   questionController.getQuestions
+);
+
+router.put(
+  '/gatherer/:questionId',
+  authMiddleware,
+  gathererMiddleware,
+  questionController.updateFlaggedQuestionByGatherer
+);
+
+router.post(
+  '/gatherer/:questionId/reject-flag',
+  authMiddleware,
+  gathererMiddleware,
+  questionController.rejectFlagByGatherer
 );
 
 // Creator routes (must be before /:questionId to avoid route conflicts)
@@ -93,10 +130,31 @@ router.put(
 );
 
 router.post(
+  '/creator/:questionId/flag',
+  authMiddleware,
+  creatorMiddleware,
+  questionController.flagQuestionByCreator
+);
+
+router.post(
   '/creator/:questionId/variant',
   authMiddleware,
   creatorMiddleware,
   questionController.createQuestionVariant
+);
+
+router.put(
+  '/creator/:questionId/update-flagged-variant',
+  authMiddleware,
+  creatorMiddleware,
+  questionController.updateFlaggedVariantByCreator
+);
+
+router.post(
+  '/creator/:questionId/reject-flag',
+  authMiddleware,
+  creatorMiddleware,
+  questionController.rejectFlagByCreator
 );
 
 // Explainer routes (must be before /:questionId to avoid route conflicts)
@@ -105,6 +163,13 @@ router.get(
   authMiddleware,
   explainerMiddleware,
   questionController.getQuestions
+);
+
+router.get(
+  '/explainer/completed-explanations',
+  authMiddleware,
+  explainerMiddleware,
+  questionController.getCompletedExplanations
 );
 
 router.get(
@@ -119,6 +184,20 @@ router.put(
   authMiddleware,
   explainerMiddleware,
   questionController.updateExplanation
+);
+
+router.put(
+  '/explainer/:questionId/explanation/draft',
+  authMiddleware,
+  explainerMiddleware,
+  questionController.saveDraftExplanation
+);
+
+router.post(
+  '/explainer/:questionId/flag',
+  authMiddleware,
+  explainerMiddleware,
+  questionController.flagQuestionByExplainer
 );
 
 // Processor routes (must be before /:questionId to avoid route conflicts)
@@ -149,6 +228,34 @@ router.post(
   authMiddleware,
   processorMiddleware,
   questionController.rejectQuestion
+);
+
+router.post(
+  '/processor/:questionId/flag/review',
+  authMiddleware,
+  processorMiddleware,
+  questionController.reviewCreatorFlag
+);
+
+router.post(
+  '/processor/:questionId/variant-flag/review',
+  authMiddleware,
+  processorMiddleware,
+  questionController.reviewExplainerFlag
+);
+
+router.post(
+  '/processor/:questionId/student-flag/review',
+  authMiddleware,
+  processorMiddleware,
+  questionController.reviewStudentFlag
+);
+
+router.post(
+  '/processor/:questionId/reject-gatherer-flag-rejection',
+  authMiddleware,
+  processorMiddleware,
+  questionController.rejectGathererFlagRejection
 );
 
 // General POST route for processor (handles both approve and reject via body status)

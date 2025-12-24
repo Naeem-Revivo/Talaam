@@ -5,6 +5,9 @@ import { eye, openeye, google, linkedin } from '../../assets/svg/signup'
 import { useDispatch, useSelector } from 'react-redux'
 import { login } from '../../store/slices/authSlice'
 import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
+import { getTranslatedAuthMessage } from '../../utils/authMessages'
+import subscriptionAPI from '../../api/subscription'
+import { isProfileComplete } from '../../utils/profileUtils'
 
 const Login = () => {
   const { language, t } = useLanguage()
@@ -28,10 +31,10 @@ const Login = () => {
   // Email validation function
   const validateEmail = (email) => {
     if (!email.trim()) {
-      return 'Email is required'
+      return t('login.validation.emailRequired')
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return 'Please enter a valid email address'
+      return t('login.validation.emailInvalid')
     }
     return ''
   }
@@ -39,7 +42,7 @@ const Login = () => {
   // Password validation function
   const validatePassword = (password) => {
     if (!password.trim()) {
-      return 'Password is required'
+      return t('login.validation.passwordRequired')
     }
     return ''
   }
@@ -103,30 +106,68 @@ const Login = () => {
 
     try {
       const resultAction = await dispatch(
-        login({ email: formData.email, password: formData.password })
+        login({ 
+          email: formData.email, 
+          password: formData.password,
+          rememberMe: rememberMe 
+        })
       )
 
       if (login.fulfilled.match(resultAction)) {
         const user = resultAction.payload?.data?.user
         const role = user?.role
+        const adminRole = user?.adminRole
         
-        // Show success toast
-        const successMessage = 
-          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
-          resultAction.payload?.message ||
-          t('login.success') ||
-          'Login successful!'
+        // Get success message from backend or translation
+        const backendMessage = resultAction.payload?.message || 'Login successful'
+        const successMessage = getTranslatedAuthMessage(backendMessage, t, 'login.success') || t('login.success') || 'Login successful!'
         
         showSuccessToast(successMessage, { 
           title: t('login.successTitle') || 'Login Successful',
           isAuth: true
         })
 
+        // Check if there's a redirect destination stored (check both localStorage and sessionStorage)
+        const redirectAfterLogin = localStorage.getItem('redirectAfterLogin') || sessionStorage.getItem('redirectAfterLogin')
+        if (redirectAfterLogin) {
+          // Clear from both storage locations
+          localStorage.removeItem('redirectAfterLogin')
+          sessionStorage.removeItem('redirectAfterLogin')
+          navigate(redirectAfterLogin, { replace: true })
+          return
+        }
+
+        // Helper to cache subscription status for subsequent guards
+        const cacheSubscriptionStatus = (isActive) => {
+          localStorage.setItem('hasActiveSubscription', isActive ? 'true' : 'false')
+          sessionStorage.setItem('hasActiveSubscription', isActive ? 'true' : 'false')
+        }
+
         // Map backend roles to routes
         if (role === 'superadmin') {
           navigate('/admin', { replace: true })
+        } else if (role === 'admin') {
+          // For admin users, use adminRole to determine the dashboard
+          if (adminRole === 'gatherer') {
+            navigate('/gatherer', { replace: true })
+          } else if (adminRole === 'creator') {
+            navigate('/creator', { replace: true })
+          } else if (adminRole === 'processor') {
+            navigate('/processor', { replace: true })
+          } else if (adminRole === 'explainer') {
+            navigate('/explainer', { replace: true })
+          } else {
+            // Default admin users to admin dashboard
+            navigate('/admin', { replace: true })
+          }
         } else if (role === 'student' || role === 'user') {
-          navigate('/dashboard', { replace: true })
+          // Profile completeness check first
+          if (!isProfileComplete(user)) {
+            navigate('/complete-profile', { replace: true })
+          } else {
+            // Redirect to subscription bridge page - it will check subscription and route accordingly
+            navigate('/dashboard', { replace: true })
+          }
         } else if (role === 'gatherer') {
           navigate('/gatherer', { replace: true })
         } else if (role === 'creator') {
@@ -139,20 +180,23 @@ const Login = () => {
           navigate('/', { replace: true })
         }
       } else if (login.rejected.match(resultAction)) {
-        // Extract error message from API response (check message field first)
-        const errorMessage = 
+        // Extract error message from API response
+        const backendMessage = 
           (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
           resultAction.error?.message ||
-          t('login.errors.generic') || 
-          'Login failed'
+          null
+        
+        // Get translated message or fallback
+        const errorMessage = backendMessage 
+          ? getTranslatedAuthMessage(backendMessage, t, 'login.errors.generic')
+          : t('login.errors.generic') || 'Login failed. Please check your credentials and try again.'
         
         showErrorToast(errorMessage, { title: t('login.errors.title') || 'Login Failed', isAuth: true })
       }
-    } catch (e) {
-      // Only show error toast for unexpected errors (not Redux rejections)
-      // Redux Toolkit handles API errors through rejected actions, so this should rarely trigger
-      console.error('Unexpected login error:', e)
+    } catch {
+      const defaultError = t('auth.errors.default') || 'An unexpected error occurred. Please try again.'
+      showErrorToast(defaultError, { title: t('login.errors.title') || 'Login Failed', isAuth: true })
     }
   }
 
@@ -308,7 +352,7 @@ const Login = () => {
               {t('login.signUp')}
             </Link>
           </p>
-        </div>
+        </div> 
       </div>
     </div>
   )

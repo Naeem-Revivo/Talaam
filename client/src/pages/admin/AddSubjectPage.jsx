@@ -1,23 +1,61 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { useLanguage } from "../../context/LanguageContext";
+import { createSubject, clearError, clearSuccess } from "../../store/slices/subjectsSlice";
+import { fetchExams } from "../../store/slices/examsSlice";
+import { showErrorToast, showSuccessToast } from "../../utils/toastConfig";
 
 export default function AddSubjectPage() {
     const { t } = useLanguage();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { loading, error, success } = useSelector((state) => state.subjects);
+    const { exams, loading: examsLoading } = useSelector((state) => state.exams);
+    
     const [subjectName, setSubjectName] = useState("");
     const [description, setDescription] = useState("");
     const [code, setCode] = useState("");
+    const [selectedExamId, setSelectedExamId] = useState("");
 
-    const handleSubmit = (e) => {
+    // Fetch exams on component mount
+    useEffect(() => {
+        dispatch(fetchExams({ status: "active" }));
+    }, [dispatch]);
+
+    // Handle success
+    useEffect(() => {
+        if (success) {
+            showSuccessToast("Subject created successfully");
+            dispatch(clearSuccess());
+            navigate("/admin/classification?tab=Subject");
+        }
+    }, [success, navigate, dispatch]);
+
+    // Handle error
+    useEffect(() => {
+        if (error) {
+            showErrorToast(error);
+            dispatch(clearError());
+        }
+    }, [error, dispatch]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const subjectData = { subjectName, description, code };
-        console.log("Created Subject:", subjectData);
-        // TODO: Add API call or database save logic here
+        if (!selectedExamId) {
+            showErrorToast(t('admin.addSubject.validation.selectExam') || 'Please select an exam');
+            return;
+        }
+        const subjectData = {
+            name: subjectName,
+            description: description,
+            examId: selectedExamId,
+        };
+        dispatch(createSubject(subjectData));
     };
 
     const handleCancel = () => {
-        setSubjectName("");
-        setDescription("");
-        setCode("");
+        navigate("/admin/classification");
     };
 
     return (
@@ -32,6 +70,39 @@ export default function AddSubjectPage() {
                         {t('admin.addSubject.sections.createSubject')}
                     </h3>
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Exam Dropdown */}
+                        <div>
+                            <label className="block text-base font-normal text-blue-dark mb-3">
+                                {t('admin.addSubject.fields.exam')}
+                            </label>
+                            <select
+                                value={selectedExamId}
+                                onChange={(e) => setSelectedExamId(e.target.value)}
+                                className="w-full border h-[50px] border-[#03274633] rounded-xl px-3 py-2 focus:outline-none focus:ring-[1px] focus:ring-blue-dark bg-white"
+                                required
+                                disabled={examsLoading}
+                            >
+                                <option value="">
+                                    {examsLoading 
+                                        ? t('admin.addSubject.placeholders.loadingExams')
+                                        : t('admin.addSubject.placeholders.selectExam')}
+                                </option>
+                                {exams && exams.length > 0 ? (
+                                    exams.map((exam) => (
+                                        <option key={exam.id} value={exam.id}>
+                                            {exam.name}
+                                        </option>
+                                    ))
+                                ) : (
+                                    !examsLoading && (
+                                        <option value="" disabled>
+                                            {t('admin.addSubject.placeholders.noExams')}
+                                        </option>
+                                    )
+                                )}
+                            </select>
+                        </div>
+
                         {/* Subject Name */}
                         <div>
                             <label className="block text-base font-normal text-blue-dark mb-3">
@@ -80,15 +151,17 @@ export default function AddSubjectPage() {
                             <button
                                 type="button"
                                 onClick={handleCancel}
-                                className="px-4 sm:w-[120px] py-2 border border-[#E5E7EB] w-full rounded-lg text-base text-blue-dark font-medium bg-white hover:bg-gray-100 transition"
+                                disabled={loading}
+                                className="px-4 sm:w-[120px] py-2 border border-[#E5E7EB] w-full rounded-lg text-base text-blue-dark font-medium bg-white hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {t('admin.addSubject.buttons.cancel')}
                             </button>
                             <button
                                 type="submit"
-                                className="sm:w-[120px] py-2 bg-orange-dark w-full text-white text-base font-medium rounded-md hover:bg-orange-600 transition"
+                                disabled={loading}
+                                className="sm:w-[120px] py-2 bg-orange-dark w-full text-white text-base font-medium rounded-md hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {t('admin.addSubject.buttons.create')}
+                                {loading ? 'Creating...' : t('admin.addSubject.buttons.create')}
                             </button>
                         </div>
                     </form>

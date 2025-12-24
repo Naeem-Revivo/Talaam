@@ -1,14 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
+import RichTextEditor from "../../components/common/RichTextEditor";
+import questionsAPI from "../../api/questions";
+import examsAPI from "../../api/exams";
+import subjectsAPI from "../../api/subjects";
+import topicsAPI from "../../api/topics";
+import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 
-const Dropdown = ({ label, value, options, onChange }) => {
+const Dropdown = ({ label, value, options, onChange, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Automatically show default if value is empty
-  const displayValue = value && value.trim() !== "" ? value : options[0];
+  // Show placeholder if no value, otherwise show the selected value
+  const displayValue = value && value.trim() !== "" ? value : (placeholder || "Select...");
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -22,15 +28,18 @@ const Dropdown = ({ label, value, options, onChange }) => {
 
   return (
     <div className="w-full" ref={dropdownRef}>
-      {/* Label only on small screens */}
-      <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3 block lg:hidden">
+      {/* Label - always visible */}
+      {label && (
+        <p className="text-[16px] leading-[100%] font-semibold text-oxford-blue mb-3">
         {label}
       </p>
+      )}
 
       {/* Dropdown Box */}
       <div
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative flex h-[50px] cursor-pointer items-center justify-between rounded-lg bg-white px-4 text-[16px] leading-[100%] font-normal text-oxford-blue border border-[#03274633]"
+        className="relative flex h-[50px] cursor-pointer items-center justify-between rounded-lg bg-white px-4 text-[16px] leading-[100%] font-normal border border-[#03274633]"
+        style={{ color: value && value.trim() !== "" ? "#032746" : "#9CA3AF" }}
       >
         <span>{displayValue}</span>
         <svg
@@ -39,8 +48,7 @@ const Dropdown = ({ label, value, options, onChange }) => {
           viewBox="0 0 15 9"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className={`transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
+          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""
           }`}
         >
           <path
@@ -51,19 +59,20 @@ const Dropdown = ({ label, value, options, onChange }) => {
         </svg>
 
         {/* Dropdown Menu */}
-        {isOpen && (
-          <ul className="absolute left-0 top-full z-10 mt-1 w-full rounded-lg border border-gray-100 bg-white shadow-lg">
-            {options.map((option) => (
+        {isOpen && options && options.length > 0 && (
+          <ul 
+            className="absolute left-0 top-full z-10 mt-1 w-full rounded-lg border border-gray-100 bg-white shadow-lg max-h-60 overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {options.map((option, index) => (
               <li
-                key={option}
-                onClick={() => {
+                key={`${option}-${index}`}
+                onClick={(e) => {
+                  e.stopPropagation();
                   onChange(option);
                   setIsOpen(false);
                 }}
-                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                  displayValue === option
-                    ? "font-semibold text-oxford-blue"
-                    : "text-gray-700"
+                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${value === option ? "font-semibold text-oxford-blue bg-gray-50" : "text-gray-700"
                 }`}
               >
                 {option}
@@ -78,33 +87,86 @@ const Dropdown = ({ label, value, options, onChange }) => {
 
 const CreatorVariantsPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useLanguage();
   
-  // Original question state
-  const [questionText, setQuestionText] = useState("");
-  const [questionType, setQuestionType] = useState("Multiple Choice (MCQ)");
-  const [options, setOptions] = useState({ A: "", B: "", C: "", D: "" });
-  const [correctAnswer, setCorrectAnswer] = useState("Option A");
-  
-  // Classification state (shared)
-  const [subject, setSubject] = useState("");
-  const [topic, setTopic] = useState("");
-  const [cognitiveLevel, setCognitiveLevel] = useState("");
-  const [source, setSource] = useState("");
-  const [explanation, setExplanation] = useState(
-    "Red and yellow are primary colors. When mixed, they create the secondary color orange."
+  // Get question data from location state or fetch it
+  const questionId = location.state?.questionId;
+  const variantToEdit = location.state?.variant || null;
+  const isEditMode = location.state?.isFlagged === true && variantToEdit;
+  const [originalQuestion, setOriginalQuestion] = useState(location.state?.originalQuestion || location.state?.question || null);
+  const [loading, setLoading] = useState(!originalQuestion && !questionId && !isEditMode);
+  const [questionIdDisplay, setQuestionIdDisplay] = useState(
+    originalQuestion?.id || questionId || "QB-1442"
   );
+  
+  // Original question state - initialize from passed data or API
+  const [questionText, setQuestionText] = useState(originalQuestion?.questionText || "");
+  const [questionType, setQuestionType] = useState(() => {
+    if (!originalQuestion?.questionType) return "Multiple Choice (MCQ)";
+    if (originalQuestion.questionType === "MCQ") return "Multiple Choice (MCQ)";
+    if (originalQuestion.questionType === "TRUE_FALSE") return "True/False";
+    return originalQuestion.questionType;
+  });
+  const [options, setOptions] = useState(
+    originalQuestion?.options || { A: "", B: "", C: "", D: "" }
+  );
+  const [correctAnswer, setCorrectAnswer] = useState(() => {
+    if (!originalQuestion?.correctAnswer) return "Option A";
+    // Handle TRUE_FALSE questions - map A to "True", B to "False"
+    if (originalQuestion.questionType === "TRUE_FALSE") {
+      return originalQuestion.correctAnswer === "A" ? "True" : "False";
+    }
+    // For MCQ, use "Option A" format
+    return `Option ${originalQuestion.correctAnswer}`;
+  });
+  
+  // Classification state - storing IDs and names (like gatherer page)
+  const [examId, setExamId] = useState("");
+  const [examName, setExamName] = useState(originalQuestion?.exam?.name || "");
+  const [subjectId, setSubjectId] = useState("");
+  const [subjectName, setSubjectName] = useState(originalQuestion?.subject?.name || "");
+  const [topicId, setTopicId] = useState("");
+  const [topicName, setTopicName] = useState(originalQuestion?.topic?.name || "");
+  const [source, setSource] = useState("");
+  const [explanation, setExplanation] = useState(originalQuestion?.explanation || "");
+
+  // Classification data lists
+  const [exams, setExams] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [topics, setTopics] = useState([]);
+
+  // Loading states
+  const [loadingExams, setLoadingExams] = useState(false);
+  const [loadingSubjects, setLoadingSubjects] = useState(false);
+  const [loadingTopics, setLoadingTopics] = useState(false);
+  
+  // Flag modal state
+  const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
+  const [flagReason, setFlagReason] = useState("");
+  const [isFlagging, setIsFlagging] = useState(false);
 
   // Variants state - array of variant objects
-  const [variants, setVariants] = useState([
-    {
-      id: 1,
-      questionText: "",
-      questionType: "Multiple Choice (MCQ)",
-      options: { A: "", B: "", C: "", D: "" },
-      correctAnswer: "Option A",
-    },
-  ]);
+  // If in edit mode, initialize with the variant to edit
+  // Otherwise, start with empty array - variants only appear when "Add Variant" is clicked
+  const [variants, setVariants] = useState(
+    isEditMode && variantToEdit
+      ? [
+          {
+            id: variantToEdit.id || 1,
+            questionText: variantToEdit.questionText || "",
+            questionType: variantToEdit.questionType === "MCQ" 
+              ? "Multiple Choice (MCQ)" 
+              : variantToEdit.questionType || "Multiple Choice (MCQ)",
+            options: variantToEdit.options || { A: "", B: "", C: "", D: "" },
+            correctAnswer: variantToEdit.correctAnswer 
+              ? `Option ${variantToEdit.correctAnswer}` 
+              : "Option A",
+            explanation: variantToEdit.explanation || "",
+          },
+        ]
+      : [] // Start with empty array - no variants shown initially
+  );
 
   const handleOptionChange = (option, value) => {
     setOptions((prev) => ({ ...prev, [option]: value }));
@@ -130,10 +192,36 @@ const CreatorVariantsPage = () => {
 
   const handleVariantQuestionTypeChange = (variantId, value) => {
     setVariants((prev) =>
-      prev.map((variant) =>
-        variant.id === variantId ? { ...variant, questionType: value } : variant
-      )
+      prev.map((variant) => {
+        if (variant.id === variantId) {
+          // If True/False is selected, reset options and correct answer
+          if (value === "True/False") {
+            return {
+              ...variant,
+              questionType: value,
+              options: { A: "True", B: "False", C: "", D: "" },
+              correctAnswer: "True"
+            };
+          }
+          return { ...variant, questionType: value };
+        }
+        return variant;
+      })
     );
+  };
+  
+  // Handle question type change for original question
+  const handleQuestionTypeChange = (newType) => {
+    setQuestionType(newType);
+    if (newType === "True/False") {
+      // Set True/False options
+      setOptions({ A: "True", B: "False", C: "", D: "" });
+      setCorrectAnswer("True");
+    } else {
+      // Reset to empty for other types
+      setOptions({ A: "", B: "", C: "", D: "" });
+      setCorrectAnswer("Option A");
+    }
   };
 
   const handleVariantCorrectAnswerChange = (variantId, value) => {
@@ -150,12 +238,75 @@ const CreatorVariantsPage = () => {
       ...prev,
       {
         id: newVariantId,
-        questionText: "",
+        questionText: "", // User will fill this
         questionType: "Multiple Choice (MCQ)",
-        options: { A: "", B: "", C: "", D: "" },
-        correctAnswer: "Option A",
+        options: { 
+          A: "", // Empty - user will fill
+          B: "", 
+          C: "", 
+          D: "" 
+        },
+        correctAnswer: "Option A", // Default correct answer
+        explanation: "",
       },
     ]);
+    showSuccessToast("Variant created");
+  };
+
+  const handleDeleteVariant = (variantId) => {
+    setVariants((prev) => prev.filter((v) => v.id !== variantId));
+    showSuccessToast("Variant deleted");
+  };
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Handle exam selection
+  const handleExamChange = (selectedExamName) => {
+    const selectedExam = exams.find((e) => e.name === selectedExamName);
+    if (selectedExam) {
+      setExamId(selectedExam.id);
+      setExamName(selectedExamName);
+    } else {
+      setExamId("");
+      setExamName("");
+    }
+    setSubjectId("");
+    setSubjectName("");
+    setTopics([]);
+    setTopicId("");
+    setTopicName("");
+  };
+
+  // ============================================================
+  // UPDATE handleSubjectChange TO THIS:
+  // ============================================================
+
+  const handleSubjectChange = (selectedSubjectName) => {
+    const selectedSubject = subjects.find((s) => s.name === selectedSubjectName);
+    if (selectedSubject) {
+      setSubjectId(selectedSubject.id);
+      setSubjectName(selectedSubjectName);
+    } else {
+      setSubjectId("");
+      setSubjectName("");
+    }
+    setTopicId("");
+    setTopicName("");
+  };
+
+  // ============================================================
+  // UPDATE handleTopicChange TO THIS:
+  // ============================================================
+
+  const handleTopicChange = (selectedTopicName) => {
+    const selectedTopic = topics.find((t) => t.name === selectedTopicName);
+    if (selectedTopic) {
+      setTopicId(selectedTopic.id);
+      setTopicName(selectedTopicName);
+    } else {
+      setTopicId("");
+      setTopicName("");
+    }
   };
 
   const handleSaveDraft = () => {
@@ -163,10 +314,399 @@ const CreatorVariantsPage = () => {
     console.log("Save draft");
   };
 
-  const handleSubmit = () => {
-    // TODO: Implement submit functionality
-    console.log("Submit");
+  const handleSubmit = async () => {
+    // If in edit mode, handle updating flagged variant
+    if (isEditMode && variantToEdit) {
+      try {
+        setIsSubmitting(true);
+        const variantId = variantToEdit.id;
+        const validVariant = variants.find(
+          (variant) => variant.questionText && variant.questionText.trim() !== ""
+        );
+
+        if (!validVariant) {
+          showErrorToast("Variant question text is required.");
+          setIsSubmitting(false);
+          return;
+        }
+        
+        // Convert question type from display format to API format
+        const questionTypeMap = {
+          "Multiple Choice (MCQ)": "MCQ",
+          "True/False": "TRUE_FALSE",
+        };
+        const apiQuestionType = questionTypeMap[validVariant.questionType] || "MCQ";
+        
+        // Extract correct answer - handle True/False differently
+        let correctAnswerLetter;
+        if (apiQuestionType === "TRUE_FALSE") {
+          // Map "True" to "A" and "False" to "B"
+          correctAnswerLetter = validVariant.correctAnswer === "True" ? "A" : "B";
+        } else {
+          // Extract correct answer letter from "Option A" format
+          correctAnswerLetter = validVariant.correctAnswer.replace("Option ", "").trim();
+        }
+
+        const variantData = {
+          questionText: validVariant.questionText.trim(),
+          questionType: apiQuestionType,
+          options: {
+            A: validVariant.options.A?.trim() || (apiQuestionType === "TRUE_FALSE" ? "True" : ""),
+            B: validVariant.options.B?.trim() || (apiQuestionType === "TRUE_FALSE" ? "False" : ""),
+            C: validVariant.options.C?.trim() || "",
+            D: validVariant.options.D?.trim() || "",
+          },
+          correctAnswer: correctAnswerLetter,
+          explanation: validVariant.explanation?.trim() || "",
+        };
+
+        await questionsAPI.updateFlaggedVariant(variantId, variantData);
+        showSuccessToast("Variant updated successfully. Sent to processor for review.");
+        setTimeout(() => {
+          navigate("/creator/question-bank/variants-list");
+        }, 1500);
+      } catch (error) {
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to update variant";
+        showErrorToast(errorMessage);
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    // Original create mode logic
+    if (!questionId && !originalQuestion?.id) {
+      showErrorToast("Question ID is missing. Cannot submit question.");
+      return;
+    }
+
+    let shouldRedirect = false;
+    let redirectPath = "/creator/question-bank";
+    try {
+      setIsSubmitting(true);
+      const idToUse = questionId || originalQuestion?.id;
+
+      // Validate variants - check if any variant is incomplete
+      // If there are any variants in the array, they must all be complete
+      if (variants.length > 0) {
+        const incompleteVariants = variants.filter((variant) => {
+          // Check if variant has question text
+          const hasQuestionText = variant.questionText && variant.questionText.trim() !== "";
+          if (!hasQuestionText) {
+            // Empty variant - incomplete
+            return true;
+          }
+          
+          // If variant has question text, validate it's complete
+          const questionType = variant.questionType;
+          const isTrueFalse = questionType === "True/False";
+          
+          if (isTrueFalse) {
+            // True/False: options A and B are auto-filled, just need correctAnswer
+            return !variant.correctAnswer || (variant.correctAnswer !== "True" && variant.correctAnswer !== "False");
+          } else {
+            // MCQ: need all options (A, B, C, D) and correctAnswer
+            const hasAllOptions = variant.options.A?.trim() && 
+                                 variant.options.B?.trim() && 
+                                 variant.options.C?.trim() && 
+                                 variant.options.D?.trim();
+            const hasCorrectAnswer = variant.correctAnswer && variant.correctAnswer.startsWith("Option ");
+            return !hasAllOptions || !hasCorrectAnswer;
+          }
+        });
+
+        if (incompleteVariants.length > 0) {
+          showErrorToast("Please complete all variant fields before submitting. All variants must have question text, options, and correct answer.");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Filter out empty variants (variants with no question text)
+      // Creating variants is OPTIONAL - if no variants are created, we still submit the question
+      const validVariants = variants.filter(
+        (variant) => variant.questionText && variant.questionText.trim() !== ""
+      );
+
+      // If there are valid variants, create them first
+      if (validVariants.length > 0) {
+        // Create all variants
+        const variantPromises = validVariants.map((variant) => {
+          // Convert question type from display format to API format
+          const questionTypeMap = {
+            "Multiple Choice (MCQ)": "MCQ",
+            "True/False": "TRUE_FALSE",
+          };
+          const apiQuestionType = questionTypeMap[variant.questionType] || "MCQ";
+          
+          // Extract correct answer - handle True/False differently
+          let correctAnswerLetter;
+          if (apiQuestionType === "TRUE_FALSE") {
+            // Map "True" to "A" and "False" to "B"
+            correctAnswerLetter = variant.correctAnswer === "True" ? "A" : "B";
+          } else {
+            // Extract correct answer letter from "Option A" format
+            correctAnswerLetter = variant.correctAnswer.replace("Option ", "").trim();
+          }
+
+          // Use classification IDs from state (or fallback to original question)
+          const variantExamId = examId || (typeof originalQuestion?.exam === 'string' 
+            ? originalQuestion.exam 
+            : (originalQuestion?.exam?.id || originalQuestion?.examId || null));
+          const variantSubjectId = subjectId || (typeof originalQuestion?.subject === 'string' 
+            ? originalQuestion.subject 
+            : (originalQuestion?.subject?.id || originalQuestion?.subjectId || null));
+          const variantTopicId = topicId || (typeof originalQuestion?.topic === 'string' 
+            ? originalQuestion.topic 
+            : (originalQuestion?.topic?.id || originalQuestion?.topicId || null));
+
+          const variantData = {
+            questionText: variant.questionText.trim(),
+            questionType: apiQuestionType,
+            options: {
+              A: variant.options.A?.trim() || (apiQuestionType === "TRUE_FALSE" ? "True" : ""),
+              B: variant.options.B?.trim() || (apiQuestionType === "TRUE_FALSE" ? "False" : ""),
+              C: variant.options.C?.trim() || "",
+              D: variant.options.D?.trim() || "",
+            },
+            correctAnswer: correctAnswerLetter,
+            exam: variantExamId,
+            subject: variantSubjectId,
+            topic: variantTopicId,
+            explanation: explanation?.trim() || "",
+            // Note: source/reference is not stored in database, so not included in variantData
+          };
+
+          return questionsAPI.createQuestionVariant(idToUse, variantData).catch((error) => {
+            // Wrap error to include variant context
+            const errorMsg = error?.message || error?.response?.data?.message || "Failed to create variant";
+            throw new Error(`Failed to create variant: ${errorMsg}`);
+          });
+        });
+
+        // Wait for all variants to be created
+        // If any fail, Promise.all will reject with the first error
+        await Promise.all(variantPromises);
+        // Note: Server-side automatically updates original question status to 'pending_processor' when variants are created
+        // So we should NOT try to submit again - the server already handled it
+        
+        // Show success message
+        showSuccessToast(`Successfully created ${validVariants.length} variant(s)!`);
+        shouldRedirect = true;
+        // Redirect to question bank page after creating variants
+        redirectPath = "/creator/question-bank";
+      } else {
+        // No variants created - submit the question explicitly
+        try {
+          await questionsAPI.submitQuestionByCreator(idToUse);
+          showSuccessToast("Question submitted successfully (no variants created).");
+          shouldRedirect = true;
+        } catch (submitError) {
+          // If submitQuestionByCreator fails, try alternative method
+          console.warn("Primary submit method failed, trying alternative:", submitError);
+          try {
+            await questionsAPI.updateQuestion(idToUse, { status: 'pending_processor' });
+            showSuccessToast("Question submitted successfully (no variants created).");
+            shouldRedirect = true;
+          } catch (altError) {
+            // If both methods fail, throw the error
+            throw new Error(altError.message || "Failed to submit question. Please try again.");
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error submitting question:", error);
+      // Extract error message - handle both string and object errors
+      let errorMessage = "Failed to submit question. Please try again.";
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      showErrorToast(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+      // Redirect only if everything succeeded
+      if (shouldRedirect) {
+        navigate(redirectPath);
+      }
+    }
   };
+
+  // Fetch exams on component mount
+  useEffect(() => {
+    const fetchExams = async () => {
+      setLoadingExams(true);
+      try {
+        const response = await examsAPI.getAllExams({ status: "active" });
+        if (response.success && response.data?.exams) {
+          setExams(response.data.exams);
+        }
+      } catch (error) {
+        showErrorToast(
+          error.message || "Failed to load exams",
+          { title: "Error" }
+        );
+      } finally {
+        setLoadingExams(false);
+      }
+    };
+    fetchExams();
+  }, []);
+
+  // Fetch subjects when exam changes
+  useEffect(() => {
+    if (!examId) {
+      setSubjects([]);
+      setSubjectId("");
+      setSubjectName("");
+      setTopics([]);
+      setTopicId("");
+      setTopicName("");
+      return;
+    }
+
+    const fetchSubjects = async () => {
+      setLoadingSubjects(true);
+      try {
+        const response = await subjectsAPI.getAllSubjects();
+        if (response.success && response.data?.subjects) {
+          setSubjects(response.data.subjects);
+        }
+      } catch (error) {
+        showErrorToast(
+          error.message || "Failed to load subjects",
+          { title: "Error" }
+        );
+      } finally {
+        setLoadingSubjects(false);
+      }
+    };
+    fetchSubjects();
+  }, [examId]);
+
+  // Fetch topics when subject changes
+  useEffect(() => {
+    if (!subjectId) {
+      setTopics([]);
+      setTopicId("");
+      setTopicName("");
+      return;
+    }
+
+    const fetchTopics = async () => {
+      setLoadingTopics(true);
+      try {
+        const response = await questionsAPI.getTopicsBySubject(subjectId);
+        if (response.success && response.data?.topics) {
+          setTopics(response.data.topics);
+        }
+      } catch (error) {
+        showErrorToast(
+          error.message || "Failed to load topics",
+          { title: "Error" }
+        );
+      } finally {
+        setLoadingTopics(false);
+      }
+    };
+    fetchTopics();
+  }, [subjectId]);
+
+  // Fetch question data if not provided in location state
+  useEffect(() => {
+    const fetchQuestion = async () => {
+      if (!originalQuestion && questionId) {
+        try {
+          setLoading(true);
+          const response = await questionsAPI.getCreatorQuestionById(questionId);
+          if (response.success && response.data?.question) {
+            const question = response.data.question;
+            setOriginalQuestion(question);
+            setQuestionText(question.questionText || "");
+            // Map question type from API format to display format
+            let displayQuestionType = "Multiple Choice (MCQ)";
+            if (question.questionType === "MCQ") {
+              displayQuestionType = "Multiple Choice (MCQ)";
+            } else if (question.questionType === "TRUE_FALSE") {
+              displayQuestionType = "True/False";
+            } else if (question.questionType) {
+              displayQuestionType = question.questionType;
+            }
+            setQuestionType(displayQuestionType);
+            setOptions(question.options || { A: "", B: "", C: "", D: "" });
+            // Map correct answer based on question type
+            let displayCorrectAnswer = "Option A";
+            if (question.correctAnswer) {
+              if (question.questionType === "TRUE_FALSE") {
+                // Map A to "True", B to "False"
+                displayCorrectAnswer = question.correctAnswer === "A" ? "True" : "False";
+              } else {
+                // For MCQ, use "Option A" format
+                displayCorrectAnswer = `Option ${question.correctAnswer}`;
+              }
+            }
+            setCorrectAnswer(displayCorrectAnswer);
+            // Set classification with IDs
+            if (question.exam) {
+              const examIdValue = typeof question.exam === 'string' ? question.exam : (question.exam?.id || question.examId);
+              const examNameValue = typeof question.exam === 'string' ? "" : (question.exam?.name || "");
+              setExamId(examIdValue || "");
+              setExamName(examNameValue || "");
+            }
+            if (question.subject) {
+              const subjectIdValue = typeof question.subject === 'string' ? question.subject : (question.subject?.id || question.subjectId);
+              const subjectNameValue = typeof question.subject === 'string' ? "" : (question.subject?.name || "");
+              setSubjectId(subjectIdValue || "");
+              setSubjectName(subjectNameValue || "");
+            }
+            if (question.topic) {
+              const topicIdValue = typeof question.topic === 'string' ? question.topic : (question.topic?.id || question.topicId);
+              const topicNameValue = typeof question.topic === 'string' ? "" : (question.topic?.name || "");
+              setTopicId(topicIdValue || "");
+              setTopicName(topicNameValue || "");
+            }
+            setExplanation(question.explanation || "");
+            setQuestionIdDisplay(question.id || questionId);
+          }
+        } catch (error) {
+          console.error("Error fetching question:", error);
+        } finally {
+          setLoading(false);
+        }
+      } else if (originalQuestion) {
+        // If question data was passed, use it to set question ID display and classification
+        setQuestionIdDisplay(originalQuestion.id || questionId || "QB-1442");
+        // Set classification with IDs from original question
+        if (originalQuestion.exam) {
+          const examIdValue = typeof originalQuestion.exam === 'string' ? originalQuestion.exam : (originalQuestion.exam?.id || originalQuestion.examId);
+          const examNameValue = typeof originalQuestion.exam === 'string' ? "" : (originalQuestion.exam?.name || "");
+          setExamId(examIdValue || "");
+          setExamName(examNameValue || "");
+        }
+        if (originalQuestion.subject) {
+          const subjectIdValue = typeof originalQuestion.subject === 'string' ? originalQuestion.subject : (originalQuestion.subject?.id || originalQuestion.subjectId);
+          const subjectNameValue = typeof originalQuestion.subject === 'string' ? "" : (originalQuestion.subject?.name || "");
+          setSubjectId(subjectIdValue || "");
+          setSubjectName(subjectNameValue || "");
+        }
+        if (originalQuestion.topic) {
+          const topicIdValue = typeof originalQuestion.topic === 'string' ? originalQuestion.topic : (originalQuestion.topic?.id || originalQuestion.topicId);
+          const topicNameValue = typeof originalQuestion.topic === 'string' ? "" : (originalQuestion.topic?.name || "");
+          setTopicId(topicIdValue || "");
+          setTopicName(topicNameValue || "");
+        }
+        setLoading(false);
+      }
+    };
+
+    fetchQuestion();
+  }, [questionId, originalQuestion]);
 
   const handleCancel = () => {
     navigate("/creator/question-bank");
@@ -179,734 +719,55 @@ const CreatorVariantsPage = () => {
     navigate("/admin/question-details");
   };
 
-  // Rich Text Editor Component using contentEditable (React 19 compatible)
-  const RichTextEditor = ({
-    value,
-    onChange,
-    placeholder,
-    minHeight = "200px",
-  }) => {
-    const editorRef = useRef(null);
-    const [isFocused, setIsFocused] = useState(false);
-
-    useEffect(() => {
-      if (editorRef.current && editorRef.current.innerHTML !== value) {
-        editorRef.current.innerHTML = value;
-      }
-    }, [value]);
-
-    const handleInput = (e) => {
-      const html = e.target.innerHTML;
-      onChange(html);
-    };
-
-    const handleCommand = (command, value = null) => {
-      document.execCommand(command, false, value);
-      editorRef.current?.focus();
-    };
-
-    const handleInsertHTML = (html) => {
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        range.deleteContents();
-        const div = document.createElement("div");
-        div.innerHTML = html;
-        const fragment = document.createDocumentFragment();
-        while (div.firstChild) {
-          fragment.appendChild(div.firstChild);
-        }
-        range.insertNode(fragment);
-      }
-      editorRef.current?.focus();
-    };
-
-    const handleLink = () => {
-      const url = prompt("Enter URL:");
-      if (url) {
-        handleCommand("createLink", url);
-      }
-    };
-
-    const handleImage = () => {
-      const url = prompt("Enter image URL:");
-      if (url) {
-        handleCommand("insertImage", url);
-      }
-    };
-
-    return (
-      <div className="rounded-[8px] w-full h-auto lg:h-[208px] min-h-[150px] border border-[#CDD4DA] bg-white overflow-hidden">
-        {/* Toolbar */}
-        <div className="flex items-center flex-wrap gap-2 border-b  border-[#CDD4DA] bg-[#F6F7F8] py-3 px-2 rounded-t-[8px]">
-          {/* Text Formatting */}
-          <button
-            type="button"
-            onClick={() => handleCommand("bold")}
-            className="p-0 hover:opacity-80 transition"
-            title="Bold"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect width="28" height="28" rx="4" fill="#E5E7EB" />
-              <path
-                d="M12 9H15.5C16.1962 9 16.8639 9.27656 17.3562 9.76884C17.8484 10.2611 18.125 10.9288 18.125 11.625C18.125 12.3212 17.8484 12.9889 17.3562 13.4812C16.8639 13.9734 16.1962 14.25 15.5 14.25H12V9Z"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M12 14.25H16.375C17.0712 14.25 17.7389 14.5266 18.2312 15.0188C18.7234 15.5111 19 16.1788 19 16.875C19 17.5712 18.7234 18.2389 18.2312 18.7312C17.7389 19.2234 17.0712 19.5 16.375 19.5H12V14.25Z"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCommand("italic")}
-            className="p-0 hover:opacity-80 transition"
-            title="Italic"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect width="28" height="28" rx="4" fill="#E5E7EB" />
-              <path
-                d="M15.1663 9.33203L12.833 18.6654"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCommand("underline")}
-            className="p-0 hover:opacity-80 transition"
-            title="Underline"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect width="28" height="28" rx="4" fill="#E5E7EB" />
-              <path
-                d="M11 8.66797V13.3346C11 14.2187 11.3512 15.0665 11.9763 15.6917C12.6014 16.3168 13.4493 16.668 14.3333 16.668C15.2174 16.668 16.0652 16.3168 16.6904 15.6917C17.3155 15.0665 17.6667 14.2187 17.6667 13.3346V8.66797"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M9 19.332H19.6667"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCommand("strikeThrough")}
-            className="p-0 hover:opacity-80 transition"
-            title="Strikethrough"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect width="28" height="28" rx="4" fill="#E5E7EB" />
-              <path
-                d="M12.833 10H14.833C15.2308 10 15.6124 10.2107 15.8937 10.5858C16.175 10.9609 16.333 11.4696 16.333 12C16.333 12.5304 16.175 13.0391 15.8937 13.4142C15.6124 13.7893 15.2308 14 14.833 14H12.833C12.4352 14 12.0537 14.2107 11.7723 14.5858C11.491 14.9609 11.333 15.4696 11.333 16C11.333 16.5304 11.491 17.0391 11.7723 17.4142C12.0537 17.7893 12.4352 18 12.833 18H15.833"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M9 14H19.6667"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <div className="w-px h-6 bg-[#E5E7EB]"></div>
-          <button
-            type="button"
-            onClick={() => handleCommand("formatBlock", "<code>")}
-            className="p-0 hover:opacity-80 transition"
-            title="Code"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M28 4C28 1.79086 26.2091 0 24 0H4C1.79086 0 0 1.79086 0 4V24C0 26.2091 1.79086 28 4 28H24C26.2091 28 28 26.2091 28 24V4Z"
-                fill="#E5E7EB"
-              />
-              <path
-                d="M10.667 10V18"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M17.333 10V18"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M13.333 14H17.333"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCommand("formatBlock", "<h1>")}
-            className="p-0 hover:opacity-80 transition"
-            title="Heading"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M28 4C28 1.79086 26.2091 0 24 0H4C1.79086 0 0 1.79086 0 4V24C0 26.2091 1.79086 28 4 28H24C26.2091 28 28 26.2091 28 24V4Z"
-                fill="#E5E7EB"
-              />
-              <path
-                d="M10.25 9.25H13.25V13.75H10.25V9.25Z"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M15.75 9.25H18.75V13.75H15.75V9.25Z"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M10 19L19 19"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <div className="w-px h-6 bg-[#E5E7EB]"></div>
-          {/* Lists */}
-          <button
-            type="button"
-            onClick={() => handleCommand("insertUnorderedList")}
-            className="p-0 hover:opacity-80 transition"
-            title="Bullet List"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M28 4C28 1.79086 26.2091 0 24 0H4C1.79086 0 0 1.79086 0 4V24C0 26.2091 1.79086 28 4 28H24C26.2091 28 28 26.2091 28 24V4Z"
-                fill="#E5E7EB"
-              />
-              <path
-                d="M11 9.5H20"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M11 14H20"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M11 18.5H20"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M7.62461 10.4016C8.12167 10.4016 8.52461 9.99862 8.52461 9.50156C8.52461 9.00451 8.12167 8.60156 7.62461 8.60156C7.12755 8.60156 6.72461 9.00451 6.72461 9.50156C6.72461 9.99862 7.12755 10.4016 7.62461 10.4016Z"
-                stroke="#6B7280"
-                strokeWidth="0.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M7.62461 14.9016C8.12167 14.9016 8.52461 14.4986 8.52461 14.0016C8.52461 13.5045 8.12167 13.1016 7.62461 13.1016C7.12755 13.1016 6.72461 13.5045 6.72461 14.0016C6.72461 14.4986 7.12755 14.9016 7.62461 14.9016Z"
-                stroke="#6B7280"
-                strokeWidth="0.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M7.62461 19.4016C8.12167 19.4016 8.52461 18.9986 8.52461 18.5016C8.52461 18.0045 8.12167 17.6016 7.62461 17.6016C7.12755 17.6016 6.72461 18.0045 6.72461 18.5016C6.72461 18.9986 7.12755 19.4016 7.62461 19.4016Z"
-                stroke="#6B7280"
-                strokeWidth="0.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCommand("insertOrderedList")}
-            className="p-0 hover:opacity-80 transition"
-            title="Numbered List"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M28 4C28 1.79086 26.2091 0 24 0H4C1.79086 0 0 1.79086 0 4V24C0 26.2091 1.79086 28 4 28H24C26.2091 28 28 26.2091 28 24V4Z"
-                fill="#E5E7EB"
-              />
-              <path
-                d="M8.66699 10H16.667"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M8.66699 12.668H20.667"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M8.66699 15.332H16.667"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M8.66699 18H20.667"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <div className="w-px h-6 bg-[#E5E7EB]"></div>
-          {/* Alignment */}
-          <button
-            type="button"
-            onClick={() => handleCommand("justifyLeft")}
-            className="p-0 hover:opacity-80 transition"
-            title="Align Left"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M28 4C28 1.79086 26.2091 0 24 0H4C1.79086 0 0 1.79086 0 4V24C0 26.2091 1.79086 28 4 28H24C26.2091 28 28 26.2091 28 24V4Z"
-                fill="#E5E7EB"
-              />
-              <path
-                d="M10.333 10H18.333"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M9 12.668H19.6667"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M10.333 15.332H18.333"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M9 18H19.6667"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCommand("justifyCenter")}
-            className="p-0 hover:opacity-80 transition"
-            title="Align Center"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M28 4C28 1.79086 26.2091 0 24 0H4C1.79086 0 0 1.79086 0 4V24C0 26.2091 1.79086 28 4 28H24C26.2091 28 28 26.2091 28 24V4Z"
-                fill="#E5E7EB"
-              />
-              <path
-                d="M19.333 10H11.333"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M19.333 12.668H7.33301"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M19.333 15.332H11.333"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M19.333 18H7.33301"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCommand("justifyRight")}
-            className="p-0 hover:opacity-80 transition"
-            title="Align Right"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M0 4C0 1.79086 1.79086 0 4 0H24C26.2091 0 28 1.79086 28 4V24C28 26.2091 26.2091 28 24 28H4C1.79086 28 0 26.2091 0 24V4Z"
-                fill="#E5E7EB"
-              />
-              <path
-                d="M19.333 10H11.333"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M19.333 12.668H7.33301"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M19.333 15.332H11.333"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M19.333 18H7.33301"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <div className="w-px h-6 bg-[#E5E7EB]"></div>
-          {/* Media/Links */}
-          <button
-            type="button"
-            onClick={handleLink}
-            className="p-0 hover:opacity-80 transition"
-            title="Link"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M28 4C28 1.79086 26.2091 0 24 0H4C1.79086 0 0 1.79086 0 4V24C0 26.2091 1.79086 28 4 28H24C26.2091 28 28 26.2091 28 24V4Z"
-                fill="#E5E7EB"
-              />
-              <path
-                d="M12.6667 15.3346C12.056 14.7115 11.7139 13.8738 11.7139 13.0013C11.7139 12.1288 12.056 11.2911 12.6667 10.668L14.0001 9.33464C14.642 8.85321 15.436 8.61948 16.2364 8.67636C17.0367 8.73324 17.7897 9.07691 18.3571 9.64428C18.9245 10.2117 19.2681 10.9646 19.325 11.765C19.3819 12.5654 19.1482 13.3594 18.6667 14.0013L18.0001 14.668"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M15.3337 12.668C15.9444 13.2911 16.2865 14.1288 16.2865 15.0013C16.2865 15.8738 15.9444 16.7115 15.3337 17.3346L14.0003 18.668C13.3584 19.1494 12.5644 19.3831 11.764 19.3262C10.9637 19.2694 10.2107 18.9257 9.64331 18.3583C9.07594 17.791 8.73226 17.038 8.67538 16.2376C8.6185 15.4372 8.85223 14.6432 9.33366 14.0013L10.0003 13.3346"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={handleImage}
-            className="p-0 hover:opacity-80 transition"
-            title="Image"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M28 4C28 1.79086 26.2091 0 24 0H4C1.79086 0 0 1.79086 0 4V24C0 26.2091 1.79086 28 4 28H24C26.2091 28 28 26.2091 28 24V4Z"
-                fill="#E5E7EB"
-              />
-              <path
-                d="M18.6667 9.33203H9.33333C8.59695 9.33203 8 9.92898 8 10.6654V17.332C8 18.0684 8.59695 18.6654 9.33333 18.6654H18.6667C19.403 18.6654 20 18.0684 20 17.332V10.6654C20 9.92898 19.403 9.33203 18.6667 9.33203Z"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M11.333 14.6667L12.6663 16L14.6663 14L17.9997 17.3333"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M10.9997 12.3333C11.3679 12.3333 11.6663 12.0349 11.6663 11.6667C11.6663 11.2985 11.3679 11 10.9997 11C10.6315 11 10.333 11.2985 10.333 11.6667C10.333 12.0349 10.6315 12.3333 10.9997 12.3333Z"
-                stroke="#6B7280"
-                strokeWidth="0.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              const rows = prompt("Enter number of rows:");
-              const cols = prompt("Enter number of columns:");
-              if (rows && cols) {
-                let tableHTML =
-                  "<table border='1' style='border-collapse: collapse;'>";
-                for (let i = 0; i < parseInt(rows); i++) {
-                  tableHTML += "<tr>";
-                  for (let j = 0; j < parseInt(cols); j++) {
-                    tableHTML += "<td style='padding: 4px;'>&nbsp;</td>";
-                  }
-                  tableHTML += "</tr>";
-                }
-                tableHTML += "</table>";
-                handleInsertHTML(tableHTML);
-              }
-            }}
-            className="p-0 hover:opacity-80 transition"
-            title="Table"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect width="28" height="28" rx="4" fill="#E5E7EB" />
-              <path
-                d="M18.1485 9.25781H9.85218C9.19762 9.25781 8.66699 9.78844 8.66699 10.443V17.5541C8.66699 18.2087 9.19762 18.7393 9.85218 18.7393H18.1485C18.803 18.7393 19.3337 18.2087 19.3337 17.5541V10.443C19.3337 9.78844 18.803 9.25781 18.1485 9.25781Z"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M8.66699 12.668H19.3337"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M12 9V18"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M16 9V18"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCommand("formatBlock", "<pre>")}
-            className="p-0 hover:opacity-80 transition"
-            title="Code"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect width="28" height="28" rx="4" fill="#E5E7EB" />
-              <path
-                d="M13.6667 18.0294L12.6569 19.0392C12.2551 19.441 11.7103 19.6667 11.1421 19.6667C10.574 19.6667 10.0291 19.441 9.62742 19.0392C9.22569 18.6375 9 18.0927 9 17.5245C9 16.9564 9.22569 16.4115 9.62742 16.0098L10.6372 15"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M14.667 10.6372L15.6768 9.62742C16.0785 9.22569 16.6234 9 17.1915 9C17.7597 9 18.3045 9.22569 18.7062 9.62742C19.108 10.0291 19.3337 10.574 19.3337 11.1421C19.3337 11.7103 19.108 12.2551 18.7062 12.6569L17.6964 13.6667"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M11.667 16.832L15.667 12.832"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <div className="w-px h-6 bg-[#E5E7EB]"></div>
-          {/* Undo/Redo */}
-          <button
-            type="button"
-            onClick={() => handleCommand("undo")}
-            className="p-0 hover:opacity-80 transition"
-            title="Undo"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect width="28" height="28" rx="4" fill="#E5E7EB" />
-              <path
-                d="M12.0003 15.3346L8.66699 12.0013L12.0003 8.66797"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M19.3333 19.3331C19.6014 18.3183 19.5985 17.2509 19.3251 16.2376C19.0516 15.2242 18.5171 14.3003 17.7749 13.5581C17.0328 12.816 16.1089 12.2815 15.0955 12.008C14.0822 11.7345 13.0148 11.7317 12 11.9997"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCommand("redo")}
-            className="p-0 hover:opacity-80 transition"
-            title="Redo"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 28 28"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect
-                width="28"
-                height="28"
-                rx="4"
-                transform="matrix(-1 0 0 1 28 0)"
-                fill="#E5E7EB"
-              />
-              <path
-                d="M15.9997 15.3346L19.333 12.0013L15.9997 8.66797"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M8.66667 19.3331C8.39862 18.3183 8.40147 17.2509 8.67492 16.2376C8.94838 15.2242 9.48289 14.3003 10.2251 13.5581C10.9672 12.816 11.8911 12.2815 12.9045 12.008C13.9178 11.7345 14.9852 11.7317 16 11.9997"
-                stroke="#6B7280"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-        {/* Editor */}
-        <div
-          ref={editorRef}
-          contentEditable
-          onInput={handleInput}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          className={`w-full p-4 font-roboto text-[16px] leading-[100%] text-oxford-blue focus:outline-none ${
-            !value && !isFocused ? "text-[#9CA3AF]" : ""
-          }`}
-          style={{
-            minHeight: minHeight,
-          }}
-          data-placeholder={placeholder}
-          suppressContentEditableWarning
-        />
-        <style>{`
-          [contenteditable][data-placeholder]:empty:before {
-            content: attr(data-placeholder);
-            color: #9CA3AF;
-            pointer-events: none;
-          }
-        `}</style>
-      </div>
-    );
+  const handleFlagClick = () => {
+    setIsFlagModalOpen(true);
   };
+
+  const handleFlagClose = () => {
+    setIsFlagModalOpen(false);
+    setFlagReason("");
+  };
+
+  const handleFlagSubmit = async () => {
+    if (!flagReason.trim()) {
+      showErrorToast("Please enter a reason for flagging the question.");
+      return;
+    }
+
+    if (!questionId && !originalQuestion?.id) {
+      showErrorToast("Question ID is missing. Cannot flag question.");
+      return;
+    }
+
+    // Check if question is in the correct status for flagging
+    const questionStatus = originalQuestion?.status;
+    if (questionStatus !== 'pending_creator') {
+      showErrorToast("This question cannot be flagged. Only questions in 'Pending' status can be flagged.");
+      handleFlagClose();
+      return;
+    }
+
+    try {
+      setIsFlagging(true);
+      const idToUse = questionId || originalQuestion?.id;
+      await questionsAPI.flagQuestion(idToUse, flagReason);
+      
+      // Show success message
+      showSuccessToast("Question flagged successfully and sent to processor for review!");
+      
+      // Close modal and reset
+      handleFlagClose();
+      
+      // Navigate to question bank page
+      navigate("/creator/question-bank");
+    } catch (error) {
+      console.error("Error flagging question:", error);
+      showErrorToast(error.message || "Failed to flag question. Please try again.");
+    } finally {
+      setIsFlagging(false);
+    }
+  };
+
 
   return (
     <>
@@ -975,7 +836,7 @@ const CreatorVariantsPage = () => {
           min-height: 150px;
         }
       `}</style>
-      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 lg:px-8 pb-24 relative">
         <div className="mx-auto max-w-[1200px]">
           {/* Header */}
           <header className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center mb-10">
@@ -984,9 +845,10 @@ const CreatorVariantsPage = () => {
                 {t("creator.createVariants.title")}
               </h1>
               <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
-                Questions ID: QB-1442
+                {loading ? "Loading question..." : `Questions ID: ${questionIdDisplay}`}
               </p>
             </div>
+            {!isEditMode && (
             <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
               <button
                 type="button"
@@ -996,12 +858,19 @@ const CreatorVariantsPage = () => {
                 + Add New Variant
               </button>
             </div>
+            )}
           </header>
 
           {/* Main Content - Two Columns */}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-oxford-blue text-lg font-roboto">Loading question data...</div>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
             {/* Left Column - Question Details (2/3 width on xl screens) */}
             <div className="xl:col-span-2 space-y-[30px]">
+              {!isEditMode && (
               <div className=" bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
                 <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark mb-[30px]">
                   Original Question
@@ -1030,17 +899,41 @@ const CreatorVariantsPage = () => {
                     </label>
                     <Dropdown
                       value={questionType}
-                      onChange={setQuestionType}
+                      onChange={handleQuestionTypeChange}
                       options={[
                         t("creator.createVariants.questionTypes.multipleChoice"),
                         t("creator.createVariants.questionTypes.trueFalse"),
-                        t("creator.createVariants.questionTypes.shortAnswer"),
-                        t("creator.createVariants.questionTypes.essay"),
                       ]}
                     />
                   </div>
 
-                  {/* Options Grid */}
+                  {/* Options Grid - Show 2 options for True/False, 4 for MCQ */}
+                  {questionType === "True/False" ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          True
+                        </label>
+                        <input
+                          type="text"
+                          value={options.A}
+                          disabled
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-gray-100 px-4 py-3 text-blue-dark cursor-not-allowed"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                          False
+                        </label>
+                        <input
+                          type="text"
+                          value={options.B}
+                          disabled
+                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-gray-100 px-4 py-3 text-blue-dark cursor-not-allowed"
+                        />
+                      </div>
+                    </div>
+                  ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-4">
                       <div>
@@ -1099,12 +992,20 @@ const CreatorVariantsPage = () => {
                       </div>
                     </div>
                   </div>
+                  )}
 
                   {/* Correct Answer */}
                   <div>
                     <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                       {t("creator.createVariants.fields.correctAnswer")}
                     </label>
+                    {questionType === "True/False" ? (
+                      <Dropdown
+                        value={correctAnswer}
+                        onChange={setCorrectAnswer}
+                        options={["True", "False"]}
+                      />
+                    ) : (
                     <Dropdown
                       value={correctAnswer}
                       onChange={setCorrectAnswer}
@@ -1115,16 +1016,42 @@ const CreatorVariantsPage = () => {
                         t("creator.createVariants.correctAnswerOptions.optionD"),
                       ]}
                     />
+                    )}
                   </div>
                 </div>
               </div>
-              
-              {/* Variants - Dynamically rendered */}
-              {variants.map((variant, index) => (
+              )}
+
+                {/* Variants - Dynamically rendered - Only show if variants exist */}
+                {variants.length > 0 && variants.map((variant, index) => (
                 <div key={variant.id} className=" bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
-                  <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark mb-[30px]">
+                  <div className="flex items-center justify-between mb-[30px]">
+                    <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark">
                     Variant # {index + 1}
                   </h2>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteVariant(variant.id)}
+                      className="flex items-center justify-center text-red-600 hover:text-red-700 transition-colors"
+                      title="Delete variant"
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M3.33334 5.83333H16.6667M7.50001 5.83333V4.16667C7.50001 3.50362 8.00362 2.99999 8.66667 2.99999H11.3333C11.9964 2.99999 12.5 3.50362 12.5 4.16667V5.83333M7.50001 5.83333H12.5M7.50001 5.83333H4.16667M12.5 5.83333H15.8333M4.16667 5.83333L4.58334 15.8333C4.58334 16.4964 5.08695 17 5.75 17H14.25C14.9131 17 15.4167 16.4964 15.4167 15.8333L15.8333 5.83333M8.33334 9.16667V13.3333M11.6667 9.16667V13.3333"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
 
                   <div className="space-y-6">
                     {/* Question Text */}
@@ -1153,13 +1080,37 @@ const CreatorVariantsPage = () => {
                         options={[
                           t("creator.createVariants.questionTypes.multipleChoice"),
                           t("creator.createVariants.questionTypes.trueFalse"),
-                          t("creator.createVariants.questionTypes.shortAnswer"),
-                          t("creator.createVariants.questionTypes.essay"),
                         ]}
                       />
                     </div>
 
-                    {/* Options Grid */}
+                    {/* Options Grid - Show 2 options for True/False, 4 for MCQ */}
+                    {variant.questionType === "True/False" ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                            True
+                          </label>
+                          <input
+                            type="text"
+                            value={variant.options.A}
+                            disabled
+                            className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-gray-100 px-4 py-3 text-blue-dark cursor-not-allowed"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+                            False
+                          </label>
+                          <input
+                            type="text"
+                            value={variant.options.B}
+                            disabled
+                            className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-gray-100 px-4 py-3 text-blue-dark cursor-not-allowed"
+                          />
+                        </div>
+                      </div>
+                    ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-4">
                         <div>
@@ -1218,12 +1169,20 @@ const CreatorVariantsPage = () => {
                         </div>
                       </div>
                     </div>
+                    )}
 
                     {/* Correct Answer */}
                     <div>
                       <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
                         {t("creator.createVariants.fields.correctAnswer")}
                       </label>
+                      {variant.questionType === "True/False" ? (
+                        <Dropdown
+                          value={variant.correctAnswer}
+                          onChange={(value) => handleVariantCorrectAnswerChange(variant.id, value)}
+                          options={["True", "False"]}
+                        />
+                      ) : (
                       <Dropdown
                         value={variant.correctAnswer}
                         onChange={(value) => handleVariantCorrectAnswerChange(variant.id, value)}
@@ -1234,6 +1193,7 @@ const CreatorVariantsPage = () => {
                           t("creator.createVariants.correctAnswerOptions.optionD"),
                         ]}
                       />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1247,105 +1207,160 @@ const CreatorVariantsPage = () => {
               </h2>
 
               <div className="space-y-6">
+                {/* Exam */}
                 <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    Exam
-                  </label>
                   <Dropdown
-                    value={subject}
-                    onChange={setSubject}
-                    options={[
-                      "Select Exam",
-                      "Math",
-                      "Science",
-                      "History",
-                      "Geography",
-                    ]}
+                      label={t('gatherer.addNewQuestion.classification.exam')}
+                    value={examName}
+                    onChange={handleExamChange}
+                      placeholder="Select exam"
+                    options={
+                      loadingExams
+                        ? [t('gatherer.addNewQuestion.messages.loading')]
+                        : exams.length > 0
+                            ? exams.map((exam) => exam.name || "Unnamed Exam").filter(Boolean)
+                        : [t('gatherer.addNewQuestion.messages.noExamsAvailable')]
+                    }
                   />
                 </div>
+
                 {/* Subject */}
                 <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t("creator.createVariants.fields.subject")}
-                  </label>
                   <Dropdown
-                    value={subject}
-                    onChange={setSubject}
-                    options={[
-                      t("creator.createVariants.placeholders.selectSubject"),
-                      "Math",
-                      "Science",
-                      "History",
-                      "Geography",
-                    ]}
+                      label={t('gatherer.addNewQuestion.classification.subject')}
+                    value={subjectName}
+                    onChange={handleSubjectChange}
+                      placeholder="Select subject"
+                    options={
+                      !examId
+                        ? [t('gatherer.addNewQuestion.messages.selectExamFirst')]
+                        : loadingSubjects
+                        ? [t('gatherer.addNewQuestion.messages.loading')]
+                        : subjects.length > 0
+                        ? subjects.map((subject) => subject.name || "Unnamed Subject").filter(Boolean)
+                        : [t('gatherer.addNewQuestion.messages.noSubjectsAvailable')]
+                    }
                   />
                 </div>
 
                 {/* Topic */}
                 <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t("creator.createVariants.fields.topic")}
-                  </label>
                   <Dropdown
-                    value={topic}
-                    onChange={setTopic}
-                    options={[
-                      t("creator.createVariants.placeholders.selectTopic"),
-                      "Algebra",
-                      "Geometry",
-                      "Calculus",
-                    ]}
+                      label={t('gatherer.addNewQuestion.classification.topic')}
+                    value={topicName}
+                    onChange={handleTopicChange}
+                      placeholder="Select topic"
+                    options={
+                      !subjectId
+                        ? [t('gatherer.addNewQuestion.messages.selectSubjectFirst')]
+                        : loadingTopics
+                        ? [t('gatherer.addNewQuestion.messages.loading')]
+                        : topics.length > 0
+                        ? topics.map((topic) => topic.name || "Unnamed Topic").filter(Boolean)
+                        : [t('gatherer.addNewQuestion.messages.noTopicsAvailable')]
+                    }
                   />
                 </div>
 
-                {/* Cognitive Level */}
+                  {/* Reference */}
                 <div>
                   <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t("creator.createVariants.fields.cognitiveLevel")}
-                  </label>
-                  <Dropdown
-                    value={cognitiveLevel}
-                    onChange={setCognitiveLevel}
-                    options={[
-                      t("creator.createVariants.placeholders.selectLevel"),
-                      t("creator.createVariants.cognitiveLevels.remember"),
-                      t("creator.createVariants.cognitiveLevels.understand"),
-                      t("creator.createVariants.cognitiveLevels.apply"),
-                      t("creator.createVariants.cognitiveLevels.analyze"),
-                      t("creator.createVariants.cognitiveLevels.evaluate"),
-                      t("creator.createVariants.cognitiveLevels.create"),
-                    ]}
-                  />
-                </div>
-
-                {/* Source */}
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t("creator.createVariants.fields.source")}
+                      Reference
                   </label>
                   <Dropdown
                     value={source}
                     onChange={setSource}
+                      placeholder="Select Reference"
                     options={[
-                      t("creator.createVariants.placeholders.selectSource"),
                       t("creator.createVariants.sources.textbook"),
                       t("creator.createVariants.sources.pastExam"),
                       t("creator.createVariants.sources.custom"),
                     ]}
                   />
                 </div>
+
               </div>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row sm:justify-end gap-3 px-5 pb-6 pt-2">
-            <OutlineButton text={t("creator.createVariants.cancel")} className="py-[10px] px-7 text-nowrap" onClick={handleCancel}/>
-            <OutlineButton text={t("creator.createVariants.saveDraft")} className="py-[10px] px-7 text-nowrap"/>
-            <PrimaryButton text={t("creator.createVariants.submitVariant")} className="py-[10px] px-7 text-nowrap"/>
+          )}
+        </div>
+      </div>
+      
+      {/* Sticky Footer Buttons - Only within page content */}
+      <div className="sticky bottom-0 bg-white border-t border-[#E5E7EB] shadow-lg z-40 mt-6 overflow-x-hidden">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:justify-end gap-3 py-4">
+            <OutlineButton text={t("creator.createVariants.cancel")} className="py-[10px] px-7 text-nowrap" onClick={handleCancel} />
+            {!isEditMode && (
+              <>
+                {/* <OutlineButton text={t("creator.createVariants.saveDraft")} className="py-[10px] px-7 text-nowrap" onClick={handleSaveDraft}/> */}
+                <button
+                  type="button"
+                  onClick={handleFlagClick}
+                  className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#ED4122] bg-white px-4 md:px-7 text-[14px] md:text-[16px] font-archivo font-semibold leading-[16px] text-[#ED4122] transition hover:bg-[#FDF0D5] text-nowrap py-[10px]"
+                >
+                  Flag Question
+                </button>
+              </>
+            )}
+            <PrimaryButton 
+              text={isSubmitting ? (isEditMode ? "Updating..." : "Submitting...") : (isEditMode ? "Update Variant" : t("creator.createVariants.submitVariant"))} 
+              className="py-[10px] px-7 text-nowrap"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            />
           </div>
         </div>
       </div>
+
+      {/* Flag Question Modal */}
+      {isFlagModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white rounded-lg shadow-xl max-w-[600px] w-full p-8">
+            <h2 className="text-[24px] leading-[100%] font-bold text-oxford-blue mb-2">
+              Flag Question
+            </h2>
+            <p className="text-[16px] leading-[100%] font-normal text-dark-gray mb-6">
+              Please provide a reason for flagging this question. This will send the question back to the processor for review.
+            </p>
+            
+            <div className="mb-6">
+              <label className="block text-[16px] leading-[100%] font-roboto font-normal text-oxford-blue mb-2">
+                Reason for Flagging
+              </label>
+              <textarea
+                value={flagReason}
+                onChange={(e) => setFlagReason(e.target.value)}
+                placeholder="Enter the reason for flagging this question..."
+                className="w-full h-[120px] rounded-[8px] border border-[#03274633] bg-white px-4 py-3 font-roboto text-[16px] leading-[20px] text-oxford-blue outline-none placeholder:text-[#9CA3AF] resize-none focus:border-oxford-blue"
+                disabled={isFlagging}
+              />
+            </div>
+            
+            <div className="flex gap-4">
+              <button
+                onClick={handleFlagClose}
+                disabled={isFlagging}
+                className="flex-1 font-roboto px-4 py-3 border-[0.5px] text-base font-normal border-[#032746] rounded-lg text-blue-dark hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              
+              <button
+                onClick={handleFlagSubmit}
+                disabled={isFlagging || !flagReason.trim()}
+                className="flex-1 font-roboto px-4 py-3 bg-[#ED4122] text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#d43a1f]"
+              >
+                {isFlagging ? "Flagging..." : "Submit Flag"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
 
 export default CreatorVariantsPage;
+
+

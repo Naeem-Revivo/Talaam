@@ -1,79 +1,239 @@
 
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import ProcessorFilter from "../../components/Processor/ProcessorFilter";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
+import questionsAPI from "../../api/questions";
+import Loader from "../../components/common/Loader";
 
 const AllProcessedQuestion = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
   const [subtopic, setSubtopic] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [processedData, setProcessedData] = useState([]);
+  const [total, setTotal] = useState(0);
 
-   const processedColumns = [
+  const processedColumns = useMemo(() => [
     { key: 'questionTitle', label: t("processor.allProcessedQuestions.table.questionTitle") },
     { key: 'status', label: t("processor.allProcessedQuestions.table.status") },
     { key: 'reviewedOn', label: t("processor.allProcessedQuestions.table.reviewedOn") },
     { key: 'decision', label: t("processor.allProcessedQuestions.table.decision") },
     { key: 'actions', label: t("processor.allProcessedQuestions.table.actions") }
-  ];
+  ], [t]);
 
-  // Sample data matching the image
-  const processedData = [
-    {
-      id: 1,
-      questionTitle: 'Photosynthesis Basics',
-      status: 'Accepted',
-      reviewedOn: 'Today',
-      decision: 'Sent to Creator',
-      actionType: 'view'
-    },
-    {
-      id: 2,
-      questionTitle: 'Newton MCQ',
-      status: 'Reject', 
-      reviewedOn: 'Today',
-      decision: 'Reason Added',
-      actionType: 'view'
-    },
-    {
-      id: 3,
-      questionTitle: 'Forces & Motion',
-      status: 'Accepted',
-      reviewedOn: 'Yesterday',
-      decision: 'Approved',
-      actionType: 'view'
-    },
-    {
-      id: 4,
-      questionTitle: 'Chemical Bonding',
-      status: 'Reject',
-      reviewedOn: 'Yesterday', 
-      decision: 'Wrong Option',
-      actionType: 'view'
+  // Format date to "Today", "Yesterday", or formatted date
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // Reset time to compare only dates
+    today.setHours(0, 0, 0, 0);
+    yesterday.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+
+    if (date.getTime() === today.getTime()) {
+      return "Today";
+    } else if (date.getTime() === yesterday.getTime()) {
+      return "Yesterday";
+    } else {
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
     }
-  ];
-
-  // Handler for review action
-  const handleReview = (item) => {
-    console.log('Review item:', item);
-    // Add your review logic here
   };
 
-  // Handler for view action (if needed)
+  // Map API status to display status
+  const mapStatus = (status) => {
+    const statusMap = {
+      'completed': 'Accepted',
+      'rejected': 'Rejected',
+      'pending_creator': 'Accepted',
+      'pending_explainer': 'Accepted',
+      'approved': 'Accepted',
+      'accepted': 'Accepted'
+    };
+    return statusMap[status?.toLowerCase()] || status || '—';
+  };
+
+  // Map decision based on status and history
+  const mapDecision = (question) => {
+    const status = question.status?.toLowerCase();
+    
+    if (status === 'rejected') {
+      return question.rejectionReason ? 'Reason Added' : 'Rejected';
+    }
+    
+    if (status === 'completed') {
+      return 'Approved';
+    }
+    
+    // Check history to determine decision
+    if (question.history && Array.isArray(question.history)) {
+      const lastAction = question.history[0];
+      if (lastAction) {
+        if (lastAction.action === 'approved' && lastAction.role === 'processor') {
+          if (status === 'pending_creator') {
+            return 'Sent to Creator';
+          } else if (status === 'pending_explainer') {
+            return 'Sent to Explainer';
+          }
+        }
+      }
+    }
+    
+    // Default based on status
+    if (status === 'pending_creator') {
+      return 'Sent to Creator';
+    } else if (status === 'pending_explainer') {
+      return 'Sent to Explainer';
+    }
+    
+    return 'Approved';
+  };
+
+  // Fetch processed questions (completed and rejected)
+  useEffect(() => {
+    const fetchProcessedQuestions = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch questions with completed and rejected statuses
+        const statusesToFetch = ['completed', 'rejected'];
+        
+        let allQuestions = [];
+
+        // Fetch questions for each status
+        const promises = statusesToFetch.map(status => 
+          questionsAPI.getProcessorQuestions({ status })
+        );
+        
+        const responses = await Promise.all(promises);
+        
+        // Combine all questions
+        responses.forEach(response => {
+          if (response.success && response.data?.questions) {
+            allQuestions = [...allQuestions, ...response.data.questions];
+          }
+        });
+        
+        // Remove duplicates based on question ID
+        const uniqueQuestions = [];
+        const seenIds = new Set();
+        allQuestions.forEach(q => {
+          if (!seenIds.has(q.id)) {
+            seenIds.add(q.id);
+            uniqueQuestions.push(q);
+          }
+        });
+        
+        // Apply client-side filters
+        let filteredQuestions = uniqueQuestions;
+        
+        // Filter by search (question text)
+        if (search.trim()) {
+          const searchLower = search.toLowerCase();
+          filteredQuestions = filteredQuestions.filter(q => 
+            q.questionText?.toLowerCase().includes(searchLower)
+          );
+        }
+        
+        // Filter by subject
+        if (subject) {
+          filteredQuestions = filteredQuestions.filter(q => 
+            q.subject?.id === subject || q.subjectId === subject
+          );
+        }
+        
+        // Filter by topic
+        if (topic) {
+          filteredQuestions = filteredQuestions.filter(q => 
+            q.topic?.id === topic || q.topicId === topic
+          );
+        }
+        
+        // Filter by subtopic
+        if (subtopic) {
+          filteredQuestions = filteredQuestions.filter(q => 
+            q.subtopic?.id === subtopic || q.subtopicId === subtopic
+          );
+        }
+        
+        // Transform API data to match table structure
+        const transformedData = filteredQuestions.map((question) => {
+          // Get the date when question was last reviewed (approved or rejected)
+          // Use updatedAt as it reflects the last time the question was modified
+          const reviewedDate = question.updatedAt || question.createdAt;
+          
+          return {
+            id: question.id,
+            questionTitle: question.questionText?.substring(0, 50) + (question.questionText?.length > 50 ? "..." : "") || "—",
+            status: mapStatus(question.status),
+            reviewedOn: formatDate(reviewedDate),
+            decision: mapDecision(question),
+            actionType: 'view',
+            originalData: question // Store full question data for navigation
+          };
+        });
+
+        // Sort: pending_processor questions first (newest first), then others (newest first)
+        transformedData.sort((a, b) => {
+          const isAPendingProcessor = a.originalData?.status === 'pending_processor';
+          const isBPendingProcessor = b.originalData?.status === 'pending_processor';
+          
+          // If one is pending_processor and the other isn't, pending_processor comes first
+          if (isAPendingProcessor && !isBPendingProcessor) return -1;
+          if (!isAPendingProcessor && isBPendingProcessor) return 1;
+          
+          // Both have same priority, sort by date (most recent first)
+          const dateA = new Date(a.originalData?.updatedAt || a.originalData?.createdAt);
+          const dateB = new Date(b.originalData?.updatedAt || b.originalData?.createdAt);
+          return dateB - dateA;
+        });
+
+        setProcessedData(transformedData);
+        setTotal(transformedData.length);
+      } catch (error) {
+        console.error('Error fetching processed questions:', error);
+        setProcessedData([]);
+        setTotal(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProcessedQuestions();
+  }, [search, subject, topic, subtopic, currentPage]);
+
+  // Handler for view action
   const handleView = (item) => {
-    console.log('View item:', item);
+    if (item?.id || item?.originalData?.id) {
+      const questionId = item.id || item.originalData.id;
+      navigate(`/processor/Processed-ViewQuestion?questionId=${questionId}&source=all-processed-questions`);
+    }
   };
 
-  // Handler for edit action (if needed)
+  // Handler for edit action (not used for processed questions)
   const handleEdit = (item) => {
     console.log('Edit item:', item);
+  };
+
+  // Handler for custom action (not used)
+  const handleCustomAction = (item) => {
+    console.log('Custom action:', item);
   };
 
   const handleCancel = () => {
@@ -94,28 +254,37 @@ const AllProcessedQuestion = () => {
         </header>
 
         <ProcessorFilter
-        searchValue={search}
-        subjectValue={subject}
-        topicValue={topic}
-        subtopicValue={subtopic}
-        onSearchChange={setSearch}
-        onSubjectChange={setSubject}
-        onTopicChange={setTopic}
-        onSubtopicChange={setSubtopic}
-      />
+          searchValue={search}
+          subjectValue={subject}
+          topicValue={topic}
+          subtopicValue={subtopic}
+          onSearchChange={setSearch}
+          onSubjectChange={setSubject}
+          onTopicChange={setTopic}
+          onSubtopicChange={setSubtopic}
+        />
 
-      <Table
-        items={processedData}
-        columns={processedColumns}
-        page={currentPage}
-        pageSize={10}
-        total={25}
-        onPageChange={setCurrentPage}
-        onView={handleView}
-        onEdit={handleEdit}
-        onCustomAction={handleReview}
-        emptyMessage={t("processor.allProcessedQuestions.emptyMessage")}
-      />
+        {loading ? (
+          <Loader 
+            size="lg" 
+            color="oxford-blue" 
+            text="Loading..."
+            className="py-12"
+          />
+        ) : (
+          <Table
+            items={processedData}
+            columns={processedColumns}
+            page={currentPage}
+            pageSize={10}
+            total={total}
+            onPageChange={setCurrentPage}
+            onView={handleView}
+            onEdit={handleEdit}
+            onCustomAction={handleCustomAction}
+            emptyMessage={t("processor.allProcessedQuestions.emptyMessage")}
+          />
+        )}
       </div>
     </div>
   );

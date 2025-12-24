@@ -27,5 +27,9 @@ router.post('/moyassar/verify', paymentController.verifyMoyassarPayment);
 // Get payment status
 router.get('/moyassar/status/:subscriptionId', paymentController.getPaymentStatus);
 
+// Payment callback (after user returns from Moyassar)
+// Note: This should be public (no auth) since Moyassar redirects here
+router.get('/moyassar/callback', paymentController.handlePaymentCallback);
+
 module.exports = router;
 

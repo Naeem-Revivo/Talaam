@@ -18,11 +18,11 @@ const TableHeader = ({ columns }) => (
   </thead>
 );
 
-const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
+const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagReason, onShowRejectionReason }) => {
   const getFieldKey = (columnName) => {
     return columnName.toLowerCase().replace(/ /g, "");
   };
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const isRTL = language === "ar";
 
   return (
@@ -30,54 +30,135 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
       {columns.slice(0, -1).map((column) => {
         let value = item[column.key] || "—";
 
-        // Special rendering for status
-        if (column.key === "status") {
-          const isApproved = value.toLowerCase() === "approved";
-          const isPending = value.toLowerCase() === "pending";
-          const isSentBack = value.toLowerCase() === "sent back";
-          const isReject = value.toLowerCase() === "reject";
-          const isaccept = value.toLowerCase() === "accepted";
-          const isfixrequest = value.toLowerCase() === "fix request";
-          const isRevision = value.toLowerCase() === "revision";
-          const isDraft = value.toLowerCase() === "draft";
-          const isPaid = value.toLowerCase() === "paid";
-          const isFailed = value.toLowerCase() === "failed";
-          const isVisible = value.toLowerCase() === "visible";
-          const isHidden = value.toLowerCase() === "hidden";
+        // Special rendering for indicators
+        if (column.key === "indicators") {
+          const indicators = item.indicators || {};
+          const isFlagged = indicators.flag === true;
+          const isApproved = indicators.approved === true;
+          const isVariant = indicators.variant === true;
+          
           return (
             <td key={column.key} className="px-6 py-8 text-center">
-              <span
-                className={`inline-block px-[12px] py-[5px] rounded-md text-[12px] leading-[100%] font-normal ${
-                  isApproved
-                    ? "bg-[#FDF0D5] text-[#ED4122]"
-                    : isPaid
-                    ? "bg-[#FDF0D5] text-[#ED4122]"
-                    : isFailed
-                    ? "bg-[#ED4122] text-white"
-                    : isVisible
-                    ? "bg-[#FDF0D5] text-[#ED4122]"
-                    : isHidden
-                    ? "bg-[#ED4122] text-white"
-                    : isaccept
-                    ? "bg-[#FDF0D5] text-[#ED4122]"
-                    : isDraft
-                    ? "bg-[#FDF0D5] text-[#ED4122]"
-                    : isSentBack
-                    ? "bg-[#ED4122] text-white"
-                    : isRevision
-                    ? "bg-[#ED4122] text-white"
-                    : isfixrequest
-                    ? "bg-[#ED4122] text-white"
-                    : isReject
-                    ? "bg-[#C6D8D3] text-blue-dark"
-                    : isPending
-                    ? "bg-[#FDF0D5] text-[#ED4122]"
-                    : "bg-gray-200 text-gray-700"
-                }`}
-              >
-                {value}
-              </span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                {isFlagged ? (
+                  <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-red-100 text-red-700">
+                    🚩 Flagged
+                  </span>
+                ) : isVariant ? (
+                  <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-blue-100 text-blue-700">
+                    {t("creator.assignedQuestionPage.indicators.variant") || "Variant"}
+                  </span>
+                ) : isApproved ? (
+                  <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-green-100 text-green-700">
+                    {t("creator.assignedQuestionPage.indicators.approved") || "Approved"}
+                  </span>
+                ) : (
+                  <span className="text-gray-400">—</span>
+                )}
+              </div>
             </td>
+          );
+        }
+
+        // Special rendering for status and creatorStatus columns
+        if (column.key === "status" || column.key === "creatorStatus" || column.key === "processorStatus" || column.key === "explainerStatus" || column.key === "adminStatus") {
+          // Check if value contains "- Variant" (for variant questions)
+          const isVariantStatus = typeof value === 'string' && value.includes(' - Variant');
+          const baseValue = isVariantStatus ? value.replace(' - Variant', '').trim() : value;
+          
+          const isApproved = baseValue.toLowerCase() === "approved";
+          const isPending = baseValue.toLowerCase() === "pending" || baseValue.toLowerCase() === "pending review";
+          const isSentBack = baseValue.toLowerCase() === "sent back";
+          const isReject = baseValue.toLowerCase() === "reject" || baseValue.toLowerCase() === "rejected";
+          const isFlag = baseValue.toLowerCase() === "flag" || baseValue.toLowerCase() === "flagged";
+          const isaccept = baseValue.toLowerCase() === "accepted";
+          const isfixrequest = baseValue.toLowerCase() === "fix request";
+          const isRevision = baseValue.toLowerCase() === "revision";
+          const isDraft = baseValue.toLowerCase() === "draft";
+          const isPaid = baseValue.toLowerCase() === "paid";
+          const isFailed = baseValue.toLowerCase() === "failed";
+          const isVisible = baseValue.toLowerCase() === "visible";
+          const isHidden = baseValue.toLowerCase() === "hidden";
+          const isVariantCreated = baseValue.toLowerCase() === "variant created";
+          const isVariant = baseValue.toLowerCase() === "variant";
+          const isFlagged = item.indicators?.flag === true;
+          // Show reason button for status, creatorStatus, explainerStatus, or adminStatus column when flagged
+          const showReasonButton = (column.key === "status" || column.key === "creatorStatus" || column.key === "explainerStatus" || column.key === "adminStatus") && isFlagged && onShowFlagReason && item.flagReason;
+          
+          return (
+            <td key={column.key} className="px-6 py-8 text-center">
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                <span
+                  className={`inline-block px-[12px] py-[5px] rounded-md text-[12px] leading-[100%] font-normal ${
+                    isFlag
+                      ? "bg-red-100 text-red-700"
+                      : isVariantCreated || isVariant
+                      ? "bg-blue-100 text-blue-700"
+                      : isApproved
+                      ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : isPaid
+                      ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : isFailed
+                      ? "bg-[#ED4122] text-white"
+                      : isVisible
+                      ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : isHidden
+                      ? "bg-[#ED4122] text-white"
+                      : isaccept
+                      ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : isDraft
+                      ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : isSentBack
+                      ? "bg-[#ED4122] text-white"
+                      : isRevision
+                      ? "bg-[#ED4122] text-white"
+                      : isfixrequest
+                      ? "bg-[#ED4122] text-white"
+                      : isReject
+                      ? "bg-[#C6D8D3] text-blue-dark"
+                      : isPending
+                      ? "bg-[#FDF0D5] text-[#ED4122]"
+                      : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  {baseValue}
+                </span>
+                {isVariantStatus && (
+                  <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-blue-100 text-blue-700">
+                    {t("creator.assignedQuestionPage.indicators.variant") || "Variant"}
+                  </span>
+                )}
+                {showReasonButton && (
+                  <button
+                    type="button"
+                    onClick={() => onShowFlagReason(item.flagReason)}
+                    className="text-orange-dark text-[12px] font-normal leading-[16px] font-roboto hover:underline transition px-2 py-1"
+                  >
+                    {t("creator.assignedQuestionPage.reasonButton") || "Reason"}
+                  </button>
+                )}
+              </div>
+            </td>
+          );
+        }
+
+        // Special rendering for questionTitle to support HTML content
+        if (column.key === "questionTitle" && typeof value === "string" && value.includes("<")) {
+          // Strip HTML tags to get text length for truncation
+          const textOnly = value.replace(/<[^>]*>/g, '');
+          const shouldTruncate = textOnly.length > 50;
+          
+          // Simple truncation: if HTML is long, show first 200 chars (may cut HTML tags, but will still render)
+          const displayHTML = shouldTruncate && value.length > 200 
+            ? value.substring(0, 200) + "..." 
+            : value;
+          
+          return (
+            <td
+              key={column.key}
+              className="px-6 py-8 font-normal font-roboto text-center text-[14px] leading-[16px] text-blue-dark"
+              dangerouslySetInnerHTML={{ __html: displayHTML }}
+            />
           );
         }
 
@@ -181,6 +262,28 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
               </svg>
             </button>
           )}
+          {item.actionType === "editicon" && (
+            <button
+              type="button"
+              onClick={() => onEdit?.(item)}
+              className="text-orange-dark text-[14px] font-normal leading-[16px] font-roboto hover:underline transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                className="h-5 w-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                />
+              </svg>
+            </button>
+          )}
           {item.actionType === "update" && (
             <button
               type="button"
@@ -250,9 +353,9 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction }) => {
   );
 };
 
-const MobileCard = ({ item, columns, onView, onEdit, onCustomAction }) => {
+const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagReason, onShowRejectionReason }) => {
   const displayColumns = columns.slice(0, -1);
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const isRTL = language === "ar";
 
   return (
@@ -261,50 +364,137 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction }) => {
         {displayColumns.map((column) => {
           let value = item[column.key] || "—";
 
-          // Special rendering for status
-          if (column.key === "status") {
-            const isApproved = value.toLowerCase() === "approved";
-            const isPending = value.toLowerCase() === "pending";
-            const isSentBack = value.toLowerCase() === "sent back";
-            const isReject = value.toLowerCase() === "reject";
-            const isaccept = value.toLowerCase() === "accepted";
-            const isfixrequest = value.toLowerCase() === "fix request";
-            const isRevision = value.toLowerCase() === "revision";
-            const isDraft = value.toLowerCase() === "draft";
-            const isVisible = value.toLowerCase() === "visible";
-            const isHidden = value.toLowerCase() === "hidden";
+          // Special rendering for indicators
+          if (column.key === "indicators") {
+            const indicators = item.indicators || {};
+            const isFlagged = indicators.flag === true;
+            const isApproved = indicators.approved === true;
+            const isVariant = indicators.variant === true;
+            
             return (
               <div key={column.key} className="flex items-center gap-2">
                 <span className="text-[14px] font-normal text-oxford-blue">
                   {column.label}:
                 </span>
-                <span
-                  className={`inline-block px-[12px] py-[5px] rounded-md text-[12px] leading-[100%] font-normal ${
-                    isApproved
-                      ? "bg-[#FDF0D5] text-[#ED4122]"
-                      : isaccept
-                      ? "bg-[#FDF0D5] text-[#ED4122]"
-                      : isVisible
-                      ? "bg-[#FDF0D5] text-[#ED4122]"
-                      : isHidden
-                      ? "bg-[#ED4122] text-white"
-                      : isDraft
-                      ? "bg-[#FDF0D5] text-[#ED4122]"
-                      : isSentBack
-                      ? "bg-[#ED4122] text-white"
-                      : isRevision
-                      ? "bg-[#ED4122] text-white"
-                      : isfixrequest
-                      ? "bg-[#ED4122] text-white"
-                      : isReject
-                      ? "bg-[#C6D8D3] text-blue-dark"
-                      : isPending
-                      ? "bg-[#FDF0D5] text-[#ED4122]"
-                      : "bg-gray-200 text-gray-700"
-                  }`}
-                >
-                  {value}
+                <div className="flex flex-col items-start gap-1">
+                  {isFlagged ? (
+                    <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-red-100 text-red-700">
+                      🚩 Flagged
+                    </span>
+                  ) : isVariant ? (
+                    <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-blue-100 text-blue-700">
+                      {t("creator.assignedQuestionPage.indicators.variant") || "Variant"}
+                    </span>
+                  ) : isApproved ? (
+                    <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-green-100 text-green-700">
+                      {t("creator.assignedQuestionPage.indicators.approved") || "Approved"}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
+                </div>
+              </div>
+            );
+          }
+
+          // Special rendering for status, creatorStatus, and processorStatus columns
+          if (column.key === "status" || column.key === "creatorStatus" || column.key === "processorStatus" || column.key === "explainerStatus" || column.key === "adminStatus") {
+            // Check if value contains "- Variant" (for variant questions)
+            const isVariantStatus = typeof value === 'string' && value.includes(' - Variant');
+            const baseValue = isVariantStatus ? value.replace(' - Variant', '').trim() : value;
+            
+            const isApproved = baseValue.toLowerCase() === "approved";
+            const isPending = baseValue.toLowerCase() === "pending" || baseValue.toLowerCase() === "pending review";
+            const isSentBack = baseValue.toLowerCase() === "sent back";
+            const isReject = baseValue.toLowerCase() === "reject" || baseValue.toLowerCase() === "rejected";
+            const isFlag = baseValue.toLowerCase() === "flag" || baseValue.toLowerCase() === "flagged";
+            const isaccept = baseValue.toLowerCase() === "accepted";
+            const isfixrequest = baseValue.toLowerCase() === "fix request";
+            const isRevision = baseValue.toLowerCase() === "revision";
+            const isDraft = baseValue.toLowerCase() === "draft";
+            const isVisible = baseValue.toLowerCase() === "visible";
+            const isHidden = baseValue.toLowerCase() === "hidden";
+            const isVariantCreated = baseValue.toLowerCase() === "variant created";
+            const isVariant = baseValue.toLowerCase() === "variant";
+            const isFlagged = item.indicators?.flag === true;
+            // Show reason button for status, creatorStatus, explainerStatus, or adminStatus column when flagged
+            const showReasonButton = (column.key === "status" || column.key === "creatorStatus" || column.key === "explainerStatus" || column.key === "adminStatus") && isFlagged && onShowFlagReason && item.flagReason;
+            return (
+              <div key={column.key} className="flex items-center gap-2">
+                <span className="text-[14px] font-normal text-oxford-blue">
+                  {column.label}:
                 </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span
+                    className={`inline-block px-[12px] py-[5px] rounded-md text-[12px] leading-[100%] font-normal ${
+                      isFlag
+                        ? "bg-red-100 text-red-700"
+                        : isVariantCreated || isVariant
+                        ? "bg-blue-100 text-blue-700"
+                        : isApproved
+                        ? "bg-[#FDF0D5] text-[#ED4122]"
+                        : isaccept
+                        ? "bg-[#FDF0D5] text-[#ED4122]"
+                        : isVisible
+                        ? "bg-[#FDF0D5] text-[#ED4122]"
+                        : isHidden
+                        ? "bg-[#ED4122] text-white"
+                        : isDraft
+                        ? "bg-[#FDF0D5] text-[#ED4122]"
+                        : isSentBack
+                        ? "bg-[#ED4122] text-white"
+                        : isRevision
+                        ? "bg-[#ED4122] text-white"
+                        : isfixrequest
+                        ? "bg-[#ED4122] text-white"
+                        : isReject
+                        ? "bg-[#C6D8D3] text-blue-dark"
+                        : isPending
+                        ? "bg-[#FDF0D5] text-[#ED4122]"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                  >
+                    {baseValue}
+                  </span>
+                  {isVariantStatus && (
+                    <span className="inline-block px-[8px] py-[4px] rounded-md text-[10px] leading-[100%] font-normal bg-blue-100 text-blue-700">
+                      {t("creator.assignedQuestionPage.indicators.variant") || "Variant"}
+                    </span>
+                  )}
+                  {showReasonButton && (
+                    <button
+                      type="button"
+                      onClick={() => onShowFlagReason(item.flagReason)}
+                      className="text-orange-dark text-[12px] font-normal leading-[16px] font-roboto hover:underline transition px-2 py-1"
+                    >
+                      {t("creator.assignedQuestionPage.reasonButton") || "Reason"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          }
+
+          // Special rendering for questionTitle to support HTML content in mobile view
+          if (column.key === "questionTitle" && typeof value === "string" && value.includes("<")) {
+            // Strip HTML tags to get text length for truncation
+            const textOnly = value.replace(/<[^>]*>/g, '');
+            const shouldTruncate = textOnly.length > 50;
+            
+            // Simple truncation: if HTML is long, show first 200 chars
+            const displayHTML = shouldTruncate && value.length > 200 
+              ? value.substring(0, 200) + "..." 
+              : value;
+            
+            return (
+              <div key={column.key} className="flex items-center gap-2">
+                <span className="text-[14px] font-normal text-oxford-blue">
+                  {column.label}:
+                </span>
+                <span 
+                  className="text-[14px] font-normal text-dark-gray"
+                  dangerouslySetInnerHTML={{ __html: displayHTML }}
+                />
               </div>
             );
           }
@@ -409,6 +599,28 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction }) => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+              />
+            </svg>
+          </button>
+        )}
+        {item.actionType === "editicon" && (
+          <button
+            type="button"
+            onClick={() => onEdit?.(item)}
+            className="text-orange-dark text-[14px] font-normal leading-[16px] font-roboto hover:underline transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              className="h-5 w-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
               />
             </svg>
           </button>
@@ -568,18 +780,20 @@ export const Table = ({
   onCustomAction,
   emptyMessage,
   showPagination = true,
+  onShowFlagReason,
+  onShowRejectionReason,
 }) => {
   const { t, language } = useLanguage();
   const dir = language === "ar" ? "rtl" : "ltr";
   return (
     <section
-      className={`w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard  ${
-        showPagination ? "md:min-h-[348px]" : "md:min-h-auto"
+      className={`w-full flex flex-col justify-between overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard ${
+        items.length > 0 ? "min-h-auto" : "min-h-[300px]"
       }`}
       dir={dir}
     >
-      <div className="hidden overflow-x-auto md:block">
-        <table className="min-w-full border-collapse">
+      <div className={`hidden overflow-x-auto md:block ${items.length > 0 ? "" : "flex items-center justify-center min-h-[300px]"}`}>
+        <table className={`min-w-full border-collapse ${items.length > 0 ? "" : "h-full"}`}>
           <TableHeader columns={columns} />
           <tbody>
             {items.length ? (
@@ -591,22 +805,26 @@ export const Table = ({
                   onView={onView}
                   onEdit={onEdit}
                   onCustomAction={onCustomAction}
+                  onShowFlagReason={onShowFlagReason}
+                  onShowRejectionReason={onShowRejectionReason}
                 />
               ))
             ) : (
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-6 py-10 text-center text-sm text-dark-gray"
+                  className="px-6 py-10 text-center text-sm text-dark-gray h-full"
                 >
-                  {emptyMessage}
+                  <div className="flex items-center justify-center min-h-[200px]">
+                    {emptyMessage}
+                  </div>
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-      <div className="flex flex-col gap-4 p-2 md:hidden">
+      <div className={`flex flex-col gap-4 p-2 md:hidden ${items.length > 0 ? "" : "min-h-[300px] flex items-center justify-center"}`}>
         {items.length ? (
           items.map((item) => (
             <MobileCard
@@ -616,10 +834,12 @@ export const Table = ({
               onView={onView}
               onEdit={onEdit}
               onCustomAction={onCustomAction}
+              onShowFlagReason={onShowFlagReason}
+              onShowRejectionReason={onShowRejectionReason}
             />
           ))
         ) : (
-          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-dark-gray shadow-empty">
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-dark-gray shadow-empty min-h-[200px] flex items-center justify-center">
             {emptyMessage}
           </div>
         )}

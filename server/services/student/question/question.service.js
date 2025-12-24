@@ -4,61 +4,123 @@ const Exam = require('../../../models/exam');
 const Subject = require('../../../models/subject');
 const Topic = require('../../../models/topic');
 const Plan = require('../../../models/plan');
+const { prisma } = require('../../../config/db/prisma');
 
 /**
- * Get available questions for students (only completed questions)
+ * Get available questions for students (only completed and visible questions)
  * Can filter by exam, subject, topic
  */
 const getAvailableQuestions = async (filters = {}) => {
-  const query = {
+  const where = {
     status: 'completed', // Only show completed questions
+    isVisible: true, // Only show visible questions
   };
 
   if (filters.exam) {
-    query.exam = filters.exam;
+    where.examId = filters.exam;
   }
   if (filters.subject) {
-    query.subject = filters.subject;
+    where.subjectId = filters.subject;
   }
-  if (filters.topic) {
-    query.topic = filters.topic;
+  // Support multiple topics (comma-separated or array) - takes priority over single topic
+  if (filters.topics) {
+    const topicIds = Array.isArray(filters.topics) 
+      ? filters.topics 
+      : filters.topics.split(',').map(id => id.trim()).filter(Boolean);
+    if (topicIds.length > 0) {
+      where.topicId = { in: topicIds };
+    }
+  } else if (filters.topic) {
+    // Single topic filter (only if topics not provided)
+    where.topicId = filters.topic;
   }
 
-  const questions = await Question.find(query)
-    .populate('exam', 'name')
-    .populate('subject', 'name')
-    .populate('topic', 'name')
-    .select('-history -createdBy -lastModifiedBy -approvedBy -rejectedBy -rejectionReason')
-    .sort({ createdAt: -1 });
+  const questions = await prisma.question.findMany({
+    where,
+    include: {
+      exam: {
+        select: { id: true, name: true }
+      },
+      subject: {
+        select: { id: true, name: true }
+      },
+      topic: {
+        select: { id: true, name: true }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
 
   // Remove correctAnswer from response (students shouldn't see it before answering)
   return questions.map((q) => {
-    const questionObj = q.toObject();
+    const questionObj = { ...q };
     delete questionObj.correctAnswer;
-    return questionObj;
+    // Map Prisma fields to expected format
+    return {
+      ...questionObj,
+      exam: q.exam ? { id: q.examId, ...q.exam } : null,
+      subject: q.subject ? { id: q.subjectId, ...q.subject } : null,
+      topic: q.topic ? { id: q.topicId, ...q.topic } : null,
+      examId: q.examId, // Include examId directly for easier access
+      subjectId: q.subjectId,
+      topicId: q.topicId,
+      _id: q.id,
+    };
   });
 };
 
 /**
  * Get question by ID for student (without correct answer)
+ * Includes flag information if student has flagged this question
  */
-const getQuestionById = async (questionId) => {
-  const question = await Question.findOne({
-    _id: questionId,
-    status: 'completed',
-  })
-    .populate('exam', 'name')
-    .populate('subject', 'name')
-    .populate('topic', 'name')
-    .select('-history -createdBy -lastModifiedBy -approvedBy -rejectedBy -rejectionReason');
+const getQuestionById = async (questionId, studentId = null) => {
+  const question = await prisma.question.findFirst({
+    where: {
+      id: questionId,
+      status: 'completed',
+      isVisible: true, // Only show visible questions
+    },
+    include: {
+      exam: {
+        select: { name: true }
+      },
+      subject: {
+        select: { name: true }
+      },
+      topic: {
+        select: { name: true }
+      }
+    }
+  });
 
   if (!question) {
     throw new Error('Question not found or not available');
   }
 
-  const questionObj = question.toObject();
+  const questionObj = { ...question };
   delete questionObj.correctAnswer;
-  return questionObj;
+  
+  // Include flag information if student has flagged this question
+  // Always include flag info if student flagged it, even if rejected
+  let flagInfo = null;
+  if (studentId && question.flaggedById === studentId && question.flagType === 'student') {
+    flagInfo = {
+      isFlagged: question.isFlagged,
+      flagStatus: question.flagStatus || 'pending',
+      flagReason: question.flagReason,
+      flagRejectionReason: question.flagRejectionReason,
+    };
+  }
+  
+  // Map Prisma fields to expected format
+  return {
+    ...questionObj,
+    exam: question.exam,
+    subject: question.subject,
+    topic: question.topic,
+    _id: question.id,
+    ...flagInfo, // Include flag info if applicable
+  };
 };
 
 /**
@@ -66,9 +128,12 @@ const getQuestionById = async (questionId) => {
  */
 const submitStudyAnswer = async (studentId, questionId, selectedAnswer) => {
   // Get question with correct answer
-  const question = await Question.findOne({
-    _id: questionId,
+  const question = await prisma.question.findFirst({
+    where: {
+      id: questionId,
     status: 'completed',
+      isVisible: true, // Only allow visible questions
+    }
   });
 
   if (!question) {
@@ -82,9 +147,9 @@ const submitStudyAnswer = async (studentId, questionId, selectedAnswer) => {
   const studentAnswer = await StudentAnswer.create({
     student: studentId,
     mode: 'study',
-    exam: question.exam,
-    subject: question.subject,
-    topic: question.topic,
+    exam: question.examId,
+    subject: question.subjectId,
+    topic: question.topicId,
     question: questionId,
     selectedAnswer,
     isCorrect,
@@ -93,7 +158,7 @@ const submitStudyAnswer = async (studentId, questionId, selectedAnswer) => {
 
   // Return feedback with explanation
   return {
-    questionId: question._id,
+    questionId: question.id,
     selectedAnswer,
     correctAnswer: question.correctAnswer,
     isCorrect,
@@ -121,9 +186,17 @@ const startTest = async (filters = {}) => {
 /**
  * Test Mode: Submit test answers and get results
  */
-const submitTestAnswers = async (studentId, examId, answers) => {
-  // Validate exam exists
-  const exam = await Exam.findById(examId);
+const submitTestAnswers = async (studentId, examId, answers, timeTaken = null) => {
+  // Ensure examId is a string (not an object)
+  const examIdString = typeof examId === 'string' ? examId : (examId?.id || examId);
+  if (!examIdString) {
+    throw new Error('Exam ID is required');
+  }
+
+  // Validate exam exists (using Prisma)
+  const exam = await prisma.exam.findUnique({
+    where: { id: examIdString },
+  });
   if (!exam) {
     throw new Error('Exam not found');
   }
@@ -134,10 +207,13 @@ const submitTestAnswers = async (studentId, examId, answers) => {
 
   // Get all questions with correct answers
   const questionIds = answers.map((a) => a.questionId);
-  const questions = await Question.find({
-    _id: { $in: questionIds },
+  const questions = await prisma.question.findMany({
+    where: {
+      id: { in: questionIds },
     status: 'completed',
-    exam: examId,
+      isVisible: true, // Only allow visible questions
+      examId: examIdString,
+    }
   });
 
   if (questions.length !== questionIds.length) {
@@ -147,7 +223,7 @@ const submitTestAnswers = async (studentId, examId, answers) => {
   // Create a map for quick lookup
   const questionMap = new Map();
   questions.forEach((q) => {
-    questionMap.set(q._id.toString(), q);
+    questionMap.set(q.id.toString(), q);
   });
 
   // Process answers and calculate results
@@ -161,17 +237,26 @@ const submitTestAnswers = async (studentId, examId, answers) => {
       throw new Error(`Question ${answer.questionId} not found`);
     }
 
-    const isCorrect = question.correctAnswer === answer.selectedAnswer;
-    if (isCorrect) {
-      correctAnswers++;
-    } else {
-      incorrectAnswers++;
+    // Handle unanswered questions (null, undefined, or empty string)
+    const hasAnswer = answer.selectedAnswer !== null && 
+                     answer.selectedAnswer !== undefined && 
+                     answer.selectedAnswer !== '';
+    
+    const isCorrect = hasAnswer && question.correctAnswer === answer.selectedAnswer;
+    
+    if (hasAnswer) {
+      if (isCorrect) {
+        correctAnswers++;
+      } else {
+        incorrectAnswers++;
+      }
     }
+    // Unanswered questions don't increment either count (they get 0 points)
 
     processedAnswers.push({
-      question: question._id,
-      selectedAnswer: answer.selectedAnswer,
-      isCorrect,
+      question: question.id,
+      selectedAnswer: answer.selectedAnswer || '', // Empty string for unanswered (not null)
+      isCorrect: hasAnswer ? isCorrect : false, // false for unanswered
     });
   });
 
@@ -186,26 +271,27 @@ const submitTestAnswers = async (studentId, examId, answers) => {
   const studentAnswer = await StudentAnswer.create({
     student: studentId,
     mode: 'test',
-    exam: examId,
-    subject: firstQuestion.subject,
-    topic: firstQuestion.topic,
+    exam: examIdString,
+    subject: firstQuestion.subjectId,
+    topic: firstQuestion.topicId,
     answers: processedAnswers,
     totalQuestions,
     correctAnswers,
     incorrectAnswers,
     score,
     percentage,
+    timeTaken: timeTaken || null, // Time in milliseconds
     status: 'completed',
   });
 
   // Prepare detailed results with explanations
   const detailedResults = questions.map((question) => {
     const studentAnswerData = processedAnswers.find(
-      (a) => a.question.toString() === question._id.toString()
+      (a) => a.question.toString() === question.id.toString()
     );
 
     return {
-      questionId: question._id,
+      questionId: question.id,
       questionText: question.questionText,
       questionType: question.questionType,
       options: question.options,
@@ -217,9 +303,9 @@ const submitTestAnswers = async (studentId, examId, answers) => {
   });
 
   return {
-    testId: studentAnswer._id,
+    testId: studentAnswer.id,
     exam: {
-      id: exam._id,
+      id: exam.id,
       name: exam.name,
     },
     summary: {
@@ -228,6 +314,7 @@ const submitTestAnswers = async (studentId, examId, answers) => {
       incorrectAnswers,
       score,
       percentage,
+      timeTaken: timeTaken || null,
     },
     results: detailedResults,
     submittedAt: studentAnswer.createdAt,
@@ -299,35 +386,58 @@ const getStudyHistory = async (studentId, filters = {}) => {
  * Get detailed test result by ID
  */
 const getTestResultById = async (studentId, testId) => {
-  const test = await StudentAnswer.findOne({
-    _id: testId,
-    student: studentId,
-    mode: 'test',
-  })
-    .populate('exam', 'name')
-    .populate('subject', 'name')
-    .populate('topic', 'name')
-    .populate('answers.question');
+  const test = await prisma.studentAnswer.findFirst({
+    where: {
+      id: testId,
+      studentId: studentId,
+      mode: 'test',
+    },
+    include: {
+      exam: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      subject: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      topic: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      answers: {
+        include: {
+          question: {
+            select: {
+              id: true,
+              questionText: true,
+              questionType: true,
+              options: true,
+              explanation: true,
+              correctAnswer: true,
+            },
+          },
+        },
+      },
+    },
+  });
 
   if (!test) {
     throw new Error('Test result not found');
   }
 
-  // Get full question details with explanations
-  const questionIds = test.answers.map((a) => a.question._id);
-  const questions = await Question.find({
-    _id: { $in: questionIds },
-  });
-
-  const questionMap = new Map();
-  questions.forEach((q) => {
-    questionMap.set(q._id.toString(), q);
-  });
-
+  // Map answers to detailed results
   const detailedResults = test.answers.map((answer) => {
-    const question = questionMap.get(answer.question._id.toString());
+    const question = answer.question;
+    if (!question) return null;
     return {
-      questionId: question._id,
+      questionId: question.id,
       questionText: question.questionText,
       questionType: question.questionType,
       options: question.options,
@@ -336,13 +446,14 @@ const getTestResultById = async (studentId, testId) => {
       isCorrect: answer.isCorrect,
       explanation: question.explanation,
     };
-  });
+  }).filter(Boolean); // Remove null entries
 
   return {
-    id: test._id,
-    exam: test.exam,
-    subject: test.subject,
-    topic: test.topic,
+    id: test.id,
+    mode: 'test',
+    exam: test.exam ? { id: test.exam.id, name: test.exam.name } : null,
+    subject: test.subject ? { id: test.subject.id, name: test.subject.name } : null,
+    topic: test.topic ? { id: test.topic.id, name: test.topic.name } : null,
     summary: {
       totalQuestions: test.totalQuestions,
       correctAnswers: test.correctAnswers,
@@ -359,26 +470,48 @@ const getTestResultById = async (studentId, testId) => {
  * Get overall test statistics for a student
  */
 const getTestSummary = async (studentId, filters = {}) => {
-  const query = {
-    student: studentId,
+  const where = {
+    studentId: studentId,
     mode: 'test',
-  };
-
-  if (filters.exam) {
-    query.exam = filters.exam;
-  }
-
-  const tests = await StudentAnswer.find(query).select(
-    'totalQuestions correctAnswers incorrectAnswers score percentage createdAt answers.question answers.isCorrect'
-  );
-
-  const questionBankQuery = {
     status: 'completed',
+    totalQuestions: { gt: 0 }, // Only count tests with questions
   };
-  if (filters.exam) {
-    questionBankQuery.exam = filters.exam;
+
+  // Only add examId filter if it's provided and valid
+  if (filters.exam && typeof filters.exam === 'string' && filters.exam.trim() !== '') {
+    where.examId = filters.exam.trim();
   }
-  const totalQuestionsInBank = await Question.countDocuments(questionBankQuery);
+
+  const tests = await prisma.studentAnswer.findMany({
+    where,
+    include: {
+      answers: {
+        include: {
+          question: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  const questionBankWhere = {
+    status: 'completed',
+    // Note: isVisible might not exist in database, so we'll filter by status only
+    // If isVisible exists, it will be included, otherwise it will be ignored
+  };
+  // Only add examId filter if it's provided and valid
+  if (filters.exam && typeof filters.exam === 'string' && filters.exam.trim() !== '') {
+    questionBankWhere.examId = filters.exam.trim();
+  }
+  const totalQuestionsInBank = await prisma.question.count({
+    where: questionBankWhere
+  });
 
   if (tests.length === 0) {
     return {
@@ -392,6 +525,11 @@ const getTestSummary = async (studentId, filters = {}) => {
       averagePercentage: 0,
       lastTestDate: null,
       percentOfQuestionBankCovered: 0,
+      uniqueQuestionsAttempted: 0,
+      uniqueQuestionsCorrect: 0,
+      subjectAccuracy: [],
+      topicAccuracy: [],
+      averageTimePerQuestion: 0,
     };
   }
 
@@ -400,6 +538,7 @@ const getTestSummary = async (studentId, filters = {}) => {
   let totalIncorrectAnswers = 0;
   let totalScore = 0;
   let totalPercentage = 0;
+  let totalTimeTaken = 0; // Total time in milliseconds
   let lastTestDate = null;
   const answerRecords = [];
   const uniqueQuestionsAttempted = new Set();
@@ -411,14 +550,15 @@ const getTestSummary = async (studentId, filters = {}) => {
     totalIncorrectAnswers += test.incorrectAnswers || 0;
     totalScore += test.score || 0;
     totalPercentage += test.percentage || 0;
+    totalTimeTaken += test.timeTaken || 0; // Add time taken in milliseconds
     if (!lastTestDate || test.createdAt > lastTestDate) {
       lastTestDate = test.createdAt;
     }
 
     if (Array.isArray(test.answers)) {
       test.answers.forEach((answer) => {
-        if (!answer.question) return;
-        const questionId = answer.question.toString();
+        if (!answer.questionId) return;
+        const questionId = answer.questionId.toString();
         uniqueQuestionsAttempted.add(questionId);
         if (answer.isCorrect) {
           uniqueQuestionsCorrect.add(questionId);
@@ -448,18 +588,26 @@ const getTestSummary = async (studentId, filters = {}) => {
 
   const questionMetadata = {};
   if (uniqueQuestionsAttempted.size > 0) {
-    const questionDocs = await Question.find({
-      _id: { $in: Array.from(uniqueQuestionsAttempted) },
-    })
-      .populate('subject', 'name')
-      .populate('topic', 'name')
-      .select('_id subject topic');
+    const questionDocs = await prisma.question.findMany({
+      where: {
+        id: { in: Array.from(uniqueQuestionsAttempted) },
+        isVisible: true, // Only show visible questions
+      },
+      include: {
+        subject: {
+          select: { id: true, name: true }
+        },
+        topic: {
+          select: { id: true, name: true }
+        }
+      }
+    });
 
     questionDocs.forEach((doc) => {
-      questionMetadata[doc._id.toString()] = {
-        subjectId: doc.subject?._id?.toString() || null,
+      questionMetadata[doc.id.toString()] = {
+        subjectId: doc.subject?.id?.toString() || null,
         subjectName: doc.subject?.name || null,
-        topicId: doc.topic?._id?.toString() || null,
+        topicId: doc.topic?.id?.toString() || null,
         topicName: doc.topic?.name || null,
       };
     });
@@ -519,6 +667,13 @@ const getTestSummary = async (studentId, filters = {}) => {
       : 0,
   }));
 
+  // Calculate average time per question in seconds
+  let averageTimePerQuestion = 0;
+  if (totalQuestionsAttempted > 0 && totalTimeTaken > 0) {
+    // Convert milliseconds to seconds and divide by total questions
+    averageTimePerQuestion = Math.round(totalTimeTaken / 1000 / totalQuestionsAttempted);
+  }
+
   return {
     totalTests,
     totalQuestionsAttempted,
@@ -531,11 +686,282 @@ const getTestSummary = async (studentId, filters = {}) => {
     averagePercentage: Number((totalPercentage / totalTests).toFixed(2)),
     lastTestDate,
     percentOfQuestionBankCovered,
-  uniqueQuestionsAttempted: uniqueQuestionsAttempted.size,
-  uniqueQuestionsCorrect: uniqueQuestionsCorrect.size,
-  subjectAccuracy,
-  topicAccuracy,
+    totalQuestionsInBank, // Add this for progress calculation
+    uniqueQuestionsAttempted: uniqueQuestionsAttempted.size,
+    uniqueQuestionsCorrect: uniqueQuestionsCorrect.size,
+    subjectAccuracy,
+    topicAccuracy,
+    averageTimePerQuestion, // Average time per question in seconds
   };
+};
+
+/**
+ * Get overall study mode statistics for a student
+ */
+const getStudySummary = async (studentId, filters = {}) => {
+  const where = {
+    studentId: studentId,
+    mode: 'study',
+    status: 'completed',
+    answers: {
+      some: {}, // Only study sessions with at least one answer
+    },
+  };
+
+  // Only add examId filter if it's provided and valid
+  if (filters.exam && typeof filters.exam === 'string' && filters.exam.trim() !== '') {
+    where.examId = filters.exam.trim();
+  }
+
+  const studySessions = await prisma.studentAnswer.findMany({
+    where,
+    include: {
+      answers: {
+        include: {
+          question: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  if (studySessions.length === 0) {
+    return {
+      totalSessions: 0,
+      totalQuestionsAttempted: 0,
+      totalQuestionsAnswered: 0,
+      totalCorrectAnswers: 0,
+      totalIncorrectAnswers: 0,
+      accuracy: 0,
+      averagePercentage: 0,
+      lastStudyDate: null,
+    };
+  }
+
+  let totalQuestionsAttempted = 0;
+  let totalCorrectAnswers = 0;
+  let totalIncorrectAnswers = 0;
+  let totalPercentage = 0;
+  let lastStudyDate = null;
+  const uniqueQuestionsAttempted = new Set();
+
+  studySessions.forEach((session) => {
+    const sessionAnswers = session.answers || [];
+    const sessionTotalQuestions = sessionAnswers.length;
+    const sessionCorrectAnswers = sessionAnswers.filter(a => a.isCorrect).length;
+    const sessionIncorrectAnswers = sessionTotalQuestions - sessionCorrectAnswers;
+
+    totalQuestionsAttempted += sessionTotalQuestions;
+    totalCorrectAnswers += sessionCorrectAnswers;
+    totalIncorrectAnswers += sessionIncorrectAnswers;
+    
+    if (session.percentage !== null && session.percentage !== undefined) {
+      totalPercentage += session.percentage;
+    } else if (sessionTotalQuestions > 0) {
+      totalPercentage += (sessionCorrectAnswers / sessionTotalQuestions) * 100;
+    }
+
+    if (!lastStudyDate || session.createdAt > lastStudyDate) {
+      lastStudyDate = session.createdAt;
+    }
+
+    // Track unique questions
+    sessionAnswers.forEach((answer) => {
+      if (answer.questionId) {
+        uniqueQuestionsAttempted.add(answer.questionId.toString());
+      }
+    });
+  });
+
+  const totalSessions = studySessions.length;
+  const totalQuestionsAnswered = totalCorrectAnswers + totalIncorrectAnswers;
+  const accuracy =
+    totalQuestionsAttempted > 0
+      ? Number(((totalCorrectAnswers / totalQuestionsAttempted) * 100).toFixed(2))
+      : 0;
+  const averagePercentage = totalSessions > 0
+    ? Number((totalPercentage / totalSessions).toFixed(2))
+    : 0;
+
+  return {
+    totalSessions,
+    totalQuestionsAttempted,
+    totalQuestionsAnswered,
+    totalCorrectAnswers,
+    totalIncorrectAnswers,
+    accuracy,
+    averagePercentage,
+    lastStudyDate,
+    uniqueQuestionsAttempted: uniqueQuestionsAttempted.size,
+  };
+};
+
+/**
+ * Get last 10 sessions (test + study) for performance chart
+ */
+const getPerformanceData = async (studentId) => {
+  const where = {
+    studentId: studentId,
+    status: 'completed',
+    OR: [
+      {
+        mode: 'test',
+        totalQuestions: { gt: 0 },
+      },
+      {
+        mode: 'study',
+        answers: {
+          some: {},
+        },
+      },
+    ],
+  };
+
+  const sessions = await prisma.studentAnswer.findMany({
+    where,
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: 10,
+    select: {
+      id: true,
+      mode: true,
+      totalQuestions: true,
+      correctAnswers: true,
+      percentage: true,
+      createdAt: true,
+      answers: {
+        select: {
+          isCorrect: true,
+        },
+      },
+    },
+  });
+
+  // Calculate accuracy for each session
+  // Sessions are ordered by createdAt desc (most recent first)
+  const performanceData = sessions.map((session, index) => {
+    let accuracy = 0;
+
+    if (session.mode === 'test') {
+      // For test mode, use percentage or calculate from correctAnswers/totalQuestions
+      if (session.percentage !== null && session.percentage !== undefined) {
+        accuracy = Number(session.percentage.toFixed(2));
+      } else if (session.totalQuestions > 0) {
+        accuracy = Number(
+          ((session.correctAnswers / session.totalQuestions) * 100).toFixed(2)
+        );
+      }
+    } else if (session.mode === 'study') {
+      // For study mode, calculate from answers array
+      if (session.answers && session.answers.length > 0) {
+        const correctCount = session.answers.filter((a) => a.isCorrect).length;
+        accuracy = Number(((correctCount / session.answers.length) * 100).toFixed(2));
+      }
+    }
+
+    // Label sessions: most recent (index 0) = S10, oldest (index 9) = S1
+    // After reverse: S1 (oldest) to S10 (most recent)
+    const sessionNumber = sessions.length - index;
+
+    return {
+      session: `S${sessionNumber}`,
+      accuracy: Math.round(accuracy), // Round to whole number for display
+      mode: session.mode,
+    };
+  });
+
+  // Reverse to show oldest first (S1 to S10)
+  return performanceData.reverse();
+};
+
+/**
+ * Get day-wise test mode accuracy trend data
+ * Groups test sessions by date and calculates average accuracy per day
+ */
+const getTestModeAccuracyTrend = async (studentId, days = 30) => {
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+  startDate.setHours(0, 0, 0, 0);
+
+  // Get all test mode sessions within the date range
+  const sessions = await prisma.studentAnswer.findMany({
+    where: {
+      studentId: studentId,
+      mode: 'test',
+      status: 'completed',
+      totalQuestions: { gt: 0 },
+      createdAt: {
+        gte: startDate,
+      },
+    },
+    select: {
+      id: true,
+      totalQuestions: true,
+      correctAnswers: true,
+      percentage: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+  });
+
+  // Group sessions by date (YYYY-MM-DD)
+  const sessionsByDate = {};
+  
+  sessions.forEach((session) => {
+    const date = new Date(session.createdAt);
+    const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    if (!sessionsByDate[dateKey]) {
+      sessionsByDate[dateKey] = {
+        date: dateKey,
+        sessions: [],
+        totalAccuracy: 0,
+        sessionCount: 0,
+      };
+    }
+    
+    // Calculate accuracy for this session
+    let accuracy = 0;
+    if (session.percentage !== null && session.percentage !== undefined) {
+      accuracy = Number(session.percentage);
+    } else if (session.totalQuestions > 0) {
+      accuracy = (session.correctAnswers / session.totalQuestions) * 100;
+    }
+    
+    sessionsByDate[dateKey].sessions.push(accuracy);
+    sessionsByDate[dateKey].totalAccuracy += accuracy;
+    sessionsByDate[dateKey].sessionCount += 1;
+  });
+
+  // Calculate average accuracy per day and format dates
+  const trendData = Object.values(sessionsByDate)
+    .map((dayData) => {
+      const avgAccuracy = dayData.totalAccuracy / dayData.sessionCount;
+      const date = new Date(dayData.date);
+      
+      // Format date as "Jan 15", "Jan 17", etc.
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const formattedDate = `${monthNames[date.getMonth()]} ${date.getDate()}`;
+      
+      return {
+        date: formattedDate,
+        dateKey: dayData.date,
+        accuracy: Math.round(avgAccuracy),
+        sessionCount: dayData.sessionCount,
+      };
+    })
+    .sort((a, b) => a.dateKey.localeCompare(b.dateKey)); // Sort by date
+
+  return trendData;
 };
 
 /**
@@ -556,77 +982,168 @@ const getSessionHistory = async (studentId, filters = {}) => {
   limit = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 100);
   const skip = (page - 1) * limit;
 
-  const query = { student: studentId };
-  if (mode !== 'all') {
-    query.mode = mode;
+  // Build Prisma where clause - only show completed sessions with actual questions
+  const baseWhere = {
+    studentId: studentId,
+    status: 'completed', // Only show completed sessions
+  };
+
+  // Build mode-specific where clause
+  let where;
+  if (mode === 'test') {
+    where = {
+      ...baseWhere,
+      mode: 'test',
+      totalQuestions: { gt: 0 }, // Only test sessions with questions
+    };
+  } else if (mode === 'study') {
+    where = {
+      ...baseWhere,
+      mode: 'study',
+      answers: {
+        some: {}, // Only study sessions with at least one answer
+      },
+    };
+  } else {
+    // For 'all' mode, use OR condition
+    where = {
+      ...baseWhere,
+      OR: [
+        {
+          mode: 'test',
+          totalQuestions: { gt: 0 },
+        },
+        {
+          mode: 'study',
+          answers: {
+            some: {},
+          },
+        },
+      ],
+    };
   }
 
+  // Fetch sessions with Prisma
   const [sessions, total] = await Promise.all([
-    StudentAnswer.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate('exam', 'name')
-      .populate('subject', 'name')
-      .populate('topic', 'name')
-      .populate('question', 'questionText questionType')
-      .select(
-        'mode totalQuestions correctAnswers incorrectAnswers answers isCorrect question createdAt selectedAnswer averageTimeSeconds'
-      )
-      .lean(),
-    StudentAnswer.countDocuments(query),
+    prisma.studentAnswer.findMany({
+      where,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip,
+      take: limit,
+      include: {
+        exam: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        subject: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        topic: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        answers: {
+          include: {
+            question: {
+              select: {
+                id: true,
+                questionText: true,
+                questionType: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+    prisma.studentAnswer.count({
+      where,
+    }),
   ]);
 
-  const formatted = sessions.map((session, index) => {
-    const totalQuestions =
-      session.mode === 'test'
-        ? session.totalQuestions ||
-          (Array.isArray(session.answers) ? session.answers.length : 0)
-        : 1;
-    const correctAnswers =
-      session.mode === 'test'
-        ? session.correctAnswers || 0
-        : session.isCorrect
-          ? 1
-          : 0;
+  // All sessions should already be valid (filtered at DB level), but double-check
+  const validSessions = sessions.filter(session => {
+    if (session.mode === 'test') {
+      return (session.totalQuestions || 0) > 0;
+    } else {
+      // Study mode: must have answers
+      return (session.answers?.length || 0) > 0;
+    }
+  });
+
+  const formatted = validSessions.map((session, index) => {
+    // Calculate total questions and correct answers
+    let totalQuestions = 0;
+    let correctAnswers = 0;
+
+    if (session.mode === 'test') {
+      totalQuestions = session.totalQuestions || 0;
+      correctAnswers = session.correctAnswers || 0;
+    } else {
+      // Study mode: count from answers array
+      totalQuestions = session.answers?.length || 0;
+      correctAnswers = session.answers?.filter(a => a.isCorrect).length || 0;
+    }
+
     const percentCorrect =
       totalQuestions > 0
         ? Number(((correctAnswers / totalQuestions) * 100).toFixed(2))
         : 0;
 
+    // Calculate average time per question (in seconds)
+    let averageTimeSeconds = null;
+    if (session.timeTaken && totalQuestions > 0) {
+      averageTimeSeconds = Math.floor(session.timeTaken / 1000 / totalQuestions);
+    }
+
+    // Calculate session code based on position in the full list (not just current page)
+    // Use the filtered index to maintain correct numbering
+    const sessionNumber = skip + index + 1;
+
     return {
-      id: session._id,
-      sessionCode: `S${String(skip + index + 1).padStart(3, '0')}`,
+      id: session.id,
+      sessionCode: `S${String(sessionNumber).padStart(3, '0')}`,
       mode: session.mode,
       attemptDate: session.createdAt,
       totalQuestions,
       correctAnswers,
       percentCorrect,
-      averageTimeSeconds: session.averageTimeSeconds || null,
+      averageTimeSeconds,
       exam: session.exam
-        ? { id: session.exam._id, name: session.exam.name }
+        ? { id: session.exam.id, name: session.exam.name }
         : null,
       subject: session.subject
-        ? { id: session.subject._id, name: session.subject.name }
+        ? { id: session.subject.id, name: session.subject.name }
         : null,
       topic: session.topic
-        ? { id: session.topic._id, name: session.topic.name }
+        ? { id: session.topic.id, name: session.topic.name }
         : null,
       reviewUrls: {
-        detail: `/api/student/questions/sessions/${session._id}`,
-        incorrect: `/api/student/questions/sessions/${session._id}/incorrect`,
+        detail: `/api/student/questions/sessions/${session.id}`,
+        incorrect: `/api/student/questions/sessions/${session.id}/incorrect`,
       },
     };
   });
 
+  // Total is already calculated correctly from the filtered where clause
+  const totalWithQuestions = total;
+
   return {
     sessions: formatted,
     pagination: {
-      totalItems: total,
+      totalItems: totalWithQuestions, // Use filtered count
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
-      hasNextPage: skip + formatted.length < total,
+      totalPages: Math.ceil(totalWithQuestions / limit),
+      hasNextPage: skip + formatted.length < totalWithQuestions,
       hasPreviousPage: page > 1,
     },
     filters: {
@@ -639,14 +1156,56 @@ const getSessionHistory = async (studentId, filters = {}) => {
  * Get unified session detail (delegates to test/study handlers)
  */
 const getSessionDetail = async (studentId, sessionId) => {
-  const session = await StudentAnswer.findOne({
-    _id: sessionId,
-    student: studentId,
-  })
-    .populate('question', 'questionText questionType options explanation correctAnswer')
-    .populate('exam', 'name')
-    .populate('subject', 'name')
-    .populate('topic', 'name');
+  const session = await prisma.studentAnswer.findFirst({
+    where: {
+      id: sessionId,
+      studentId: studentId,
+    },
+    include: {
+      exam: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      subject: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      topic: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      question: {
+        select: {
+          id: true,
+          questionText: true,
+          questionType: true,
+          options: true,
+          explanation: true,
+          correctAnswer: true,
+        },
+      },
+      answers: {
+        include: {
+          question: {
+            select: {
+              id: true,
+              questionText: true,
+              questionType: true,
+              options: true,
+              explanation: true,
+              correctAnswer: true,
+            },
+          },
+        },
+      },
+    },
+  });
 
   if (!session) {
     const error = new Error('Session not found');
@@ -658,44 +1217,117 @@ const getSessionDetail = async (studentId, sessionId) => {
     return getTestResultById(studentId, sessionId);
   }
 
-  if (!session.question) {
-    const error = new Error('Study session question not found');
-    error.statusCode = 404;
-    throw error;
+  // Study mode: Handle both single question (old format) and multiple questions (new format)
+  if (session.mode === 'study') {
+    // Check if session has multiple questions (new format with answers array)
+    if (session.answers && Array.isArray(session.answers) && session.answers.length > 0) {
+      const results = session.answers.map((answer) => {
+        const question = answer.question;
+        if (!question) return null;
+
+        return {
+          questionId: question.id,
+          questionText: question.questionText,
+          questionType: question.questionType,
+          options: question.options,
+          correctAnswer: question.correctAnswer,
+          selectedAnswer: answer.selectedAnswer,
+          isCorrect: answer.isCorrect,
+          explanation: question.explanation,
+        };
+      }).filter(Boolean);
+
+      return {
+        id: session.id,
+        mode: 'study',
+        exam: session.exam ? { id: session.exam.id, name: session.exam.name } : null,
+        subject: session.subject ? { id: session.subject.id, name: session.subject.name } : null,
+        topic: session.topic ? { id: session.topic.id, name: session.topic.name } : null,
+        results,
+        submittedAt: session.createdAt,
+      };
+    } else if (session.question) {
+      // Old format: single question
+      return {
+        id: session.id,
+        mode: 'study',
+        exam: session.exam ? { id: session.exam.id, name: session.exam.name } : null,
+        subject: session.subject ? { id: session.subject.id, name: session.subject.name } : null,
+        topic: session.topic ? { id: session.topic.id, name: session.topic.name } : null,
+        question: {
+          id: session.question.id,
+          questionText: session.question.questionText,
+          questionType: session.question.questionType,
+          options: session.question.options,
+          explanation: session.question.explanation,
+          correctAnswer: session.question.correctAnswer,
+        },
+        selectedAnswer: session.selectedAnswer,
+        isCorrect: session.isCorrect,
+        submittedAt: session.createdAt,
+      };
+    }
   }
 
-  return {
-    id: session._id,
-    mode: 'study',
-    exam: session.exam,
-    subject: session.subject,
-    topic: session.topic,
-    question: {
-      id: session.question._id,
-      questionText: session.question.questionText,
-      questionType: session.question.questionType,
-      options: session.question.options,
-      explanation: session.question.explanation,
-      correctAnswer: session.question.correctAnswer,
-    },
-    selectedAnswer: session.selectedAnswer,
-    isCorrect: session.isCorrect,
-    submittedAt: session.createdAt,
-  };
+  const error = new Error('Study session question not found');
+  error.statusCode = 404;
+  throw error;
 };
 
 /**
  * Get only incorrect items for a session
  */
 const getSessionIncorrectItems = async (studentId, sessionId) => {
-  const session = await StudentAnswer.findOne({
-    _id: sessionId,
-    student: studentId,
-  })
-    .populate('question', 'questionText questionType options explanation correctAnswer')
-    .populate('exam', 'name')
-    .populate('subject', 'name')
-    .populate('topic', 'name');
+  const session = await prisma.studentAnswer.findFirst({
+    where: {
+      id: sessionId,
+      studentId: studentId,
+    },
+    include: {
+      exam: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      subject: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      topic: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      question: {
+        select: {
+          id: true,
+          questionText: true,
+          questionType: true,
+          options: true,
+          explanation: true,
+          correctAnswer: true,
+        },
+      },
+      answers: {
+        include: {
+          question: {
+            select: {
+              id: true,
+              questionText: true,
+              questionType: true,
+              options: true,
+              explanation: true,
+              correctAnswer: true,
+            },
+          },
+        },
+      },
+    },
+  });
 
   if (!session) {
     const error = new Error('Session not found');
@@ -715,32 +1347,75 @@ const getSessionIncorrectItems = async (studentId, sessionId) => {
     };
   }
 
-  if (!session.question) {
-    const error = new Error('Study session question not found');
-    error.statusCode = 404;
-    throw error;
+  // Study mode: Handle both single question (old format) and multiple questions (new format)
+  if (session.mode === 'study') {
+    // Check if session has multiple questions (new format with answers array)
+    if (session.answers && Array.isArray(session.answers) && session.answers.length > 0) {
+      // Filter incorrect answers
+      const incorrectAnswers = session.answers.filter((a) => !a.isCorrect);
+      
+      if (incorrectAnswers.length === 0) {
+        return {
+          id: session.id,
+          mode: 'study',
+          exam: session.exam ? { id: session.exam.id, name: session.exam.name } : null,
+          subject: session.subject ? { id: session.subject.id, name: session.subject.name } : null,
+          topic: session.topic ? { id: session.topic.id, name: session.topic.name } : null,
+          incorrect: [],
+        };
+      }
+
+      const incorrect = incorrectAnswers.map((answer) => {
+        const question = answer.question;
+        if (!question) return null;
+
+        return {
+          questionId: question.id,
+          questionText: question.questionText,
+          questionType: question.questionType,
+          options: question.options,
+          correctAnswer: question.correctAnswer,
+          selectedAnswer: answer.selectedAnswer,
+          explanation: question.explanation,
+        };
+      }).filter(Boolean);
+
+      return {
+        id: session.id,
+        mode: 'study',
+        exam: session.exam ? { id: session.exam.id, name: session.exam.name } : null,
+        subject: session.subject ? { id: session.subject.id, name: session.subject.name } : null,
+        topic: session.topic ? { id: session.topic.id, name: session.topic.name } : null,
+        incorrect,
+      };
+    } else if (session.question) {
+      // Old format: single question
+      return {
+        id: session.id,
+        mode: 'study',
+        exam: session.exam ? { id: session.exam.id, name: session.exam.name } : null,
+        subject: session.subject ? { id: session.subject.id, name: session.subject.name } : null,
+        topic: session.topic ? { id: session.topic.id, name: session.topic.name } : null,
+        incorrect: session.isCorrect
+          ? []
+          : [
+              {
+                questionId: session.question.id,
+                questionText: session.question.questionText,
+                questionType: session.question.questionType,
+                options: session.question.options,
+                correctAnswer: session.question.correctAnswer,
+                selectedAnswer: session.selectedAnswer,
+                explanation: session.question.explanation,
+              },
+            ],
+      };
+    }
   }
 
-  return {
-    id: session._id,
-    mode: 'study',
-    exam: session.exam,
-    subject: session.subject,
-    topic: session.topic,
-    incorrect: session.isCorrect
-      ? []
-      : [
-          {
-            questionId: session.question._id,
-            questionText: session.question.questionText,
-            questionType: session.question.questionType,
-            options: session.question.options,
-            correctAnswer: session.question.correctAnswer,
-            selectedAnswer: session.selectedAnswer,
-            explanation: session.question.explanation,
-          },
-        ],
-  };
+  const error = new Error('Study session question not found');
+  error.statusCode = 404;
+  throw error;
 };
 
 /**
@@ -785,13 +1460,23 @@ const getPlanStructure = async (planId) => {
 
   const topicIds = topics.map((topic) => topic._id);
 
-  const questions = await Question.find({
+  const questions = await prisma.question.findMany({
+    where: {
     status: 'completed',
-    subject: { $in: subjectIds },
-    ...(topicIds.length ? { topic: { $in: topicIds } } : {}),
-  })
-    .sort({ createdAt: -1 })
-    .select('questionText questionType options explanation subject topic');
+      isVisible: true, // Only show visible questions
+      subjectId: { in: subjectIds },
+      ...(topicIds.length ? { topicId: { in: topicIds } } : {}),
+    },
+    include: {
+      subject: {
+        select: { name: true }
+      },
+      topic: {
+        select: { name: true }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
 
   const topicsBySubject = topics.reduce((acc, topic) => {
     const key = topic.parentSubject.toString();
@@ -803,15 +1488,15 @@ const getPlanStructure = async (planId) => {
   }, {});
 
   const questionsByTopic = questions.reduce((acc, question) => {
-    const key = question.topic?.toString();
+    const key = question.topicId?.toString() || question.topic?.id?.toString();
     if (!key) {
       return acc;
     }
     const collection = acc.get(key) || [];
-    const questionObj = question.toObject();
+    const questionObj = { ...question };
     delete questionObj.correctAnswer;
     collection.push({
-      id: question._id,
+      id: question.id,
       questionText: questionObj.questionText,
       questionType: questionObj.questionType,
       options: questionObj.options,
@@ -849,20 +1534,188 @@ const getPlanStructure = async (planId) => {
   };
 };
 
+/**
+ * Save complete study mode session results
+ */
+const saveStudySessionResults = async (studentId, sessionData) => {
+  const {
+    examId,
+    subjectId,
+    topicId,
+    questions, // Array of { questionId, selectedAnswer, isCorrect }
+    timeTaken, // Time in milliseconds
+  } = sessionData;
+
+  if (!questions || !Array.isArray(questions) || questions.length === 0) {
+    throw new Error('Questions array is required');
+  }
+
+  // Ensure examId is a string (not an object)
+  const examIdString = typeof examId === 'string' ? examId : (examId?.id || examId);
+  if (!examIdString) {
+    throw new Error('Exam ID is required');
+  }
+
+  // Calculate statistics
+  const totalQuestions = questions.length;
+  const correctAnswers = questions.filter((q) => q.isCorrect).length;
+  const incorrectAnswers = totalQuestions - correctAnswers;
+  const score = correctAnswers;
+  const percentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+
+  // Get exam to validate (using Prisma)
+  const exam = await prisma.exam.findUnique({
+    where: { id: examIdString },
+  });
+  if (!exam) {
+    throw new Error('Exam not found');
+  }
+
+  // Process answers for StudentAnswerQuestion records
+  const processedAnswers = questions.map((q) => ({
+    question: q.questionId,
+    selectedAnswer: q.selectedAnswer,
+    isCorrect: q.isCorrect || false,
+  }));
+
+  // Save study session results
+  const studentAnswer = await StudentAnswer.create({
+    student: studentId,
+    mode: 'study',
+    exam: examIdString,
+    subject: subjectId || null,
+    topic: topicId || null,
+    answers: processedAnswers,
+    totalQuestions,
+    correctAnswers,
+    incorrectAnswers,
+    score,
+    percentage,
+    timeTaken: timeTaken || null,
+    status: 'completed',
+  });
+
+  return {
+    sessionId: studentAnswer.id,
+    exam: {
+      id: exam.id,
+      name: exam.name,
+    },
+    summary: {
+      totalQuestions,
+      correctAnswers,
+      incorrectAnswers,
+      score,
+      percentage,
+      timeTaken: timeTaken || null,
+    },
+    submittedAt: studentAnswer.createdAt,
+  };
+};
+
+/**
+ * Flag question by Student
+ * POST /api/student/questions/:questionId/flag
+ */
+const flagQuestionByStudent = async (questionId, flagReason, studentId) => {
+  // Check if question exists and is visible
+  const question = await prisma.question.findFirst({
+    where: {
+      id: questionId,
+      status: 'completed',
+      isVisible: true,
+    },
+  });
+
+  if (!question) {
+    throw new Error('Question not found or not available');
+  }
+
+  if (!flagReason || !flagReason.trim()) {
+    throw new Error('Flag reason is required');
+  }
+
+  // Update question with flag
+  const updatedQuestion = await prisma.question.update({
+    where: { id: questionId },
+    data: {
+      isFlagged: true,
+      flaggedById: studentId,
+      flagReason: flagReason.trim(),
+      flagType: 'student',
+      flagStatus: 'pending',
+      updatedAt: new Date(),
+    },
+  });
+
+  // Create history entry
+  await prisma.questionHistory.create({
+    data: {
+      questionId: questionId,
+      action: 'flagged',
+      performedById: studentId,
+      role: 'student',
+      notes: `Question flagged by student: ${flagReason.trim()}`,
+    },
+  });
+
+  return updatedQuestion;
+};
+
+/**
+ * Get student's flagged questions with rejection reasons
+ */
+const getStudentFlaggedQuestions = async (studentId) => {
+  const questions = await prisma.question.findMany({
+    where: {
+      flaggedById: studentId,
+      flagType: 'student',
+    },
+    include: {
+      exam: {
+        select: { id: true, name: true },
+      },
+      subject: {
+        select: { id: true, name: true },
+      },
+      topic: {
+        select: { id: true, name: true },
+      },
+      flagReviewedBy: {
+        select: { id: true, name: true, email: true },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return questions.map((q) => ({
+    ...q,
+    exam: q.exam ? { id: q.examId, ...q.exam } : null,
+    subject: q.subject ? { id: q.subjectId, ...q.subject } : null,
+    topic: q.topic ? { id: q.topicId, ...q.topic } : null,
+  }));
+};
+
 module.exports = {
   getAvailableQuestions,
   getQuestionById,
   submitStudyAnswer,
   startTest,
   submitTestAnswers,
+  saveStudySessionResults,
   getTestHistory,
   getStudyHistory,
   getTestResultById,
   getTestSummary,
+  getStudySummary,
+  getPerformanceData,
+  getTestModeAccuracyTrend,
   getSessionHistory,
   getSessionDetail,
   getSessionIncorrectItems,
   getPlanStructure,
+  flagQuestionByStudent,
+  getStudentFlaggedQuestions,
 };
 
 

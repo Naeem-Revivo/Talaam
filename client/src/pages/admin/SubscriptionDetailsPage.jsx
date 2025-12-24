@@ -1,29 +1,183 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
+import adminAPI from "../../api/admin";
+import paymentAPI from "../../api/payment";
+import { showErrorToast, showSuccessToast } from "../../utils/toastConfig";
+import Loader from "../../components/common/Loader";
 
 const SubscriptionDetailsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { t } = useLanguage();
-  const subscription = location.state?.subscription || {
-    user: "Sarah Khan",
-    email: "sarahkhan@gmail.com",
-    plan: "Premium",
-    duration: "Monthly",
-    renewalDate: "July 15, 2024",
-    status: "Active",
-    lastPayment: "$19.99 June 24, 2024",
-    nextDueDate: "July 15, 2024",
-    paymentMethod: "Visa ending in 1234",
+  
+  const [subscription, setSubscription] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [formData, setFormData] = useState({
+    currentPlan: "",
+    duration: "",
+    renewalDate: "",
+    status: "",
+  });
+
+  // Get subscription ID from URL params or location state
+  const subscriptionId = searchParams.get('id') || location.state?.subscriptionId || location.state?.subscription?.id;
+
+  useEffect(() => {
+    if (subscriptionId) {
+      fetchSubscriptionDetails();
+    } else {
+      showErrorToast("Subscription ID is required");
+      navigate("/admin/subscriptions/manage-users");
+    }
+  }, [subscriptionId]);
+
+  const fetchSubscriptionDetails = async () => {
+    try {
+      setLoading(true);
+      const response = await adminAPI.getSubscriptionDetails(subscriptionId);
+      
+      if (response.success && response.data) {
+        // Handle nested response structure from backend
+        const sub = response.data.subscription || response.data;
+        const userInfo = sub.userInfo || sub.user || {};
+        const planInfo = sub.planInfo || sub.plan || {};
+        const billingInfo = sub.billingInfo || {};
+        
+        // Format dates
+        const formatDate = (dateString) => {
+          if (!dateString) return "N/A";
+          const date = new Date(dateString);
+          return date.toLocaleDateString('en-GB', { 
+            day: '2-digit', 
+            month: 'short', 
+            year: 'numeric' 
+          });
+        };
+
+        // Get subscription details (may be nested)
+        const subscriptionDetails = sub.subscriptionDetails || sub;
+        const startDate = formatDate(subscriptionDetails.startDate || sub.startDate);
+        const expiryDate = formatDate(subscriptionDetails.expiryDate || sub.expiryDate);
+        const renewalDate = planInfo.renewalDate || expiryDate;
+
+        // Determine status
+        let status = planInfo.status || subscriptionDetails.status || sub.paymentStatus || "Pending";
+        const paymentStatus = subscriptionDetails.paymentStatus || sub.paymentStatus || "Pending";
+        const isActive = subscriptionDetails.isActive !== undefined ? subscriptionDetails.isActive : (sub.isActive || false);
+        
+        if (isActive && paymentStatus === "Paid") {
+          status = "Active";
+        } else if (!isActive || (expiryDate !== "N/A" && new Date(subscriptionDetails.expiryDate || sub.expiryDate) < new Date())) {
+          status = "Expired";
+        } else if (paymentStatus === "Pending") {
+          status = "Pending";
+        }
+
+        // Format payment method
+        let paymentMethod = billingInfo.paymentMethod || "N/A";
+        if (paymentMethod === "Not set" || paymentMethod === "N/A") {
+          if (sub.paymentMethod === "moyassar") {
+            paymentMethod = "Moyassar";
+            if (sub.moyassarPaymentId) {
+              paymentMethod += ` (${sub.moyassarPaymentId.substring(0, 8)}...)`;
+            }
+          } else if (sub.paymentMethod) {
+            paymentMethod = sub.paymentMethod;
+          }
+        }
+
+        // Format last payment
+        let lastPayment = billingInfo.lastPayment || "N/A";
+        if (lastPayment === "N/A" && paymentStatus === "Paid") {
+          const planPrice = planInfo.price || sub.plan?.price || 0;
+          const paymentDate = formatDate(subscriptionDetails.startDate || sub.startDate || sub.createdAt);
+          lastPayment = `$${parseFloat(planPrice).toFixed(2)} ${paymentDate}`;
+        }
+
+        const subscriptionData = {
+          id: sub.id,
+          user: userInfo.name || userInfo.fullName || sub.user?.name || sub.user?.fullName || sub.userName || "N/A",
+          email: userInfo.email || sub.user?.email || "N/A",
+          plan: planInfo.currentPlan || planInfo.name || sub.plan?.name || sub.planName || "N/A",
+          duration: planInfo.duration || sub.plan?.duration || "N/A",
+          renewalDate: renewalDate,
+          expiryDate: expiryDate,
+          startDate: startDate,
+          status: status,
+          paymentStatus: paymentStatus,
+          isActive: isActive,
+          lastPayment: lastPayment,
+          nextDueDate: billingInfo.nextDueDate || expiryDate,
+          paymentMethod: paymentMethod,
+          transactionId: subscriptionDetails.transactionId || sub.transactionId || sub.moyassarPaymentId || "N/A",
+          moyassarPaymentStatus: subscriptionDetails.moyassarPaymentStatus || sub.moyassarPaymentStatus || "N/A",
+          price: planInfo.price || sub.plan?.price || 0,
+        };
+
+        setSubscription(subscriptionData);
+        setFormData({
+          currentPlan: subscriptionData.plan,
+          duration: subscriptionData.duration,
+          renewalDate: subscriptionData.renewalDate,
+          status: subscriptionData.status,
+        });
+
+        // Auto-sync payment status if it's Pending and has Moyassar payment ID
+        if (subscriptionData.paymentStatus === "Pending" && 
+            subscriptionData.transactionId && 
+            subscriptionData.transactionId !== "N/A") {
+          // Auto-sync in background (don't show loading, just update silently)
+          setTimeout(() => {
+            syncPaymentStatusSilently(subscriptionData.id);
+          }, 500);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching subscription details:", error);
+      showErrorToast(error.message || "Failed to fetch subscription details");
+      navigate("/admin/subscriptions/manage-users");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const [formData] = useState({
-    currentPlan: subscription.plan || "Premium",
-    duration: subscription.duration || "Monthly",
-    renewalDate: subscription.renewalDate || "July 15, 2024",
-    status: subscription.status || "Active",
-  });
+  const syncPaymentStatusSilently = async (subId) => {
+    try {
+      const response = await adminAPI.syncSubscriptionPayment(subId);
+      if (response.success && response.data?.subscription) {
+        // Refresh subscription details silently
+        await fetchSubscriptionDetails();
+      }
+    } catch (error) {
+      console.error("Error auto-syncing payment:", error);
+      // Don't show error for silent sync
+    }
+  };
+
+  const handleSyncPayment = async () => {
+    if (!subscription?.id) return;
+    
+    try {
+      setSyncing(true);
+      const response = await adminAPI.syncSubscriptionPayment(subscription.id);
+      
+      if (response.success) {
+        showSuccessToast(response.message || "Payment status synced successfully");
+        // Refresh subscription details
+        await fetchSubscriptionDetails();
+      } else {
+        showErrorToast(response.message || "Failed to sync payment status");
+      }
+    } catch (error) {
+      console.error("Error syncing payment:", error);
+      showErrorToast(error.message || "Failed to sync payment status");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const handleCancel = () => {
     navigate("/admin/subscriptions/manage-users");
@@ -39,21 +193,64 @@ const SubscriptionDetailsPage = () => {
     Active: { bg: "bg-[#FDF0D5]", text: "text-[#ED4122]" },
     Inactive: { bg: "bg-[#C6D8D3]", text: "text-oxford-blue" },
     Expired: { bg: "bg-[#C6D8D3]", text: "text-oxford-blue" },
+    Paid: { bg: "bg-[#FDF0D5]", text: "text-[#ED4122]" },
+    Pending: { bg: "bg-[#C6D8D3]", text: "text-oxford-blue" },
   };
 
-  const statusBadge = statusBadgeColors[formData.status] || statusBadgeColors.Active;
+  const statusBadge = statusBadgeColors[formData.status] || statusBadgeColors[subscription?.paymentStatus] || statusBadgeColors.Active;
+
+  if (loading) {
+    return (
+      <Loader 
+        fullScreen={true}
+        size="lg" 
+        color="red" 
+        text={t('admin.subscriptionDetails.loading') || 'Loading subscription details...'}
+        className="min-h-full bg-[#F5F7FB] px-4 xl:px-6 py-6 sm:px-6 2xl:px-[66px]"
+      />
+    );
+  }
+
+  if (!subscription) {
+    return (
+      <div className="min-h-full bg-[#F5F7FB] px-4 xl:px-6 py-6 sm:px-6 2xl:px-[66px]">
+        <div className="mx-auto flex max-w-[800px] flex-col gap-6">
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard p-8 text-center">
+            <p className="text-oxford-blue font-roboto text-[16px]">
+              {t('admin.subscriptionDetails.notFound') || 'Subscription not found'}
+            </p>
+            <button
+              onClick={() => navigate("/admin/subscriptions/manage-users")}
+              className="mt-4 h-[40px] rounded-[8px] bg-[#ED4122] px-6 font-roboto text-[16px] font-medium leading-[20px] text-white transition hover:bg-[#d43a1f]"
+            >
+              {t('admin.subscriptionDetails.buttons.back') || 'Back to Subscriptions'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full bg-[#F5F7FB] px-4 xl:px-6 py-6 sm:px-6 2xl:px-[66px]">
       <div className="mx-auto flex max-w-[800px] flex-col gap-6">
-       
-
         {/* Main Card */}
         <div className="rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard ">
-           {/* Header */}
-        <h1 className="font-archivo pb-4 p-6 border-b border-[#E5E7EB] text-[20px] leading-[40px] font-bold text-oxford-blue">
-          {t('admin.subscriptionDetails.hero.title')}
-        </h1>
+          {/* Header */}
+          <div className="flex items-center justify-between pb-4 p-6 border-b border-[#E5E7EB]">
+            <h1 className="font-archivo text-[20px] leading-[40px] font-bold text-oxford-blue">
+              {t('admin.subscriptionDetails.hero.title') || 'Subscription Details'}
+            </h1>
+            <button
+              onClick={() => navigate("/admin/subscriptions/manage-users")}
+              className="text-oxford-blue hover:text-[#ED4122] transition"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
           {/* User Info Section */}
           <div className="px-6 py-8 border-b border-[#E5E7EB]">
             <h2 className="mb-4 font-roboto text-[16px] font-medium leading-[100%] text-oxford-blue">
@@ -89,19 +286,31 @@ const SubscriptionDetailsPage = () => {
                 <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
                   {t('admin.subscriptionDetails.fields.currentPlan')}
                 </span>
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">Premium</p>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">{subscription.plan}</p>
               </div>
               <div className="flex items-center gap-[290px]">
                 <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
                   {t('admin.subscriptionDetails.fields.duration')}
                 </span>
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">Monthly</p>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">{subscription.duration}</p>
+              </div>
+              <div className="flex items-center gap-[254px]">
+                <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                  {t('admin.subscriptionDetails.fields.startDate') || 'Start Date'}
+                </span>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">{subscription.startDate}</p>
               </div>
               <div className="flex items-center gap-[254px]">
                 <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
                   {t('admin.subscriptionDetails.fields.renewalDate')}
                 </span>
-                <p className="font-roboto text-[16px] font-normal  leading-[20px] text-oxford-blue">July 15, 2024</p>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">{subscription.renewalDate}</p>
+              </div>
+              <div className="flex items-center gap-[254px]">
+                <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
+                  {t('admin.subscriptionDetails.fields.expiryDate') || 'Expiry Date'}
+                </span>
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">{subscription.expiryDate}</p>
               </div>
               <div className="flex items-center gap-[204px]">
                 <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
@@ -125,10 +334,24 @@ const SubscriptionDetailsPage = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-[265px]">
                 <span className="font-roboto text-[14px] font-normal leading-[20px] text-dark-gray">
+                  {t('admin.subscriptionDetails.fields.paymentStatus') || 'Payment Status'}
+                </span>
+                <span
+                  className={`inline-flex h-[26px] items-center justify-center rounded-[6px] py-[5px] px-[10px] font-roboto text-[14px] font-normal leading-[100%] tracking-[0%] ${
+                    subscription.paymentStatus === 'Paid' 
+                      ? 'bg-[#FDF0D5] text-[#ED4122]' 
+                      : 'bg-[#C6D8D3] text-oxford-blue'
+                  }`}
+                >
+                  {subscription.paymentStatus}
+                </span>
+              </div>
+              <div className="flex items-center gap-[265px]">
+                <span className="font-roboto text-[14px] font-normal leading-[20px] text-dark-gray">
                   {t('admin.subscriptionDetails.fields.lastPayment')}
                 </span>
                 <span className="font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
-                  {subscription.lastPayment || "$19.99 June 24, 2024"}
+                  {subscription.lastPayment}
                 </span>
               </div>
               <div className="flex items-center gap-[260px]">
@@ -136,7 +359,7 @@ const SubscriptionDetailsPage = () => {
                   {t('admin.subscriptionDetails.fields.nextDueDate')}
                 </span>
                 <span className="font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
-                  {subscription.nextDueDate || "July 15, 2024"}
+                  {subscription.nextDueDate}
                 </span>
               </div>
               <div className="flex items-center gap-[243px]">
@@ -171,10 +394,42 @@ const SubscriptionDetailsPage = () => {
                     />
                   </svg>
                   <span className="font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue">
-                    {subscription.paymentMethod || "Visa ending in 1234"}
+                    {subscription.paymentMethod}
                   </span>
                 </div>
               </div>
+              {subscription.transactionId && subscription.transactionId !== "N/A" && (
+                <div className="flex items-center gap-[243px]">
+                  <span className="font-roboto text-[14px] font-normal leading-[20px] text-dark-gray">
+                    {t('admin.subscriptionDetails.fields.transactionId') || 'Transaction ID'}
+                  </span>
+                  <span className="font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue font-mono">
+                    {subscription.transactionId}
+                  </span>
+                </div>
+              )}
+              {subscription.moyassarPaymentStatus && subscription.moyassarPaymentStatus !== "N/A" && (
+                <div className="flex items-center gap-[243px]">
+                  <span className="font-roboto text-[14px] font-normal leading-[20px] text-dark-gray">
+                    {t('admin.subscriptionDetails.fields.moyassarStatus') || 'Moyassar Status'}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-roboto text-[14px] font-normal leading-[20px] text-oxford-blue capitalize">
+                      {subscription.moyassarPaymentStatus}
+                    </span>
+                    {subscription.paymentStatus === "Pending" && subscription.moyassarPaymentId && (
+                      <button
+                        onClick={handleSyncPayment}
+                        disabled={syncing}
+                        className="ml-2 px-3 py-1 text-xs bg-[#ED4122] text-white rounded hover:bg-[#d43a1f] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={t('admin.subscriptionDetails.actions.syncPayment') || 'Sync Payment Status from Moyassar'}
+                      >
+                        {syncing ? t('admin.subscriptionDetails.actions.syncing') || 'Syncing...' : t('admin.subscriptionDetails.actions.syncPayment') || 'Sync'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

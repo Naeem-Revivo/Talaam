@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { fetchCurrentUser } from '../store/slices/authSlice';
 import { showSuccessToast, showErrorToast } from '../utils/toastConfig';
+import Loader from '../components/common/Loader';
+import { isProfileComplete } from '../utils/profileUtils';
 
 const AuthCallbackPage = () => {
   const navigate = useNavigate();
@@ -32,8 +34,12 @@ const AuthCallbackPage = () => {
     }
 
     if (token) {
-      // Store token
+      // OAuth logins default to rememberMe = true (persistent storage)
       localStorage.setItem('authToken', token);
+      localStorage.setItem('rememberMe', 'true');
+      // Clear from sessionStorage if it exists
+      sessionStorage.removeItem('authToken');
+      sessionStorage.removeItem('user');
       
       // Fetch user data
       dispatch(fetchCurrentUser())
@@ -41,7 +47,7 @@ const AuthCallbackPage = () => {
           if (fetchCurrentUser.fulfilled.match(result)) {
             const user = result.payload?.data?.user;
             
-            // Store user in localStorage
+            // Store user in localStorage (OAuth logins are persistent)
             if (user) {
               localStorage.setItem('user', JSON.stringify(user));
             }
@@ -74,7 +80,12 @@ const AuthCallbackPage = () => {
             if (role === 'admin' || role === 'superadmin') {
               navigate('/admin', { replace: true });
             } else if (role === 'user' || role === 'student') {
-              navigate('/dashboard', { replace: true });
+              // Check if profile is complete for students
+              if (!isProfileComplete(user)) {
+                navigate('/complete-profile', { replace: true })
+              } else {
+                navigate('/dashboard', { replace: true })
+              }
             } else {
               // For other roles (gatherer, creator, processor, explainer)
               const roleRoutes = {
@@ -107,14 +118,13 @@ const AuthCallbackPage = () => {
   }, [searchParams, navigate, dispatch]);
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cinnebar-red mx-auto mb-4"></div>
-        <p className="text-oxford-blue font-roboto text-lg">
-          Authenticating...
-        </p>
-      </div>
-    </div>
+    <Loader 
+      fullScreen={true}
+      size="lg" 
+      color="cinnebar-red" 
+      text="Authenticating..."
+      className="min-h-screen bg-white"
+    />
   );
 };
 

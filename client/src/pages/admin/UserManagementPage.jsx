@@ -6,6 +6,7 @@ import UserTable from "../../components/admin/userManagement/UserTable";
 import { useLanguage } from "../../context/LanguageContext";
 import usersAPI from "../../api/users";
 import useDebounce from "../../hooks/useDebounce";
+import Loader from "../../components/common/Loader";
 import {
   usermanage1,
   usermanage2,
@@ -270,11 +271,13 @@ const UserManagementPage = () => {
 
   if (loading || statsLoading) {
     return (
-      <div className="min-h-full bg-[#F5F7FB] px-4 xl:px-6 py-6 sm:px-6  2xl:px-[66px]">
-        <div className="mx-auto flex max-w-[1200px] items-center justify-center h-64">
-          <p className="text-oxford-blue">Loading...</p>
-        </div>
-      </div>
+      <Loader 
+        fullScreen={true}
+        size="lg" 
+        color="oxford-blue" 
+        text="Loading..."
+        className="min-h-full bg-[#F5F7FB] px-4 xl:px-6 py-6 sm:px-6  2xl:px-[66px]"
+      />
     );
   }
 

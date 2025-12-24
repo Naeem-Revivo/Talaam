@@ -13,6 +13,11 @@ const roleMiddleware = (allowedRoles) => {
         });
       }
 
+      // SuperAdmin always has access to all workflow roles
+      if (req.user.role === 'superadmin') {
+        return next();
+      }
+
       // Check if user is admin
       if (req.user.role !== 'admin') {
         return res.status(403).json({

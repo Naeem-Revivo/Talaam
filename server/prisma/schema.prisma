@@ -25,6 +25,7 @@ model User {
   resetPasswordExpiry   DateTime? @map("reset_password_expiry") @db.Timestamptz
   fullName              String?   @map("full_name")
   dateOfBirth           DateTime? @map("date_of_birth") @db.Date
+  phone                 String?
   country               String?
   timezone              String?
   language              String    @default("English") // English, العربية
@@ -40,9 +41,15 @@ model User {
   questionsModified     Question[]       @relation("QuestionLastModifiedBy")
   questionsApproved     Question[]       @relation("QuestionApprovedBy")
   questionsRejected     Question[]       @relation("QuestionRejectedBy")
+  questionsAssigned    Question[]       @relation("QuestionAssignedProcessor")
+  questionsAssignedCreator Question[]    @relation("QuestionAssignedCreator")
+  questionsAssignedExplainer Question[]  @relation("QuestionAssignedExplainer")
+  questionsFlagged      Question[]       @relation("QuestionFlaggedBy")
+  questionsFlagReviewed Question[]       @relation("QuestionFlagReviewedBy")
   studentAnswers        StudentAnswer[]
   questionHistory       QuestionHistory[]
   questionComments      QuestionComment[]
+  announcementReads     AnnouncementRead[]
 
   @@index([googleId])
   @@index([linkedinId])
@@ -95,6 +102,7 @@ model Subscription {
 model Exam {
   id          String         @id @default(uuid())
   name        String
+  description String?        // Optional description field
   status      String         @default("active") // active, inactive
   createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz
@@ -103,6 +111,7 @@ model Exam {
   questions       Question[]
   classifications Classification[]
   studentAnswers  StudentAnswer[]
+  subjects        Subject[]
 
   @@map("exams")
 }
@@ -111,15 +120,18 @@ model Subject {
   id          String         @id @default(uuid())
   name        String
   description String         @default("")
+  examId      String?        @map("exam_id")
   createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
+  exam            Exam?       @relation(fields: [examId], references: [id], onDelete: SetNull)
   topics          Topic[]
   questions       Question[]
   classifications Classification[]
   studentAnswers  StudentAnswer[]
 
+  @@index([examId])
   @@map("subjects")
 }
 
@@ -178,6 +190,18 @@ model Question {
   approvedById      String?  @map("approved_by_id")
   rejectedById      String?  @map("rejected_by_id")
   rejectionReason   String?  @map("rejection_reason")
+  assignedProcessorId String? @map("assigned_processor_id")
+  assignedCreatorId String?  @map("assigned_creator_id")
+  assignedExplainerId String? @map("assigned_explainer_id")
+  // Flagging fields
+  isFlagged         Boolean  @default(false) @map("is_flagged")
+  flaggedById      String?  @map("flagged_by_id")
+  flagReason        String?  @map("flag_reason")
+  flagType          String?  @map("flag_type") // creator, explainer
+  flagStatus        String?  @map("flag_status") // pending, approved, rejected
+  flagReviewedById  String?  @map("flag_reviewed_by_id")
+  flagRejectionReason String? @map("flag_rejection_reason")
+  isVisible         Boolean  @default(true) @map("is_visible")
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -191,6 +215,11 @@ model Question {
   lastModifiedBy    User?    @relation("QuestionLastModifiedBy", fields: [lastModifiedById], references: [id])
   approvedBy        User?    @relation("QuestionApprovedBy", fields: [approvedById], references: [id])
   rejectedBy        User?    @relation("QuestionRejectedBy", fields: [rejectedById], references: [id])
+  assignedProcessor User?    @relation("QuestionAssignedProcessor", fields: [assignedProcessorId], references: [id])
+  assignedCreator   User?    @relation("QuestionAssignedCreator", fields: [assignedCreatorId], references: [id])
+  assignedExplainer User?    @relation("QuestionAssignedExplainer", fields: [assignedExplainerId], references: [id])
+  flaggedBy        User?    @relation("QuestionFlaggedBy", fields: [flaggedById], references: [id])
+  flagReviewedBy   User?    @relation("QuestionFlagReviewedBy", fields: [flagReviewedById], references: [id])
   history           QuestionHistory[]
   comments          QuestionComment[]
   studentAnswers    StudentAnswerQuestion[]
@@ -200,6 +229,7 @@ model Question {
   @@index([status])
   @@index([createdById])
   @@index([originalQuestionId])
+  @@index([isFlagged, flagStatus])
   @@map("questions")
 }
 
@@ -243,7 +273,7 @@ model StudentAnswer {
   subjectId       String?  @map("subject_id")
   topicId         String?  @map("topic_id")
   questionId      String?  @map("question_id") // For study mode
-  selectedAnswer  String
+  selectedAnswer  String   @map("selected_answer")
   isCorrect       Boolean  @default(false) @map("is_correct")
   // For test mode
   totalQuestions  Int      @default(0) @map("total_questions")
@@ -251,6 +281,7 @@ model StudentAnswer {
   incorrectAnswers Int     @default(0) @map("incorrect_answers")
   score           Float    @default(0)
   percentage      Float    @default(0)
+  timeTaken       Int?     @map("time_taken") // Time taken in milliseconds
   status          String   @default("completed") // in_progress, completed
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
@@ -282,4 +313,59 @@ model StudentAnswerQuestion {
   @@index([studentAnswerId])
   @@index([questionId])
   @@map("student_answer_questions")
+}
+
+model Language {
+  id          String   @id @default(uuid())
+  name        String
+  code        String   @unique
+  isDefault   Boolean  @default(false) @map("is_default")
+  status      String   @default("active") // active, inactive
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([status])
+  @@index([isDefault])
+  @@map("languages")
+}
+
+model Announcement {
+  id            String   @id @default(uuid())
+  title         String
+  message       String
+  targetAudience String   @map("target_audience") // all_users, students, admin_roles
+  type          String   // info, warning, alert, success
+  startDate     DateTime @map("start_date") @db.Timestamptz
+  endDate       DateTime @map("end_date") @db.Timestamptz
+  isPublished   Boolean  @default(false) @map("is_published")
+  status        String   @default("inactive") // active, inactive (calculated based on dates and isPublished)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  readBy        AnnouncementRead[]
+
+  @@index([targetAudience])
+  @@index([isPublished])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@map("announcements")
+}
+
+model AnnouncementRead {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  announcementId String  @map("announcement_id")
+  readAt        DateTime @default(now()) @map("read_at") @db.Timestamptz
+  isDeleted     Boolean  @default(false) @map("is_deleted")
+
+  // Relations
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  announcement  Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, announcementId])
+  @@index([userId])
+  @@index([announcementId])
+  @@index([isDeleted])
+  @@map("announcement_reads")
 }

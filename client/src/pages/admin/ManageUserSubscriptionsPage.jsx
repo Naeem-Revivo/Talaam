@@ -1,25 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { DataTable } from "../../components/admin/SystemSetting/Table";
-import baseSubscriptionsData from "../../data/userSubscriptionsData.json";
 import Dropdown from "../../components/shared/Dropdown";
-
-// Mock data for user subscriptions
-// DataTable converts column names to keys by: columnName.toLowerCase().replace(/ /g, "")
-const allSubscriptions = [
-  ...baseSubscriptionsData,
-  // Add more mock data
-  ...Array.from({ length: 22 }, (_, i) => ({
-    id: i + 4,
-    user: `User ${i + 4}`,
-    email: `user${i + 4}@gmail.com`,
-    plan: i % 3 === 0 ? "Premium" : i % 3 === 1 ? "Free" : "Organization",
-    startdate: `01-${String(i + 1).padStart(2, "0")}-2023`,
-    expirydate: i % 4 === 0 ? "N/A" : `01-${String(i + 1).padStart(2, "0")}-2024`,
-    paymentstatus: i % 3 === 0 ? "Paid" : i % 3 === 1 ? "Active" : "N/A",
-  })),
-];
+import adminAPI from "../../api/admin";
+import { showErrorToast } from "../../utils/toastConfig";
 
 // Custom TableRow component for subscriptions with badge support
 const SubscriptionTableRow = ({ item, onView, t }) => {
@@ -100,20 +85,148 @@ const ManageUserSubscriptionsPage = () => {
   const [planFilter, setPlanFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("Active");
   const [searchQuery, setSearchQuery] = useState("");
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 10;
+
+  // Fetch subscriptions from API
+  useEffect(() => {
+    fetchSubscriptions();
+  }, [planFilter, statusFilter, searchQuery, page]);
+
+  const fetchSubscriptions = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page,
+        limit: pageSize,
+      };
+      
+      if (planFilter !== "All") {
+        params.plan = planFilter;
+      }
+      
+      if (statusFilter !== "All") {
+        params.status = statusFilter;
+      }
+      
+      if (searchQuery) {
+        params.search = searchQuery;
+      }
+
+      const response = await adminAPI.getAllUserSubscriptions(params);
+      
+      if (response.success && response.data) {
+        // Helper function to format date safely
+        const formatDate = (dateValue) => {
+          // Handle null, undefined, or empty strings
+          if (!dateValue || dateValue === 'null' || dateValue === 'undefined') {
+            return 'N/A';
+          }
+          
+          // If it's already a formatted string (DD-MM-YYYY or DD/MM/YYYY), validate and use it
+          if (typeof dateValue === 'string') {
+            // Check for invalid date strings from backend (like "NaN-NaN-NaN" or "Invalid Date")
+            if (dateValue.includes('NaN') || dateValue.includes('Invalid')) {
+              return 'N/A';
+            }
+            
+            // Check if it's already in DD-MM-YYYY or DD/MM/YYYY format
+            const datePattern = /^\d{2}[-\/]\d{2}[-\/]\d{4}$/;
+            if (datePattern.test(dateValue)) {
+              // Convert DD-MM-YYYY to DD/MM/YYYY for consistency
+              return dateValue.replace(/-/g, '/');
+            }
+          }
+          
+          try {
+            // Try to parse as Date object or ISO string
+            const date = new Date(dateValue);
+            // Check if date is valid
+            if (isNaN(date.getTime())) {
+              console.warn('Invalid date value:', dateValue);
+              return 'N/A';
+            }
+            // Format as DD/MM/YYYY
+            return date.toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric'
+            });
+          } catch (error) {
+            console.error('Error formatting date:', dateValue, error);
+            return 'N/A';
+          }
+        };
+
+        // Helper function to extract name from email
+        const getNameFromEmail = (email) => {
+          if (!email || typeof email !== 'string') return null;
+          const emailPart = email.split('@')[0];
+          // Capitalize first letter of each word
+          return emailPart
+            .split(/[._-]/)
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+        };
+
+        // Transform API data to match table format
+        const transformed = response.data.subscriptions?.map((sub, index) => {
+          // Try multiple possible field names (backend might use different casing)
+          const startDateValue = sub.startDate || sub.start_date;
+          const expiryDateValue = sub.expiryDate || sub.expiry_date;
+          
+          // Debug logging for first item to see what we're receiving
+          if (index === 0) {
+            console.log('Sample subscription data:', {
+              startDate: sub.startDate,
+              expiryDate: sub.expiryDate,
+              start_date: sub.start_date,
+              expiry_date: sub.expiry_date,
+              startDateType: typeof sub.startDate,
+              expiryDateType: typeof sub.expiryDate,
+            });
+          }
+          
+          const startDate = formatDate(startDateValue);
+          const expiryDate = formatDate(expiryDateValue);
+          
+          // Get user name with fallback to email-derived name
+          const userName = sub.userName || sub.user?.name || sub.user?.fullName;
+          const userEmail = sub.user?.email;
+          const user = userName && userName !== 'N/A' 
+            ? userName 
+            : (getNameFromEmail(userEmail) || userEmail || 'N/A');
+          
+          return {
+            id: sub.id,
+            user: user,
+            email: userEmail || 'N/A',
+            plan: sub.planName || sub.plan?.name || 'N/A',
+            startdate: startDate,
+            expirydate: expiryDate,
+            paymentstatus: sub.paymentStatus || 'Pending',
+            _original: sub,
+          };
+        }) || [];
+        
+        setSubscriptions(transformed);
+        setTotal(response.data.total || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching subscriptions:", error);
+      showErrorToast(error.message || "Failed to fetch subscriptions");
+      setSubscriptions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredSubscriptions = useMemo(() => {
-    return allSubscriptions.filter((sub) => {
-      const matchesPlan = planFilter === "All" || sub.plan === planFilter;
-      const matchesStatus = statusFilter === "All" || 
-        (statusFilter === "Active" && sub.paymentstatus === "Active") ||
-        (statusFilter === "Expire" && sub.expirydate !== "N/A" && new Date(sub.expirydate.split("-").reverse().join("-")) < new Date()) ||
-        (statusFilter === "Pending" && sub.paymentstatus === "Pending");
-      const matchesSearch = searchQuery === "" || 
-        sub.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        sub.email.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesPlan && matchesStatus && matchesSearch;
-    });
-  }, [planFilter, statusFilter, searchQuery]);
+    return subscriptions;
+  }, [subscriptions]);
 
   // Transform data for DataTable - it expects lowercase keys without spaces
   const transformedSubscriptions = useMemo(() => {
@@ -155,8 +268,9 @@ const ManageUserSubscriptionsPage = () => {
   };
 
   const handleView = (subscription) => {
-    // Navigate to subscription details page with subscription data
-    navigate("/admin/subscriptions/details", { state: { subscription } });
+    // Navigate to subscription details page with subscription ID
+    const subscriptionId = subscription._original?.id || subscription.id;
+    navigate(`/admin/subscriptions/details?id=${subscriptionId}`, { state: { subscriptionId } });
   };
 
   const columns = [
@@ -170,9 +284,9 @@ const ManageUserSubscriptionsPage = () => {
 
   // Get unique plans for filter
   const uniquePlans = useMemo(() => {
-    const plans = [...new Set(allSubscriptions.map((sub) => sub.plan))];
-    return ["All", ...plans];
-  }, []);
+    const plans = [...new Set(subscriptions.map((sub) => sub.plan))];
+    return ["All", ...plans.filter(p => p !== 'N/A')];
+  }, [subscriptions]);
 
   // Custom table component that extends DataTable structure
   const CustomSubscriptionTable = () => {
@@ -359,8 +473,15 @@ const ManageUserSubscriptionsPage = () => {
           </div>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-8 text-center">
+            <p className="text-dark-gray">{t('admin.manageUserSubscriptions.loading') || 'Loading subscriptions...'}</p>
+          </div>
+        )}
+
         {/* Custom Table with badges */}
-        <CustomSubscriptionTable />
+        {!loading && <CustomSubscriptionTable />}
       </div>
     </div>
   );

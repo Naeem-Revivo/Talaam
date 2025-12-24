@@ -2,23 +2,32 @@
 import axios from 'axios';
 import { showErrorToast, showLogoutToast } from '../utils/toastConfig';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+//const API_URL ='https://many-flannelly-shatteringly.ngrok-free.dev/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Create an Axios instance
 const axiosClient = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true', // Bypass ngrok warning page
   },
 });
 
 // Request interceptor to add auth token
+// Check both localStorage (remember me) and sessionStorage (session-only)
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    // Check localStorage first (remember me), then sessionStorage (session-only)
+    let token = localStorage.getItem('authToken');
+    if (!token) {
+      token = sessionStorage.getItem('authToken');
+    }
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Always include ngrok bypass header
+    config.headers['ngrok-skip-browser-warning'] = 'true';
     return config;
   },
   (error) => Promise.reject(error)
@@ -30,20 +39,31 @@ axiosClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Check if this is an auth endpoint - skip interceptor toasts for these as they're handled by components
+    // Check if this is an auth, admin, or subscription endpoint - skip interceptor toasts for these as they're handled by components
     const authEndpoints = ['/auth/login', '/auth/signup', '/auth/verify-otp', '/auth/resend-otp', 
                            '/auth/forgot-password', '/auth/reset-password', '/auth/google'];
+    const adminEndpoints = ['/admin/create', '/admin/update', '/admin/status'];
+    const subscriptionEndpoints = ['/subscription/me']; // No subscription is a valid state, not an error
     const requestUrl = error.config?.url || '';
     const isAuthEndpoint = authEndpoints.some(endpoint => requestUrl.includes(endpoint));
+    const isAdminEndpoint = adminEndpoints.some(endpoint => requestUrl.includes(endpoint));
+    const isSubscriptionEndpoint = subscriptionEndpoints.some(endpoint => requestUrl.includes(endpoint));
+    const shouldSkipToast = isAuthEndpoint || isAdminEndpoint || isSubscriptionEndpoint;
+
+    const hasToken = !!(localStorage.getItem('authToken') || sessionStorage.getItem('authToken'));
 
     if (error.response) {
       // Handle common response errors
       if (error.response.status === 401) {
         // Handle unauthorized error, e.g., redirect to login
-        // Skip toast for auth endpoints (login, signup, etc.) - handled by components
-        if (!isAuthEndpoint) {
+        // Skip toast for auth/admin endpoints - handled by components
+        if (!shouldSkipToast && hasToken) {
+          // Clear from both storages
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');
+          localStorage.removeItem('rememberMe');
+          sessionStorage.removeItem('authToken');
+          sessionStorage.removeItem('user');
           
           showLogoutToast('Your session has expired. Please login again.');
           
@@ -58,31 +78,31 @@ axiosClient.interceptors.response.use(
           }
         }
       } else if (error.response.status === 403) {
-        // Handle forbidden error - skip for auth endpoints
-        if (!isAuthEndpoint) {
+        // Handle forbidden error - skip for auth/admin endpoints
+        if (!shouldSkipToast) {
           showErrorToast('You do not have permission to access this resource.');
         }
       } else if (error.response.status === 404) {
-        // Handle not found error - skip for auth endpoints
-        if (!isAuthEndpoint) {
+        // Handle not found error - skip for auth/admin endpoints
+        if (!shouldSkipToast) {
           const errorMessage = error.response.data?.message || error.response.data?.error || 'Resource not found';
           showErrorToast(errorMessage);
         }
       } else if (error.response.status >= 500) {
-        // Handle server errors - skip for auth endpoints
-        if (!isAuthEndpoint) {
+        // Handle server errors - skip for auth/admin endpoints
+        if (!shouldSkipToast) {
           showErrorToast('Server error. Please try again later or contact support if the problem persists.');
         }
       } else {
-        // Handle other client errors - skip for auth endpoints
-        if (!isAuthEndpoint) {
+        // Handle other client errors (400, etc.) - skip for auth/admin endpoints
+        if (!shouldSkipToast) {
           const errorMessage = error.response.data?.message || error.response.data?.error || 'An error occurred';
           showErrorToast(errorMessage);
         }
       }
     } else {
-      // Handle network errors - skip for auth endpoints
-      if (!isAuthEndpoint) {
+      // Handle network errors - skip for auth/admin endpoints
+      if (!shouldSkipToast) {
         showErrorToast('Network error. Please check your internet connection and try again.');
       }
     }

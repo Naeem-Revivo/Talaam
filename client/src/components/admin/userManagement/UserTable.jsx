@@ -348,7 +348,7 @@ const UserTable = ({
 }) => {
   const { t } = useLanguage();
   return (
-    <section className="w-full overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard md:min-h-[348px]">
+    <section className={`w-full overflow-hidden rounded-[12px] border border-[#E5E7EB] bg-white shadow-dashboard ${users.length === 0 ? "md:min-h-[280px]" : ""}`}>
       <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full border-collapse">
           <TableHeader />
@@ -366,9 +366,11 @@ const UserTable = ({
               <tr>
                 <td
                   colSpan={6}
-                  className="px-6 py-10 text-center text-sm text-dark-gray"
+                  className="p-4 text-center text-sm text-dark-gray"
                 >
-                  {t('admin.userManagement.table.emptyState')}
+                  <div className="flex items-center justify-center min-h-[180px]">
+                    {t('admin.userManagement.table.emptyState')}
+                  </div>
                 </td>
               </tr>
             )}

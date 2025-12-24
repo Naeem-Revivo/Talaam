@@ -4,6 +4,7 @@
       "gatherer": {
         "dashboard": "Gatherer Dashboard",
         "questionBank": "Question Bank",
+        "announcements": "Announcements",
         "profile": "Profile",
         "default": "Gatherer Dashboard"
       },
@@ -19,12 +20,15 @@
         "gathererSubmission": "Gatherer Submission",
         "creatorSubmission": "Creator Submission",
         "explainerSubmission": "Explainer Submission",
+        "adminSubmission": "Admin Submission",
+        "announcements": "Announcements",
         "profile": "Profile",
         "default": "Processor Dashboard"
       },
       "explainer": {
         "dashboard": "Explainer Dashboard",
         "questionBank": "Question Bank",
+        "announcements": "Announcements",
         "profile": "Profile",
         "default": "Explainer Dashboard"
       },
@@ -36,7 +40,16 @@
         "emailTemplate": "Email Templates",
         "rolesPermissions": "Admin Roles & Permissions",
         "userManagement": "User Management",
+        "studentManagement": "Student Management",
         "questionBank": "Question Bank",
+        "pendingProcessor": "Pending Processor",
+        "pendingProcessorView": "Review Pending Processor Question",
+        "pendingCreator": "Pending Creator",
+        "pendingCreatorView": "View Pending Creator Question",
+        "pendingExplainer": "Pending Explainer",
+        "pendingExplainerView": "View Pending Explainer Question",
+        "sentBackQuestions": "Sent Back Questions",
+        "sentBackQuestionsView": "View Sent Back Question",
         "questionManagement": "Question Management",
         "addQuestion": "Add New Question",
         "questionDetails": "View Question Details",
@@ -69,7 +82,8 @@
     "about": "About",
     "contact": "Contact",
     "signUp": "SIGN UP",
-    "logIn": "LOG IN"
+    "logIn": "LOG IN",
+    "logout": "Logout"
   },
   "homepage": {
     "hero": {
@@ -322,6 +336,20 @@
       }
     }
   },
+  "questionBanks": {
+    "hero": {
+      "title": "Your Question Banks",
+      "subtitle": "Access the exams you're subscribed to, or upgrade to unlock more."
+    },
+    "exams": {
+      "subscribed": "Subscribed",
+      "notSubscribed": "Not Subscribed",
+      "startStudying": "START STUDYING",
+      "upgradeToAccess": "UPGRADE TO ACCESS",
+      "moreExamsComingSoon": "More Exams Coming Soon",
+      "advancedFeatures": "Advanced Features"
+    }
+  },
   "about": {
     "hero": {
       "title1": "About",
@@ -418,6 +446,14 @@
       "1lowercase": "1 lowercase",
       "1number": "1 number"
     },
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordRequirements": "Password must meet all requirements",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordsMismatch": "Passwords do not match"
+    },
     "buttonText": "Create account",
     "buttonLoading": "Creating account...",
     "success": "Account created successfully.",
@@ -428,7 +464,8 @@
       "passwordMismatch": "Passwords do not match.",
       "passwordWeak": "Password does not meet the requirements.",
       "generic": "Signup failed. Please try again.",
-      "google": "Unable to start Google sign in. Please try again."
+      "google": "Unable to start Google sign in. Please try again.",
+      "userExists": "An account with this email already exists."
     },
     "orContinueWith": "or continue with",
     "continueWithGoogle": "Continue with Google",
@@ -452,6 +489,9 @@
     "resendCodeIn": "Resend code in",
     "verifyAccount": "Verify Account",
     "skipForNow": "Skip for now",
+    "validation": {
+      "codeRequired": "Please enter the complete 6-digit verification code"
+    },
     "success": "Email verified successfully.",
     "successTitle": "Email Verified",
     "resendSuccess": "Verification code has been resent to your email.",
@@ -464,7 +504,13 @@
       "requiredCode": "Please enter the 6-digit code.",
       "invalidCode": "The verification code is invalid or has expired. Please try again.",
       "resend": "Failed to resend verification code. Please try again.",
-      "generic": "Failed to verify code. Please try again."
+      "generic": "Failed to verify code. Please try again.",
+      "userNotFound": "User not found. Please try again.",
+      "alreadyVerified": "Email is already verified.",
+      "otpNotFound": "OTP not found. Please request a new OTP.",
+      "otpExpired": "OTP has expired. Please request a new OTP.",
+      "invalidOtp": "The verification code is invalid or has expired. Please try again.",
+      "emailSendFailed": "Failed to send OTP email. Please try again."
     }
   },
   "profile": {
@@ -476,6 +522,10 @@
     "country": "Country",
     "timeZone": "Time Zone",
     "language": "Language",
+    "validation": {
+      "fullNameRequired": "Full name is required",
+      "fullNameMinLength": "Full name must be at least 2 characters"
+    },
     "finishSetup": "Finish Setup",
     "buttonLoading": "Saving...",
     "success": "Profile completed successfully.",
@@ -494,6 +544,11 @@
     "passwordPlaceholder": "Enter your password",
     "rememberMe": "Remember me",
     "forgotPassword": "Forgot Password?",
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required"
+    },
     "buttonText": "Sign In",
     "buttonLoading": "Signing in...",
     "orContinueWith": "or continue with",
@@ -506,7 +561,14 @@
     "errors": {
       "title": "Login Failed",
       "generic": "Login failed. Please check your credentials and try again.",
-      "google": "Unable to start Google login. Please try again."
+      "google": "Unable to start Google login. Please try again.",
+      "invalidCredentials": "Invalid email or password. Please check your credentials and try again.",
+      "accountSuspended": "Your account has been suspended. Please contact administrator.",
+      "oauthFailed": "Authentication failed. Please try again.",
+      "oauthUserNotFound": "Authentication failed - user not found.",
+      "tokenGenerationFailed": "Failed to generate authentication token. Please try again.",
+      "googleUrlFailed": "Unable to start Google login. Please try again.",
+      "linkedinUrlFailed": "Unable to start LinkedIn login. Please try again."
     }
   },
   "forgotPassword": {
@@ -514,6 +576,10 @@
     "instruction": "Enter your registered email address and we'll send you a verification code to reset your password.",
     "email": "Email Address",
     "emailPlaceholder": "Enter your registered email",
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address"
+    },
     "buttonText": "Send Verification Code",
     "backToLogin": "Back to Login",
     "buttonLoading": "Sending...",
@@ -522,7 +588,8 @@
     "errors": {
       "title": "Reset Failed",
       "required": "Please enter your email.",
-      "generic": "Failed to request password reset. Please try again."
+      "generic": "Failed to request password reset. Please try again.",
+      "emailSendFailed": "Failed to send reset email. Please try again."
     }
   },
   "forgotModal": {
@@ -538,6 +605,11 @@
     "newPasswordPlaceholder": "Enter new password",
     "confirmPassword": "Confirm New Password",
     "confirmPasswordPlaceholder": "Confirm new password",
+    "validation": {
+      "newPasswordRequired": "New password is required",
+      "confirmPasswordRequired": "Please confirm your new password",
+      "passwordsMismatch": "Passwords do not match"
+    },
     "buttonText": "Set New Password",
     "buttonLoading": "Saving...",
     "success": "Password reset successfully.",
@@ -548,13 +620,20 @@
       "missingToken": "Reset link is invalid or expired.",
       "requiredFields": "Please fill all fields.",
       "passwordMismatch": "Passwords do not match.",
-      "generic": "Failed to reset password. Please try again."
+      "generic": "Failed to reset password. Please try again.",
+      "invalidToken": "Reset link is invalid or expired."
     }
   },
   "passwordReset": {
     "title": "Password Reset!",
     "description": "Your password has been successfully reset. Click below to continue to login.",
     "buttonText": "Continue to Sign in"
+  },
+  "auth": {
+    "errors": {
+      "userNotFound": "User not found. Please try again.",
+      "default": "An unexpected error occurred. Please try again."
+    }
   },
   "dashboard": {
     "header": {
@@ -572,7 +651,50 @@
       "reviewSessions": "Review Sessions",
       "sessionSummary": "Session Summary",
       "questionSession": "Question Session",
-      "subscriptionsBilling": "Subscription & Billing"
+      "subscriptionsBilling": "Subscription & Billing",
+      "announcements": "Announcements"
+    },
+    "announcements": {
+      "title": "Announcements",
+      "subtitle": "Stay updated with the latest announcements from the platform",
+      "loading": "Loading...",
+      "noAnnouncements": "No announcements available",
+      "unread": "Unread",
+      "read": "Read",
+      "view": "View",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to delete this announcement? This will only hide it from your view.",
+      "deleteError": "Error deleting announcement. Please try again.",
+      "deleteModal": {
+        "title": "Delete Announcement",
+        "message": "Are you sure you want to delete \"{{title}}\"?",
+        "subMessage": "This will only hide it from your view.",
+        "confirmText": "Delete",
+        "cancelText": "Cancel"
+      },
+      "viewTitle": "Announcement Details",
+      "close": "Close",
+      "table": {
+        "type": "Type",
+        "title": "Title",
+        "message": "Message",
+        "date": "Date",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "read": "Read",
+        "unread": "Unread"
+      },
+      "actions": {
+        "view": "View",
+        "delete": "Delete"
+      },
+      "type": "Type",
+      "message": "Message",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "createdAt": "Created At"
     },
     "overview": {
       "title": "Overview",
@@ -628,7 +750,9 @@
         "title": "Question Pool",
         "allQuestions": "All Questions",
         "domains": "Domains",
+        "subjects": "Subjects",
         "subtopics": "Subtopics",
+        "topic": "Topic",
         "noQuestionsMatch": "No questions match your filters. Clear filters to continue.",
         "domainsOptions": {
           "quantitative": "Quantitative",
@@ -661,15 +785,29 @@
         "title": "Your Current Plan",
         "planName": "Professional Plan",
         "statusActive": "Active",
+        "statusPending": "Pending",
+        "statusCancelled": "Cancelled",
+        "statusInactive": "Inactive",
         "cancelSubscription": "Cancel Subscription",
         "upgradePlan": "Upgrade Plan",
+        "renewPlan": "Renew Plan",
         "plan": "Plan:",
         "renewsOn": "Renews on:",
         "access": "Access:",
         "autoRenew": "Auto-Renew:",
         "monthly": "Monthly",
+        "quarterly": "Quarterly",
+        "semiAnnual": "Semi-Annual",
+        "annual": "Annual",
         "questionBankAccess": "Question Bank Access",
-        "on": "On"
+        "on": "On",
+        "off": "Off",
+        "cancelModalTitle": "Cancel Subscription",
+        "cancelModalMessage": "Are you sure you want to cancel your subscription?",
+        "cancelModalSubMessage": "This action cannot be undone. Your subscription will remain active until the end of the current billing period.",
+        "cancelConfirm": "Cancel Subscription",
+        "cancelCancel": "Keep Subscription",
+        "noPlanAvailable": "No subscription plan available"
       },
       "pricingPlans": {
         "title": "Choose the Right Plan for You",
@@ -838,7 +976,8 @@
         "previous": "Previous",
         "next": "Next",
         "loadMore": "Load More Results"
-      }
+      },
+      "noSessions": "No sessions found"
     },
     "reviewIncorrect": {
       "item": "Item {{current}} of {{total}}",
@@ -894,6 +1033,8 @@
     "questionSession": {
       "item": "Item {{current}} of {{total}}",
       "questionId": "Question Id:",
+      "timeStart": "Time Start",
+      "timeRunning": "Time Running",
       "formulaSheet": "Formula Sheet",
       "timeRemaining": "Time Remaining",
       "mark": "Mark",
@@ -930,7 +1071,26 @@
         "correctAnswerExplanation": "Correct Answer Explanation",
         "answer": "Answer:",
         "explanationLabel": "Explanation:"
-      }
+      },
+      "flagQuestion": "Flag Question",
+      "flagReasonLabel": "Please provide a reason for flagging this question:",
+      "flagReasonPlaceholder": "Enter reason...",
+      "flagReasonRequired": "Please provide a reason",
+      "flagSuccess": "Question flagged successfully. It will be reviewed by an administrator.",
+      "flagError": "Failed to flag question",
+      "flagging": "Flagging...",
+      "submitFlag": "Submit",
+      "cancel": "Cancel",
+      "flagRejected": "Your flag was rejected",
+      "adminReason": "Admin reason:",
+      "flagPending": "Flag pending review",
+      "flagApproved": "Flag approved - Question under review",
+      "reason": "Reason",
+      "flagReason": "Flag Reason",
+      "yourReason": "Your reason:",
+      "noReasonProvided": "No reason provided",
+      "noReasonAvailable": "No reason available",
+      "close": "Close"
     },
     "sessionCompletion": {
       "title": "Session Complete",
@@ -993,7 +1153,12 @@
     "sidebar": {
       "dashboard": "Dashboard",
       "userManagement": "User Management",
+      "studentManagement": "Student Management",
       "questionBank": "Question Bank",
+      "pendingProcessor": "Pending Processor",
+      "pendingCreator": "Pending Creator",
+      "pendingExplainer": "Pending Explainer",
+      "sentBackQuestions": "Sent Back Questions",
       "classification": "Classification",
       "subscriptions": "Subscriptions",
       "paymentHistory": "Payment History",
@@ -1018,7 +1183,7 @@
         "activeSubscriptions": "Active Subscriptions",
         "revenue": "Revenue",
         "fromLastMonth": "+12% from last month",
-        "verificationRate": "72% verification rate",
+        "verificationRate": "verification rate",
         "thisWeek": "+8% this week",
         "thisMonth": "+15% this month"
       },
@@ -1037,6 +1202,7 @@
           "organization": "Organization"
         }
       },
+      "loading": "Loading dashboard data...",
       "sections": {
         "latestSignups": "Latest Sign-ups",
         "systemNotifications": "System Notifications"
@@ -1067,6 +1233,7 @@
         "title": "User Management",
         "subtitle": "Manage user accounts and workflow roles."
       },
+      "loading": "Loading...",
       "actions": {
         "addNewUser": "+ Add New User",
         "export": "Export"
@@ -1119,6 +1286,136 @@
           "status": "Status"
         },
         "fileName": "user-management.csv"
+      }
+    },
+    "studentManagement": {
+      "hero": {
+        "title": "Student Management",
+        "subtitle": "Manage student accounts, subscription, and activity analytics."
+      },
+      "loading": "Loading...",
+      "summary": {
+        "totalStudents": "Total Students",
+        "activeStudents": "Active Students",
+        "suspended": "Suspended",
+        "verifiedUnverified": "Verified / Unverified"
+      },
+      "status": {
+        "active": "Active",
+        "suspended": "Suspended"
+      },
+      "subscription": {
+        "free": "Free",
+        "trial": "Trial",
+        "premium": "Premium"
+      },
+      "filters": {
+        "searchPlaceholder": "Search by name, email or ID",
+        "searchByIdPlaceholder": "Search by student ID",
+        "filter": "Filter",
+        "plan": "Plan",
+        "status": "Status",
+        "date": "Date",
+        "all": "All",
+        "refresh": "Refresh",
+        "applyFilters": "Apply Filters",
+        "plans": {
+          "free": "Free",
+          "trial": "Trial",
+          "premium": "Premium"
+        },
+        "dateOptions": {
+          "today": "Today",
+          "thisWeek": "This Week",
+          "thisMonth": "This Month",
+          "thisYear": "This Year"
+        }
+      },
+      "table": {
+        "headers": {
+          "studentId": "STUDENT ID",
+          "name": "NAME",
+          "email": "EMAIL",
+          "subscription": "SUBSCRIPTION",
+          "progress": "PROGRESS",
+          "signUpDate": "SIGN UP DATE",
+          "status": "STATUS",
+          "actions": "ACTIONS"
+        },
+        "emptyState": "No students match the current filters.",
+        "pagination": {
+          "showing": "Showing {{first}} to {{last}} of {{total}} results",
+          "previous": "Previous",
+          "next": "Next"
+        },
+        "ariaLabels": {
+          "view": "View {{name}}",
+          "edit": "Edit {{name}}",
+          "delete": "Delete {{name}}",
+          "suspend": "Suspend {{name}}",
+          "activate": "Activate {{name}}"
+        },
+        "actions": {
+          "suspend": "Suspend",
+          "activate": "Activate"
+        }
+      }
+    },
+    "studentDetail": {
+      "hero": {
+        "title": "Student Profile",
+        "subtitle": "View complete account and activity information"
+      },
+      "loading": "Loading...",
+      "studentId": "Student ID",
+      "emailAddress": "Email Address",
+      "subscriptionPlan": "Subscription Plan",
+      "exp": "Exp",
+      "signupDate": "Signup Date",
+      "manageSubscription": "Manage Subscription",
+      "activityOverview": {
+        "title": "Activity Overview",
+        "avgScore": "Avg Score",
+        "totalTest": "Total Test",
+        "correctAnswer": "Correct Answer",
+        "incorrect": "incorrect"
+      },
+      "activityTrend": {
+        "title": "Activity Trend (Last 7 Days)",
+        "lastActive": "Last Active",
+        "averageScore": "Average Score",
+        "good": "Good",
+        "activityLevel": "ACTIVITY LEVEL"
+      },
+      "flaggedIssues": {
+        "title": "Flag / Reported Issues",
+        "reportedAndFlagged": "Reported and Flagged Questions",
+        "flaggedOn": "Flagged on",
+        "severity": "Severity",
+        "reason": "Reason",
+        "status": "Status",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "pending": "Pending",
+        "noIssues": "No reported issues"
+      },
+      "progressBreakdown": {
+        "title": "Progress Breakdown",
+        "testName": "Test Name",
+        "date": "Date",
+        "score": "Score",
+        "result": "Result",
+        "action": "Action",
+        "passed": "Passed",
+        "failed": "Failed",
+        "viewTest": "View {{test}}",
+        "noData": "No progress data available"
+      },
+      "actions": {
+        "editStudent": "Edit Student",
+        "back": "Back",
+        "suspendAccount": "Suspend Account",
+        "activateAccount": "Activate Account"
       }
     },
     "addUser": {
@@ -1200,10 +1497,37 @@
         "title": "Question Bank",
         "subtitle": "Manage filter and review all questions by subject topic or role."
       },
+      "pendingProcessor": {
+        "title": "Pending Processor",
+        "subtitle": "View and manage questions pending processor review."
+      },
+      "pendingCreator": {
+        "title": "Pending Creator",
+        "subtitle": "View and manage questions pending creator review.",
+        "viewQuestion": {
+          "title": "View Pending Creator Question"
+        }
+      },
+      "pendingExplainer": {
+        "title": "Pending Explainer",
+        "subtitle": "View and manage questions pending explainer review.",
+        "viewQuestion": {
+          "title": "Add Explanation"
+        }
+      },
+      "sentBackQuestions": {
+        "title": "Sent Back Questions",
+        "subtitle": "View and manage questions sent back to gatherer (flagged and rejected questions).",
+        "view": {
+          "title": "View Sent Back Question"
+        }
+      },
+      "loading": "Loading questions...",
       "actions": {
         "questionManagement": "Question Management",
         "users": "Users",
         "addNewQuestion": "+ Add New Question",
+        "sentBackQuestions": "Sent Back Questions",
         "import": "Import",
         "export": "Export"
       },
@@ -1234,6 +1558,8 @@
           "topic": "Topic",
           "level": "Level",
           "createdBy": "Created By",
+          "flags": "Flags",
+          "lastAction": "Last Action",
           "status": "Status",
           "actions": "Actions"
         },
@@ -1247,6 +1573,11 @@
         "ariaLabels": {
           "view": "View {{prompt}}"
         }
+      }
+    },
+    "sentBackQuestions": {
+      "view": {
+        "title": "View Sent Back Question"
       }
     },
     "addNewQuestion": {
@@ -1277,7 +1608,8 @@
         "cognitiveLevel": "Cognitive Level",
         "source": "Source (Optional)",
         "exam": "Exam",
-        "reference": "Reference"
+        "reference": "Reference",
+        "processor": "Processor"
       },
       "placeholders": {
         "questionText": "Enter your question text here...",
@@ -1323,16 +1655,44 @@
       "fields": {
         "examName": "Exam",
         "subject": "Subject",
-        "description": "Description"
+        "description": "Description",
+        "status": "Status"
       },
       "placeholders": {
         "examName": "e.g. Final Exam 2024",
         "subject": "e.g. Mathematics",
         "description": "A brief description of the Exam"
       },
+      "status": {
+        "active": "Active",
+        "suspend": "Suspend"
+      },
       "buttons": {
         "cancel": "Cancel",
         "saveExam": "Save Exam"
+      }
+    },
+    "editExam": {
+      "hero": {
+        "title": "Edit Exam",
+        "subtitle": "Update exam information and settings"
+      },
+      "fields": {
+        "examName": "Exam Name",
+        "description": "Description",
+        "status": "Status"
+      },
+      "placeholders": {
+        "examName": "Enter exam name",
+        "description": "Enter description"
+      },
+      "status": {
+        "active": "Active",
+        "suspend": "Suspend"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "updateExam": "Update Exam"
       }
     },
     "questionDetails": {
@@ -1343,7 +1703,8 @@
         "delete": "Delete",
         "edit": "Edit",
         "createVariant": "+ Create Variant",
-        "addComment": "Add Comment"
+        "addComment": "Add Comment",
+        "back": "Back"
       },
       "sections": {
         "questionInfo": "Question Info",
@@ -1359,6 +1720,7 @@
         "correctAnswer": "Correct Answer",
         "subject": "Subject",
         "topic": "Topic",
+        "exam": "Exam",
         "cognitiveLevel": "Cognitive Level",
         "createdBy": "Created by",
         "submittedOn": "Submitted on",
@@ -1367,7 +1729,10 @@
         "createdByVariant": "Created By"
       },
       "status": {
-        "inReview": "In Review"
+        "inReview": "In Review",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
       },
       "placeholders": {
         "addComments": "add comments"
@@ -1556,6 +1921,8 @@
         "active": "Active",
         "inactive": "Inactive"
       },
+      "loading": "Loading plans...",
+      "retry": "Retry",
       "table": {
         "columns": {
           "planName": "PLAN NAME",
@@ -1568,15 +1935,25 @@
         "emptyState": "No plans match the current filters.",
         "deleteConfirm": "Are you sure you want to delete {{planName}}?",
         "exportFileName": "subscription-plans.csv"
+      },
+      "deleteModal": {
+        "title": "Delete Plan",
+        "message": "Are you sure you want to delete \"{{planName}}\"?",
+        "subMessage": "This action cannot be undone.",
+        "confirmText": "Delete",
+        "cancelText": "Cancel"
       }
     },
     "addNewPlan": {
       "hero": {
         "title": "Add New Plans",
-        "subtitle": "Manage available plans and their pricing"
+        "subtitle": "Manage available plans and their pricing",
+        "editTitle": "Edit Plan",
+        "editSubtitle": "Update plan details and pricing"
       },
       "sections": {
-        "addNewPlan": "Add New Plan"
+        "addNewPlan": "Add New Plan",
+        "editPlan": "Edit Plan"
       },
       "fields": {
         "planName": "Plan Name",
@@ -1596,17 +1973,21 @@
         "inactive": "Inactive",
         "monthly": "Monthly",
         "quarterly": "Quarterly",
+        "semiAnnual": "Semi-Annual",
+        "annual": "Annual",
         "yearly": "Yearly"
       },
       "buttons": {
         "cancel": "Cancel",
-        "save": "Save"
+        "save": "Save",
+        "update": "Update"
       }
     },
     "paymentHistory": {
       "hero": {
         "title": "Payment History"
       },
+      "loading": "Loading payment history...",
       "buttons": {
         "exportBilling": "Export Billing Reports"
       },
@@ -1653,6 +2034,7 @@
       "hero": {
         "title": "Manage User Subscriptions"
       },
+      "loading": "Loading subscriptions...",
       "actions": {
         "exportBillingReports": "Export Billing Reports"
       },
@@ -1691,6 +2073,8 @@
       "hero": {
         "title": "Subscription Details"
       },
+      "loading": "Loading subscription details...",
+      "notFound": "Subscription not found",
       "sections": {
         "userInfo": "User Info",
         "planInfo": "Plan Info",
@@ -1701,26 +2085,35 @@
         "email": "Email",
         "currentPlan": "Current Plan",
         "duration": "Duration",
+        "startDate": "Start Date",
         "renewalDate": "Renewal Date",
+        "expiryDate": "Expiry Date",
         "status": "Status",
+        "paymentStatus": "Payment Status",
         "lastPayment": "Last payment",
         "nextDueDate": "Next Due Date",
-        "paymentMethod": "Payment Method"
+        "paymentMethod": "Payment Method",
+        "transactionId": "Transaction ID",
+        "moyassarStatus": "Moyassar Status"
       },
       "actions": {
         "upgradeDowngrade": "Upgrade / Downgrade Plan",
         "cancelSubscription": "Cancel Subscription",
-        "renewalManually": "Renewal Manually"
+        "renewalManually": "Renewal Manually",
+        "syncPayment": "Sync Payment",
+        "syncing": "Syncing..."
       },
       "buttons": {
         "cancel": "Cancel",
-        "saveChanges": "Save Changes"
+        "saveChanges": "Save Changes",
+        "back": "Back to Subscriptions"
       }
     },
     "subscriptionTrends": {
       "hero": {
         "title": "Subscription Trend"
       },
+      "loading": "Loading subscription data...",
       "actions": {
         "comparePeriod": "Compare period",
         "exportReport": "Export Report"
@@ -1728,6 +2121,8 @@
       "filters": {
         "planType": "Plan Type",
         "dateRange": "Date range",
+        "month": "Month",
+        "year": "Year",
         "last30Days": "Last 30 Days",
         "last7Days": "Last 7 Days",
         "last90Days": "Last 90 Days",
@@ -1766,6 +2161,7 @@
         "title": "Reports & Analytics",
         "subtitle": "Monitor student performance, question usage, and test activity."
       },
+      "loading": "Loading analytics data...",
       "actions": {
         "exportReport": "Export Report"
       },
@@ -1970,7 +2366,7 @@
     "classificationManagement": {
       "hero": {
         "title": "Classification Management",
-        "subtitle": "Organize questions by subject, topic, subtopic, and concept"
+        "subtitle": "Organize questions by subject, topic, Exam"
       },
       "actions": {
         "export": "Export",
@@ -1998,10 +2394,12 @@
         "columns": {
           "subjectName": "Subject Name",
           "topicName": "Topic Name",
+          "parentSubject": "Parent Subject",
           "subtopicName": "Subtopic Name",
           "conceptName": "Concept Name",
           "examName": "Exam",
           "description": "Description",
+          "status": "Status",
           "createdBy": "Created By",
           "date": "Date",
           "linkedSubtopic": "Linked Subtopic",
@@ -2029,9 +2427,11 @@
         "selectSubject": "Select Subject",
         "selectTopic": "Select Topic",
         "selectSubtopic": "Select Subtopic",
+        "selectExam": "Select Exam",
         "allSubjects": "All Subjects",
         "allTopics": "All Topics",
-        "allSubtopics": "All Subtopics"
+        "allSubtopics": "All Subtopics",
+        "allExams": "All Exams"
       },
       "headings": {
         "subject": "Classification Management",
@@ -2063,18 +2463,43 @@
         "createSubject": "Create Subject"
       },
       "fields": {
+        "exam": "Exam",
         "subjectName": "Subject Name",
         "description": "Description",
         "code": "Code (optional)"
       },
       "placeholders": {
+        "selectExam": "Select an exam",
+        "loadingExams": "Loading exams...",
+        "noExams": "No exams available",
         "subjectName": "Enter subject name",
         "description": "A brief description of the subject",
         "code": "Enter subject code"
       },
+      "validation": {
+        "selectExam": "Please select an exam"
+      },
       "buttons": {
         "cancel": "Cancel",
         "create": "Create"
+      }
+    },
+    "editSubject": {
+      "hero": {
+        "title": "Edit Subject",
+        "subtitle": "Update subject information and settings"
+      },
+      "fields": {
+        "subjectName": "Subject Name",
+        "description": "Description"
+      },
+      "placeholders": {
+        "subjectName": "Enter subject name",
+        "description": "Enter description"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "updateSubject": "Update Subject"
       }
     },
     "addTopic": {
@@ -2092,12 +2517,35 @@
       },
       "placeholders": {
         "subjectName": "Enter subject name",
+        "selectSubject": "Select a subject",
+        "loadingSubjects": "Loading subjects...",
         "topicName": "Enter topic name",
         "description": "A brief description of the subject"
       },
       "buttons": {
         "cancel": "Cancel",
         "create": "Create"
+      }
+    },
+    "editTopic": {
+      "hero": {
+        "title": "Edit Topic",
+        "subtitle": "Update topic information and settings"
+      },
+      "fields": {
+        "parentSubject": "Parent Subject",
+        "topicName": "Topic Name",
+        "description": "Description"
+      },
+      "placeholders": {
+        "selectSubject": "Select a subject",
+        "loadingSubjects": "Loading subjects...",
+        "topicName": "Enter topic name",
+        "description": "Enter description"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "updateTopic": "Update Topic"
       }
     },
     "addSubtopic": {
@@ -2342,10 +2790,19 @@
           "title": "Title",
           "message": "Message",
           "schedule": "Schedule",
+          "audience": "Target Audience",
           "status": "Status",
+          "publish": "Publish",
           "actions": "Actions"
         },
         "emptyMessage": "No notifications found"
+      },
+      "deleteModal": {
+        "title": "Delete Announcement",
+        "message": "Are you sure you want to delete \"{{title}}\"?",
+        "subMessage": "This will only hide it from your view.",
+        "confirmText": "Delete",
+        "cancelText": "Cancel"
       }
     },
     "languageManagement": {
@@ -2418,9 +2875,8 @@
       "options": {
         "targetAudience": {
           "allUsers": "All users",
-          "administrators": "Administrators",
-          "members": "Members",
-          "guests": "Guests"
+          "adminRoles": "Admin Roles",
+          "students": "Students"
         },
         "type": {
           "info": "Info",
@@ -2464,9 +2920,8 @@
       "options": {
         "targetAudience": {
           "allUsers": "All users",
-          "administrators": "Administrators",
-          "members": "Members",
-          "guests": "Guests"
+          "adminRoles": "Admin Roles",
+          "students": "Students"
         },
         "type": {
           "info": "Info",
@@ -2527,6 +2982,7 @@
       "table": {
         "columns": {
           "number": "#",
+          "questionTitle": "QUESTION",
           "contentType": "CONTENT TYPE",
           "submittedBy": "SUBMITTED BY",
           "flagReason": "FLAG REASON",
@@ -2555,6 +3011,7 @@
       "hero": {
         "title": "Content Details"
       },
+      "loading": "Loading...",
       "sections": {
         "reportInformation": "Report Information",
         "content": "Content",
@@ -2597,7 +3054,7 @@
     },
     "filter": {
         "search": "Search by Questions, subject, topic",
-        "subject": "Subject",
+        "subject": "All Subject",
         "exam": "Exam",
         "topic": "Topic"
       },
@@ -2649,6 +3106,7 @@
       "reviewFeedback": "Review Feedback",
       "workflowProgress": "Workflow Progress",
       "recentActivity": "Recent Activity",
+      "noActivity": "No recent activity",
       "workflowSteps": {
         "gatherer": "Gatherer",
         "processor": "Processor",
@@ -2676,7 +3134,23 @@
         "processor": "PROCESSOR",
         "lastUpdate": "LAST UPDATE",
         "status": "STATUS",
+        "indicators": "INDICATORS",
+        "flagsIssues": "FLAGS / ISSUES",
         "actions": "ACTIONS"
+      },
+      "rejectionReasonModal": {
+        "title": "Rejection Reason",
+        "subtitle": "The question was rejected with the following reason:",
+        "reasonLabel": "Reason for Rejection",
+        "noReason": "No reason provided",
+        "close": "Close"
+      },
+      "flagReasonModal": {
+        "title": "Flag Reason",
+        "subtitle": "The question was flagged with the following reason:",
+        "reasonLabel": "Reason for Flagging",
+        "noReason": "No reason provided",
+        "close": "Close"
       },
       "emptyMessage": "No questions found"
     },
@@ -2694,6 +3168,8 @@
         "optionD": "Option D"
       },
       "correctAnswer": "Correct Answer",
+      "explanation": "Explanation",
+      "optional": "Optional",
       "classification": {
         "title": "Classification",
         "subject": "Subject",
@@ -2701,14 +3177,36 @@
         "subtopic": "Subtopic",
         "source": "Source",
         "exam": "Exam",
-        "reference": "Reference"
+        "reference": "Reference",
+        "processor": "Assign Processor"
       },
       "placeholders": {
         "questionText": "Enter your question here...",
         "option": "Enter option text",
         "reference": "Enter reference",
-        "exam": "Select Exam"
-      }
+        "exam": "Select Exam",
+        "explanation": "Enter explanation (optional)"
+      },
+      "messages": {
+        "loading": "Loading...",
+        "noExamsAvailable": "No exams available",
+        "noSubjectsAvailable": "No subjects available",
+        "noTopicsAvailable": "No topics available",
+        "noProcessorsAvailable": "No processors available",
+        "selectExamFirst": "Select exam first",
+        "selectSubjectFirst": "Select subject first"
+      },
+      "rejectFlag": {
+        "button": "Reject Flag",
+        "title": "Reject Flag",
+        "description": "Please provide a reason why you believe this flag is incorrect:",
+        "placeholder": "Enter your reason for rejecting the flag...",
+        "cancel": "Cancel",
+        "submit": "Submit",
+        "submitting": "Submitting..."
+      },
+      "update": "Update",
+      "updating": "Updating..."
     },
     "questionDetail": {
       "title": "Question Details",
@@ -2801,17 +3299,20 @@
       },
       "lastLogin": {
         "title": "Last Login"
-      }
+      },
+      "loading": "Loading dashboard data..."
     },
     "questionBank": {
       "title": "Creator Dashboard",
       "subtitle": "Improve questions,create variants,and submit enhanced versions for final review.",
+      "loading": "Loading questions...",
       "completedQuestions": "Completed Questions",
       "createVariants": "Create Variants",
       "assignedQuestions": "Assigned Questions",
       "sentBackByProcessor": "Sent Back by Processor",
       "workflowProgress": "Workflow Progress",
       "recentActivity": "Recent Activity",
+      "noActivity": "No recent activity",
       "stats": {
         "questionsAssigned": "Questions Assigned",
         "variantsPending": "Variants Pending",
@@ -2837,11 +3338,37 @@
       "searchPlaceholder": "Search draft explanations...",
       "table": {
         "question": "QUESTION",
+        "subject": "SUBJECT",
         "processor": "PROCESSOR",
+        "status": "STATUS",
         "difficulty": "DIFFICULTY",
+        "indicators": "INDICATORS",
+        "flagsIssues": "FLAGS / ISSUES",
         "updatedOn": "UPDATED ON",
         "actions": "ACTIONS"
       },
+      "indicators": {
+        "approved": "Approved",
+        "flag": "Flag",
+        "reject": "Reject",
+        "variant": "Variant"
+      },
+      "reasonButton": "Reason",
+      "flagReasonModal": {
+        "title": "Flag Reason",
+        "subtitle": "The reason why this question was flagged.",
+        "reasonLabel": "Reason for Flagging",
+        "noReason": "No reason provided",
+        "close": "Close"
+      },
+      "rejectionReasonModal": {
+        "title": "Rejection Reason",
+        "subtitle": "The question was rejected with the following reason:",
+        "reasonLabel": "Reason for Rejection",
+        "noReason": "No reason provided",
+        "close": "Close"
+      },
+      "rejectionReasonButton": "View Rejection Reason",
       "emptyMessage": "No questions found"
     },
     "completedQuestionPage": {
@@ -2910,7 +3437,23 @@
         "textbook": "Textbook",
         "pastExam": "Past Exam",
         "custom": "Custom"
-      }
+      },
+      "updateVariant": "Update Variant"
+    },
+    "flaggedVariant": {
+      "title": "Flagged Variant",
+      "description": "This variant has been flagged with the following reason:",
+      "descriptionStudent": "This variant has been flagged by a student with the following reason:",
+      "descriptionExplainer": "This variant has been flagged by an explainer with the following reason:",
+      "rejectFlag": "Reject Flag",
+      "updateHint": "Update the variant below and click 'Update Variant' to fix the issue.",
+      "rejectFlagTitle": "Reject Flag",
+      "rejectFlagDescription": "Please provide a reason for rejecting this flag. The question will be sent back to the processor for review.",
+      "rejectionReason": "Reason for Rejecting Flag",
+      "rejectionReasonPlaceholder": "Enter the reason for rejecting this flag...",
+      "cancel": "Cancel",
+      "rejecting": "Rejecting...",
+      "submitRejection": "Submit Rejection"
     },
     "profile": {
       "title": "Account Settings",
@@ -2981,6 +3524,7 @@
       "subtitle": "Add explanations, diagrams, and supporting notes to finalized Questions.",
       "draft": "Draft",
       "completed": "Completed",
+      "assignedQuestions": "Assigned Questions",
       "addExplanation": "+ Add Explanation",
       "pendingExplanations": "Pending Explanations",
       "workflowProgress": "Workflow Progress",
@@ -3011,6 +3555,10 @@
       },
       "emptyMessage": "No questions found"
     },
+    "addExplanation": {
+      "saveDraft": "Save Draft",
+      "submit": "Submit explanation"
+    },
     "draftExplanation": {
       "title": "Draft Explanations",
       "subtitle": "Continue editing your draft explanations.",
@@ -3036,6 +3584,34 @@
         "action": "ACTION"
       },
       "emptyMessage": "No completed explanations found"
+    },
+    "assignedQuestions": {
+      "title": "Assigned Questions",
+      "subtitle": "View all questions assigned to you with their current status.",
+      "back": "Back",
+      "searchPlaceholder": "Search questions...",
+      "loading": "Loading...",
+      "viewTitle": "View Question",
+      "viewSubtitle": "View question details and status",
+      "questionDetails": "Question Details",
+      "status": "Status",
+      "questionText": "Question Text",
+      "questionType": "Question Type",
+      "options": "Options",
+      "correctAnswer": "Correct Answer",
+      "explanation": "Explanation",
+      "subject": "Subject",
+      "topic": "Topic",
+      "processor": "Processor",
+      "table": {
+        "question": "QUESTION",
+        "subject": "SUBJECT",
+        "processor": "PROCESSOR",
+        "status": "STATUS",
+        "updatedOn": "UPDATED ON",
+        "actions": "ACTIONS"
+      },
+      "emptyMessage": "No assigned questions found"
     },
     "profile": {
       "title": "Account Settings",
@@ -3079,6 +3655,7 @@
       "gathererSubmission": "Gatherer Submission",
       "creatorSubmission": "Creator Submission",
       "explainerSubmission": "Explainer Submission",
+      "adminSubmission": "Admin Submission",
       "profile": "Profile"
     },
     "dashboard": {
@@ -3102,9 +3679,11 @@
       "lastLogin": {
         "title": "Last Login"
       },
-      "pendingTasks": "Pending Tasks"
+      "pendingTasks": "Pending Tasks",
+      "loading": "Loading dashboard data..."
     },
     "questionBank": {
+      "loading": "Loading questions...",
       "title": "Processor Dashboard",
       "subtitle": "Review incoming questions, accept or reject, and pass them to creators.",
       "allProcessedQuestions": "All Processed Questions",
@@ -3116,10 +3695,15 @@
       "table": {
         "question": "QUESTION",
         "gatherer": "GATHERER",
+        "submittedBy": "SUBMITTED BY",
+        "source": "SOURCE",
         "dateSubmitted": "DATE SUBMITTED",
         "subject": "SUBJECT",
+        "status": "STATUS",
         "actions": "ACTIONS"
       },
+      "allSubmissions": "All Submissions",
+      "loading": "Loading...",
       "workflowProgress": "Workflow Progress",
       "recentActivity": "Recent Activity",
       "searchPlaceholder": "Search draft explanations...",
@@ -3128,11 +3712,13 @@
     "creatorSubmission": {
       "title": "Creator Submissions",
       "back": "Back",
+      "loading": "Loading...",
       "table": {
         "question": "QUESTION",
         "creator": "CREATOR",
-        "variants": "VARIANTS",
-        "status": "STATUS",
+        "processorStatus": "PROCESSOR STATUS",
+        "creatorStatus": "CREATOR STATUS",
+        "indicators": "INDICATORS",
         "submittedOn": "SUBMITTED ON",
         "actions": "ACTIONS"
       },
@@ -3141,8 +3727,10 @@
     "gathererSubmission": {
       "title": "Gatherer Submissions",
       "back": "Back",
+      "loading": "Loading...",
       "table": {
         "question": "QUESTION",
+        "subject": "SUBJECT",
         "gatherer": "GATHERER",
         "uploadOn": "UPLOAD ON",
         "status": "STATUS",
@@ -3153,18 +3741,45 @@
     "explainerSubmission": {
       "title": "Explainer Submission",
       "back": "Back",
+      "loading": "Loading...",
+      "searchPlaceholder": "Search questions...",
       "table": {
         "question": "QUESTION",
         "explainer": "EXPLAINER",
+        "processorStatus": "PROCESSOR STATUS",
+        "explainerStatus": "EXPLAINER STATUS",
         "explanationSummary": "EXPLANATION SUMMARY",
         "submittedOn": "SUBMITTED ON",
         "actions": "ACTIONS"
       },
       "emptyMessage": "No questions found"
     },
+    "adminSubmission": {
+      "title": "Admin Submission",
+      "back": "Back",
+      "loading": "Loading...",
+      "table": {
+        "question": "QUESTION",
+        "student": "STUDENT",
+        "role": "Role",
+        "processorStatus": "PROCESSOR STATUS",
+        "adminStatus": "ADMIN STATUS",
+        "submittedOn": "SUBMITTED ON",
+        "actions": "ACTIONS"
+      },
+      "emptyMessage": "No questions found",
+      "flagReasonModal": {
+        "title": "Flag Reason",
+        "subtitle": "The reason why this question was flagged by the student.",
+        "reasonLabel": "Reason for Flagging",
+        "noReason": "No reason provided",
+        "close": "Close"
+      }
+    },
     "allProcessedQuestions": {
       "title": "All Processed Questions",
       "back": "Back",
+      "loading": "Loading...",
       "table": {
         "questionTitle": "QUESTION",
         "status": "STATUS",
@@ -3179,6 +3794,9 @@
       "close": "Close",
       "reject": "Reject",
       "acceptAndSend": "Accept & Sent to Creator",
+      "acceptAndSendToCreator": "Accept and send to creator",
+      "acceptAndSendToExplainer": "Accept and send to explainer",
+      "approveQuestion": "Approve Question",
       "questionInfo": "Question Info",
       "options": "Options:",
       "correctAnswer": "Correct Answer",
@@ -3190,8 +3808,44 @@
       "variant": "variant",
       "status": "Status",
       "creatorGathererNotes": "Creator / Gatherer Notes",
+      "explanation": "Explanation",
       "attachments": "Attachments",
-      "questionHistory": "Question History"
+      "questionHistory": "Question History",
+      "rejectQuestion": "Reject Question",
+      "rejectReason": "Please provide a reason for rejecting this question:",
+      "rejectReasonPlaceholder": "Enter rejection reason...",
+      "cancel": "Cancel",
+      "confirmReject": "Confirm Reject",
+      "loading": "Loading question...",
+      "processing": "Processing...",
+      "loadingCreators": "Loading creators...",
+      "loadingExplainers": "Loading explainers...",
+      "noOptions": "No options available for this question type.",
+      "approveReason": "Approve Reason",
+      "rejectReasonButton": "Reject Reason",
+      "flagReason": "Flag Reason",
+      "flagReasonDescription": "The creator has flagged this question with the following reason:",
+      "flagReasonDescriptionStudent": "The student has flagged this question with the following reason:",
+      "flagReasonDescriptionExplainer": "The explainer has flagged this question with the following reason:",
+      "flagReasonDescriptionRejected": "The creator flagged this question (rejected by processor) with the following reason:",
+      "flagReasonDescriptionStudentRejected": "The student flagged this question (rejected by processor) with the following reason:",
+      "flagReasonDescriptionExplainerRejected": "The explainer flagged this question (rejected by processor) with the following reason:",
+      "flagRejectedNote": "Note: This flag was previously rejected by the processor, but you can still review and process the question.",
+      "rejectFlagReason": "Reject Flag Reason",
+      "rejectFlagReasonDescription": "Please provide a reason for rejecting the creator's flag. The flag will be resolved and the question will be sent back to the creator.",
+      "rejectFlagReasonDescriptionExplainer": "Please provide a reason for rejecting the explainer's flag. The flag will be resolved and the question will be sent back to the explainer.",
+      "rejectFlagReasonPlaceholder": "Enter reason for rejecting the flag...",
+      "confirmRejectFlag": "Reject Flag Reason",
+      "gathererFlagRejection": "Gatherer's Flag Rejection",
+      "gathererFlagRejectionDescription": "The gatherer has rejected the flag with the following reason:",
+      "acceptGathererRejection": "Accept Gatherer's Rejection",
+      "rejectGathererRejection": "Reject Gatherer's Rejection",
+      "rejectGathererRejectionDescription": "Please provide a reason for rejecting the gatherer's flag rejection. The flag will be restored and the question will be sent back to the gatherer.",
+      "parentQuestionReference": "Parent Question Reference",
+      "parentQuestionDescription": "This variant belongs to the following parent question:",
+      "parentQuestionLabel": "Question",
+      "parentOptionsLabel": "Options",
+      "parentCorrectAnswerLabel": "Correct Answer"
     },
     "profile": {
       "title": "Account Settings",
@@ -3218,13 +3872,49 @@
       "language": "Language",
       "notifications": "Notifications",
       "notificationsDescription": "Enable or disable email notifications for important updates.",
-      "saveSettings": "Save Settings"
+      "saveSettings": "Save Settings",
+      "placeholders": {
+        "currentPassword": "Enter your current password",
+        "email": "Enter your email address",
+        "code": "6-digit Code",
+        "newPassword": "Enter new password",
+        "confirmPassword": "Confirm new password"
+      },
+      "languageOptions": {
+        "english": "English (US)",
+        "arabic": "Arabic"
+      },
+      "errors": {
+        "failedToLoad": "Failed to load profile data",
+        "failedToUpdate": "Failed to update profile",
+        "enterEmail": "Please enter your email address",
+        "failedToSendOTP": "Failed to send OTP code",
+        "fillAllFields": "Please fill in all required fields",
+        "passwordMismatch": "New password and confirm password do not match",
+        "failedToUpdatePassword": "Failed to update password",
+        "failedToUpdateLanguage": "Failed to update language",
+        "failedToSaveSettings": "Failed to save application settings"
+      },
+      "success": {
+        "profileUpdated": "Profile updated successfully",
+        "otpSent": "OTP code sent to your email",
+        "passwordUpdated": "Password updated successfully",
+        "languageUpdated": "Language updated successfully",
+        "settingsSaved": "Application settings saved successfully"
+      }
     }
   },
   "filter": {
-    "subject": "Subject",
+    "subject": "All Subject",
     "role": "Role",
-    "status": "Status"
+    "status": "All Status"
+  },
+  "payment": {
+    "title": "Moyassar Payment",
+    "settingUp": "Setting up your payment...",
+    "loading": "Processing your subscription...",
+    "redirecting": "Redirecting to payment page...",
+    "continue": "Continue to Payment"
   },
   "toast": {
     "title": {
@@ -3232,6 +3922,28 @@
     },
     "message": {
       "logoutSuccess": "You have been logged out successfully."
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "noAnnouncements": "No announcements",
+    "dismiss": "Dismiss"
+  },
+  "common": {
+    "loading": "Loading...",
+    "months": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
     }
   }
 }

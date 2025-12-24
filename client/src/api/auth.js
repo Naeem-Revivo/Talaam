@@ -51,19 +51,13 @@ const authAPI = {
     try {
       const response = await axiosClient.post('/auth/signup', userData);
       const payload = response.data;
-      const token = payload?.data?.token;
-      const user = payload?.data?.user;
-
-      if (token) {
-        localStorage.setItem('authToken', token);
-      }
-      if (user) {
-        localStorage.setItem('user', JSON.stringify(user));
-      }
+      // Don't set storage here - let Redux slice handle it based on rememberMe
       return payload;
     } catch (error) {
       const apiError = error.response?.data;
-      throw apiError || { message: 'Signup failed' };
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'Signup failed';
+      throw { ...apiError, message: errorMessage };
     }
   },
 
@@ -72,19 +66,13 @@ const authAPI = {
     try {
       const response = await axiosClient.post('/auth/login', credentials);
       const payload = response.data;
-      const token = payload?.data?.token;
-      const user = payload?.data?.user;
-
-      if (token) {
-        localStorage.setItem('authToken', token);
-      }
-      if (user) {
-        localStorage.setItem('user', JSON.stringify(user));
-      }
+      // Don't set storage here - let Redux slice handle it based on rememberMe
       return payload;
     } catch (error) {
       const apiError = error.response?.data;
-      throw apiError || { message: 'Login failed' };
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'Login failed';
+      throw { ...apiError, message: errorMessage };
     }
   },
 
@@ -104,19 +92,13 @@ const authAPI = {
     try {
       const response = await axiosClient.post('/auth/verify-otp', payload);
       const data = response.data;
-      const token = data?.data?.token;
-      const user = data?.data?.user;
-
-      if (token) {
-        localStorage.setItem('authToken', token);
-      }
-      if (user) {
-        localStorage.setItem('user', JSON.stringify(user));
-      }
+      // Don't set storage here - let Redux slice handle it (OTP defaults to rememberMe = true)
       return data;
     } catch (error) {
       const apiError = error.response?.data;
-      throw apiError || { message: 'OTP verification failed' };
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'OTP verification failed';
+      throw { ...apiError, message: errorMessage };
     }
   },
 
@@ -127,7 +109,9 @@ const authAPI = {
       return response.data;
     } catch (error) {
       const apiError = error.response?.data;
-      throw apiError || { message: 'Failed to resend OTP' };
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'Failed to resend OTP';
+      throw { ...apiError, message: errorMessage };
     }
   },
 
@@ -138,18 +122,48 @@ const authAPI = {
       return response.data;
     } catch (error) {
       const apiError = error.response?.data;
-      throw apiError || { message: 'Forgot password request failed' };
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'Forgot password request failed';
+      throw { ...apiError, message: errorMessage };
     }
   },
 
-  // Reset password
+  // Reset password (using token from link)
   resetPassword: async (payload) => {
     try {
       const response = await axiosClient.post('/auth/reset-password', payload);
       return response.data;
     } catch (error) {
       const apiError = error.response?.data;
-      throw apiError || { message: 'Reset password failed' };
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'Reset password failed';
+      throw { ...apiError, message: errorMessage };
+    }
+  },
+
+  // Forgot password OTP (sends OTP for profile page)
+  forgotPasswordOTP: async (payload) => {
+    try {
+      const response = await axiosClient.post('/auth/forgot-password-otp', payload);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'Failed to send OTP';
+      throw { ...apiError, message: errorMessage };
+    }
+  },
+
+  // Reset password OTP (using OTP from profile page)
+  resetPasswordOTP: async (payload) => {
+    try {
+      const response = await axiosClient.post('/auth/reset-password-otp', payload);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      // Extract message from API response
+      const errorMessage = apiError?.message || error.message || 'Reset password failed';
+      throw { ...apiError, message: errorMessage };
     }
   },
 
@@ -186,10 +200,13 @@ const authAPI = {
     }
   },
 
-  // Simple logout (remove from localStorage)
+  // Simple logout (remove from both localStorage and sessionStorage)
   logout: () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    localStorage.removeItem('rememberMe');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('user');
   },
 };
 

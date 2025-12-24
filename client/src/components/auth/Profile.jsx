@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useLanguage } from '../../context/LanguageContext'
-import { downarrow } from '../../assets/svg/signup'
 import profileData from '../../data/profileData.json'
 import { useDispatch, useSelector } from 'react-redux'
 import { completeProfile, fetchCurrentUser } from '../../store/slices/authSlice'
+import { isProfileComplete } from '../../utils/profileUtils'
 import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
 import { useNavigate } from 'react-router-dom'
+import ProfileDropdown from '../common/ProfileDropdown'
+import { getTranslatedAuthMessage } from '../../utils/authMessages'
+import languagesAPI from '../../api/languages'
 
 const Profile = () => {
   const { language, t } = useLanguage()
@@ -65,10 +68,10 @@ const Profile = () => {
   // Validate full name
   const validateFullName = (name) => {
     if (!name.trim()) {
-      return 'Full name is required'
+      return t('profile.validation.fullNameRequired')
     }
     if (name.trim().length < 2) {
-      return 'Full name must be at least 2 characters'
+      return t('profile.validation.fullNameMinLength')
     }
     return ''
   }
@@ -76,36 +79,43 @@ const Profile = () => {
   // Validate date of birth
   const validateDateOfBirth = (date) => {
     if (!date) {
-      return 'Date of birth is required'
+      return '' // Date of birth is optional, no error if empty
     }
     
     const selectedDate = new Date(date)
     const today = new Date()
+    today.setHours(0, 0, 0, 0) // Reset time to compare dates only
     
-    // Check if date is in the future
     if (selectedDate > today) {
-      return 'Date of birth cannot be in the future'
-    }
-    
-    // Check if user is at least 13 years old (common minimum age)
-    const minAgeDate = new Date()
-    minAgeDate.setFullYear(today.getFullYear() - 13)
-    if (selectedDate > minAgeDate) {
-      return 'You must be at least 13 years old'
+      return t('profile.validation.dateOfBirthFuture') || 'Date of birth cannot be in the future'
     }
     
     return ''
   }
 
+
   const handleInputChange = (e) => {
     const { name, value } = e.target
+    
+    // For dateOfBirth, validate immediately to prevent future dates
+    if (name === 'dateOfBirth' && value) {
+      const error = validateDateOfBirth(value)
+      if (error) {
+        setErrors({
+          ...errors,
+          [name]: error
+        })
+        return // Don't update formData if validation fails
+      }
+    }
+    
     setFormData({
       ...formData,
       [name]: value
     })
 
-    // Clear error when user starts typing
-    if (errors[name]) {
+    // Clear error when user starts typing (if no validation error)
+    if (errors[name] && (name !== 'dateOfBirth' || !value || !validateDateOfBirth(value))) {
       setErrors({
         ...errors,
         [name]: ''
@@ -118,15 +128,10 @@ const Profile = () => {
     const { name, value } = e.target
     let error = ''
     
-    switch (name) {
-      case 'fullName':
-        error = validateFullName(value)
-        break
-      case 'dateOfBirth':
-        error = validateDateOfBirth(value)
-        break
-      default:
-        break
+    if (name === 'fullName') {
+      error = validateFullName(value)
+    } else if (name === 'dateOfBirth') {
+      error = validateDateOfBirth(value)
     }
     
     setErrors({
@@ -157,7 +162,7 @@ const Profile = () => {
     try {
       const payload = {
         fullName: formData.fullName.trim(),
-        dateOfBirth: formData.dateOfBirth,
+        ...(formData.dateOfBirth && { dateOfBirth: formData.dateOfBirth }),
         country: formData.country,
         timezone: formData.timeZone,
         language: formData.language,
@@ -166,13 +171,15 @@ const Profile = () => {
       const resultAction = await dispatch(completeProfile(payload))
 
       if (completeProfile.fulfilled.match(resultAction)) {
-        const msg =
-          (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
-          resultAction.payload?.message ||
-          t('profile.success') ||
-          'Profile completed successfully.'
+        const backendMessage = resultAction.payload?.message || 'Profile completed successfully'
+        const msg = getTranslatedAuthMessage(backendMessage, t, 'profile.success') || t('profile.success') || 'Profile completed successfully.'
         showSuccessToast(msg, { title: t('profile.successTitle') || 'Profile Saved', isAuth: true })
-        navigate('/dashboard', { replace: true })
+        
+        // Refresh user data to get updated profile
+        await dispatch(fetchCurrentUser())
+        
+        // Redirect to subscription bridge - it will check subscription and route accordingly
+        navigate('/subscription-bridge', { replace: true })
       } else {
         // Extract error message from API response
         const errorMessage = 
@@ -196,7 +203,39 @@ const Profile = () => {
 
   const countries = profileData.countries
   const timeZones = profileData.timeZones
-  const languages = profileData.languages
+  const [languages, setLanguages] = useState(profileData.languages) // Fallback to static data
+
+  // Fetch active languages from API
+  useEffect(() => {
+    const fetchActiveLanguages = async () => {
+      try {
+        const response = await languagesAPI.getActiveLanguages()
+        if (response.success && response.data.languages && response.data.languages.length > 0) {
+          // Transform API languages to match ProfileDropdown format (array of strings)
+          const transformedLanguages = response.data.languages.map(lang => lang.name)
+          setLanguages(transformedLanguages)
+          
+          // If current language is not in active languages, update to default or first active
+          setFormData(prev => {
+            const currentLang = prev.language
+            if (currentLang && !transformedLanguages.includes(currentLang)) {
+              const defaultLang = response.data.languages.find(lang => lang.isDefault)
+              if (defaultLang) {
+                return { ...prev, language: defaultLang.name }
+              } else if (transformedLanguages.length > 0) {
+                return { ...prev, language: transformedLanguages[0] }
+              }
+            }
+            return prev
+          })
+        }
+      } catch (error) {
+        console.error('Error fetching active languages:', error)
+        // Keep using static data as fallback
+      }
+    }
+    fetchActiveLanguages()
+  }, [])
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4" dir={dir}>
@@ -245,6 +284,7 @@ const Profile = () => {
                 value={formData.dateOfBirth}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
+                max={new Date().toISOString().split('T')[0]} // Prevent future dates in date picker
                 className={`px-4 py-3 border ${errors.dateOfBirth ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input`}
               />
               {errors.dateOfBirth && (
@@ -259,25 +299,11 @@ const Profile = () => {
               <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
                 {t('profile.country')}
               </label>
-              <div className="relative">
-                <select
-                  name="country"
-                  value={formData.country}
-                  onChange={handleInputChange}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
-                >
-                  {countries.map((country) => (
-                    <option key={country} value={country}>
-                      {country}
-                    </option>
-                  ))}
-                </select>
-                <img 
-                  src={downarrow} 
-                  alt="dropdown" 
-                  className={`absolute top-1/2 transform -translate-y-1/2 pointer-events-none ${dir === 'rtl' ? 'left-6' : 'right-6'}`}
-                />
-              </div>
+              <ProfileDropdown
+                value={formData.country}
+                options={countries}
+                onChange={(value) => setFormData({ ...formData, country: value })}
+              />
             </div>
 
             {/* Time Zone Dropdown */}
@@ -285,25 +311,11 @@ const Profile = () => {
               <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
                 {t('profile.timeZone')}
               </label>
-              <div className="relative">
-                <select
-                  name="timeZone"
-                  value={formData.timeZone}
-                  onChange={handleInputChange}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
-                >
-                  {timeZones.map((timeZone) => (
-                    <option key={timeZone} value={timeZone}>
-                      {timeZone}
-                    </option>
-                  ))}
-                </select>
-                <img 
-                  src={downarrow} 
-                  alt="dropdown" 
-                  className={`absolute top-1/2 transform -translate-y-1/2 pointer-events-none ${dir === 'rtl' ? 'left-6' : 'right-6'}`}
-                />
-              </div>
+              <ProfileDropdown
+                value={formData.timeZone}
+                options={timeZones}
+                onChange={(value) => setFormData({ ...formData, timeZone: value })}
+              />
             </div>
 
             {/* Language Dropdown */}
@@ -311,25 +323,11 @@ const Profile = () => {
               <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
                 {t('profile.language')}
               </label>
-              <div className="relative">
-                <select
-                  name="language"
-                  value={formData.language}
-                  onChange={handleInputChange}
-                  className="px-4 py-3 border border-[#03274633] rounded-lg outline-none w-full lg:w-[423px] h-[59px] appearance-none bg-white pr-10 font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue shadow-input"
-                >
-                  {languages.map((lang) => (
-                    <option key={lang} value={lang}>
-                      {lang}
-                    </option>
-                  ))}
-                </select>
-                <img 
-                  src={downarrow} 
-                  alt="dropdown" 
-                  className={`absolute top-1/2 transform -translate-y-1/2 pointer-events-none ${dir === 'rtl' ? 'left-6' : 'right-6'}`}
-                />
-              </div>
+              <ProfileDropdown
+                value={formData.language}
+                options={languages}
+                onChange={(value) => setFormData({ ...formData, language: value })}
+              />
             </div>
 
             {/* Finish Setup Button */}

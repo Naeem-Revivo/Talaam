@@ -167,7 +167,7 @@ const updateAdminDetails = async (user, updates) => {
  * Delete admin user
  */
 const deleteAdminUser = async (userId) => {
-  return await User.findByIdAndDelete(userId);
+  return await User.delete(userId);
 };
 
 /**
@@ -176,6 +176,8 @@ const deleteAdminUser = async (userId) => {
  */
 const getUserGrowthData = async () => {
   try {
+    const { prisma } = require('../../config/db/prisma');
+    
     // Calculate date range for last 12 months
     const now = new Date();
     const twelveMonthsAgo = new Date();
@@ -184,33 +186,31 @@ const getUserGrowthData = async () => {
     twelveMonthsAgo.setHours(0, 0, 0, 0);
 
     // Get total users before the 12-month period (for cumulative calculation)
-    const totalUsersBefore = await User.countDocuments({
-      createdAt: { $lt: twelveMonthsAgo },
+    const totalUsersBefore = await prisma.user.count({
+      where: {
+        createdAt: { lt: twelveMonthsAgo },
+        role: 'student',
+      },
     });
 
-    // Aggregate users by month for the last 12 months
-    const monthlyData = await User.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: twelveMonthsAgo },
-        },
+    // Get all users created in the last 12 months
+    const users = await prisma.user.findMany({
+      where: {
+        createdAt: { gte: twelveMonthsAgo },
+        role: 'student',
       },
-      {
-        $group: {
-          _id: {
-            year: { $year: '$createdAt' },
-            month: { $month: '$createdAt' },
-          },
-          count: { $sum: 1 },
-        },
+      select: {
+        createdAt: true,
       },
-      {
-        $sort: {
-          '_id.year': 1,
-          '_id.month': 1,
-        },
-      },
-    ]);
+    });
+
+    // Group by month
+    const monthlyMap = new Map();
+    users.forEach((user) => {
+      const date = new Date(user.createdAt);
+      const key = `${date.getFullYear()}-${date.getMonth()}`;
+      monthlyMap.set(key, (monthlyMap.get(key) || 0) + 1);
+    });
 
     // Create a map of all months in the last 12 months with default count 0
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -221,21 +221,17 @@ const getUserGrowthData = async () => {
     for (let i = 11; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const year = date.getFullYear();
-      const month = date.getMonth() + 1;
-      const monthName = monthNames[date.getMonth()];
+      const month = date.getMonth();
+      const monthName = monthNames[month];
+      const key = `${year}-${month}`;
 
-      // Find matching data from aggregation
-      const monthData = monthlyData.find(
-        (item) => item._id.year === year && item._id.month === month
-      );
-
-      const count = monthData ? monthData.count : 0;
+      const count = monthlyMap.get(key) || 0;
       cumulativeCount += count;
 
       growthData.push({
         month: monthName,
         year: year,
-        monthNumber: month,
+        monthNumber: month + 1,
         count: count, // New users in this month
         cumulativeCount: cumulativeCount, // Total users up to this month
       });
@@ -254,10 +250,24 @@ const getUserGrowthData = async () => {
  */
 const getLatestSignups = async (limit = 3) => {
   try {
-    const latestUsers = await User.find()
-      .select('name fullName email createdAt')
-      .sort({ createdAt: -1 })
-      .limit(limit);
+    const { prisma } = require('../../config/db/prisma');
+    
+    const latestUsers = await prisma.user.findMany({
+      where: {
+        role: 'student',
+      },
+      select: {
+        id: true,
+        name: true,
+        fullName: true,
+        email: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: limit,
+    });
 
     const now = new Date();
     
@@ -284,7 +294,7 @@ const getLatestSignups = async (limit = 3) => {
       }
 
       return {
-        id: user._id,
+        id: user.id,
         name: user.fullName || user.name || 'Unknown',
         email: user.email,
         createdAt: user.createdAt,
@@ -298,64 +308,378 @@ const getLatestSignups = async (limit = 3) => {
 };
 
 /**
- * Get dashboard statistics for superadmin
- * Returns total students, verified email students, active subscriptions, total revenue, user growth data, and latest signups
+ * Get subscription notifications for dashboard
+ * Returns notifications about expiring and expired subscriptions
  */
-const getDashboardStatistics = async () => {
+const getSubscriptionNotifications = async () => {
   try {
-    // Get total students count
-    const totalStudents = await User.countDocuments({ role: 'student' });
-
-    // Get verified email students count
-    const verifiedEmailStudents = await User.countDocuments({
-      role: 'student',
-      isEmailVerified: true,
+    const { prisma } = require('../../config/db/prisma');
+    const now = new Date();
+    
+    // Calculate dates for notifications
+    const threeDaysFromNow = new Date(now);
+    threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+    
+    const sevenDaysFromNow = new Date(now);
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+    
+    // Get subscriptions expiring in the next 3 days
+    const expiringSoon = await prisma.subscription.count({
+      where: {
+        isActive: true,
+        paymentStatus: 'Paid',
+        expiryDate: {
+          gte: now,
+          lte: threeDaysFromNow,
+        },
+      },
     });
-
-    // Get active subscriptions count
-    const activeSubscriptions = await Subscription.countDocuments({
-      isActive: true,
+    
+    // Get subscriptions expiring in the next 7 days (but not in next 3 days)
+    const expiringThisWeek = await prisma.subscription.count({
+      where: {
+        isActive: true,
+        paymentStatus: 'Paid',
+        expiryDate: {
+          gt: threeDaysFromNow,
+          lte: sevenDaysFromNow,
+        },
+      },
     });
+    
+    // Get expired subscriptions that are still marked as active (should be updated by cron)
+    const expiredStillActive = await prisma.subscription.count({
+      where: {
+        isActive: true,
+        paymentStatus: 'Paid',
+        expiryDate: {
+          lt: now,
+        },
+      },
+    });
+    
+    // Get pending subscriptions
+    const pendingSubscriptions = await prisma.subscription.count({
+      where: {
+        paymentStatus: 'Pending',
+      },
+    });
+    
+    // Get cancelled subscriptions
+    const cancelledSubscriptions = await prisma.subscription.count({
+      where: {
+        paymentStatus: 'Cancelled',
+      },
+    });
+    
+    // Get total active subscriptions
+    const totalActive = await prisma.subscription.count({
+      where: {
+        isActive: true,
+        paymentStatus: 'Paid',
+      },
+    });
+    
+    // Calculate next cron run time (daily at 00:00)
+    const nextCronRun = new Date(now);
+    nextCronRun.setHours(24, 0, 0, 0); // Next midnight
+    if (nextCronRun <= now) {
+      nextCronRun.setDate(nextCronRun.getDate() + 1);
+    }
+    
+    // Format next cron run time
+    const cronRunTime = nextCronRun.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    
+    const notifications = [];
+    
+    // Add notification for expired subscriptions that need attention
+    if (expiredStillActive > 0) {
+      notifications.push({
+        type: 'error',
+        title: 'Expired Subscriptions',
+        description: `${expiredStillActive} subscription${expiredStillActive > 1 ? 's' : ''} expired but still marked as active. Please review.`,
+        time: 'Action required',
+        bg: 'bg-[#FEF2F2]',
+        border: 'border-[#ED4122]',
+        iconBg: 'bg-[#EF4444]',
+        titleColor: 'text-[#EF4444]',
+        descriptionColor: 'text-[#EF4444]',
+        timeColor: 'text-[#EF4444]',
+        count: expiredStillActive,
+      });
+    }
+    
+    // Add notification for subscriptions expiring soon (within 3 days)
+    if (expiringSoon > 0) {
+      notifications.push({
+        type: 'warning',
+        title: 'Subscriptions Expiring Soon',
+        description: `${expiringSoon} subscription${expiringSoon > 1 ? 's' : ''} expiring within 3 days.`,
+        time: 'Urgent',
+        bg: 'bg-[#FEF2F2]',
+        border: 'border-[#ED4122]',
+        iconBg: 'bg-[#FBBF24]',
+        titleColor: 'text-[#ED4122]',
+        descriptionColor: 'text-[#ED4122]',
+        timeColor: 'text-[#ED4122]',
+        count: expiringSoon,
+      });
+    }
+    
+    // Add notification for subscriptions expiring this week
+    if (expiringThisWeek > 0) {
+      notifications.push({
+        type: 'info',
+        title: 'Subscriptions Expiring This Week',
+        description: `${expiringThisWeek} subscription${expiringThisWeek > 1 ? 's' : ''} expiring within 7 days.`,
+        time: 'Upcoming',
+        bg: 'bg-[#FEFCE8]',
+        border: 'border-[#FAFF70]',
+        iconBg: 'bg-[#60A5FA]',
+        titleColor: 'text-[#6CA6C1]',
+        descriptionColor: 'text-[#6CA6C1]',
+        timeColor: 'text-[#6CA6C1]',
+        count: expiringThisWeek,
+      });
+    }
+    
+    // Add notification for pending subscriptions
+    if (pendingSubscriptions > 0) {
+      notifications.push({
+        type: 'info',
+        title: 'Pending Subscriptions',
+        description: `${pendingSubscriptions} subscription${pendingSubscriptions > 1 ? 's' : ''} pending payment confirmation.`,
+        time: 'Awaiting payment',
+        bg: 'bg-[#FEFCE8]',
+        border: 'border-[#FAFF70]',
+        iconBg: 'bg-[#60A5FA]',
+        titleColor: 'text-[#6CA6C1]',
+        descriptionColor: 'text-[#6CA6C1]',
+        timeColor: 'text-[#6CA6C1]',
+        count: pendingSubscriptions,
+      });
+    }
+    
+    // Add notification for cancelled subscriptions
+    if (cancelledSubscriptions > 0) {
+      notifications.push({
+        type: 'warning',
+        title: 'Cancelled Subscriptions',
+        description: `${cancelledSubscriptions} subscription${cancelledSubscriptions > 1 ? 's' : ''} have been cancelled.`,
+        time: 'Review needed',
+        bg: 'bg-[#FEF2F2]',
+        border: 'border-[#ED4122]',
+        iconBg: 'bg-[#FBBF24]',
+        titleColor: 'text-[#ED4122]',
+        descriptionColor: 'text-[#ED4122]',
+        timeColor: 'text-[#ED4122]',
+        count: cancelledSubscriptions,
+      });
+    }
+    
+    // Add cron job schedule notification
+    notifications.push({
+      type: 'info',
+      title: 'Subscription Check Schedule',
+      description: `Next automatic subscription check scheduled for ${cronRunTime}.`,
+      time: 'Daily at 00:00',
+      bg: 'bg-[#FEFCE8]',
+      border: 'border-[#FAFF70]',
+      iconBg: 'bg-[#10B981]',
+      titleColor: 'text-[#6CA6C1]',
+      descriptionColor: 'text-[#6CA6C1]',
+      timeColor: 'text-[#6CA6C1]',
+      count: 0,
+    });
+    
+    // If no issues, add success notification at the end
+    if (expiredStillActive === 0 && expiringSoon === 0 && expiringThisWeek === 0 && pendingSubscriptions === 0) {
+      notifications.unshift({
+        type: 'success',
+        title: 'All Subscriptions Active',
+        description: `${totalActive} active subscription${totalActive > 1 ? 's' : ''} are up to date.`,
+        time: 'System healthy',
+        bg: 'bg-[#F0FDF4]',
+        border: 'border-[#10B981]',
+        iconBg: 'bg-[#10B981]',
+        titleColor: 'text-[#032746]',
+        descriptionColor: 'text-[#032746]',
+        timeColor: 'text-[#032746]',
+        count: totalActive,
+      });
+    }
+    
+    return notifications;
+  } catch (error) {
+    console.error('Error getting subscription notifications:', error);
+    // Return a default error notification
+    return [{
+      type: 'error',
+      title: 'Error Loading Notifications',
+      description: 'Unable to load subscription notifications. Please try again later.',
+      time: 'System error',
+      bg: 'bg-[#FEF2F2]',
+      border: 'border-[#ED4122]',
+      iconBg: 'bg-[#EF4444]',
+      titleColor: 'text-[#EF4444]',
+      descriptionColor: 'text-[#EF4444]',
+      timeColor: 'text-[#EF4444]',
+      count: 0,
+    }];
+  }
+};
 
-    // Calculate total revenue from paid subscriptions using aggregation
-    const revenueResult = await Subscription.aggregate([
-      {
-        $match: {
-          paymentStatus: 'Paid',
-        },
+/**
+ * Get subscription plan breakdown for dashboard
+ * Returns percentage distribution of subscription plans
+ */
+const getSubscriptionPlanBreakdown = async () => {
+  try {
+    const { prisma } = require('../../config/db/prisma');
+    
+    // Get all subscriptions with their plans
+    const subscriptions = await prisma.subscription.findMany({
+      where: {
+        paymentStatus: 'Paid',
       },
-      {
-        $lookup: {
-          from: 'plans',
-          localField: 'planId',
-          foreignField: '_id',
-          as: 'plan',
-        },
-      },
-      {
-        $unwind: {
-          path: '$plan',
-          preserveNullAndEmptyArrays: false,
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          totalRevenue: {
-            $sum: '$plan.price',
+      include: {
+        plan: {
+          select: {
+            name: true,
           },
         },
       },
-    ]);
+    });
 
-    // Extract total revenue from aggregation result
-    const totalRevenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
+    // Count subscriptions by plan type
+    // Normalize plan names to categories (premium, organization, free)
+    const planCategories = {
+      premium: 0,
+      organization: 0,
+      other: 0,
+    };
+    const usersWithPaidSubscriptions = new Set();
+    
+    subscriptions.forEach((sub) => {
+      // Use planName from subscription table first, fallback to plan.name
+      const planName = (sub.planName || sub.plan?.name || '').toLowerCase();
+      
+      if (!planName) {
+        // Skip if no plan name
+        return;
+      }
+      
+      // Categorize plans - check if plan name contains keywords
+      if (planName.includes('premium')) {
+        planCategories.premium += 1;
+      } else if (planName.includes('organization') || planName.includes('organisation')) {
+        planCategories.organization += 1;
+      } else {
+        // Any other paid plan (not free)
+        planCategories.other += 1;
+      }
+      
+      usersWithPaidSubscriptions.add(sub.userId);
+    });
+
+    // Get total users
+    const totalUsers = await prisma.user.count({ where: { role: 'student' } });
+    const usersWithPaidCount = usersWithPaidSubscriptions.size;
+
+    // Calculate percentages and map to frontend format
+    const breakdown = [];
+    
+    // Free plan (users without paid subscriptions)
+    const freeCount = totalUsers - usersWithPaidCount;
+    const freePercentage = totalUsers > 0 ? (freeCount / totalUsers) * 100 : 0;
+    
+    breakdown.push({
+      label: 'Free',
+      value: freePercentage,
+      color: '#E5E7EB',
+      isBase: true,
+    });
+
+    // Premium plan - represents ALL users with paid subscriptions (total paid percentage)
+    // Use unique user count, not subscription count, to ensure percentages add up to 100%
+    const premiumPercentage = totalUsers > 0 ? (usersWithPaidCount / totalUsers) * 100 : 0;
+    breakdown.push({
+      label: 'Premium',
+      value: premiumPercentage,
+      color: '#ED4122',
+      isBase: false,
+    });
+
+    return breakdown;
+  } catch (error) {
+    console.error('Error getting subscription plan breakdown:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get dashboard statistics for superadmin
+ * Returns total students, verified email students, active subscriptions, total revenue, user growth data, latest signups, and subscription plan breakdown
+ */
+const getDashboardStatistics = async () => {
+  try {
+    const { prisma } = require('../../config/db/prisma');
+    
+    // Get total students count
+    const totalStudents = await prisma.user.count({
+      where: { role: 'student' },
+    });
+
+    // Get verified email students count
+    const verifiedEmailStudents = await prisma.user.count({
+      where: {
+        role: 'student',
+        isEmailVerified: true,
+      },
+    });
+
+    // Get active subscriptions count
+    const activeSubscriptions = await prisma.subscription.count({
+      where: {
+        isActive: true,
+      },
+    });
+
+    // Calculate total revenue from paid subscriptions
+    const paidSubscriptions = await prisma.subscription.findMany({
+      where: {
+        paymentStatus: 'Paid',
+      },
+      include: {
+        plan: {
+          select: {
+            price: true,
+          },
+        },
+      },
+    });
+
+    // Calculate total revenue
+    const totalRevenue = paidSubscriptions.reduce((sum, sub) => {
+      return sum + (parseFloat(sub.plan?.price || 0));
+    }, 0);
 
     // Get user growth data
     const userGrowthData = await getUserGrowthData();
 
     // Get latest signups
     const latestSignups = await getLatestSignups(3);
+
+    // Get subscription plan breakdown
+    const subscriptionPlanBreakdown = await getSubscriptionPlanBreakdown();
+
+    // Get subscription notifications
+    const subscriptionNotifications = await getSubscriptionNotifications();
 
     return {
       totalStudents,
@@ -364,6 +688,8 @@ const getDashboardStatistics = async () => {
       totalRevenue,
       userGrowthData,
       latestSignups,
+      subscriptionPlanBreakdown,
+      subscriptionNotifications,
     };
   } catch (error) {
     console.error('Error getting dashboard statistics:', error);
@@ -424,80 +750,172 @@ const getUserManagementStatistics = async () => {
  * Helper function to format date as DD-MM-YYYY
  */
 const formatDateDDMMYYYY = (date) => {
-  const d = new Date(date);
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const year = d.getFullYear();
-  return `${day}-${month}-${year}`;
+  if (!date) return null;
+  
+  try {
+    const d = new Date(date);
+    // Check if date is valid
+    if (isNaN(d.getTime())) {
+      return null;
+    }
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  } catch (error) {
+    console.error('Error formatting date:', date, error);
+    return null;
+  }
 };
 
 /**
  * Get all user subscriptions with filtering and pagination
  */
 const getAllUserSubscriptions = async (filters = {}, pagination = {}) => {
+  const { prisma } = require('../../config/db/prisma');
   const { planId, status, search } = filters;
   const { page = 1, limit = 10 } = pagination;
 
-  // Build filter query
-  const filter = {};
+  // Build Prisma where clause
+  const where = {};
 
   // Filter by plan
   if (planId) {
-    filter.planId = planId;
+    where.planId = planId;
   }
 
   // Filter by status (Active, Expire, Pending)
   if (status) {
+    const now = new Date();
     if (status === 'Active') {
-      filter.isActive = true;
-      filter.expiryDate = { $gte: new Date() };
-      filter.paymentStatus = 'Paid';
+      // Active: Paid subscriptions that are not expired
+      where.paymentStatus = 'Paid';
+      where.isActive = true;
+      where.expiryDate = { gte: now };
     } else if (status === 'Expire') {
-      filter.$or = [
-        { isActive: false },
-        { expiryDate: { $lt: new Date() } },
+      // Expire: Subscriptions that are expired AND unpaid
+      where.OR = [
+        {
+          expiryDate: { lt: now },
+          paymentStatus: { not: 'Paid' },
+        },
+        {
+          isActive: false,
+          paymentStatus: { not: 'Paid' },
+        },
       ];
     } else if (status === 'Pending') {
-      filter.paymentStatus = 'Pending';
+      // Pending: Unpaid subscriptions that are not expired yet
+      where.paymentStatus = { not: 'Paid' };
+      where.expiryDate = { gte: now };
     }
   }
 
   // Search by user name or email
   if (search) {
-    const users = await User.find({
-      $or: [
-        { name: { $regex: search, $options: 'i' } },
-        { fullName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-      ],
-    }).select('_id');
-    const userIds = users.map((u) => u._id);
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { fullName: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } },
+        ],
+      },
+      select: { id: true },
+    });
+    const userIds = users.map((u) => u.id);
     if (userIds.length > 0) {
-      filter.userId = { $in: userIds };
+      where.userId = { in: userIds };
     } else {
       // If no users found, return empty result
-      filter.userId = { $in: [] };
+      where.userId = { in: [] };
     }
   }
 
   // Get total count
-  const totalItems = await Subscription.countDocuments(filter);
+  const totalItems = await prisma.subscription.count({ where });
 
   // Calculate pagination
   const skip = (page - 1) * limit;
   const totalPages = Math.ceil(totalItems / limit);
 
-  // Get subscriptions with pagination
-  const subscriptions = await Subscription.find(filter)
-    .populate('userId', 'name fullName email')
-    .populate('planId', 'name price duration')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .lean();
+  // Get subscriptions with pagination using Prisma
+  const subscriptions = await prisma.subscription.findMany({
+    where,
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          fullName: true,
+          email: true,
+        },
+      },
+      plan: {
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          duration: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+    skip,
+    take: limit,
+  });
+
+  // Sync payment status from Moyasar for subscriptions that have moyassarPaymentId but are not Paid
+  const moyassarService = require('../payment/moyassar.service');
+  const syncPromises = subscriptions
+    .filter(sub => sub.moyassarPaymentId && sub.paymentStatus !== 'Paid')
+    .map(async (sub) => {
+      try {
+        await moyassarService.syncPaymentStatus(sub.id);
+      } catch (error) {
+        console.error(`Error syncing payment status for subscription ${sub.id}:`, error);
+        // Don't throw, just log the error
+      }
+    });
+  
+  // Wait for all syncs to complete (but don't block if some fail)
+  await Promise.allSettled(syncPromises);
+
+  // Re-fetch subscriptions after syncing to get updated payment status
+  const updatedSubscriptions = await prisma.subscription.findMany({
+    where,
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          fullName: true,
+          email: true,
+        },
+      },
+      plan: {
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          duration: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+    skip,
+    take: limit,
+  });
+
+  // Transform subscriptions to match expected format
+  const transformedSubscriptions = updatedSubscriptions.map((sub) => ({
+    ...sub,
+    userId: sub.user,
+    planId: sub.plan,
+  }));
 
   return {
-    subscriptions,
+    subscriptions: transformedSubscriptions,
     pagination: {
       currentPage: page,
       totalPages,
@@ -518,99 +936,167 @@ const getAllUserSubscriptions = async (filters = {}, pagination = {}) => {
  * Get subscription details by ID
  */
 const getSubscriptionDetails = async (subscriptionId) => {
-  // Get subscription with populated data
-  const subscription = await Subscription.findById(subscriptionId)
-    .populate('userId', 'name fullName email')
-    .populate('planId', 'name price duration description status')
-    .lean();
+  try {
+    const { prisma } = require('../../config/db/prisma');
+    
+    // Get subscription with populated data using Prisma
+    const subscription = await prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            fullName: true,
+            email: true,
+          },
+        },
+        plan: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            duration: true,
+          },
+        },
+      },
+    });
 
-  if (!subscription) {
-    throw new Error('Subscription not found');
+    if (!subscription) {
+      throw new Error('Subscription not found');
+    }
+
+    // Transform to match expected format
+    return {
+      ...subscription,
+      userId: subscription.user,
+      planId: subscription.plan,
+    };
+  } catch (error) {
+    console.error('Error getting subscription details:', error);
+    throw error;
   }
-
-  return subscription;
 };
 
 /**
  * Get payment history with filtering and pagination
  */
 const getPaymentHistory = async (filters = {}, pagination = {}) => {
+  const { prisma } = require('../../config/db/prisma');
   const { planId, paymentStatus, startDate, endDate, search } = filters;
   const { page = 1, limit = 10 } = pagination;
 
-  // Build filter query - only show paid subscriptions
-  const filter = {
+  // Build Prisma where clause - only show paid subscriptions
+  const where = {
     paymentStatus: 'Paid',
   };
 
   // Filter by plan
   if (planId) {
-    filter.planId = planId;
+    where.planId = planId;
   }
 
   // Filter by payment status (for paid subscriptions, we can filter by active/expire/pending)
   if (paymentStatus) {
+    const now = new Date();
     if (paymentStatus === 'Active') {
-      filter.isActive = true;
-      filter.expiryDate = { $gte: new Date() };
+      // Active: Paid subscriptions that are not expired
+      where.paymentStatus = 'Paid';
+      where.isActive = true;
+      where.expiryDate = { gte: now };
     } else if (paymentStatus === 'Expire') {
-      filter.$or = [
-        { isActive: false },
-        { expiryDate: { $lt: new Date() } },
+      // Expire: Subscriptions that are expired AND unpaid
+      where.OR = [
+        {
+          expiryDate: { lt: now },
+          paymentStatus: { not: 'Paid' },
+        },
+        {
+          isActive: false,
+          paymentStatus: { not: 'Paid' },
+        },
       ];
     } else if (paymentStatus === 'Pending') {
-      // Override paymentStatus filter for pending
-      filter.paymentStatus = 'Pending';
+      // Pending: Unpaid subscriptions (regardless of expiry)
+      where.paymentStatus = { not: 'Paid' };
     }
   }
 
   // Filter by date range
   if (startDate || endDate) {
-    filter.createdAt = {};
+    where.createdAt = {};
     if (startDate) {
-      filter.createdAt.$gte = new Date(startDate);
+      where.createdAt.gte = new Date(startDate);
     }
     if (endDate) {
-      filter.createdAt.$lte = new Date(endDate);
+      where.createdAt.lte = new Date(endDate);
     }
   }
 
   // Search by user name or email
   if (search) {
-    const users = await User.find({
-      $or: [
-        { name: { $regex: search, $options: 'i' } },
-        { fullName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-      ],
-    }).select('_id');
-    const userIds = users.map((u) => u._id);
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { fullName: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } },
+        ],
+      },
+      select: { id: true },
+    });
+    const userIds = users.map((u) => u.id);
     if (userIds.length > 0) {
-      filter.userId = { $in: userIds };
+      where.userId = { in: userIds };
     } else {
       // If no users found, return empty result
-      filter.userId = { $in: [] };
+      where.userId = { in: [] };
     }
   }
 
   // Get total count
-  const totalItems = await Subscription.countDocuments(filter);
+  const totalItems = await prisma.subscription.count({ where });
 
   // Calculate pagination
   const skip = (page - 1) * limit;
   const totalPages = Math.ceil(totalItems / limit);
 
-  // Get subscriptions with pagination
-  const subscriptions = await Subscription.find(filter)
-    .populate('userId', 'name fullName email')
-    .populate('planId', 'name price duration')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .lean();
+  // Get subscriptions with pagination using Prisma
+  const subscriptions = await prisma.subscription.findMany({
+    where,
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          fullName: true,
+          email: true,
+        },
+      },
+      plan: {
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          duration: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+    skip,
+    take: limit,
+  });
+
+  // Transform subscriptions to match expected format
+  const transformedSubscriptions = subscriptions.map((sub) => ({
+    ...sub,
+    userId: sub.user,
+    planId: sub.plan,
+  }));
 
   return {
-    subscriptions,
+    payments: transformedSubscriptions,
+    subscriptions: transformedSubscriptions, // Keep for backward compatibility
     pagination: {
       currentPage: page,
       totalPages,
@@ -633,410 +1119,695 @@ const getPaymentHistory = async (filters = {}, pagination = {}) => {
  * Get user analytics hero page metrics
  */
 const getUserAnalyticsHero = async () => {
-  const now = new Date();
-  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+  try {
+    const { prisma } = require('../../config/db/prisma');
+    
+    const now = new Date();
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
 
-  // 1. New Sign-ups (current month)
-  const newSignUpsCurrent = await User.countDocuments({
-    role: 'student',
-    createdAt: { $gte: currentMonthStart },
-  });
-
-  const newSignUpsLast = await User.countDocuments({
-    role: 'student',
-    createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd },
-  });
-
-  const signUpsChange = newSignUpsLast > 0
-    ? Math.round(((newSignUpsCurrent - newSignUpsLast) / newSignUpsLast) * 100)
-    : 0;
-
-  // 2. Active Users (users who answered questions in current month)
-  const activeUsersCurrent = await StudentAnswer.distinct('student', {
-    createdAt: { $gte: currentMonthStart },
-  });
-
-  const activeUsersLast = await StudentAnswer.distinct('student', {
-    createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd },
-  });
-
-  const activeUsersCount = activeUsersCurrent.length;
-  const activeUsersLastCount = activeUsersLast.length;
-  const activeUsersChange = activeUsersLastCount > 0
-    ? Math.round(((activeUsersCount - activeUsersLastCount) / activeUsersLastCount) * 100)
-    : 0;
-
-  // 3. Most Attempted Subject
-  const subjectAttempts = await StudentAnswer.aggregate([
-    {
-      $match: {
-        subject: { $exists: true, $ne: null },
+    // 1. New Sign-ups (current month)
+    const newSignUpsCurrent = await prisma.user.count({
+      where: {
+        role: 'student',
+        createdAt: { gte: currentMonthStart },
       },
-    },
-    {
-      $group: {
-        _id: '$subject',
-        count: { $sum: 1 },
-      },
-    },
-    {
-      $sort: { count: -1 },
-    },
-    {
-      $limit: 1,
-    },
-  ]);
+    });
 
-  let mostAttemptedSubject = 'N/A';
-  if (subjectAttempts.length > 0) {
-    const subject = await Subject.findById(subjectAttempts[0]._id);
-    if (subject) {
-      mostAttemptedSubject = subject.name;
+    const newSignUpsLast = await prisma.user.count({
+      where: {
+        role: 'student',
+        createdAt: {
+          gte: lastMonthStart,
+          lte: lastMonthEnd,
+        },
+      },
+    });
+
+    const signUpsChange = newSignUpsLast > 0
+      ? Math.round(((newSignUpsCurrent - newSignUpsLast) / newSignUpsLast) * 100)
+      : 0;
+
+    // 2. Active Users (users who answered questions in current month)
+    const activeUsersCurrentData = await prisma.studentAnswer.findMany({
+      where: {
+        createdAt: { gte: currentMonthStart },
+      },
+      select: {
+        studentId: true,
+      },
+      distinct: ['studentId'],
+    });
+
+    const activeUsersLastData = await prisma.studentAnswer.findMany({
+      where: {
+        createdAt: {
+          gte: lastMonthStart,
+          lte: lastMonthEnd,
+        },
+      },
+      select: {
+        studentId: true,
+      },
+      distinct: ['studentId'],
+    });
+
+    const activeUsersCount = activeUsersCurrentData.length;
+    const activeUsersLastCount = activeUsersLastData.length;
+    const activeUsersChange = activeUsersLastCount > 0
+      ? Math.round(((activeUsersCount - activeUsersLastCount) / activeUsersLastCount) * 100)
+      : 0;
+
+    // 3. Most Attempted Subject
+    // Get all student answers and filter for non-null subjectId in JavaScript
+    const allAnswers = await prisma.studentAnswer.findMany({
+      select: {
+        subjectId: true,
+      },
+    });
+
+    // Filter and group by subjectId manually (excluding nulls)
+    const subjectCounts = new Map();
+    allAnswers.forEach((answer) => {
+      if (answer.subjectId) {
+        subjectCounts.set(answer.subjectId, (subjectCounts.get(answer.subjectId) || 0) + 1);
+      }
+    });
+
+    // Find the most attempted subject
+    let mostAttemptedSubject = 'N/A';
+    if (subjectCounts.size > 0) {
+      const sortedSubjects = Array.from(subjectCounts.entries())
+        .sort((a, b) => b[1] - a[1]);
+      
+      const topSubjectId = sortedSubjects[0][0];
+      const subject = await prisma.subject.findUnique({
+        where: {
+          id: topSubjectId,
+        },
+        select: {
+          name: true,
+        },
+      });
+      if (subject) {
+        mostAttemptedSubject = subject.name;
+      }
     }
+
+    // 4. Average Time/Question (using default 45s as shown in image, or calculate from timestamps)
+    const testAnswers = await prisma.studentAnswer.findMany({
+      where: {
+        mode: 'test',
+        totalQuestions: { gt: 0 },
+      },
+      select: {
+        createdAt: true,
+        updatedAt: true,
+        totalQuestions: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 100,
+    });
+
+    let averageTimePerQuestion = 45; // Default fallback
+    if (testAnswers.length > 0) {
+      const totalTime = testAnswers.reduce((sum, test) => {
+        const timeDiff = (new Date(test.updatedAt) - new Date(test.createdAt)) / 1000; // seconds
+        return sum + (timeDiff / test.totalQuestions);
+      }, 0);
+      averageTimePerQuestion = Math.round(totalTime / testAnswers.length);
+    }
+
+    return {
+      newSignUps: {
+        value: newSignUpsCurrent,
+        change: signUpsChange,
+        changeType: signUpsChange >= 0 ? 'increase' : 'decrease',
+      },
+      activeUsers: {
+        value: activeUsersCount,
+        change: activeUsersChange,
+        changeType: activeUsersChange >= 0 ? 'increase' : 'decrease',
+      },
+      mostAttemptedSubject: mostAttemptedSubject,
+      averageTimePerQuestion: averageTimePerQuestion,
+    };
+  } catch (error) {
+    console.error('Error getting user analytics hero:', error);
+    throw error;
   }
-
-  // 4. Average Time/Question (using default 45s as shown in image, or calculate from timestamps)
-  // Since we don't have time tracking, we'll use a calculated average based on test completion times
-  const testAnswers = await StudentAnswer.find({
-    mode: 'test',
-    totalQuestions: { $gt: 0 },
-  })
-    .select('createdAt updatedAt totalQuestions')
-    .sort({ createdAt: -1 })
-    .limit(100)
-    .lean();
-
-  let averageTimePerQuestion = 45; // Default fallback
-  if (testAnswers.length > 0) {
-    const totalTime = testAnswers.reduce((sum, test) => {
-      const timeDiff = (test.updatedAt - test.createdAt) / 1000; // seconds
-      return sum + (timeDiff / test.totalQuestions);
-    }, 0);
-    averageTimePerQuestion = Math.round(totalTime / testAnswers.length);
-  }
-
-  return {
-    newSignUps: {
-      value: newSignUpsCurrent,
-      change: signUpsChange,
-      changeType: signUpsChange >= 0 ? 'increase' : 'decrease',
-    },
-    activeUsers: {
-      value: activeUsersCount,
-      change: activeUsersChange,
-      changeType: activeUsersChange >= 0 ? 'increase' : 'decrease',
-    },
-    mostAttemptedSubject: mostAttemptedSubject,
-    averageTimePerQuestion: averageTimePerQuestion,
-  };
 };
 
 /**
  * Get overall user growth chart data (last 30 days by weeks)
  */
 const getUserGrowthChart = async () => {
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now);
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  try {
+    const { prisma } = require('../../config/db/prisma');
+    
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  // Get all new users in last 30 days
-  const newUsers = await User.find({
-    role: 'student',
-    createdAt: { $gte: thirtyDaysAgo },
-  })
-    .select('createdAt')
-    .sort({ createdAt: 1 })
-    .lean();
-
-  // Group by weeks (4 weeks)
-  const weekData = [];
-  for (let week = 0; week < 4; week++) {
-    const weekStart = new Date(thirtyDaysAgo);
-    weekStart.setDate(weekStart.getDate() + (week * 7));
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999);
-
-    const weekUsers = newUsers.filter((user) => {
-      const userDate = new Date(user.createdAt);
-      return userDate >= weekStart && userDate <= weekEnd;
+    // Get all new users in last 30 days
+    const newUsers = await prisma.user.findMany({
+      where: {
+        role: 'student',
+        createdAt: { gte: thirtyDaysAgo },
+      },
+      select: {
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
     });
 
-    weekData.push({
-      week: week + 1,
-      label: `Week ${week + 1}`,
-      newUsers: weekUsers.length,
-      date: weekStart.toISOString().split('T')[0],
-    });
+    // Group by weeks (4 weeks)
+    const weekData = [];
+    for (let week = 0; week < 4; week++) {
+      const weekStart = new Date(thirtyDaysAgo);
+      weekStart.setDate(weekStart.getDate() + (week * 7));
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999);
+
+      const weekUsers = newUsers.filter((user) => {
+        const userDate = new Date(user.createdAt);
+        return userDate >= weekStart && userDate <= weekEnd;
+      });
+
+      weekData.push({
+        week: week + 1,
+        label: `Week ${week + 1}`,
+        newUsers: weekUsers.length,
+        date: weekStart.toISOString().split('T')[0],
+      });
+    }
+
+    return {
+      title: 'Overall User Growth',
+      subtitle: 'New users over the last 30 days',
+      weeks: weekData,
+    };
+  } catch (error) {
+    console.error('Error getting user growth chart:', error);
+    throw error;
   }
-
-  return {
-    title: 'Overall User Growth',
-    subtitle: 'New users over the last 30 days',
-    weeks: weekData,
-  };
 };
 
 /**
  * Get top performance users table
  */
 const getTopPerformanceUsers = async (pagination = {}) => {
-  const { page = 1, limit = 5 } = pagination;
+  try {
+    const { prisma } = require('../../config/db/prisma');
+    const { page = 1, limit = 5 } = pagination;
 
-  // Aggregate user performance data
-  const userPerformance = await StudentAnswer.aggregate([
-    {
-      $match: {
-        student: { $exists: true, $ne: null },
-      },
-    },
-    {
-      $group: {
-        _id: '$student',
-        totalAttempts: {
-          $sum: {
-            $cond: [
-              { $eq: ['$mode', 'test'] },
-              { $size: { $ifNull: ['$answers', []] } },
-              1,
-            ],
+    // Get all student answers grouped by student
+    // studentId is required, so no need to filter for null
+    const allAnswers = await prisma.studentAnswer.findMany({
+      select: {
+        studentId: true,
+        mode: true,
+        isCorrect: true,
+        correctAnswers: true,
+        totalQuestions: true,
+        createdAt: true,
+        answers: {
+          select: {
+            id: true,
           },
         },
-        correctAnswers: {
-          $sum: {
-            $cond: [
-              { $eq: ['$mode', 'test'] },
-              '$correctAnswers',
-              { $cond: ['$isCorrect', 1, 0] },
-            ],
-          },
-        },
-        totalQuestions: {
-          $sum: {
-            $cond: [
-              { $eq: ['$mode', 'test'] },
-              '$totalQuestions',
-              1,
-            ],
-          },
-        },
-        lastActive: { $max: '$createdAt' },
       },
-    },
-    {
-      $project: {
-        student: '$_id',
-        attempts: '$totalAttempts',
-        accuracy: {
-          $cond: [
-            { $gt: ['$totalQuestions', 0] },
-            {
-              $round: [
-                {
-                  $multiply: [
-                    { $divide: ['$correctAnswers', '$totalQuestions'] },
-                    100,
-                  ],
-                },
-                0,
-              ],
-            },
-            0,
-          ],
-        },
-        averageTimePerQuestion: 45, // Default value since we don't track time
-        lastActive: 1,
+    });
+
+    // Group by student and calculate metrics
+    const userPerformanceMap = new Map();
+    
+    allAnswers.forEach((answer) => {
+      const studentId = answer.studentId;
+      if (!userPerformanceMap.has(studentId)) {
+        userPerformanceMap.set(studentId, {
+          studentId,
+          totalAttempts: 0,
+          correctAnswers: 0,
+          totalQuestions: 0,
+          lastActive: answer.createdAt,
+        });
+      }
+
+      const userPerf = userPerformanceMap.get(studentId);
+      
+      if (answer.mode === 'test') {
+        // For test mode, count answers array size or use totalQuestions
+        const answerCount = answer.answers ? answer.answers.length : (answer.totalQuestions || 0);
+        userPerf.totalAttempts += answerCount;
+        userPerf.correctAnswers += answer.correctAnswers || 0;
+        userPerf.totalQuestions += answer.totalQuestions || 0;
+      } else {
+        // For study mode, count individual answers
+        userPerf.totalAttempts += 1;
+        if (answer.isCorrect) {
+          userPerf.correctAnswers += 1;
+        }
+        userPerf.totalQuestions += 1;
+      }
+
+      // Update last active date
+      if (new Date(answer.createdAt) > new Date(userPerf.lastActive)) {
+        userPerf.lastActive = answer.createdAt;
+      }
+    });
+
+    // Convert to array and calculate accuracy
+    const userPerformance = Array.from(userPerformanceMap.values())
+      .map((up) => ({
+        ...up,
+        accuracy: up.totalQuestions > 0
+          ? Math.round((up.correctAnswers / up.totalQuestions) * 100)
+          : 0,
+        averageTimePerQuestion: 45, // Default value
+      }))
+      .sort((a, b) => {
+        // Sort by attempts first, then accuracy
+        if (b.totalAttempts !== a.totalAttempts) {
+          return b.totalAttempts - a.totalAttempts;
+        }
+        return b.accuracy - a.accuracy;
+      });
+
+    // Get total count for pagination
+    const totalCount = userPerformance.length;
+
+    // Paginate
+    const skip = (page - 1) * limit;
+    const paginatedPerformance = userPerformance.slice(skip, skip + limit);
+
+    // Get user details
+    const userIds = paginatedPerformance.map((up) => up.studentId);
+    const users = await prisma.user.findMany({
+      where: {
+        id: { in: userIds },
       },
-    },
-    {
-      $sort: { attempts: -1, accuracy: -1 },
-    },
-    {
-      $skip: (page - 1) * limit,
-    },
-    {
-      $limit: limit,
-    },
-  ]);
+      select: {
+        id: true,
+        name: true,
+        fullName: true,
+        email: true,
+      },
+    });
 
-  // Get total count for pagination
-  const totalCount = await StudentAnswer.distinct('student').then((students) => students.length);
+    const userMap = new Map();
+    users.forEach((user) => {
+      userMap.set(user.id, user);
+    });
 
-  // Populate user details
-  const userIds = userPerformance.map((up) => up.student);
-  const users = await User.find({ _id: { $in: userIds } })
-    .select('name fullName email')
-    .lean();
+    // Format response
+    const now = new Date();
+    const formattedUsers = paginatedPerformance.map((up, index) => {
+      const user = userMap.get(up.studentId);
+      const lastActiveDate = new Date(up.lastActive);
+      const daysAgo = Math.floor((now - lastActiveDate) / (1000 * 60 * 60 * 24));
 
-  const userMap = new Map();
-  users.forEach((user) => {
-    userMap.set(user._id.toString(), user);
-  });
+      return {
+        rank: skip + index + 1,
+        user: {
+          id: up.studentId,
+          name: user ? (user.fullName || user.name || 'N/A') : 'N/A',
+          email: user ? user.email : 'N/A',
+        },
+        attempts: up.totalAttempts,
+        accuracy: up.accuracy,
+        averageTimePerQuestion: up.averageTimePerQuestion,
+        lastActive: daysAgo,
+      };
+    });
 
-  // Format response
-  const now = new Date();
-  const formattedUsers = userPerformance.map((up, index) => {
-    const user = userMap.get(up.student.toString());
-    const lastActiveDate = new Date(up.lastActive);
-    const daysAgo = Math.floor((now - lastActiveDate) / (1000 * 60 * 60 * 24));
+    const totalPages = Math.ceil(totalCount / limit);
 
     return {
-      rank: (page - 1) * limit + index + 1,
-      user: {
-        id: up.student,
-        name: user ? (user.fullName || user.name || 'N/A') : 'N/A',
-        email: user ? user.email : 'N/A',
+      users: formattedUsers,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems: totalCount,
+        itemsPerPage: limit,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
       },
-      attempts: up.attempts,
-      accuracy: up.accuracy,
-      averageTimePerQuestion: up.averageTimePerQuestion,
-      lastActive: daysAgo,
     };
-  });
-
-  const totalPages = Math.ceil(totalCount / limit);
-
-  return {
-    users: formattedUsers,
-    pagination: {
-      currentPage: page,
-      totalPages,
-      totalItems: totalCount,
-      itemsPerPage: limit,
-      hasNextPage: page < totalPages,
-      hasPreviousPage: page > 1,
-    },
-  };
+  } catch (error) {
+    console.error('Error getting top performance users:', error);
+    throw error;
+  }
 };
 
 /**
  * Get subscription trend metrics
  */
 const getSubscriptionTrendMetrics = async () => {
-  // Total Subscribers
-  const totalSubscribers = await Subscription.countDocuments();
+  try {
+    const { prisma } = require('../../config/db/prisma');
+    
+    // Total Subscribers
+    const totalSubscribers = await prisma.subscription.count();
 
-  // Total Revenue (sum of all paid subscriptions)
-  const revenueData = await Subscription.aggregate([
-    {
-      $match: {
+    // Total Revenue (sum of all paid subscriptions)
+    const paidSubscriptions = await prisma.subscription.findMany({
+      where: {
         paymentStatus: 'Paid',
       },
-    },
-    {
-      $lookup: {
-        from: 'plans',
-        localField: 'planId',
-        foreignField: '_id',
-        as: 'plan',
+      include: {
+        plan: {
+          select: {
+            price: true,
+          },
+        },
       },
-    },
-    {
-      $unwind: '$plan',
-    },
-    {
-      $group: {
-        _id: null,
-        totalRevenue: { $sum: '$plan.price' },
+    });
+
+    const totalRevenue = paidSubscriptions.reduce((sum, sub) => {
+      return sum + (parseFloat(sub.plan?.price || 0));
+    }, 0);
+
+    // Active and Expired subscriptions
+    const now = new Date();
+    const activeSubscriptions = await prisma.subscription.count({
+      where: {
+        isActive: true,
+        expiryDate: { gte: now },
+        paymentStatus: 'Paid',
       },
-    },
-  ]);
+    });
 
-  const totalRevenue = revenueData.length > 0 ? revenueData[0].totalRevenue : 0;
+    const expiredSubscriptions = await prisma.subscription.count({
+      where: {
+        OR: [
+          { isActive: false },
+          { expiryDate: { lt: now } },
+        ],
+      },
+    });
 
-  // Active and Expired subscriptions
-  const now = new Date();
-  const activeSubscriptions = await Subscription.countDocuments({
-    isActive: true,
-    expiryDate: { $gte: now },
-    paymentStatus: 'Paid',
-  });
+    // Renewal Rate (percentage of active subscriptions)
+    const renewalRate = totalSubscribers > 0
+      ? Math.round((activeSubscriptions / totalSubscribers) * 100)
+      : 0;
 
-  const expiredSubscriptions = await Subscription.countDocuments({
-    $or: [
-      { isActive: false },
-      { expiryDate: { $lt: now } },
-    ],
-  });
+    // Churn Rate (percentage of expired subscriptions)
+    const churnRate = totalSubscribers > 0
+      ? Math.round((expiredSubscriptions / totalSubscribers) * 100)
+      : 0;
 
-  // Renewal Rate (percentage of active subscriptions)
-  const renewalRate = totalSubscribers > 0
-    ? Math.round((activeSubscriptions / totalSubscribers) * 100)
-    : 0;
-
-  // Churn Rate (percentage of expired subscriptions)
-  const churnRate = totalSubscribers > 0
-    ? Math.round((expiredSubscriptions / totalSubscribers) * 100)
-    : 0;
-
-  return {
-    totalSubscribers,
-    totalRevenue,
-    renewalRate,
-    churnRate,
-  };
+    return {
+      totalSubscribers,
+      totalRevenue,
+      renewalRate,
+      churnRate,
+    };
+  } catch (error) {
+    console.error('Error getting subscription trend metrics:', error);
+    throw error;
+  }
 };
 
 /**
  * Get revenue trend chart data
+ * @param {number} month - Optional: Month (1-12) for daily data
+ * @param {number} year - Optional: Year for daily data
  */
-const getRevenueTrendChart = async () => {
-  // Get revenue data grouped by month for last 6 months
-  const sixMonthsAgo = new Date();
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-  const revenueData = await Subscription.aggregate([
-    {
-      $match: {
-        paymentStatus: 'Paid',
-        createdAt: { $gte: sixMonthsAgo },
-      },
-    },
-    {
-      $lookup: {
-        from: 'plans',
-        localField: 'planId',
-        foreignField: '_id',
-        as: 'plan',
-      },
-    },
-    {
-      $unwind: '$plan',
-    },
-    {
-      $group: {
-        _id: {
-          year: { $year: '$createdAt' },
-          month: { $month: '$createdAt' },
-        },
-        revenue: { $sum: '$plan.price' },
-        date: { $min: '$createdAt' },
-      },
-    },
-    {
-      $sort: { '_id.year': 1, '_id.month': 1 },
-    },
-  ]);
-
-  // Format response
+const getRevenueTrendChart = async (month = null, year = null) => {
+  const { prisma } = require('../../config/db/prisma');
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December',
   ];
 
-  const formattedData = revenueData.map((item) => ({
-    month: months[item._id.month - 1],
-    year: item._id.year,
-    revenue: item.revenue,
-    date: item.date.toISOString().split('T')[0],
-  }));
+  // If month and year are provided, return daily data for that month
+  if (month && year) {
+    const startDate = new Date(year, month - 1, 1); // First day of the month
+    const endDate = new Date(year, month, 0, 23, 59, 59, 999); // Last day of the month
+
+    // Get paid subscriptions for the specific month
+    const paidSubscriptions = await prisma.subscription.findMany({
+      where: {
+        paymentStatus: 'Paid',
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      include: {
+        plan: {
+          select: {
+            price: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    // Group by day and calculate revenue
+    const revenueMap = new Map();
+    const daysInMonth = new Date(year, month, 0).getDate();
+
+    // Initialize all days in the month with 0 revenue
+    for (let day = 1; day <= daysInMonth; day++) {
+      const key = `${year}-${month}-${day}`;
+      revenueMap.set(key, {
+        year,
+        month,
+        day,
+        revenue: 0,
+        date: new Date(year, month - 1, day).toISOString().split('T')[0],
+      });
+    }
+
+    // Add actual revenue data
+    paidSubscriptions.forEach((sub) => {
+      const date = new Date(sub.createdAt);
+      const day = date.getDate();
+      const key = `${year}-${month}-${day}`;
+
+      if (revenueMap.has(key)) {
+        const entry = revenueMap.get(key);
+        entry.revenue += parseFloat(sub.plan?.price || 0);
+      }
+    });
+
+    // Convert to array and format
+    const formattedData = Array.from(revenueMap.values())
+      .sort((a, b) => a.day - b.day)
+      .map((item) => ({
+        day: item.day,
+        month: months[item.month - 1],
+        monthNumber: item.month,
+        year: item.year,
+        revenue: item.revenue,
+        date: item.date,
+        label: `${item.day}/${item.month}`,
+      }));
+
+    return {
+      title: `Revenue Trend - ${months[month - 1]} ${year}`,
+      data: formattedData,
+      type: 'daily',
+    };
+  }
+
+  // Default: Get revenue data grouped by month for last 6 months
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  sixMonthsAgo.setDate(1); // Start from first day of the month
+
+  const paidSubscriptions = await prisma.subscription.findMany({
+    where: {
+      paymentStatus: 'Paid',
+      createdAt: { gte: sixMonthsAgo },
+    },
+    include: {
+      plan: {
+        select: {
+          price: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+  });
+
+  // Initialize revenue map with all months in the last 6 months (including zeros)
+  const revenueMap = new Map();
+  const currentDate = new Date();
+  
+  // Generate all months from 6 months ago to current month
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(currentDate.getMonth() - i);
+    date.setDate(1);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const key = `${year}-${month}`;
+    
+    revenueMap.set(key, {
+      year,
+      month,
+      revenue: 0,
+      date: date.toISOString().split('T')[0],
+    });
+  }
+
+  // Add actual revenue data
+  paidSubscriptions.forEach((sub) => {
+    const date = new Date(sub.createdAt);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const key = `${year}-${month}`;
+
+    if (revenueMap.has(key)) {
+      const entry = revenueMap.get(key);
+      entry.revenue += parseFloat(sub.plan?.price || 0);
+    }
+  });
+
+  // Convert to array and format (always 6 months)
+  const formattedData = Array.from(revenueMap.values())
+    .sort((a, b) => {
+      if (a.year !== b.year) return a.year - b.year;
+      return a.month - b.month;
+    })
+    .map((item) => ({
+      month: months[item.month - 1],
+      monthNumber: item.month,
+      year: item.year,
+      revenue: item.revenue,
+      date: item.date,
+      label: `${months[item.month - 1]} ${item.year}`,
+    }));
 
   return {
-    title: 'Revenue Trend',
+    title: 'Revenue Trend (Last 6 Months)',
     data: formattedData,
+    type: 'monthly',
   };
+};
+
+/**
+ * Get practice distribution by subject (for donut chart)
+ */
+const getPracticeDistribution = async () => {
+  try {
+    const { prisma } = require('../../config/db/prisma');
+    
+    // Get all student answers with subjects
+    // Filter for non-null subjectId in JavaScript since Prisma doesn't support not: null for nullable fields
+    const allStudentAnswers = await prisma.studentAnswer.findMany({
+      include: {
+        subject: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    // Filter out null subjectIds
+    const studentAnswers = allStudentAnswers.filter(answer => answer.subjectId !== null);
+
+    // Count by subject
+    const subjectCounts = new Map();
+    studentAnswers.forEach((answer) => {
+      if (answer.subject) {
+        const subjectName = answer.subject.name;
+        subjectCounts.set(subjectName, (subjectCounts.get(subjectName) || 0) + 1);
+      }
+    });
+
+    // Calculate total and percentages
+    const total = studentAnswers.length || 1;
+    const distribution = Array.from(subjectCounts.entries())
+      .map(([subject, count]) => ({
+        subject,
+        count,
+        percentage: Math.round((count / total) * 100),
+      }))
+      .sort((a, b) => b.percentage - a.percentage)
+      .slice(0, 5); // Top 5 subjects
+
+    // Assign colors
+    const colors = ['#ED4122', '#032746', '#FBBF24', '#9CA3AF', '#60A5FA'];
+    return distribution.map((item, index) => ({
+      ...item,
+      color: colors[index % colors.length],
+    }));
+  } catch (error) {
+    console.error('Error getting practice distribution:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get plan distribution for donut chart
+ */
+const getPlanDistribution = async () => {
+  try {
+    const { prisma } = require('../../config/db/prisma');
+    
+    // Get all paid subscriptions with plans
+    const subscriptions = await prisma.subscription.findMany({
+      where: {
+        paymentStatus: 'Paid',
+      },
+      include: {
+        plan: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    // Count by plan type
+    const planCounts = new Map();
+    subscriptions.forEach((sub) => {
+      const planName = sub.plan?.name || 'Unknown';
+      planCounts.set(planName, (planCounts.get(planName) || 0) + 1);
+    });
+
+    // Calculate total and percentages
+    const total = subscriptions.length || 1;
+    const distribution = Array.from(planCounts.entries())
+      .map(([plan, count]) => ({
+        plan,
+        count,
+        percentage: Math.round((count / total) * 100),
+      }))
+      .sort((a, b) => b.percentage - a.percentage);
+
+    // Assign colors - map plan names to colors
+    const colorMap = {
+      'Basic': '#ED4122',
+      'Premium': '#6CA6C1',
+      'Enterprise': '#FDF0D5',
+      'Organization': '#6CA6C1',
+      'Free': '#E5E7EB',
+    };
+
+    return distribution.map((item) => ({
+      ...item,
+      color: colorMap[item.plan] || '#9CA3AF',
+    }));
+  } catch (error) {
+    console.error('Error getting plan distribution:', error);
+    throw error;
+  }
 };
 
 /**
@@ -1047,61 +1818,64 @@ const getPlanWiseBreakdown = async (pagination = {}) => {
 
   const now = new Date();
 
-  // Get all plans
-  const plans = await Plan.find({ status: 'active' })
-    .select('name price duration')
-    .lean();
+  // Get all plans using Prisma
+  const { prisma } = require('../../config/db/prisma');
+  const plans = await prisma.plan.findMany({
+    where: { status: 'active' },
+    select: {
+      id: true,
+      name: true,
+      price: true,
+      duration: true,
+    },
+  });
 
   // Get subscription statistics for each plan
   const planBreakdown = await Promise.all(
     plans.map(async (plan) => {
-      const totalSubscribers = await Subscription.countDocuments({
-        planId: plan._id,
+      const totalSubscribers = await prisma.subscription.count({
+        where: {
+          planId: plan.id,
+        },
       });
 
-      const activeSubscriptions = await Subscription.countDocuments({
-        planId: plan._id,
-        isActive: true,
-        expiryDate: { $gte: now },
-        paymentStatus: 'Paid',
+      const activeSubscriptions = await prisma.subscription.count({
+        where: {
+          planId: plan.id,
+          isActive: true,
+          expiryDate: { gte: now },
+          paymentStatus: 'Paid',
+        },
       });
 
-      const expiredSubscriptions = await Subscription.countDocuments({
-        planId: plan._id,
-        $or: [
-          { isActive: false },
-          { expiryDate: { $lt: now } },
-        ],
+      const expiredSubscriptions = await prisma.subscription.count({
+        where: {
+          planId: plan.id,
+          OR: [
+            { isActive: false },
+            { expiryDate: { lt: now } },
+          ],
+        },
       });
 
       // Calculate revenue for this plan
-      const revenueData = await Subscription.aggregate([
-        {
-          $match: {
-            planId: plan._id,
+      const planSubscriptions = await prisma.subscription.findMany({
+        where: {
+          planId: plan.id,
             paymentStatus: 'Paid',
           },
-        },
-        {
-          $lookup: {
-            from: 'plans',
-            localField: 'planId',
-            foreignField: '_id',
-            as: 'plan',
+        include: {
+          plan: {
+            select: {
+              price: true,
+            },
           },
         },
-        {
-          $unwind: '$plan',
-        },
-        {
-          $group: {
-            _id: null,
-            totalRevenue: { $sum: '$plan.price' },
-          },
-        },
-      ]);
+      });
 
-      const revenue = revenueData.length > 0 ? revenueData[0].totalRevenue : 0;
+      const revenue = planSubscriptions.reduce((sum, sub) => {
+        return sum + (parseFloat(sub.plan?.price || 0));
+      }, 0);
 
       // Calculate average duration (convert duration string to months)
       const durationMap = {
@@ -1150,6 +1924,176 @@ const getPlanWiseBreakdown = async (pagination = {}) => {
   };
 };
 
+/**
+ * Export report data in specified format
+ * @param {string} reportType - Type of report to export
+ * @param {string} format - Export format (CSV, Excel, PDF)
+ * @param {string} startDate - Start date filter (optional)
+ * @param {string} endDate - End date filter (optional)
+ */
+const exportReport = async (reportType, format = 'CSV', startDate = null, endDate = null) => {
+  try {
+    const { prisma } = require('../../config/db/prisma');
+    
+    // Parse date filters
+    const start = startDate ? new Date(startDate) : null;
+    const end = endDate ? new Date(endDate) : null;
+    if (end) {
+      end.setHours(23, 59, 59, 999); // End of day
+    }
+
+    let data = [];
+    let headers = [];
+    let filename = '';
+
+    switch (reportType) {
+      case 'User Growth':
+        filename = `user-growth-report-${new Date().toISOString().split('T')[0]}`;
+        const userGrowthData = await getUserGrowthChart();
+        const userGrowth = userGrowthData.data || [];
+        
+        // Filter by date range if provided
+        let filteredUserGrowth = userGrowth;
+        if (start || end) {
+          filteredUserGrowth = userGrowth.filter(item => {
+            const itemDate = new Date(item.date || item.month || item.year);
+            if (start && itemDate < start) return false;
+            if (end && itemDate > end) return false;
+            return true;
+          });
+        }
+        
+        headers = ['Date', 'New Users', 'Total Users'];
+        data = filteredUserGrowth.map(item => ({
+          date: item.date || item.month || item.label || 'N/A',
+          newusers: item.newUsers || item.count || item.new || 0,
+          totalusers: item.totalUsers || item.total || item.count || 0,
+        }));
+        break;
+
+      case 'Subscription Trends':
+        filename = `subscription-trends-report-${new Date().toISOString().split('T')[0]}`;
+        const [metrics, revenueData, planDist, planBreakdown] = await Promise.all([
+          getSubscriptionTrendMetrics(),
+          getRevenueTrendChart(),
+          getPlanDistribution(),
+          getPlanWiseBreakdown({ page: 1, limit: 1000 }),
+        ]);
+        
+        // Combine subscription data
+        headers = ['Month', 'Total Subscribers', 'Total Revenue', 'Renewal Rate', 'Churn Rate'];
+        const revenue = revenueData.data?.data || revenueData.data || [];
+        
+        // Filter by date range
+        let filteredRevenue = revenue;
+        if (start || end) {
+          filteredRevenue = revenue.filter(item => {
+            if (!item.date && !item.month && !item.year) return true;
+            const itemDate = new Date(item.date || item.year || new Date());
+            if (start && itemDate < start) return false;
+            if (end && itemDate > end) return false;
+            return true;
+          });
+        }
+        
+        data = filteredRevenue.map((item) => ({
+          month: item.month || item.label || item.date || 'N/A',
+          totalsubscribers: metrics.data?.totalSubscribers || metrics.totalSubscribers || 0,
+          totalrevenue: parseFloat(item.revenue) || 0,
+          renewalrate: metrics.data?.renewalRate || metrics.renewalRate || '0%',
+          churnrate: metrics.data?.churnRate || metrics.churnRate || '0%',
+        }));
+        break;
+
+      case 'Performance Analytics':
+        filename = `performance-analytics-report-${new Date().toISOString().split('T')[0]}`;
+        const performanceData = await getTopPerformanceUsers({ page: 1, limit: 1000 });
+        const users = performanceData.data?.users || [];
+        
+        // Filter by date range if provided
+        let filteredUsers = users;
+        if (start || end) {
+          filteredUsers = users.filter(user => {
+            if (!user.createdAt) return true;
+            const userDate = new Date(user.createdAt);
+            if (start && userDate < start) return false;
+            if (end && userDate > end) return false;
+            return true;
+          });
+        }
+        
+        headers = ['User ID', 'Name', 'Email', 'Total Practice Sessions', 'Average Score', 'Total Questions Answered', 'Created Date'];
+        data = filteredUsers.map(user => ({
+          userid: user.id || 'N/A',
+          name: user.name || user.fullName || 'N/A',
+          email: user.email || 'N/A',
+          totalpracticesessions: user.totalPracticeSessions || user.practiceSessions || 0,
+          averagescore: user.averageScore || user.avgScore || 0,
+          totalquestionsanswered: user.totalQuestionsAnswered || user.questionsAnswered || 0,
+          createddate: user.createdAt ? new Date(user.createdAt).toISOString().split('T')[0] : 'N/A',
+        }));
+        break;
+
+      default:
+        throw new Error(`Unknown report type: ${reportType}`);
+    }
+
+    // Generate export file based on format
+    if (format === 'CSV') {
+      return generateCSV(data, headers, filename);
+    } else if (format === 'Excel') {
+      // For now, return CSV as Excel (can be enhanced with exceljs library later)
+      return generateCSV(data, headers, filename.replace('.csv', '.xlsx'));
+    } else if (format === 'PDF') {
+      // For now, return CSV data (can be enhanced with pdfkit or puppeteer later)
+      return generateCSV(data, headers, filename.replace('.csv', '.pdf'));
+    } else {
+      throw new Error(`Unsupported export format: ${format}`);
+    }
+  } catch (error) {
+    console.error('Error exporting report:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generate CSV content from data
+ */
+const generateCSV = (data, headers, filename) => {
+  // Escape CSV values
+  const escapeCSV = (value) => {
+    if (value === null || value === undefined) return '';
+    const stringValue = String(value);
+    if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+      return `"${stringValue.replace(/"/g, '""')}"`;
+    }
+    return stringValue;
+  };
+
+  // Generate CSV header row
+  const headerRow = headers.map(escapeCSV).join(',');
+
+  // Generate CSV data rows
+  const dataRows = data.map(row => {
+    return headers.map(header => {
+      // Map header to data key (convert to camelCase or exact match)
+      const key = header.toLowerCase().replace(/\s+/g, '');
+      // Try multiple key variations
+      const value = row[key] || row[header] || row[header.toLowerCase()] || row[header.toUpperCase()] || '';
+      return escapeCSV(value);
+    }).join(',');
+  });
+
+  // Combine header and data
+  const csvContent = [headerRow, ...dataRows].join('\n');
+
+  return {
+    content: csvContent,
+    filename: filename.endsWith('.csv') ? filename : `${filename}.csv`,
+    mimeType: 'text/csv',
+  };
+};
+
 module.exports = {
   generatePassword,
   findUserByEmail,
@@ -1174,5 +2118,8 @@ module.exports = {
   getSubscriptionTrendMetrics,
   getRevenueTrendChart,
   getPlanWiseBreakdown,
+  getPracticeDistribution,
+  getPlanDistribution,
+  exportReport,
 };
 
