@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchCurrentUser } from "../../store/slices/authSlice";
 import profileAPI from "../../api/profile";
 import authAPI from "../../api/auth";
-import { toast } from "react-toastify";
+import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 import { eye, openeye } from "../../assets/svg/signup";
 
 const ProcessorProfile = () => {
@@ -87,7 +87,7 @@ const ProcessorProfile = () => {
 
   const handleSaveChanges = async () => {
     if (!profileData.name || !profileData.email) {
-      toast.error("Name and email are required");
+      showErrorToast("Name and email are required");
       return;
     }
 
@@ -120,9 +120,9 @@ const ProcessorProfile = () => {
         });
       }
       
-      toast.success("Profile updated successfully");
+      showSuccessToast("Profile updated successfully");
     } catch (error) {
-      toast.error(error.message || "Failed to update profile");
+      showErrorToast(error.message || "Failed to update profile");
     } finally {
       setIsSavingProfile(false);
     }
@@ -130,23 +130,23 @@ const ProcessorProfile = () => {
 
   const handleUpdatePassword = async () => {
     if (!passwordData.email) {
-      toast.error("Email is required");
+      showErrorToast("Email is required");
       return;
     }
     if (!passwordData.code) {
-      toast.error("Verification code is required");
+      showErrorToast("Verification code is required");
       return;
     }
     if (!passwordData.newPassword) {
-      toast.error("New password is required");
+      showErrorToast("New password is required");
       return;
     }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error("Passwords do not match");
+      showErrorToast("Passwords do not match");
       return;
     }
     if (passwordData.newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
+      showErrorToast("Password must be at least 6 characters");
       return;
     }
 
@@ -158,7 +158,7 @@ const ProcessorProfile = () => {
         password: passwordData.newPassword.trim(),
       });
       
-      toast.success("Password updated successfully");
+      showSuccessToast("Password updated successfully");
       // Clear password form
       setPasswordData({
         currentPassword: "",
@@ -168,7 +168,7 @@ const ProcessorProfile = () => {
         confirmPassword: "",
       });
     } catch (error) {
-      toast.error(error.message || "Failed to update password");
+      showErrorToast(error.message || "Failed to update password");
     } finally {
       setIsUpdatingPassword(false);
     }
@@ -176,7 +176,7 @@ const ProcessorProfile = () => {
 
   const handleSendCode = async () => {
     if (!passwordData.email) {
-      toast.error("Email is required");
+      showErrorToast("Email is required");
       return;
     }
 
@@ -185,9 +185,9 @@ const ProcessorProfile = () => {
       await authAPI.forgotPasswordOTP({
         email: passwordData.email,
       });
-      toast.success("Verification code sent to your email");
+      showSuccessToast("Verification code sent to your email");
     } catch (error) {
-      toast.error(error.message || "Failed to send verification code");
+      showErrorToast(error.message || "Failed to send verification code");
     } finally {
       setIsSendingCode(false);
     }
@@ -198,9 +198,9 @@ const ProcessorProfile = () => {
     try {
       // Only save notification settings if needed in the future
       // Language is already saved when dropdown changes
-      toast.success("Settings saved successfully");
+      showSuccessToast("Settings saved successfully");
     } catch (error) {
-      toast.error(error.message || "Failed to save settings");
+      showErrorToast(error.message || "Failed to save settings");
     } finally {
       setIsSavingSettings(false);
     }
