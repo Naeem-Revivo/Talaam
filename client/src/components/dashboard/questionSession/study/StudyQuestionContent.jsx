@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { analytics, watch, tick, cross } from '../icons';
 import { useLanguage } from '../../../../context/LanguageContext';
 import studentQuestionsAPI from '../../../../api/studentQuestions';
-import { toast } from 'react-toastify';
+import { showSuccessToast, showErrorToast } from '../../../../utils/toastConfig';
 import { cleanHtmlForDisplay } from '../../../../utils/textUtils';
 
 const OptionCard = ({ option, groupName, isSelected, disabled, onOptionChange, highlight }) => {
@@ -398,17 +398,17 @@ const StudyQuestionContent = ({
               <button
                 onClick={async () => {
                   if (!flagReason.trim()) {
-                    toast.error(t('dashboard.questionSession.flagReasonRequired') || 'Please provide a reason');
+                    showErrorToast(t('dashboard.questionSession.flagReasonRequired') || 'Please provide a reason');
                     return;
                   }
                   setIsFlagging(true);
                   try {
                     await studentQuestionsAPI.flagQuestion(currentQuestion.id, flagReason);
-                    toast.success(t('dashboard.questionSession.flagSuccess') || 'Question flagged successfully');
+                    showSuccessToast(t('dashboard.questionSession.flagSuccess') || 'Question flagged successfully');
                     setShowFlagModal(false);
                     setFlagReason('');
                   } catch (error) {
-                    toast.error(error.message || t('dashboard.questionSession.flagError') || 'Failed to flag question');
+                    showErrorToast(error.message || t('dashboard.questionSession.flagError') || 'Failed to flag question');
                   } finally {
                     setIsFlagging(false);
                   }
