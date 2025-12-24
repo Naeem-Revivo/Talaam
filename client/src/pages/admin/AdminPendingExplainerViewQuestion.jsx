@@ -8,6 +8,7 @@ import adminAPI from "../../api/admin";
 import questionsAPI from "../../api/questions";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig.jsx";
 import Loader from "../../components/common/Loader";
+import { cleanHtmlForDisplay, cleanQuestionText } from "../../utils/textUtils";
 
 // Strip HTML tags and return plain text
 const stripHtmlTags = (html) => {
@@ -98,7 +99,10 @@ const QuestionDetails = ({
     question.difficulty || question.metadata?.difficulty,
     "—"
   );
-  const questionText = stripHtmlTags(question.questionText);
+  // For display: use clean text (for truncation/tooltips)
+  const questionText = cleanQuestionText(question.questionText);
+  // For rendering: use clean HTML (preserves formatting)
+  const questionTextHtml = cleanHtmlForDisplay(question.questionText);
   const options = question.options || {};
 
   return (
@@ -865,9 +869,9 @@ export default function AdminPendingExplainerViewQuestion() {
                 <p
                   className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue mt-2 max-w-[600px] truncate cursor-help"
                   dir="ltr"
-                  title={stripHtmlTags(originalQuestion.questionText)}
+                  title={cleanQuestionText(originalQuestion.questionText)}
                 >
-                  {stripHtmlTags(originalQuestion.questionText)}
+                  <span dangerouslySetInnerHTML={{ __html: cleanHtmlForDisplay(originalQuestion.questionText) }} />
                 </p>
               </div>
               

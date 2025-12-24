@@ -137,8 +137,10 @@ const CreatorVariantsListPage = () => {
   // Extract question title from questionText (first 100 characters)
   const getQuestionTitle = (questionText) => {
     if (!questionText) return "—";
-    // Strip HTML tags for display
-    const text = questionText.replace(/<[^>]*>/g, '');
+    // First clean code tags with data attributes
+    let cleaned = questionText.replace(/<code[^>]*data-start[^>]*>(.*?)<\/code>/gi, '$1');
+    // Then strip all remaining HTML tags
+    const text = cleaned.replace(/<[^>]*>/g, '');
     return text.length > 100 ? text.substring(0, 100) + "..." : text;
   };
 
