@@ -9,6 +9,7 @@ import examsAPI from "../../api/exams";
 import topicsAPI from "../../api/topics";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 import Loader from "../../components/common/Loader";
+import { cleanHtmlForDisplay } from "../../utils/textUtils";
 
 const ApprovedQuestions = () => {
   const { t } = useLanguage();
@@ -60,7 +61,12 @@ const ApprovedQuestions = () => {
       const response = await questionsAPI.getApprovedQuestions(params);
       
       if (response.success) {
-        setQuestions(response.data.questions || []);
+        // Clean question text to remove code tags with data attributes
+        const cleanedQuestions = (response.data.questions || []).map(q => ({
+          ...q,
+          question: q.question ? cleanHtmlForDisplay(q.question) : q.question
+        }));
+        setQuestions(cleanedQuestions);
         setTotal(response.data.pagination?.totalItems || 0);
       }
     } catch (error) {

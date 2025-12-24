@@ -5,6 +5,7 @@ import { OutlineButton } from "../../components/common/Button";
 import questionsAPI from "../../api/questions";
 import { showErrorToast } from "../../utils/toastConfig";
 import Loader from "../../components/common/Loader";
+import { cleanHtmlForDisplay } from "../../utils/textUtils";
 
 const ExplainerViewQuestion = () => {
   const navigate = useNavigate();
@@ -128,7 +129,7 @@ const ExplainerViewQuestion = () => {
                     </label>
                     <div
                       className="font-roboto text-[16px] font-normal leading-[24px] text-dark-gray"
-                      dangerouslySetInnerHTML={{ __html: question.questionText || "—" }}
+                      dangerouslySetInnerHTML={{ __html: cleanHtmlForDisplay(question.questionText || "—") }}
                     />
                   </div>
                   {question.questionType && (

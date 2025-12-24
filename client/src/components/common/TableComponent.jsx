@@ -1,5 +1,6 @@
 import React from "react";
 import { useLanguage } from "../../context/LanguageContext";
+import { cleanHtmlForDisplay } from "../../utils/textUtils";
 
 // ============= REUSABLE TABLE COMPONENTS =============
 
@@ -143,16 +144,19 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
           );
         }
 
-        // Special rendering for questionTitle to support HTML content
-        if (column.key === "questionTitle" && typeof value === "string" && value.includes("<")) {
+        // Special rendering for questionTitle and question to support HTML content
+        if ((column.key === "questionTitle" || column.key === "question") && typeof value === "string" && value.includes("<")) {
+          // Clean code tags with data attributes and preserve other HTML formatting
+          let cleaned = cleanHtmlForDisplay(value);
+          
           // Strip HTML tags to get text length for truncation
-          const textOnly = value.replace(/<[^>]*>/g, '');
+          const textOnly = cleaned.replace(/<[^>]*>/g, '');
           const shouldTruncate = textOnly.length > 50;
           
           // Simple truncation: if HTML is long, show first 200 chars (may cut HTML tags, but will still render)
-          const displayHTML = shouldTruncate && value.length > 200 
-            ? value.substring(0, 200) + "..." 
-            : value;
+          const displayHTML = shouldTruncate && cleaned.length > 200 
+            ? cleaned.substring(0, 200) + "..." 
+            : cleaned;
           
           return (
             <td
@@ -477,16 +481,19 @@ const MobileCard = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagR
             );
           }
 
-          // Special rendering for questionTitle to support HTML content in mobile view
-          if (column.key === "questionTitle" && typeof value === "string" && value.includes("<")) {
+          // Special rendering for questionTitle and question to support HTML content in mobile view
+          if ((column.key === "questionTitle" || column.key === "question") && typeof value === "string" && value.includes("<")) {
+            // Clean code tags with data attributes and preserve other HTML formatting
+            let cleaned = cleanHtmlForDisplay(value);
+            
             // Strip HTML tags to get text length for truncation
-            const textOnly = value.replace(/<[^>]*>/g, '');
+            const textOnly = cleaned.replace(/<[^>]*>/g, '');
             const shouldTruncate = textOnly.length > 50;
             
             // Simple truncation: if HTML is long, show first 200 chars
-            const displayHTML = shouldTruncate && value.length > 200 
-              ? value.substring(0, 200) + "..." 
-              : value;
+            const displayHTML = shouldTruncate && cleaned.length > 200 
+              ? cleaned.substring(0, 200) + "..." 
+              : cleaned;
             
             return (
               <div key={column.key} className="flex items-center gap-2">
