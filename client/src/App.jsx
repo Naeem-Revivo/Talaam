@@ -7,6 +7,7 @@ import { AppRoutes } from './routes/index.jsx';
 import { ToastContainer } from 'react-toastify';
 import { store } from './store/store.js';
 import { Provider } from 'react-redux';
+import './styles/customToast.css';
 
 function AppContent() {
   const location = useLocation();
