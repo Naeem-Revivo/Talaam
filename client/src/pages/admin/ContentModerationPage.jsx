@@ -18,6 +18,7 @@ const ContentModerationPage = () => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -106,14 +107,23 @@ const ContentModerationPage = () => {
     }
   };
 
-  const handleApprove = async (id) => {
-    if (!window.confirm("Are you sure you want to approve this flag? The question will be sent to processor.")) {
-      return;
+  const handleApprove = (id) => {
+    const content = flaggedContent.find((item) => item.id === id);
+    if (content) {
+      setSelectedQuestion(content);
+      setShowApproveModal(true);
     }
+  };
+
+  const handleApproveSubmit = async () => {
+    if (!selectedQuestion) return;
+    
     setIsProcessing(true);
     try {
-      await questionsAPI.approveStudentFlag(id);
+      await questionsAPI.approveStudentFlag(selectedQuestion.id);
       showSuccessToast("Flag approved. Question sent to processor.");
+      setShowApproveModal(false);
+      setSelectedQuestion(null);
       fetchFlaggedQuestions();
     } catch (error) {
       showErrorToast(error.message || "Failed to approve flag");
@@ -761,6 +771,39 @@ const ContentModerationPage = () => {
                   {selectedQuestion.submittedBy || selectedQuestion.flaggedBy?.name || "Unknown"}
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Approve Confirmation Modal */}
+      {showApproveModal && selectedQuestion && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-[18px] font-archivo font-bold text-oxford-blue mb-4">
+              Approve Flag
+            </h3>
+            <p className="text-[14px] font-roboto text-dark-gray mb-4">
+              Are you sure you want to approve this flag? The question will be sent to processor for review.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowApproveModal(false);
+                  setSelectedQuestion(null);
+                }}
+                className="px-4 py-2 text-[14px] font-roboto text-oxford-blue border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] transition"
+                disabled={isProcessing}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApproveSubmit}
+                disabled={isProcessing}
+                className="px-4 py-2 text-[14px] font-roboto text-white bg-[#10B981] rounded-lg hover:bg-[#059669] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isProcessing ? "Approving..." : "Approve"}
+              </button>
             </div>
           </div>
         </div>
