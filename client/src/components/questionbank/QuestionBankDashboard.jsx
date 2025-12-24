@@ -175,7 +175,9 @@ const QuestionBankDashboard = () => {
                               {plan.name}
                             </h3>
                             <span className="text-dark-gray font-roboto text-sm md:text-base">
-                              {plan.price ? `${plan.price} / ${plan.duration || 'plan'}` : ''}
+                              {plan.price !== undefined && plan.price !== null 
+                                ? `$${parseFloat(plan.price).toFixed(2)} / ${plan.duration || 'plan'}` 
+                                : plan.duration ? plan.duration : ''}
                             </span>
                           </div>
                         </div>
