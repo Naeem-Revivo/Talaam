@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { flag, setting, listcheck } from '../icons';
+import { flag, listcheck } from '../icons';
 import { useLanguage } from '../../../../context/LanguageContext';
 import studentQuestionsAPI from '../../../../api/studentQuestions';
 import { showSuccessToast, showErrorToast } from '../../../../utils/toastConfig';
@@ -171,9 +171,6 @@ const StudyModeHeader = ({
               <span className="hidden sm:inline text-[10px] leading-[16px] font-roboto font-normal text-[#4B5563]">{t('dashboard.questionSession.timeRunning')} </span>
               <span className="text-[12px] font-bold">{timeRunning}</span>
             </span>
-            <button className="text-oxford-blue hover:opacity-70">
-              <img src={setting} alt="Settings" className="w-4 h-4" />
-            </button>
           </div>
         </div>
       </div>

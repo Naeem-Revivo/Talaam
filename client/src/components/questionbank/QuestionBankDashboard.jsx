@@ -1,21 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { mind, book, add, feature, lock, arrowup, tick } from "../../assets/svg";
 import { useLanguage } from "../../context/LanguageContext";
 import plansAPI from "../../api/plans";
 import subscriptionAPI from "../../api/subscription";
 import { showErrorToast } from "../../utils/toastConfig";
 import Loader from "../common/Loader";
+import Header from "../dashboard/Header";
 
 const QuestionBankDashboard = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { isAuthenticated, user } = useSelector((state) => state.auth || {});
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [checkingSub, setCheckingSub] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+
+  // Check if user is a student/user
+  const isStudent = isAuthenticated && (user?.role === 'user' || user?.role === 'student');
 
   useEffect(() => {
     const loadPlans = async () => {
@@ -114,7 +120,7 @@ const QuestionBankDashboard = () => {
     },
   ];
 
-  return (
+  const content = (
     <>
       {/* Title and Subtitle */}
       <div className="w-full h-auto md:h-auto lg:h-[277px] bg-soft-orange-fade flex items-center justify-center py-8 md:py-10 lg:py-0">
@@ -287,6 +293,24 @@ const QuestionBankDashboard = () => {
       </div>
     </>
   );
+
+  // If student is logged in, show with dashboard header only (no sidebar)
+  if (isStudent) {
+    return (
+      <div className="flex flex-col h-screen overflow-hidden">
+        {/* Header */}
+        <Header onToggleSidebar={() => {}} showSidebarToggle={false} />
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto bg-gray-50">
+          {content}
+        </main>
+      </div>
+    );
+  }
+
+  // If not a student, show without dashboard header
+  return content;
 };
 
 export default QuestionBankDashboard;
