@@ -12,7 +12,7 @@ import { getUserAnnouncements, markAnnouncementAsRead } from '../../api/announce
 import AnnouncementDropdown from './AnnouncementDropdown';
 import AnnouncementAlertCard from './AnnouncementAlertCard';
 
-const Header = ({ onToggleSidebar }) => {
+const Header = ({ onToggleSidebar, showSidebarToggle = true }) => {
   const { language, toggleLanguage, t } = useLanguage();
   const dispatch = useDispatch();
   const { user: authUser } = useSelector((state) => state.auth);
@@ -314,6 +314,9 @@ const Header = ({ onToggleSidebar }) => {
   if (pathname.startsWith("/dashboard/announcements"))
     return t("dashboard.sidebar.announcements");
 
+  if (pathname.startsWith("/question-banks"))
+    return "Question Bank";
+
   return t("dashboard.header.title");
   };
 
@@ -377,13 +380,15 @@ const Header = ({ onToggleSidebar }) => {
         {/* Left Side - Hamburger Menu & Title */}
         <div className="flex items-center gap-4">
           {/* Hamburger Menu Button - Mobile Only */}
-          <button
-            onClick={onToggleSidebar}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-200 transition-colors"
-            aria-label="Toggle sidebar"
-          >
-            <img src={hamburger} alt="Menu" className="w-6 h-6" />
-          </button>
+          {showSidebarToggle && (
+            <button
+              onClick={onToggleSidebar}
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-200 transition-colors"
+              aria-label="Toggle sidebar"
+            >
+              <img src={hamburger} alt="Menu" className="w-6 h-6" />
+            </button>
+          )}
           
           {/* Title */}
           <h1 className="text-lg md:text-[20px] text-oxford-blue leading-[100%] tracking-[0%] font-archivo font-[600]">

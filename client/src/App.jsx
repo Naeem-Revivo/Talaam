@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { LanguageProvider } from './context/LanguageContext';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
@@ -11,15 +12,20 @@ import './styles/customToast.css';
 
 function AppContent() {
   const location = useLocation();
+  const { isAuthenticated, user } = useSelector((state) => state.auth || {});
   const isDashboard = location.pathname.startsWith('/dashboard');
   const isAdmin = location.pathname.startsWith('/admin');
   const isgatherer = location.pathname.startsWith('/gatherer');
   const isprocessor = location.pathname.startsWith('/processor');
   const iscreator = location.pathname.startsWith('/creator');
   const isexplainer = location.pathname.startsWith('/explainer');
+  const isQuestionBanks = location.pathname.startsWith('/question-banks');
+  
+  // Check if user is a student
+  const isStudent = isAuthenticated && (user?.role === 'user' || user?.role === 'student');
 
-  // Don't wrap dashboard routes with the global Layout
-  if (isDashboard || isAdmin || isgatherer || isprocessor || iscreator || isexplainer) {
+  // Don't wrap dashboard routes or question-banks (for students) with the global Layout
+  if (isDashboard || isAdmin || isgatherer || isprocessor || iscreator || isexplainer || (isQuestionBanks && isStudent)) {
     return <AppRoutes />;
   }
 
