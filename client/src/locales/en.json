@@ -449,7 +449,14 @@
     "validation": {
       "emailRequired": "Email is required",
       "emailInvalid": "Please enter a valid email address",
+      "emailMaxLength": "Email must not exceed 50 characters",
       "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordMaxLength": "Password must not exceed 25 characters",
+      "passwordUppercase": "Password must contain at least one uppercase letter",
+      "passwordLowercase": "Password must contain at least one lowercase letter",
+      "passwordNumber": "Password must contain at least one number",
+      "passwordSpecial": "Password must contain at least one special character",
       "passwordRequirements": "Password must meet all requirements",
       "confirmPasswordRequired": "Please confirm your password",
       "passwordsMismatch": "Passwords do not match"
@@ -3042,32 +3049,32 @@
       }
     },
     "approvedQuestion": {
-    "title": "Approved Questions",
-    "heading": "Final Questions Management",
-    "table": {
-      "question": "Question",
-      "subject": "Subject",
-      "exam": "Exam",
-      "topic": "Topic",
-      "status": "Status",
-      "actions": "Visibility"
-    },
-    "filter": {
+      "title": "Approved Questions",
+      "heading": "Final Questions Management",
+      "table": {
+        "question": "Question",
+        "subject": "Subject",
+        "exam": "Exam",
+        "topic": "Topic",
+        "status": "Status",
+        "actions": "Visibility"
+      },
+      "filter": {
         "search": "Search by Questions, subject, topic",
         "subject": "All Subject",
         "exam": "Exam",
         "topic": "Topic"
       },
-    "status": {
-      "visible": "Visible",
-      "hidden": "Hidden"
-    },
-    "back": "Back to Question Bank",
-    "emptyMessage": "No approved questions found",
-    "pagination": {
-      "showing": "Showing {{first}} to {{last}} of {{total}} results"
+      "status": {
+        "visible": "Visible",
+        "hidden": "Hidden"
+      },
+      "back": "Back to Question Bank",
+      "emptyMessage": "No approved questions found",
+      "pagination": {
+        "showing": "Showing {{first}} to {{last}} of {{total}} results"
+      }
     }
-  }
   },
   "gatherer": {
     "sidebar": {
@@ -3683,7 +3690,6 @@
       "loading": "Loading dashboard data..."
     },
     "questionBank": {
-      "loading": "Loading questions...",
       "title": "Processor Dashboard",
       "subtitle": "Review incoming questions, accept or reject, and pass them to creators.",
       "allProcessedQuestions": "All Processed Questions",
