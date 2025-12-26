@@ -6,7 +6,7 @@ import { setting as settings, profile, logout } from '../../assets/svg/dashboard
 import { hamburger } from '../../assets/svg';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { logout as logoutAction } from '../../store/slices/authSlice';
+import { logout as logoutAction, fetchCurrentUser } from '../../store/slices/authSlice';
 import { showLogoutToast } from '../../utils/toastConfig';
 import { getUserAnnouncements, markAnnouncementAsRead } from '../../api/announcements';
 import AnnouncementDropdown from './AnnouncementDropdown';
@@ -22,6 +22,10 @@ const Header = ({ onToggleSidebar, showSidebarToggle = true }) => {
   const [announcements, setAnnouncements] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [newAnnouncements, setNewAnnouncements] = useState([]);
+  // Initialize fetching state: if student doesn't have name, we'll fetch it
+  const isStudent = authUser && (authUser?.role === 'user' || authUser?.role === 'student');
+  const hasName = authUser?.name || authUser?.fullName;
+  const [isFetchingUser, setIsFetchingUser] = useState(isStudent && !hasName);
   const menuRef = useRef(null);
   const notificationRef = useRef(null);
   const previousAnnouncementIdsRef = useRef(new Set());
@@ -42,6 +46,28 @@ const Header = ({ onToggleSidebar, showSidebarToggle = true }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Fetch current user data on mount to ensure we have latest name information
+  useEffect(() => {
+    if (!authUser) return;
+    
+    const isStudent = authUser?.role === 'user' || authUser?.role === 'student';
+    
+    // For students, always fetch fresh user data to ensure we have the latest name
+    // This prevents showing email-derived name from cached data
+    if (isStudent) {
+      const hasName = authUser?.name || authUser?.fullName;
+      // If we don't have a name, set fetching state immediately
+      if (!hasName) {
+        setIsFetchingUser(true);
+      }
+      // Always fetch to get latest data, but only show loading if we don't have name
+      dispatch(fetchCurrentUser())
+        .finally(() => {
+          setIsFetchingUser(false);
+        });
+    }
+  }, []); // Only run once on mount
 
   // Fetch announcements and unread count
   useEffect(() => {
@@ -347,13 +373,33 @@ const Header = ({ onToggleSidebar, showSidebarToggle = true }) => {
       return 'Admin';
     }
     
-    if (authUser?.name) {
-      return authUser.name;
+    // Check for name first (prefer name over fullName)
+    if (authUser?.name && authUser.name.trim()) {
+      // If name exists, use it (could be first name or full name)
+      return authUser.name.trim();
     }
     
-    // For students, try to extract name from email
+    // Check for fullName and use first name if available
+    if (authUser?.fullName && authUser.fullName.trim()) {
+      const firstName = authUser.fullName.trim().split(/\s+/)[0];
+      if (firstName && firstName.length > 0) {
+        return firstName;
+      }
+      // If splitting didn't work, return the fullName as is
+      return authUser.fullName.trim();
+    }
+    
+    // For students, if we're fetching user data, don't show email-derived name yet
+    // Wait for the fetch to complete to see if we have a real name
     const isStudent = authUser?.role === 'user' || authUser?.role === 'student';
-    if (isStudent && authUser?.email) {
+    if (isStudent && isFetchingUser) {
+      // Return empty or a placeholder while fetching
+      return '';
+    }
+    
+    // Only extract from email if we're not fetching and name truly isn't available
+    if (isStudent && authUser?.email && !isFetchingUser) {
+      // Only use email extraction as absolute last resort
       const nameFromEmail = getNameFromEmail(authUser.email);
       if (nameFromEmail) {
         return nameFromEmail;
@@ -433,7 +479,7 @@ const Header = ({ onToggleSidebar, showSidebarToggle = true }) => {
             </button>
             <div className="text-right hidden sm:block">
               <p className="text-[14px] text-oxford-blue leading-[100%] tracking-[0px] font-archivo font-[700]">
-                {getDisplayName()}
+                {getDisplayName() || (isFetchingUser ? '...' : 'User')}
               </p>
               <p className="text-[12px] leading-[100%] tracking-[0px] text-left pt-1 pl-1 font-roboto font-[400] text-dark-gray">
                 {authUser?.role === 'admin' && authUser?.adminRole
