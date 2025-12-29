@@ -4,6 +4,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import adminAPI from "../../api/admin";
 import { showErrorToast } from "../../utils/toastConfig";
 import Loader from "../../components/common/Loader";
+import { cleanHtmlForDisplay } from "../../utils/textUtils";
 
 const QuestionDetailsPage = () => {
   const navigate = useNavigate();
@@ -213,7 +214,7 @@ const QuestionDetailsPage = () => {
                 <div className="border-t border-[#E5E7EB] pt-4"></div>
 
                 <div>
-                  <p className="pb-7 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue" dir="ltr" dangerouslySetInnerHTML={{ __html: question.questionText || 'N/A' }}></p>
+                  <p className="pb-7 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue" dir="ltr" dangerouslySetInnerHTML={{ __html: cleanHtmlForDisplay(question.questionText || 'N/A') }}></p>
 
                   {/* Options */}
                   {!isTrueFalse ? (

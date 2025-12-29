@@ -3,13 +3,14 @@ import { OutlineButton } from "../../components/common/Button";
 import StatsCards from "../../components/common/StatsCards";
 import { Table } from "../../components/common/TableComponent";
 import SearchFilter from "../../components/common/SearchFilter";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
 import WorkflowProgress from "../../components/gatherer/WorkflowProgress";
 import RecentActivity from "../../components/gatherer/RecentActiveity";
 import { useNavigate } from "react-router-dom";
 import questionsAPI from "../../api/questions";
 import { showErrorToast } from "../../utils/toastConfig";
 import Loader from "../../components/common/Loader";
+import subjectsAPI from "../../api/subjects";
 
 const CreatorQuestionBank = () => {
   const { t } = useLanguage();
@@ -20,8 +21,7 @@ const CreatorQuestionBank = () => {
   const [subject, setSubject] = useState("");
   const [subtopic, setSubtopic] = useState("");
   const [questionsData, setQuestionsData] = useState([]);
-  const [allQuestionsData, setAllQuestionsData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [stats, setStats] = useState([
@@ -29,13 +29,17 @@ const CreatorQuestionBank = () => {
     { label: t("creator.questionBank.stats.variantsPending"), value: 0, color: "blue" },
     { label: t("creator.questionBank.stats.completed"), value: 0, color: "red" },
   ]);
-  const pollingIntervalRef = useRef(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [subjects, setSubjects] = useState([]);
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
   const [selectedFlagReason, setSelectedFlagReason] = useState("");
   const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
   const [selectedRejectionReason, setSelectedRejectionReason] = useState("");
 
-  const QuestionsColumns = [
+  console.log(questionsData, "questiondata");
+
+  // Memoize columns to prevent rerenders
+  const QuestionsColumns = useMemo(() => [
     { key: 'questionTitle', label: t("creator.assignedQuestionPage.table.question") },
     { key: 'subject', label: t("creator.assignedQuestionPage.table.subject") },
     { key: 'processor', label: t("creator.assignedQuestionPage.table.processor") },
@@ -43,10 +47,10 @@ const CreatorQuestionBank = () => {
     { key: 'indicators', label: t("creator.assignedQuestionPage.table.flagsIssues") },
     { key: 'updatedOn', label: t("creator.assignedQuestionPage.table.updatedOn") },
     { key: 'actions', label: t("creator.assignedQuestionPage.table.actions") }
-  ];
+  ], [t]);
 
   // Format date to relative time (Today, Yesterday, or date)
-  const formatDate = (dateString) => {
+  const formatDate = useCallback((dateString) => {
     if (!dateString) return "—";
     
     const date = new Date(dateString);
@@ -63,10 +67,10 @@ const CreatorQuestionBank = () => {
     } else {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
-  };
+  }, []);
 
   // Format status to readable format
-  const formatStatus = (status) => {
+  const formatStatus = useCallback((status) => {
     if (!status) return "—";
     
     const statusMap = {
@@ -85,10 +89,28 @@ const CreatorQuestionBank = () => {
     return status.split('_').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
-  };
+  }, []);
+
+  // Map display status to API status
+  const mapStatusToAPI = useCallback((displayStatus) => {
+    if (!displayStatus || displayStatus === "All Status") return null;
+    const statusMap = {
+      "Approved": "approved", // Use "approved" as base, will filter for all approved statuses client-side
+      "Pending": "pending_creator",
+      "Reject": "rejected",
+      "Flag": "flagged",
+    };
+    return statusMap[displayStatus] || null;
+  }, []);
+
+  // Check if a status is considered "Approved"
+  const isApprovedStatus = useCallback((status) => {
+    const approvedStatuses = ['pending_creator', 'pending_explainer', 'completed', 'approved', 'accepted'];
+    return approvedStatuses.includes(status?.toLowerCase());
+  }, []);
 
   // Transform API response to table format
-  const transformQuestionData = (questions, allQuestions = []) => {
+  const transformQuestionData = useCallback((questions, allQuestions = []) => {
     const questionIdStr = (id) => String(id || '');
     const variantsByParentId = new Map();
     const processedQuestionIds = new Set();
@@ -182,62 +204,160 @@ const CreatorQuestionBank = () => {
     });
 
     return result;
-  };
+  }, [formatDate, formatStatus]);
 
-  // Calculate stats from questions
-  const calculateStats = (questions) => {
-    const assignedCount = questions.length;
-    const variantsPending = questions.filter(q => {
-      const isVariant = q.isVariant === true || q.isVariant === 'true';
-      return isVariant && q.status === 'pending_processor' && !q.isFlagged;
-    }).length;
-    
-    // Fetch completed questions count
-    const completedCount = questions.filter(q => q.status === 'completed').length;
-
-    setStats([
-      { label: t("creator.questionBank.stats.questionsAssigned"), value: assignedCount, color: "blue" },
-      { label: t("creator.questionBank.stats.variantsPending"), value: variantsPending, color: "blue" },
-      { label: t("creator.questionBank.stats.completed"), value: completedCount, color: "red" },
-    ]);
-  };
-
-  // Fetch assigned questions from API
-  const fetchAssignedQuestions = async (isInitialLoad = false) => {
-    try {
-      if (isInitialLoad) {
-        setError(null);
-        setLoading(true);
-      }
-      
-      const statusesToFetch = ['pending_creator', 'pending_processor', 'pending_explainer', 'rejected'];
-      const allQuestions = [];
-      
-      for (const status of statusesToFetch) {
-        try {
-          const response = await questionsAPI.getCreatorQuestions({ status });
-          if (response.success && response.data?.questions) {
-            allQuestions.push(...response.data.questions);
-          }
-        } catch (err) {
-          console.warn(`Failed to fetch questions with status ${status}:`, err);
-        }
-      }
-      
-      // Also fetch completed questions for stats
+  // Fetch stats separately - only once on mount, not affected by status filter
+  useEffect(() => {
+    const fetchStats = async () => {
       try {
-        const completedResponse = await questionsAPI.getCreatorQuestions({ status: 'completed' });
-        if (completedResponse.success && completedResponse.data?.questions) {
-          allQuestions.push(...completedResponse.data.questions);
+        setStatsLoading(true);
+        // Fetch all questions to calculate stats (without pagination)
+        const statusesToFetch = ['pending_creator', 'pending_processor', 'pending_explainer', 'rejected', 'completed'];
+        const allQuestions = [];
+        
+        for (const status of statusesToFetch) {
+          try {
+            const response = await questionsAPI.getCreatorQuestions({ status, page: 1, limit: 10 });
+            if (response.success && response.data?.questions) {
+              allQuestions.push(...response.data.questions);
+            }
+          } catch (err) {
+            console.warn(`Failed to fetch questions with status ${status} for stats:`, err);
+          }
         }
-      } catch (err) {
-        console.warn('Failed to fetch completed questions:', err);
+        
+        const uniqueQuestions = Array.from(
+          new Map(allQuestions.map(q => [q.id || q._id, q])).values()
+        );
+        
+        const nonFlaggedQuestions = uniqueQuestions.filter(q => {
+          if (q.isFlagged === true && q.flagType === 'creator') {
+            return false;
+          }
+          return true;
+        });
+        
+        const assignedCount = nonFlaggedQuestions.length;
+        const variantsPending = nonFlaggedQuestions.filter(q => {
+          const isVariant = q.isVariant === true || q.isVariant === 'true';
+          return isVariant && q.status === 'pending_processor' && !q.isFlagged;
+        }).length;
+        
+        const completedCount = nonFlaggedQuestions.filter(q => q.status === 'completed').length;
+
+        setStats([
+          { label: t("creator.questionBank.stats.questionsAssigned"), value: assignedCount, color: "blue" },
+          { label: t("creator.questionBank.stats.variantsPending"), value: variantsPending, color: "blue" },
+          { label: t("creator.questionBank.stats.completed"), value: completedCount, color: "red" },
+        ]);
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [t]); // Only fetch stats once on mount
+
+  // Fetch questions from API with backend pagination
+  const fetchQuestions = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Map status filter to API status
+      const apiStatus = mapStatusToAPI(subtopic);
+      const isApprovedFilter = subtopic === "Approved";
+      const isFlagFilter = subtopic === "Flag";
+      
+      // Build params
+      const params = {
+        page: currentPage,
+        limit: 10,
+      };
+      
+      // For creator, fetch without status filter to get all assigned questions
+      // The backend will default to pending_creator for creator role, but we want all statuses
+      // So we'll fetch multiple statuses and combine them
+      const allStatuses = ['pending_creator', 'pending_processor', 'pending_explainer', 'rejected', 'completed'];
+      const allQuestions = [];
+      let totalCount = 0;
+      
+      // Check if we need to filter by display status (which requires fetching all statuses)
+      // "Pending" can come from multiple backend statuses, so we need client-side filtering
+      const needsDisplayStatusFilter = isApprovedFilter || isFlagFilter || subtopic === "Pending" || subtopic === "Reject" || subtopic === "All Status" || !subtopic;
+      
+      // If specific status filter is set AND we don't need display status filtering, use backend pagination
+      if (apiStatus && !needsDisplayStatusFilter) {
+        params.status = apiStatus;
+        const response = await questionsAPI.getCreatorQuestions(params);
+        if (response.success && response.data) {
+          allQuestions.push(...(response.data.questions || []));
+          const pagination = response.data.pagination || {};
+          totalCount = pagination.totalItems || pagination.total || 0;
+        }
+      } else {
+        // For "All Status", "Approved", "Pending", "Reject", or "Flag" - fetch all statuses and combine
+        // Need to fetch ALL pages for each status to get complete data for client-side filtering
+        const fetchLimit = 100;
+        
+        // Fetch all pages for each status
+        for (const status of allStatuses) {
+          try {
+            // First, get the first page to know the total count
+            const firstPageResponse = await questionsAPI.getCreatorQuestions({ 
+              status, 
+              page: 1, 
+              limit: fetchLimit 
+            }).catch(() => ({ success: false, data: { questions: [], pagination: {} } }));
+            
+            if (firstPageResponse.success && firstPageResponse.data) {
+              const questions = firstPageResponse.data.questions || [];
+              const pagination = firstPageResponse.data.pagination || {};
+              const totalForStatus = pagination.totalItems || pagination.total || 0;
+              
+              // Add first page questions
+              allQuestions.push(...questions);
+              
+              // If there are more pages, fetch them
+              if (totalForStatus > fetchLimit) {
+                const totalPages = Math.ceil(totalForStatus / fetchLimit);
+                const pagePromises = [];
+                
+                for (let page = 2; page <= totalPages; page++) {
+                  pagePromises.push(
+                    questionsAPI.getCreatorQuestions({ 
+                      status, 
+                      page, 
+                      limit: fetchLimit 
+                    }).catch(() => ({ success: false, data: { questions: [] } }))
+                  );
+                }
+                
+                const pageResponses = await Promise.all(pagePromises);
+                pageResponses.forEach((response) => {
+                  if (response.success && response.data?.questions) {
+                    allQuestions.push(...response.data.questions);
+                  }
+                });
+              }
+              
+              // Add to total count
+              totalCount += totalForStatus;
+            }
+          } catch (err) {
+            console.warn(`Error fetching questions for status ${status}:`, err);
+          }
+        }
       }
       
+      // Remove duplicates
       const uniqueQuestions = Array.from(
         new Map(allQuestions.map(q => [q.id || q._id, q])).values()
       );
       
+      // Filter out creator-flagged questions
       const nonFlaggedQuestions = uniqueQuestions.filter(q => {
         if (q.isFlagged === true && q.flagType === 'creator') {
           return false;
@@ -245,129 +365,112 @@ const CreatorQuestionBank = () => {
         return true;
       });
       
+      // Transform to table format FIRST (need all questions for variant mapping)
+      // This gives us the display status which we'll use for filtering
       const transformedData = transformQuestionData(nonFlaggedQuestions, allQuestions);
       
-      // Only update state if data actually changed (prevent unnecessary re-renders and blinking)
-      if (isInitialLoad || allQuestionsData.length === 0) {
-        // Initial load - always update
-        setAllQuestionsData(transformedData);
-        setTotalQuestions(nonFlaggedQuestions.length);
-        calculateStats(nonFlaggedQuestions);
-        applyFilters(transformedData);
+      // Now filter based on DISPLAY status (after transformation)
+      let filteredTransformedData = transformedData;
+      if (isApprovedFilter) {
+        // Filter by display status "Approved"
+        filteredTransformedData = transformedData.filter(item => item.status === 'Approved');
+        totalCount = filteredTransformedData.length;
+      } else if (isFlagFilter) {
+        // Filter by display status "Flag"
+        filteredTransformedData = transformedData.filter(item => item.status === 'Flag');
+        totalCount = filteredTransformedData.length;
+      } else if (subtopic === "Pending") {
+        // Filter by display status "Pending"
+        filteredTransformedData = transformedData.filter(item => item.status === 'Pending');
+        totalCount = filteredTransformedData.length;
+      } else if (subtopic === "Reject") {
+        // Filter by display status "Reject"
+        filteredTransformedData = transformedData.filter(item => item.status === 'Reject');
+        totalCount = filteredTransformedData.length;
+      } else if (subtopic === "All Status" || !subtopic) {
+        // Show all - no filtering needed
+        totalCount = transformedData.length;
+      }
+      
+      // Apply client-side pagination for combined results (when fetching multiple statuses)
+      // Always use client-side pagination when we've filtered by display status
+      if (needsDisplayStatusFilter) {
+        const startIndex = (currentPage - 1) * 10;
+        const endIndex = startIndex + 10;
+        const paginatedData = filteredTransformedData.slice(startIndex, endIndex);
+        setQuestionsData(paginatedData);
+        // Set total count to the filtered data length (not the backend total)
+        setTotalQuestions(filteredTransformedData.length);
       } else {
-        // Subsequent updates - only update if data changed
-        const currentDataIds = new Set(allQuestionsData.map(q => q.id));
-        const newDataIds = new Set(transformedData.map(q => q.id));
-        
-        // Check if IDs changed
-        const idsChanged = currentDataIds.size !== newDataIds.size ||
-          ![...currentDataIds].every(id => newDataIds.has(id));
-        
-        // Check if any question data changed
-        const dataChanged = idsChanged || transformedData.some((newQ) => {
-          const oldQ = allQuestionsData.find(q => q.id === newQ.id);
-          if (!oldQ) return true; // New question
-          return oldQ.status !== newQ.status ||
-                 oldQ.updatedOn !== newQ.updatedOn ||
-                 oldQ.indicators?.flag !== newQ.indicators?.flag ||
-                 oldQ.indicators?.approved !== newQ.indicators?.approved ||
-                 oldQ.indicators?.reject !== newQ.indicators?.reject;
-        });
-        
-        if (dataChanged) {
-          setAllQuestionsData(transformedData);
-          setTotalQuestions(nonFlaggedQuestions.length);
-          calculateStats(nonFlaggedQuestions);
-          applyFilters(transformedData);
-        }
+        // For specific status using backend pagination, use backend total from API response
+        setQuestionsData(filteredTransformedData);
+        // Make sure we're using the correct total from the API response
+        setTotalQuestions(totalCount);
       }
     } catch (err) {
-      console.error("Error fetching assigned questions:", err);
-      if (isInitialLoad) {
-        setError(err.message || "Failed to fetch questions");
-        setQuestionsData([]);
-        setAllQuestionsData([]);
-        showErrorToast(err.message || "Failed to fetch questions");
-      }
+      console.error("Error fetching questions:", err);
+      setError(err.message || "Failed to fetch questions");
+      setQuestionsData([]);
+      setTotalQuestions(0);
+      showErrorToast(err.message || "Failed to fetch questions");
     } finally {
-      if (isInitialLoad) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
-  };
+  }, [currentPage, subtopic, search, subject, mapStatusToAPI, transformQuestionData, isApprovedStatus, t]);
 
-  // Apply client-side filters (memoized to prevent unnecessary re-renders)
-  const applyFilters = useCallback((data) => {
-    let filtered = [...data];
+  // Fetch data on component mount and when filters change
+  useEffect(() => {
+    fetchQuestions();
+  }, [fetchQuestions]);
 
-    if (search.trim()) {
-      const searchLower = search.toLowerCase();
-      filtered = filtered.filter((item) =>
-        item.questionTitle.toLowerCase().includes(searchLower) ||
-        item.processor.toLowerCase().includes(searchLower) ||
-        item.subject.toLowerCase().includes(searchLower) ||
-        item.status.toLowerCase().includes(searchLower)
-      );
-    }
-
-    if (subject && subject !== "All Subject") {
-      filtered = filtered.filter((item) => {
-        const questionSubject = item.originalData?.subject?.name || "";
-        return questionSubject.toLowerCase() === subject.toLowerCase();
-      });
-    }
-
-    if (subtopic && subtopic !== "All Status") {
-      filtered = filtered.filter((item) => {
-        if (subtopic.toLowerCase() === "flag") {
-          return item.status?.toLowerCase() === "flag" ||
-                 item.indicators?.flag === true || 
-                 item.originalData?.isFlagged === true;
-        } else {
-          const questionStatus = item.originalData?.status || "";
-          const displayStatus = item.status || "";
-          return questionStatus.toLowerCase().includes(subtopic.toLowerCase()) ||
-                 displayStatus.toLowerCase().includes(subtopic.toLowerCase());
-        }
-      });
-    }
-
-    setQuestionsData(filtered);
-    setTotalQuestions(filtered.length);
+  // Reset to first page when filters change
+  useEffect(() => {
     setCurrentPage(1);
   }, [search, subject, subtopic]);
 
-  // Apply filters when filter values or data change
+  // Fetch subjects on component mount
   useEffect(() => {
-    if (allQuestionsData.length > 0) {
-      applyFilters(allQuestionsData);
-    }
-  }, [allQuestionsData, applyFilters]);
-
-  // Fetch data only once on mount to prevent blinking
-  useEffect(() => {
-    fetchAssignedQuestions(true);
-
-    // Polling disabled to prevent UI blinking
-    // If real-time updates are needed, uncomment below and increase interval
-    // pollingIntervalRef.current = setInterval(() => {
-    //   fetchAssignedQuestions(false);
-    // }, 30000); // 30 seconds minimum to reduce blinking
-
-    const intervalId = pollingIntervalRef.current;
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
+    const fetchSubjects = async () => {
+      try {
+        const response = await subjectsAPI.getAllSubjects();
+        let subjectsList = [];
+        
+        if (response.success) {
+          if (response.data?.subjects && Array.isArray(response.data.subjects)) {
+            subjectsList = response.data.subjects;
+          } else if (Array.isArray(response.data)) {
+            subjectsList = response.data;
+          }
+        }
+        
+        const subjectNames = ["All Subject", ...subjectsList.map(s => s.name || s)];
+        setSubjects(subjectNames);
+      } catch (error) {
+        console.error('Error fetching subjects:', error);
+        setSubjects(["All Subject"]);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchSubjects();
   }, []);
 
-  const handleCompletedQuestion = () => {
-    navigate("/creator/question-bank/completed-question");
-  };
+  // Memoize status options
+  const subtopicOptions = useMemo(() => ["All Status", "Approved", "Pending", "Reject", "Flag"], []);
 
-  const handleView = (item) => {
+  // Memoize loading component for table
+  const tableLoadingComponent = useMemo(() => (
+    <Loader 
+      size="lg" 
+      color="oxford-blue" 
+      text="Loading questions..."
+      className="py-10"
+    />
+  ), []);
+
+  const handleCompletedQuestion = useCallback(() => {
+    navigate("/creator/question-bank/completed-question");
+  }, [navigate]);
+
+  const handleView = useCallback((item) => {
     if (item.originalData) {
       const question = item.originalData;
       // For pending_creator questions, navigate to create-variants
@@ -375,18 +478,18 @@ const CreatorQuestionBank = () => {
         handleCreateVariant(item);
       } else {
         // For other questions, navigate to view question page
-      navigate(`/creator/question-bank/question/${item.id}`);
+        navigate(`/creator/question-bank/question/${item.id}`);
       }
     }
-  };
+  }, [navigate]);
 
-  const handleEdit = (item) => {
+  const handleEdit = useCallback((item) => {
     if (item.originalData) {
       navigate(`/creator/question-bank/question/${item.id}/edit`);
     }
-  };
+  }, [navigate]);
 
-  const handleCreateVariant = (item) => {
+  const handleCreateVariant = useCallback((item) => {
     if (item.originalData) {
       navigate(`/creator/question-bank/create-variants`, { 
         state: { questionId: item.id, question: item.originalData } 
@@ -394,59 +497,50 @@ const CreatorQuestionBank = () => {
     } else {
       navigate("/creator/question-bank/create-variants");
     }
-  };
+  }, [navigate]);
 
-  const handleShowFlagReason = (flagReason) => {
+  const handleShowFlagReason = useCallback((flagReason) => {
     setSelectedFlagReason(flagReason || "");
     setIsFlagModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseFlagModal = () => {
+  const handleCloseFlagModal = useCallback(() => {
     setIsFlagModalOpen(false);
     setSelectedFlagReason("");
-  };
+  }, []);
 
-  const handleShowRejectionReason = (rejectionReason) => {
+  const handleShowRejectionReason = useCallback((rejectionReason) => {
     setSelectedRejectionReason(rejectionReason || "");
     setIsRejectionModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseRejectionModal = () => {
+  const handleCloseRejectionModal = useCallback(() => {
     setIsRejectionModalOpen(false);
     setSelectedRejectionReason("");
-  };
+  }, []);
 
-  // Get unique subjects from questions for filter
-  const getSubjectOptions = () => {
-    const subjects = new Set();
-    allQuestionsData.forEach(q => {
-      const subjectName = q.originalData?.subject?.name;
-      if (subjectName) {
-        subjects.add(subjectName);
-      }
-    });
-    return ["All Subject", ...Array.from(subjects).sort()];
-  };
+  // Memoize subject options
+  const subjectOptions = useMemo(() => {
+    return subjects.length > 0 ? subjects : ["All Subject"];
+  }, [subjects]);
 
-  const subjectOptions = getSubjectOptions();
-  const subtopicOptions = ["All Status", "Approved", "Pending", "Reject", "Flag"];
-
-  const workflowSteps = [
+  // Memoize workflow steps
+  const workflowSteps = useMemo(() => [
     t("gatherer.questionBank.workflowSteps.gatherer"),
     t("gatherer.questionBank.workflowSteps.processor"),
     t("gatherer.questionBank.workflowSteps.creator"),
     t("gatherer.questionBank.workflowSteps.processor"),
     t("gatherer.questionBank.workflowSteps.explainer"),
-  ];
+  ], [t]);
 
-  // Get recent activity from question history
-  const getRecentActivity = () => {
-    if (!allQuestionsData.length) return [];
+  // Get recent activity from question history (memoized)
+  const getRecentActivity = useCallback(() => {
+    if (!questionsData.length) return [];
     
     const activities = [];
     
-    // Collect all activities from all questions
-    allQuestionsData.forEach((q) => {
+    // Collect all activities from current questions
+    questionsData.forEach((q) => {
       const question = q.originalData;
       if (!question) return;
       
@@ -587,9 +681,10 @@ const CreatorQuestionBank = () => {
       ...activity,
       timestamp: activity.formattedTimestamp
     }));
-  };
+  }, [questionsData]);
 
-  const activityData = getRecentActivity();
+  // Memoize activity data
+  const activityData = useMemo(() => getRecentActivity(), [getRecentActivity]);
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6">
@@ -638,25 +733,18 @@ const CreatorQuestionBank = () => {
             />
           </div>
 
-          {loading ? (
-            <Loader 
-              size="lg" 
-              color="oxford-blue" 
-              text="Loading questions..."
-              className="py-12"
-            />
-          ) : error ? (
+          {error ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="text-cinnebar-red text-lg font-roboto mb-4">{error}</div>
               <OutlineButton 
                 text="Retry" 
                 className="py-[10px] px-5" 
-                onClick={fetchAssignedQuestions}
+                onClick={fetchQuestions}
               />
             </div>
           ) : (
           <Table
-              items={questionsData.slice((currentPage - 1) * 10, currentPage * 10)}
+              items={questionsData}
               columns={QuestionsColumns}
               page={currentPage}
               pageSize={10}
@@ -674,6 +762,8 @@ const CreatorQuestionBank = () => {
               emptyMessage={t("creator.assignedQuestionPage.emptyMessage")}
               onShowFlagReason={handleShowFlagReason}
               onShowRejectionReason={handleShowRejectionReason}
+              loading={loading}
+              loadingComponent={tableLoadingComponent}
           />
           )}
         </div>

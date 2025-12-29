@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import Dropdown from "../../components/shared/Dropdown";
 import questionsAPI from "../../api/questions";
-import { toast } from "react-toastify";
+import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 import Loader from "../../components/common/Loader";
+import { cleanHtmlForDisplay } from "../../utils/textUtils";
 
 const ContentModerationPage = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const ContentModerationPage = () => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,7 +36,7 @@ const ContentModerationPage = () => {
       setFlaggedContent(response.data.questions || []);
       setCurrentPage(1); // Reset to first page on new filter
     } catch (error) {
-      toast.error(error.message || "Failed to fetch flagged questions");
+      showErrorToast(error.message || "Failed to fetch flagged questions");
     } finally {
       setLoading(false);
     }
@@ -105,17 +107,26 @@ const ContentModerationPage = () => {
     }
   };
 
-  const handleApprove = async (id) => {
-    if (!window.confirm("Are you sure you want to approve this flag? The question will be sent to processor.")) {
-      return;
+  const handleApprove = (id) => {
+    const content = flaggedContent.find((item) => item.id === id);
+    if (content) {
+      setSelectedQuestion(content);
+      setShowApproveModal(true);
     }
+  };
+
+  const handleApproveSubmit = async () => {
+    if (!selectedQuestion) return;
+    
     setIsProcessing(true);
     try {
-      await questionsAPI.approveStudentFlag(id);
-      toast.success("Flag approved. Question sent to processor.");
+      await questionsAPI.approveStudentFlag(selectedQuestion.id);
+      showSuccessToast("Flag approved. Question sent to processor.");
+      setShowApproveModal(false);
+      setSelectedQuestion(null);
       fetchFlaggedQuestions();
     } catch (error) {
-      toast.error(error.message || "Failed to approve flag");
+      showErrorToast(error.message || "Failed to approve flag");
     } finally {
       setIsProcessing(false);
     }
@@ -132,7 +143,7 @@ const ContentModerationPage = () => {
 
   const handleRejectSubmit = async () => {
     if (!rejectReason.trim()) {
-      toast.error("Please provide a rejection reason");
+      showErrorToast("Please provide a rejection reason");
       return;
     }
     if (!selectedQuestion) return;
@@ -140,13 +151,13 @@ const ContentModerationPage = () => {
     setIsProcessing(true);
     try {
       await questionsAPI.rejectStudentFlag(selectedQuestion.id, rejectReason);
-      toast.success("Flag rejected. Student will be notified.");
+      showSuccessToast("Flag rejected. Student will be notified.");
       setShowRejectModal(false);
       setRejectReason("");
       setSelectedQuestion(null);
       fetchFlaggedQuestions();
     } catch (error) {
-      toast.error(error.message || "Failed to reject flag");
+      showErrorToast(error.message || "Failed to reject flag");
     } finally {
       setIsProcessing(false);
     }
@@ -197,7 +208,7 @@ const ContentModerationPage = () => {
       }
 
       if (!allFilteredData || allFilteredData.length === 0) {
-        toast.error("No data to export");
+        showErrorToast("No data to export");
         return;
       }
 
@@ -252,10 +263,10 @@ const ContentModerationPage = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      toast.success(`Exported ${allFilteredData.length} flagged questions successfully`);
+      showSuccessToast(`Exported ${allFilteredData.length} flagged questions successfully`);
     } catch (error) {
       console.error("Error exporting content moderation data:", error);
-      toast.error("Failed to export data. Please try again.");
+      showErrorToast("Failed to export data. Please try again.");
     }
   };
 
@@ -404,9 +415,12 @@ const ContentModerationPage = () => {
                     className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition"
                   >
                     <td className="px-4 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue w-[200px]">
-                      <div className="line-clamp-2">
-                        {item.question || item.questionText || "N/A"}
-                      </div>
+                      <div 
+                        className="line-clamp-2"
+                        dangerouslySetInnerHTML={{ 
+                          __html: cleanHtmlForDisplay(item.question || item.questionText || "N/A") 
+                        }}
+                      />
                     </td>
                     <td className="px-4 py-4 text-[14px] font-roboto font-normal leading-[100%] text-center text-oxford-blue">
                       {getQuestionTypeDisplay(item.questionType)}
@@ -552,9 +566,12 @@ const ContentModerationPage = () => {
                   <p className="font-roboto text-[12px] font-medium leading-[16px] text-dark-gray mb-1">
                     {t('admin.contentModeration.table.columns.questionTitle') || "Question Title"}
                   </p>
-                  <p className="font-roboto text-[12px] font-normal leading-[16px] text-oxford-blue mb-2 line-clamp-2">
-                    {item.question || item.questionText || "N/A"}
-                  </p>
+                  <p 
+                    className="font-roboto text-[12px] font-normal leading-[16px] text-oxford-blue mb-2 line-clamp-2"
+                    dangerouslySetInnerHTML={{ 
+                      __html: cleanHtmlForDisplay(item.question || item.questionText || "N/A") 
+                    }}
+                  />
                   <p className="font-roboto text-[12px] font-normal leading-[16px] text-dark-gray">
                     {getQuestionTypeDisplay(item.questionType)}
                   </p>
@@ -718,7 +735,12 @@ const ContentModerationPage = () => {
             <div className="space-y-4">
               <div>
                 <p className="text-[14px] font-roboto font-medium text-dark-gray mb-1">Question:</p>
-                <p className="text-[16px] font-roboto text-oxford-blue">{selectedQuestion.question || selectedQuestion.questionText || "N/A"}</p>
+                <div 
+                  className="text-[16px] font-roboto text-oxford-blue"
+                  dangerouslySetInnerHTML={{ 
+                    __html: cleanHtmlForDisplay(selectedQuestion.question || selectedQuestion.questionText || "N/A") 
+                  }}
+                />
               </div>
               {selectedQuestion.options && (
                 <div>
@@ -749,6 +771,39 @@ const ContentModerationPage = () => {
                   {selectedQuestion.submittedBy || selectedQuestion.flaggedBy?.name || "Unknown"}
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Approve Confirmation Modal */}
+      {showApproveModal && selectedQuestion && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-[18px] font-archivo font-bold text-oxford-blue mb-4">
+              Approve Flag
+            </h3>
+            <p className="text-[14px] font-roboto text-dark-gray mb-4">
+              Are you sure you want to approve this flag? The question will be sent to processor for review.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowApproveModal(false);
+                  setSelectedQuestion(null);
+                }}
+                className="px-4 py-2 text-[14px] font-roboto text-oxford-blue border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] transition"
+                disabled={isProcessing}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApproveSubmit}
+                disabled={isProcessing}
+                className="px-4 py-2 text-[14px] font-roboto text-white bg-[#10B981] rounded-lg hover:bg-[#059669] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isProcessing ? "Approving..." : "Approve"}
+              </button>
             </div>
           </div>
         </div>

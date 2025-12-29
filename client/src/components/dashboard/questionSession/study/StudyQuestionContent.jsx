@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { analytics, watch, tick, cross } from '../icons';
 import { useLanguage } from '../../../../context/LanguageContext';
 import studentQuestionsAPI from '../../../../api/studentQuestions';
-import { toast } from 'react-toastify';
+import { showSuccessToast, showErrorToast } from '../../../../utils/toastConfig';
+import { cleanHtmlForDisplay } from '../../../../utils/textUtils';
 
 const OptionCard = ({ option, groupName, isSelected, disabled, onOptionChange, highlight }) => {
   const language = useLanguage();
@@ -128,12 +129,13 @@ const StudyQuestionContent = ({
   return (
     <div className="max-w-4xl mx-auto lg:ml-5" dir={dir}>
       <div className="mb-4 md:mb-6">
-        <p
+        <div
           dir="ltr"
           className="text-[16px] md:text-[18px] font-normal text-oxford-blue font-roboto leading-[24px] tracking-[0%] text-left"
-        >
-          {currentQuestion.prompt}
-        </p>
+          dangerouslySetInnerHTML={{ 
+            __html: cleanHtmlForDisplay(currentQuestion.prompt || '')
+          }}
+        />
       </div>
 
       <div className="mb-4 md:mb-6">
@@ -396,17 +398,17 @@ const StudyQuestionContent = ({
               <button
                 onClick={async () => {
                   if (!flagReason.trim()) {
-                    toast.error(t('dashboard.questionSession.flagReasonRequired') || 'Please provide a reason');
+                    showErrorToast(t('dashboard.questionSession.flagReasonRequired') || 'Please provide a reason');
                     return;
                   }
                   setIsFlagging(true);
                   try {
                     await studentQuestionsAPI.flagQuestion(currentQuestion.id, flagReason);
-                    toast.success(t('dashboard.questionSession.flagSuccess') || 'Question flagged successfully');
+                    showSuccessToast(t('dashboard.questionSession.flagSuccess') || 'Question flagged successfully');
                     setShowFlagModal(false);
                     setFlagReason('');
                   } catch (error) {
-                    toast.error(error.message || t('dashboard.questionSession.flagError') || 'Failed to flag question');
+                    showErrorToast(error.message || t('dashboard.questionSession.flagError') || 'Failed to flag question');
                   } finally {
                     setIsFlagging(false);
                   }

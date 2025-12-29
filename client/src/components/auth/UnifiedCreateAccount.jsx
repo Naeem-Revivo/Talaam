@@ -37,12 +37,11 @@ const UnifiedCreateAccount = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    passwordRequirements: '',
     verificationCode: ''
   });
 
   const countries = ['United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Spain', 'Italy', 'Pakistan', 'India'];
-  const languages = ['English', 'Arabic', 'Spanish', 'French', 'German', 'Urdu'];
+  const languages = ['English', 'Arabic'];
 
   // Password requirement validation functions
   const checkPasswordRequirements = (password) => {
@@ -59,6 +58,41 @@ const UnifiedCreateAccount = () => {
   const isPasswordValid = () => {
     const requirements = checkPasswordRequirements(formData.password);
     return Object.values(requirements).every(Boolean);
+  };
+
+  // Get password error message based on requirements
+  const getPasswordErrorMessage = (password) => {
+    if (!password.trim()) {
+      return t('createAccount.validation.passwordRequired') || 'Password is required';
+    }
+    
+    if (password.length > 25) {
+      return t('createAccount.validation.passwordMaxLength') || 'Password must not exceed 25 characters';
+    }
+    
+    if (password.length < 8) {
+      return t('createAccount.validation.passwordMinLength') || 'Password must be at least 8 characters';
+    }
+    
+    const requirements = checkPasswordRequirements(password);
+    
+    if (!requirements.hasUppercase) {
+      return t('createAccount.validation.passwordUppercase') || 'Password must contain at least one uppercase letter';
+    }
+    
+    if (!requirements.hasLowercase) {
+      return t('createAccount.validation.passwordLowercase') || 'Password must contain at least one lowercase letter';
+    }
+    
+    if (!requirements.hasNumber) {
+      return t('createAccount.validation.passwordNumber') || 'Password must contain at least one number';
+    }
+    
+    if (!requirements.hasSpecial) {
+      return t('createAccount.validation.passwordSpecial') || 'Password must contain at least one special character';
+    }
+    
+    return '';
   };
 
   // Timer for resend OTP
@@ -108,22 +142,9 @@ const UnifiedCreateAccount = () => {
         break;
 
       case 'password':
-        const currentPasswordRequirements = checkPasswordRequirements(value);
-        const currentPasswordValid = Object.values(currentPasswordRequirements).every(Boolean);
-        
-        if (!value.trim()) {
-          newErrors.password = t('createAccount.validation.passwordRequired') || 'Password is required';
-          newErrors.passwordRequirements = t('createAccount.validation.passwordRequirements') || 'Password requirements not met';
-        } else if (value.length > 25) {
-          newErrors.password = t('createAccount.validation.passwordMaxLength') || 'Password must not exceed 25 characters';
-          newErrors.passwordRequirements = '';
-        } else if (!currentPasswordValid) {
-          newErrors.password = '';
-          newErrors.passwordRequirements = t('createAccount.validation.passwordRequirements') || 'Password must be 8-25 characters with uppercase, lowercase, number, and special character';
-        } else {
-          newErrors.password = '';
-          newErrors.passwordRequirements = '';
-        }
+        // Get error message
+        const passwordError = getPasswordErrorMessage(value);
+        newErrors.password = passwordError;
         
         // If confirmPassword is filled, validate it again
         if (formData.confirmPassword) {
@@ -201,21 +222,12 @@ const UnifiedCreateAccount = () => {
     }
 
     // Password validation
-    if (!formData.password.trim()) {
-      newErrors.password = t('createAccount.validation.passwordRequired') || 'Password is required';
-      newErrors.passwordRequirements = t('createAccount.validation.passwordRequirements') || 'Password requirements not met';
-      isValid = false;
-    } else if (formData.password.length > 25) {
-      newErrors.password = t('createAccount.validation.passwordMaxLength') || 'Password must not exceed 25 characters';
-      newErrors.passwordRequirements = '';
-      isValid = false;
-    } else if (!isPasswordValid()) {
-      newErrors.password = '';
-      newErrors.passwordRequirements = t('createAccount.validation.passwordRequirements') || 'Password must be 8-25 characters with uppercase, lowercase, number, and special character';
+    const passwordError = getPasswordErrorMessage(formData.password);
+    if (passwordError) {
+      newErrors.password = passwordError;
       isValid = false;
     } else {
       newErrors.password = '';
-      newErrors.passwordRequirements = '';
     }
 
     // Confirm password validation
@@ -581,15 +593,6 @@ const UnifiedCreateAccount = () => {
                 )}
               </div>
             </div>
-
-            {/* Password Requirements Error */}
-            {errors.passwordRequirements && (
-              <div className="col-span-1 md:col-span-2">
-                <p className="mt-1 text-sm text-red-500 font-roboto">
-                  {errors.passwordRequirements}
-                </p>
-              </div>
-            )}
 
             {/* Country & Language Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">

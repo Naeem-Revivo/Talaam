@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
+import { cleanQuestionText } from "../../../utils/textUtils";
 
 const statusTone = {
   Active: {
@@ -78,10 +79,10 @@ const TableRow = ({ question, onView, t, dir }) => {
           <p 
             className="text-[12px] font-roboto leading-[16px] text-oxford-blue truncate cursor-help"
             dir="ltr"
-            title={question.prompt}
+            title={cleanQuestionText(question.prompt)}
             style={{ lineHeight: '1.4' }}
           >
-            {question.prompt}
+            {cleanQuestionText(question.prompt)}
           </p>
           {question.type && (
             <p 
@@ -188,7 +189,7 @@ const MobileQuestionCard = ({ question, onView, t, dir }) => {
           className="text-[16px] font-archivo font-semibold leading-[20px] break-words"
           style={{ wordBreak: 'break-word', lineHeight: '1.4' }}
         >
-          {question.prompt}
+          {cleanQuestionText(question.prompt)}
         </p>
         {question.type && (
           <p className="text-[12px] font-roboto leading-[16px] text-dark-gray">

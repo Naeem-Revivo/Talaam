@@ -4,6 +4,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
 import questionsAPI from "../../api/questions";
 import { showErrorToast } from "../../utils/toastConfig";
+import Loader from "../../components/common/Loader";
 
 const CreatorVariantsListPage = () => {
   const navigate = useNavigate();
@@ -137,8 +138,10 @@ const CreatorVariantsListPage = () => {
   // Extract question title from questionText (first 100 characters)
   const getQuestionTitle = (questionText) => {
     if (!questionText) return "—";
-    // Strip HTML tags for display
-    const text = questionText.replace(/<[^>]*>/g, '');
+    // First clean code tags with data attributes
+    let cleaned = questionText.replace(/<code[^>]*data-start[^>]*>(.*?)<\/code>/gi, '$1');
+    // Then strip all remaining HTML tags
+    const text = cleaned.replace(/<[^>]*>/g, '');
     return text.length > 100 ? text.substring(0, 100) + "..." : text;
   };
 
@@ -166,9 +169,7 @@ const CreatorVariantsListPage = () => {
 
         {/* Loading State */}
         {loading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-oxford-blue text-lg font-roboto">Loading questions...</div>
-          </div>
+          <Loader fullScreen={false} size="lg" text={"Loading questions..."} className="py-10" />
         )}
 
         {/* Error State */}

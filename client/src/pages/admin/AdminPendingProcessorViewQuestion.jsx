@@ -9,6 +9,7 @@ import adminAPI from "../../api/admin";
 import usersAPI from "../../api/users";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig.jsx";
 import Loader from "../../components/common/Loader";
+import { cleanHtmlForDisplay, cleanQuestionText } from "../../utils/textUtils";
 
 // Helper function to extract option text (handles both string and object formats)
 const getOptionText = (optionValue) => {
@@ -790,13 +791,13 @@ const AdminPendingProcessorViewQuestion = () => {
                 <div className="bg-[#F6F7F8] rounded-lg p-4 border border-[#E5E7EB]">
                   <div className="mb-3">
                     <span className="font-roboto text-[14px] font-semibold text-oxford-blue">{t("processor.viewQuestion.parentQuestionLabel")}:</span>
-                    <p
-                      className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue mt-2 max-w-[600px] truncate cursor-help"
+                    <div
+                      className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue mt-2 max-w-[600px] cursor-help"
                       dir="ltr"
-                      title={stripHtmlTags(parentQuestion.questionText)}
+                      title={cleanQuestionText(parentQuestion.questionText)}
                     >
-                      {stripHtmlTags(parentQuestion.questionText)}
-                    </p>
+                      <span dangerouslySetInnerHTML={{ __html: cleanHtmlForDisplay(parentQuestion.questionText) }} />
+                    </div>
                   </div>
                   
                   {parentQuestion.questionType === "MCQ" && parentQuestion.options && (
@@ -839,13 +840,13 @@ const AdminPendingProcessorViewQuestion = () => {
               <h2 className="mb-2 font-archivo text-[20px] font-bold leading-[32px] text-oxford-blue">
                 {t("processor.viewQuestion.questionInfo")}
               </h2>
-              <p
-                className="font-roboto text-[16px] font-normal leading-[100%] text-oxford-blue pt-[30px] max-w-[600px] truncate cursor-help"
+              <div
+                className="font-roboto text-[16px] font-normal leading-[100%] text-oxford-blue pt-[30px] max-w-[600px] cursor-help"
                 dir="ltr"
-                title={stripHtmlTags(question.questionText)}
+                title={cleanQuestionText(question.questionText)}
               >
-                {stripHtmlTags(question.questionText)}
-              </p>
+                <span dangerouslySetInnerHTML={{ __html: cleanHtmlForDisplay(question.questionText) }} />
+              </div>
             </div>
             <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full">
               <div>

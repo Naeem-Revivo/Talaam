@@ -20,23 +20,22 @@ const plansAPI = {
   getAllPlans: async (params = {}) => {
     try {
       const { status } = params;
-      const queryParams = new URLSearchParams();
       
-      if (status) queryParams.append('status', status);
-
-      // Try public endpoint first (works without auth)
-      try {
-        const publicUrl = queryParams.toString()
-          ? `/public/plans?${queryParams.toString()}`
-          : '/public/plans';
-        const response = await axiosClient.get(publicUrl);
-        return response.data;
-      } catch (publicErr) {
-        // Fallback to authenticated admin endpoint
-        const url = queryParams.toString()
-          ? `/admin/plans?${queryParams.toString()}`
-          : '/admin/plans';
-        const response = await axiosClient.get(url);
+      // Always use public endpoint for active plans or when no status is specified
+      // Public endpoint only returns active plans, so status filter is not needed
+      if (!status || status === 'active') {
+        try {
+          const response = await axiosClient.get('/public/plans');
+          return response.data;
+        } catch (publicErr) {
+          // If public endpoint fails and we need active plans, try admin endpoint
+          console.warn('Public plans endpoint failed, trying admin endpoint:', publicErr);
+          const response = await axiosClient.get('/admin/plans?status=active');
+          return response.data;
+        }
+      } else {
+        // For non-active status, use admin endpoint (requires auth)
+        const response = await axiosClient.get(`/admin/plans?status=${status}`);
         return response.data;
       }
     } catch (error) {

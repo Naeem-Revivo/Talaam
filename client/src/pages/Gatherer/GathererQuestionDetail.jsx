@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
 import questionsAPI from "../../api/questions";
+import { cleanHtmlForDisplay } from "../../utils/textUtils";
 
 const GathererQuestionDetailsPage = () => {
   const navigate = useNavigate();
@@ -129,7 +130,7 @@ const GathererQuestionDetailsPage = () => {
                     <p
                       className="pb-7 font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue"
                       dir="ltr"
-                      dangerouslySetInnerHTML={{ __html: question.questionText || "" }}
+                      dangerouslySetInnerHTML={{ __html: cleanHtmlForDisplay(question.questionText || "") }}
                     />
 
                     {/* Options - Only show for MCQ */}
