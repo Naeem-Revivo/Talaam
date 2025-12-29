@@ -1,7 +1,7 @@
 
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import SearchFilter from "../../components/common/SearchFilter";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
@@ -18,22 +18,22 @@ const ExplainerSubmission = () => {
   const [subject, setSubject] = useState("");
   const [subtopic, setSubtopic] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [submissions, setSubmissions] = useState([]);
-  const [allSubmissions, setAllSubmissions] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(0);
   const [subjects, setSubjects] = useState([]);
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
   const [selectedFlagReason, setSelectedFlagReason] = useState("");
 
-  const explainerColumns = [
+  // Memoize columns to prevent rerenders
+  const explainerColumns = useMemo(() => [
     { key: 'questionTitle', label: t("processor.explainerSubmission.table.question") },
     { key: 'explainer', label: t("processor.explainerSubmission.table.explainer") },
     { key: 'processorStatus', label: t("processor.explainerSubmission.table.processorStatus") || "PROCESSOR STATUS" },
     { key: 'explainerStatus', label: t("processor.explainerSubmission.table.explainerStatus") || "EXPLAINER STATUS" },
     { key: 'submittedOn', label: t("processor.explainerSubmission.table.submittedOn") },
     { key: 'actions', label: t("processor.explainerSubmission.table.actions") }
-  ];
+  ], [t]);
 
   // Format date to "Today", "Yesterday", or formatted date
   const formatDate = (dateString) => {
@@ -62,8 +62,26 @@ const ExplainerSubmission = () => {
     }
   };
 
+  // Map display status to API status
+  const mapStatusToAPI = useCallback((displayStatus) => {
+    if (!displayStatus || displayStatus === "All Status") return null;
+    const statusMap = {
+      "Pending Review": "pending_processor",
+      "Approved": "approved", // Use "approved" as base, will filter for all approved statuses client-side
+      "Rejected": "rejected",
+      "Flag": "flagged",
+    };
+    return statusMap[displayStatus] || null;
+  }, []);
+
+  // Check if a status is considered "Approved"
+  const isApprovedStatus = useCallback((status) => {
+    const approvedStatuses = ['pending_creator', 'pending_explainer', 'completed', 'approved', 'accepted'];
+    return approvedStatuses.includes(status?.toLowerCase());
+  }, []);
+
   // Map API status to processor status
-  const mapProcessorStatus = (status) => {
+  const mapProcessorStatus = useCallback((status) => {
     const statusMap = {
       'pending_processor': 'Pending Review',
       'pending_creator': 'Approved',
@@ -77,7 +95,7 @@ const ExplainerSubmission = () => {
       'flag': 'Pending Review'
     };
     return statusMap[status?.toLowerCase()] || 'Pending Review';
-  };
+  }, []);
 
   // Map API status to explainer status
   const mapExplainerStatus = (status, isFlagged, hasExplanation) => {
@@ -106,48 +124,111 @@ const ExplainerSubmission = () => {
     return statusMap[status?.toLowerCase()] || 'Pending';
   };
 
-  // Fetch explainer submissions from API
-  useEffect(() => {
-    const fetchExplainerSubmissions = async () => {
-      try {
-        setLoading(true);
+  // Fetch explainer submissions from API with backend pagination
+  const fetchExplainerSubmissions = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Map status filter to API status
+      const apiStatus = mapStatusToAPI(subtopic);
+      const isApprovedFilter = subtopic === "Approved";
+      
+      // Build base params
+      const baseParams = {
+        submittedBy: 'explainer',
+        limit: 10,
+      };
+      
+      // Add search and subject filters if provided
+      if (search && search.trim()) {
+        baseParams.search = search.trim();
+      }
+      if (subject && subject !== "All Subject") {
+        baseParams.subject = subject;
+      }
+      
+      let allQuestions = [];
+      let totalCount = 0;
+      
+      // If "Approved" filter is selected, fetch ALL pages to get all approved questions
+      // Then filter and paginate client-side
+      if (isApprovedFilter) {
+        // Fetch all pages to get complete data for client-side filtering
+        const fetchLimit = 100; // Fetch more items per page
+        let page = 1;
+        let hasMorePages = true;
         
-        // Fetch questions with multiple statuses to get all explainer submissions
-        // This includes: pending_explainer (assigned to explainer), pending_processor (submitted by explainer),
-        // flagged (flagged by explainer), completed, rejected (rejected after explainer submitted), etc.
-        const statusesToFetch = [
-          'pending_explainer', // Questions assigned to explainer (may or may not have explanation yet)
-          'pending_processor', // Questions submitted by explainer back to processor (with explanation)
-          'completed', // Completed questions
-          'rejected' // Questions rejected after explainer submitted explanation
-        ];
-
-        let allQuestions = [];
-
-        // Fetch questions for each status, filtered by explainer role
-        const promises = statusesToFetch.map(status => 
-          questionsAPI.getProcessorQuestions({ status, submittedBy: 'explainer' })
-        );
-        
-        const responses = await Promise.all(promises);
-        
-        // Combine all questions
-        responses.forEach(response => {
-          if (response.success && response.data?.questions) {
-            allQuestions = [...allQuestions, ...response.data.questions];
+        while (hasMorePages) {
+          const params = {
+            ...baseParams,
+            page: page,
+            limit: fetchLimit,
+          };
+          
+          const response = await questionsAPI.getProcessorQuestions(params);
+          
+          if (!response.success || !response.data) {
+            hasMorePages = false;
+            break;
           }
-        });
-        
-        // Remove duplicates based on question ID
-        const uniqueQuestions = [];
-        const seenIds = new Set();
-        allQuestions.forEach(q => {
-          if (!seenIds.has(q.id)) {
-            seenIds.add(q.id);
-            uniqueQuestions.push(q);
+          
+          const questions = response.data.questions || [];
+          const pagination = response.data.pagination || {};
+          
+          // Filter for approved statuses
+          const approvedQuestions = questions.filter(q => isApprovedStatus(q.status));
+          allQuestions.push(...approvedQuestions);
+          
+          // Check if there are more pages
+          hasMorePages = pagination.hasNextPage === true && questions.length > 0;
+          page++;
+          
+          // Safety limit to prevent infinite loops
+          if (page > 100) {
+            hasMorePages = false;
           }
-        });
-        allQuestions = uniqueQuestions;
+        }
+        
+        totalCount = allQuestions.length;
+      } else {
+        // For other statuses, use normal backend pagination
+        const params = {
+          ...baseParams,
+          page: currentPage,
+          limit: 10,
+        };
+        
+        if (apiStatus === 'flagged') {
+          // For flagged, use flagType parameter
+          params.flagType = 'flagged';
+        } else if (apiStatus) {
+          // For specific status, use status filter
+          params.status = apiStatus;
+        }
+        
+        const response = await questionsAPI.getProcessorQuestions(params);
+        
+        if (!response.success || !response.data) {
+          setSubmissions([]);
+          setTotalQuestions(0);
+          return;
+        }
+        
+        allQuestions = response.data.questions || [];
+        const pagination = response.data.pagination || {};
+        totalCount = pagination.totalItems || pagination.total || 0;
+      }
+      
+      // Remove duplicates based on question ID
+      const uniqueQuestions = [];
+      const seenIds = new Set();
+      allQuestions.forEach(q => {
+        if (!seenIds.has(q.id)) {
+          seenIds.add(q.id);
+          uniqueQuestions.push(q);
+        }
+      });
+      allQuestions = uniqueQuestions;
           
         // Fetch individual question details to get full information (flag reason, explanation, etc.)
         const questionsWithDetails = await Promise.all(
@@ -331,8 +412,15 @@ const ExplainerSubmission = () => {
           };
         });
 
+        // For "Approved" filter, filter by explainerStatus after transformation
+        // This ensures we show only questions with "Approved" explainer status
+        let finalTransformedData = transformedData;
+        if (isApprovedFilter) {
+          finalTransformedData = transformedData.filter(item => item.explainerStatus === 'Approved');
+        }
+
         // Sort: pending_processor questions first (newest first), then others (newest first)
-        transformedData.sort((a, b) => {
+        finalTransformedData.sort((a, b) => {
           const isAPendingProcessor = a.originalData?.status === 'pending_processor';
           const isBPendingProcessor = b.originalData?.status === 'pending_processor';
           
@@ -346,20 +434,36 @@ const ExplainerSubmission = () => {
           return dateB - dateA;
         });
 
-        setAllSubmissions(transformedData);
-        setSubmissions(transformedData);
-        setTotal(transformedData.length);
+        // For "Approved" filter, apply client-side pagination
+        let paginatedData = finalTransformedData;
+        if (isApprovedFilter) {
+          const startIndex = (currentPage - 1) * 10;
+          const endIndex = startIndex + 10;
+          paginatedData = finalTransformedData.slice(startIndex, endIndex);
+          // Use the filtered count for total
+          totalCount = finalTransformedData.length;
+        }
+        
+        setSubmissions(paginatedData);
+        setTotalQuestions(totalCount);
       } catch (error) {
         console.error('Error fetching explainer submissions:', error);
         setSubmissions([]);
-        setTotal(0);
+        setTotalQuestions(0);
       } finally {
         setLoading(false);
       }
-    };
+  }, [currentPage, subtopic, search, subject, mapStatusToAPI, mapProcessorStatus, isApprovedStatus, t]);
 
+  // Fetch data on component mount and when filters change
+  useEffect(() => {
     fetchExplainerSubmissions();
-  }, [currentPage]);
+  }, [fetchExplainerSubmissions]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, subject, subtopic]);
 
   // Fetch subjects for filter
   useEffect(() => {
@@ -385,98 +489,58 @@ const ExplainerSubmission = () => {
     fetchSubjects();
   }, []);
 
-  // Get unique subjects from submissions for filter
-  const getSubjectOptions = () => {
-    const subjectSet = new Set();
-    allSubmissions.forEach(item => {
-      const subjectName = item.originalData?.subject?.name;
-      if (subjectName) {
-        subjectSet.add(subjectName);
-      }
-    });
-    return ["All Subject", ...Array.from(subjectSet).sort()];
-  };
+  // Memoize status options
+  const subtopicOptions = useMemo(() => ["All Status", "Pending Review", "Approved", "Rejected", "Flag"], []);
 
-  const subjectOptions = getSubjectOptions();
-  const subtopicOptions = ["All Status", "Pending Review", "Approved", "Rejected", "Flag"];
+  // Get subject options from API
+  const subjectOptions = useMemo(() => {
+    return ["All Subject", ...subjects.map(s => s.name || s)];
+  }, [subjects]);
 
-  // Apply filters
-  const filteredSubmissions = useMemo(() => {
-    let filtered = [...allSubmissions];
-
-    // Filter by search
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filtered = filtered.filter((item) => {
-        return (
-          item.questionTitle?.toLowerCase().includes(searchLower) ||
-          item.explainer?.toLowerCase().includes(searchLower) ||
-          item.processorStatus?.toLowerCase().includes(searchLower) ||
-          item.explainerStatus?.toLowerCase().includes(searchLower)
-        );
-      });
-    }
-
-    // Filter by subject
-    if (subject && subject !== "All Subject") {
-      filtered = filtered.filter((item) => {
-        const questionSubject = item.originalData?.subject?.name || "";
-        return questionSubject.toLowerCase() === subject.toLowerCase();
-      });
-    }
-
-    // Filter by status (subtopic)
-    if (subtopic && subtopic !== "All Status") {
-      filtered = filtered.filter((item) => {
-        const itemStatus = item.processorStatus || item.explainerStatus || "";
-        return itemStatus.toLowerCase() === subtopic.toLowerCase();
-      });
-    }
-
-    return filtered;
-  }, [search, subject, subtopic, allSubmissions]);
-
-  // Update displayed submissions when filters change
-  useEffect(() => {
-    setSubmissions(filteredSubmissions);
-    setTotal(filteredSubmissions.length);
-    setCurrentPage(1); // Reset to first page when filters change
-  }, [filteredSubmissions]);
+  // Memoize loading component for table
+  const tableLoadingComponent = useMemo(() => (
+    <Loader 
+      size="lg" 
+      color="oxford-blue" 
+      text="Loading..."
+      className="py-10"
+    />
+  ), []);
 
   // Handler for review action
-  const handleReview = (item) => {
+  const handleReview = useCallback((item) => {
     if (item.originalData?.id) {
       navigate(`/processor/Processed-ViewQuestion?questionId=${item.originalData.id}&source=explainer-submission`);
     }
-  };
+  }, [navigate]);
 
   // Handler for view action
-  const handleView = (item) => {
+  const handleView = useCallback((item) => {
     if (item.originalData?.id) {
       navigate(`/processor/Processed-ViewQuestion?questionId=${item.originalData.id}&source=explainer-submission`);
     }
-  };
+  }, [navigate]);
 
   // Handler for edit action
-  const handleEdit = (item) => {
+  const handleEdit = useCallback((item) => {
     console.log('Edit item:', item);
-  };
+  }, []);
 
   // Handler for showing flag reason
-  const handleShowFlagReason = (flagReason) => {
+  const handleShowFlagReason = useCallback((flagReason) => {
     setSelectedFlagReason(flagReason || "");
     setIsFlagModalOpen(true);
-  };
+  }, []);
 
   // Handler for closing flag modal
-  const handleCloseFlagModal = () => {
+  const handleCloseFlagModal = useCallback(() => {
     setIsFlagModalOpen(false);
     setSelectedFlagReason("");
-  };
+  }, []);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     navigate("/processor/question-bank");
-  };
+  }, [navigate]);
 
 
   return (
@@ -505,28 +569,21 @@ const ExplainerSubmission = () => {
           searchPlaceholder={t("processor.explainerSubmission.searchPlaceholder")}
         />
 
-      {loading ? (
-        <Loader 
-          size="lg" 
-          color="oxford-blue" 
-          text="Loading..."
-          className="py-12"
-        />
-      ) : (
         <Table
           items={submissions}
           columns={explainerColumns}
           page={currentPage}
           pageSize={10}
-          total={total}
+          total={totalQuestions}
           onPageChange={setCurrentPage}
           onView={handleView}
           onEdit={handleEdit}
           onCustomAction={handleReview}
           onShowFlagReason={handleShowFlagReason}
           emptyMessage={t("processor.explainerSubmission.emptyMessage")}
+          loading={loading}
+          loadingComponent={tableLoadingComponent}
         />
-      )}
 
       {/* Flag Reason Modal */}
       {isFlagModalOpen && (

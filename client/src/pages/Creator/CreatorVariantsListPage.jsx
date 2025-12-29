@@ -4,6 +4,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
 import questionsAPI from "../../api/questions";
 import { showErrorToast } from "../../utils/toastConfig";
+import Loader from "../../components/common/Loader";
 
 const CreatorVariantsListPage = () => {
   const navigate = useNavigate();
@@ -168,9 +169,7 @@ const CreatorVariantsListPage = () => {
 
         {/* Loading State */}
         {loading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-oxford-blue text-lg font-roboto">Loading questions...</div>
-          </div>
+          <Loader fullScreen={false} size="lg" text={"Loading questions..."} className="py-10" />
         )}
 
         {/* Error State */}

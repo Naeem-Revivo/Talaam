@@ -268,11 +268,15 @@ const questionsAPI = {
   // Get questions (Processor view)
   getProcessorQuestions: async (params = {}) => {
     try {
-      const { status, submittedBy, flagType } = params;
+      const { status, submittedBy, flagType, page, limit, search, subject } = params;
       const queryParams = new URLSearchParams();
       if (status) queryParams.append('status', status);
       if (submittedBy) queryParams.append('submittedBy', submittedBy);
       if (flagType) queryParams.append('flagType', flagType);
+      if (page) queryParams.append('page', page);
+      if (limit) queryParams.append('limit', limit);
+      if (search) queryParams.append('search', search);
+      if (subject) queryParams.append('subject', subject);
 
       const url = queryParams.toString()
         ? `/admin/questions/processor?${queryParams.toString()}`
@@ -397,9 +401,13 @@ const questionsAPI = {
   // Get questions (Creator view)
   getCreatorQuestions: async (params = {}) => {
     try {
-      const { status } = params;
+      const { status, page, limit, search, subject } = params;
       const queryParams = new URLSearchParams();
       if (status) queryParams.append('status', status);
+      if (page) queryParams.append('page', page);
+      if (limit) queryParams.append('limit', limit);
+      if (search) queryParams.append('search', search);
+      if (subject) queryParams.append('subject', subject);
 
       const url = queryParams.toString()
         ? `/admin/questions/creator?${queryParams.toString()}`
@@ -566,9 +574,13 @@ const questionsAPI = {
   // Get questions (Explainer view)
   getExplainerQuestions: async (params = {}) => {
     try {
-      const { status } = params;
+      const { status, page, limit, search, subject } = params;
       const queryParams = new URLSearchParams();
       if (status) queryParams.append('status', status);
+      if (page) queryParams.append('page', page);
+      if (limit) queryParams.append('limit', limit);
+      if (search) queryParams.append('search', search);
+      if (subject) queryParams.append('subject', subject);
 
       const url = queryParams.toString()
         ? `/admin/questions/explainer?${queryParams.toString()}`

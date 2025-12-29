@@ -578,25 +578,40 @@ const createQuestion = async (req, res, next) => {
 
 /**
  * Get questions by status
- * GET /admin/questions?status=pending_processor&submittedBy=creator
+ * GET /admin/questions?status=pending_processor&submittedBy=creator&page=1&limit=10&search=term&subject=subjectName
  * For processor: can filter by submittedBy role (creator, explainer, gatherer)
  */
 const getQuestions = async (req, res, next) => {
   try {
-    const { status, submittedBy, flagType } = req.query;
+    const { status, submittedBy, flagType, page, limit, search, subject } = req.query;
 
     console.log('[QUESTION] GET /admin/questions → requested', {
       status,
       submittedBy,
       flagType,
+      page,
+      limit,
+      search,
+      subject,
       requestedBy: req.user.id,
       requesterRole: req.user.adminRole,
     });
 
     // Determine status based on role
+    // For processor: if no status is provided, show all questions (don't default to pending_processor)
+    // For other roles: keep default behavior
+    // Handle "flagged" status specially - it filters by isFlagged, not status
     let queryStatus = status;
+    let queryFlagType = flagType;
+    
+    // If status is "flagged", set flagType and clear status
+    if (queryStatus === 'flagged') {
+      queryFlagType = 'flagged';
+      queryStatus = null; // Don't filter by status when showing flagged questions
+    }
+    
     if (!queryStatus) {
-      // Default status based on role
+      // Default status based on role (only for non-processor roles)
       switch (req.user.adminRole) {
         case 'gatherer':
           queryStatus = 'pending_processor'; // Gatherer sees their submitted questions
@@ -608,35 +623,46 @@ const getQuestions = async (req, res, next) => {
           queryStatus = 'pending_explainer';
           break;
         case 'processor':
-          queryStatus = 'pending_processor';
+          // Processor: don't set default status - show all questions
+          queryStatus = null;
           break;
         default:
           queryStatus = 'pending_processor';
       }
     }
 
+    // Prepare pagination and filter options
+    const paginationOptions = {
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 20,
+      search: search || null,
+      subject: subject || null,
+    };
+
     // If processor is requesting and submittedBy is specified, use role-based filtering
-    let questions;
+    let result;
     if (req.user.adminRole === 'processor' && submittedBy) {
-      questions = await questionService.getQuestionsByStatusAndRole(
+      result = await questionService.getQuestionsByStatusAndRole(
         queryStatus,
         submittedBy,
         req.user.id, // Pass processor ID to filter by assignedProcessorId
-        flagType // Pass flagType to allow fetching student-flagged questions
+        queryFlagType, // Pass flagType (may be 'flagged' for flagged status filter)
+        paginationOptions
       );
     } else {
-      questions = await questionService.getQuestionsByStatus(
+      result = await questionService.getQuestionsByStatus(
         queryStatus,
         req.user.id,
         req.user.adminRole,
-        flagType // Pass flagType to allow fetching student-flagged questions
+        queryFlagType, // Pass flagType (may be 'flagged' for flagged status filter)
+        paginationOptions
       );
     }
 
     const response = {
       success: true,
       data: {
-        questions: questions.map((q) => ({
+        questions: result.questions.map((q) => ({
           id: q._id || q.id,
           exam: q.exam,
           subject: q.subject,
@@ -668,10 +694,14 @@ const getQuestions = async (req, res, next) => {
           createdAt: q.createdAt,
           updatedAt: q.updatedAt,
         })),
+        pagination: result.pagination || null,
       },
     };
 
-    console.log('[QUESTION] GET /admin/questions → 200 (ok)', { count: questions.length });
+    console.log('[QUESTION] GET /admin/questions → 200 (ok)', { 
+      count: result.questions.length,
+      totalItems: result.pagination?.totalItems || result.questions.length
+    });
     res.status(200).json(response);
   } catch (error) {
     console.error('[QUESTION] GET /admin/questions → error', error);

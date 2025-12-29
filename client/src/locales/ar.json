@@ -72,9 +72,9 @@
         "reviewSessions": "جلسات المراجعة",
         "sessionSummary": "ملخص الجلسة",
         "questionSession": "جلسة الأسئلة",
-      "subscriptionsBilling": "الاشتراكات والفواتير",
-      "announcements": "الإعلانات",
-      "default": "لوحة التحكم"
+        "subscriptionsBilling": "الاشتراكات والفواتير",
+        "announcements": "الإعلانات",
+        "default": "لوحة التحكم"
       }
     }
   },
@@ -451,7 +451,14 @@
     "validation": {
       "emailRequired": "البريد الإلكتروني مطلوب",
       "emailInvalid": "يرجى إدخال عنوان بريد إلكتروني صحيح",
+      "emailMaxLength": "يجب ألا يزيد البريد الإلكتروني عن 50 حرفًا",
       "passwordRequired": "كلمة المرور مطلوبة",
+      "passwordMinLength": "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
+      "passwordMaxLength": "يجب ألا تزيد كلمة المرور عن 25 حرفًا",
+      "passwordUppercase": "يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل",
+      "passwordLowercase": "يجب أن تحتوي كلمة المرور على حرف صغير واحد على الأقل",
+      "passwordNumber": "يجب أن تحتوي كلمة المرور على رقم واحد على الأقل",
+      "passwordSpecial": "يجب أن تحتوي كلمة المرور على حرف خاص واحد على الأقل",
       "passwordRequirements": "يجب أن تستوفي كلمة المرور جميع المتطلبات",
       "confirmPasswordRequired": "يرجى تأكيد كلمة المرور",
       "passwordsMismatch": "كلمتا المرور غير متطابقتين"
@@ -1299,136 +1306,136 @@
         "fileName": "إدارة-المستخدمين.csv"
       }
     },
-      "studentManagement": {
-        "hero": {
-          "title": "إدارة الطلاب",
-          "subtitle": "إدارة حسابات الطلاب والاشتراكات وتحليلات النشاط."
-        },
-        "loading": "جاري التحميل...",
-        "summary": {
-          "totalStudents": "إجمالي الطلاب",
-          "activeStudents": "الطلاب النشطون",
-          "suspended": "المعلقون",
-          "verifiedUnverified": "الموثقون / غير الموثقين"
-        },
-        "status": {
-          "active": "نشط",
-          "suspended": "معلق"
-        },
-        "subscription": {
+    "studentManagement": {
+      "hero": {
+        "title": "إدارة الطلاب",
+        "subtitle": "إدارة حسابات الطلاب والاشتراكات وتحليلات النشاط."
+      },
+      "loading": "جاري التحميل...",
+      "summary": {
+        "totalStudents": "إجمالي الطلاب",
+        "activeStudents": "الطلاب النشطون",
+        "suspended": "المعلقون",
+        "verifiedUnverified": "الموثقون / غير الموثقين"
+      },
+      "status": {
+        "active": "نشط",
+        "suspended": "معلق"
+      },
+      "subscription": {
+        "free": "مجاني",
+        "trial": "تجريبي",
+        "premium": "مميز"
+      },
+      "filters": {
+        "searchPlaceholder": "البحث بالاسم أو البريد الإلكتروني أو المعرف",
+        "searchByIdPlaceholder": "ابحث بمعرف الطالب",
+        "filter": "تصفية",
+        "plan": "الخطة",
+        "status": "الحالة",
+        "date": "التاريخ",
+        "all": "الكل",
+        "refresh": "تحديث",
+        "applyFilters": "تطبيق التصفية",
+        "plans": {
           "free": "مجاني",
           "trial": "تجريبي",
           "premium": "مميز"
         },
-        "filters": {
-          "searchPlaceholder": "البحث بالاسم أو البريد الإلكتروني أو المعرف",
-          "searchByIdPlaceholder": "ابحث بمعرف الطالب",
-          "filter": "تصفية",
-          "plan": "الخطة",
-          "status": "الحالة",
-          "date": "التاريخ",
-          "all": "الكل",
-          "refresh": "تحديث",
-          "applyFilters": "تطبيق التصفية",
-          "plans": {
-            "free": "مجاني",
-            "trial": "تجريبي",
-            "premium": "مميز"
-          },
-          "dateOptions": {
-            "today": "اليوم",
-            "thisWeek": "هذا الأسبوع",
-            "thisMonth": "هذا الشهر",
-            "thisYear": "هذا العام"
-          }
-        },
-        "table": {
-          "headers": {
-            "studentId": "معرف الطالب",
-            "name": "الاسم",
-            "email": "البريد الإلكتروني",
-            "subscription": "الاشتراك",
-            "progress": "التقدم",
-            "signUpDate": "تاريخ التسجيل",
-            "status": "الحالة",
-            "actions": "الإجراءات"
-          },
-          "emptyState": "لا يوجد طلاب يطابقون التصفية الحالية.",
-          "pagination": {
-            "showing": "عرض {{first}} إلى {{last}} من {{total}} نتيجة",
-            "previous": "السابق",
-            "next": "التالي"
-          },
-          "ariaLabels": {
-            "view": "عرض {{name}}",
-            "edit": "تعديل {{name}}",
-            "delete": "حذف {{name}}",
-            "suspend": "تعليق {{name}}",
-            "activate": "تفعيل {{name}}"
-          },
-          "actions": {
-            "suspend": "تعليق",
-            "activate": "تفعيل"
-          }
+        "dateOptions": {
+          "today": "اليوم",
+          "thisWeek": "هذا الأسبوع",
+          "thisMonth": "هذا الشهر",
+          "thisYear": "هذا العام"
         }
       },
-      "studentDetail": {
-        "hero": {
-          "title": "الملف الشخصي للطالب",
-          "subtitle": "عرض معلومات الحساب والنشاط الكاملة"
-        },
-        "loading": "جاري التحميل...",
-        "studentId": "معرف الطالب",
-        "emailAddress": "عنوان البريد الإلكتروني",
-        "subscriptionPlan": "خطة الاشتراك",
-        "exp": "ينتهي",
-        "signupDate": "تاريخ التسجيل",
-        "manageSubscription": "إدارة الاشتراك",
-        "activityOverview": {
-          "title": "نظرة عامة على النشاط",
-          "avgScore": "متوسط النقاط",
-          "totalTest": "إجمالي الاختبارات",
-          "correctAnswer": "الإجابات الصحيحة",
-          "incorrect": "الإجابات الخاطئة"
-        },
-        "activityTrend": {
-          "title": "اتجاه النشاط (آخر 7 أيام)",
-          "lastActive": "آخر نشاط",
-          "averageScore": "متوسط النقاط",
-          "good": "جيد",
-          "activityLevel": "مستوى النشاط"
-        },
-        "flaggedIssues": {
-          "title": "المشاكل المبلغ عنها",
-          "reportedAndFlagged": "الأسئلة المبلغ عنها والمميزة",
-          "flaggedOn": "تم الإبلاغ في",
-          "severity": "الشدة",
-          "reason": "السبب",
+      "table": {
+        "headers": {
+          "studentId": "معرف الطالب",
+          "name": "الاسم",
+          "email": "البريد الإلكتروني",
+          "subscription": "الاشتراك",
+          "progress": "التقدم",
+          "signUpDate": "تاريخ التسجيل",
           "status": "الحالة",
-          "approved": "موافق عليه",
-          "rejected": "مرفوض",
-          "pending": "قيد الانتظار",
-          "noIssues": "لا توجد مشاكل مبلغ عنها"
+          "actions": "الإجراءات"
         },
-        "progressBreakdown": {
-          "title": "تفصيل التقدم",
-          "testName": "اسم الاختبار",
-          "date": "التاريخ",
-          "score": "النقاط",
-          "result": "النتيجة",
-          "action": "الإجراء",
-          "passed": "نجح",
-          "failed": "فشل",
-          "viewTest": "عرض {{test}}",
-          "noData": "لا توجد بيانات تقدم متاحة"
+        "emptyState": "لا يوجد طلاب يطابقون التصفية الحالية.",
+        "pagination": {
+          "showing": "عرض {{first}} إلى {{last}} من {{total}} نتيجة",
+          "previous": "السابق",
+          "next": "التالي"
+        },
+        "ariaLabels": {
+          "view": "عرض {{name}}",
+          "edit": "تعديل {{name}}",
+          "delete": "حذف {{name}}",
+          "suspend": "تعليق {{name}}",
+          "activate": "تفعيل {{name}}"
         },
         "actions": {
-          "editStudent": "تعديل الطالب",
-          "back": "رجوع",
-          "suspendAccount": "تعليق الحساب",
-          "activateAccount": "تفعيل الحساب"
+          "suspend": "تعليق",
+          "activate": "تفعيل"
         }
+      }
+    },
+    "studentDetail": {
+      "hero": {
+        "title": "الملف الشخصي للطالب",
+        "subtitle": "عرض معلومات الحساب والنشاط الكاملة"
       },
+      "loading": "جاري التحميل...",
+      "studentId": "معرف الطالب",
+      "emailAddress": "عنوان البريد الإلكتروني",
+      "subscriptionPlan": "خطة الاشتراك",
+      "exp": "ينتهي",
+      "signupDate": "تاريخ التسجيل",
+      "manageSubscription": "إدارة الاشتراك",
+      "activityOverview": {
+        "title": "نظرة عامة على النشاط",
+        "avgScore": "متوسط النقاط",
+        "totalTest": "إجمالي الاختبارات",
+        "correctAnswer": "الإجابات الصحيحة",
+        "incorrect": "الإجابات الخاطئة"
+      },
+      "activityTrend": {
+        "title": "اتجاه النشاط (آخر 7 أيام)",
+        "lastActive": "آخر نشاط",
+        "averageScore": "متوسط النقاط",
+        "good": "جيد",
+        "activityLevel": "مستوى النشاط"
+      },
+      "flaggedIssues": {
+        "title": "المشاكل المبلغ عنها",
+        "reportedAndFlagged": "الأسئلة المبلغ عنها والمميزة",
+        "flaggedOn": "تم الإبلاغ في",
+        "severity": "الشدة",
+        "reason": "السبب",
+        "status": "الحالة",
+        "approved": "موافق عليه",
+        "rejected": "مرفوض",
+        "pending": "قيد الانتظار",
+        "noIssues": "لا توجد مشاكل مبلغ عنها"
+      },
+      "progressBreakdown": {
+        "title": "تفصيل التقدم",
+        "testName": "اسم الاختبار",
+        "date": "التاريخ",
+        "score": "النقاط",
+        "result": "النتيجة",
+        "action": "الإجراء",
+        "passed": "نجح",
+        "failed": "فشل",
+        "viewTest": "عرض {{test}}",
+        "noData": "لا توجد بيانات تقدم متاحة"
+      },
+      "actions": {
+        "editStudent": "تعديل الطالب",
+        "back": "رجوع",
+        "suspendAccount": "تعليق الحساب",
+        "activateAccount": "تفعيل الحساب"
+      }
+    },
     "addUser": {
       "hero": {
         "title": "إضافة مستخدم جديد",
@@ -2377,7 +2384,7 @@
     "classificationManagement": {
       "hero": {
         "title": "إدارة التصنيف",
-       "subtitle": "تنظيم الأسئلة حسب المادة، الموضوع، والاختبار"
+        "subtitle": "تنظيم الأسئلة حسب المادة، الموضوع، والاختبار"
       },
       "actions": {
         "export": "تصدير",
@@ -3715,6 +3722,7 @@
       "title": "تقديمات المنشئ",
       "back": "رجوع",
       "loading": "جاري التحميل...",
+      "searchPlaceholder": "البحث عن الأسئلة...",
       "table": {
         "question": "السؤال",
         "creator": "المنشئ",
@@ -3730,6 +3738,7 @@
       "title": "تقديمات المجمع",
       "back": "رجوع",
       "loading": "جاري التحميل...",
+      "searchPlaceholder": "البحث عن الأسئلة...",
       "table": {
         "question": "السؤال",
         "subject": "المادة",
@@ -3760,6 +3769,7 @@
       "title": "تقديم الإدارة",
       "back": "رجوع",
       "loading": "جاري التحميل...",
+      "searchPlaceholder": "البحث عن الأسئلة...",
       "table": {
         "question": "السؤال",
         "student": "الطالب",
