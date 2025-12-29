@@ -27,6 +27,12 @@ app.use('/api', require('../routes/profile'));
 app.use('/api/admin', require('../routes/admin'));
 app.use('/api/student', require('../routes/student'));
 app.use('/api/subscription', require('../routes/subscription'));
+app.use('/api/payment', require('../routes/payment'));
+app.use('/api/creator', require('../routes/creator'));
+app.use('/api/gatherer', require('../routes/gatherer'));
+app.use('/api/explainer', require('../routes/explainer'));
+app.use('/api/processor', require('../routes/processor'));
+app.use('/api/public', require('../routes/public'));
 
 // Public language routes (for student signup/profile)
 const languageController = require('../controllers/admin/language.controller');

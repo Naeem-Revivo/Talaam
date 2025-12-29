@@ -343,9 +343,14 @@ const ReviewIncorrectPage = () => {
 
             {/* Question Prompt */}
             <div className="mb-4 md:mb-6">
-              <p className="text-[16px] md:text-[18px] font-normal text-oxford-blue font-roboto leading-[24px] tracking-[0%]">
-                {currentQuestion.question}
-              </p>
+              <div 
+                className="text-[16px] md:text-[18px] font-normal text-oxford-blue font-roboto leading-[24px] tracking-[0%]"
+                dangerouslySetInnerHTML={{ 
+                  __html: currentQuestion.question 
+                    ? currentQuestion.question.replace(/<code[^>]*data-start[^>]*>(.*?)<\/code>/gi, '$1')
+                    : '' 
+                }}
+              />
             </div>
 
             {/* Answer Options (Initial Attempt View) */}

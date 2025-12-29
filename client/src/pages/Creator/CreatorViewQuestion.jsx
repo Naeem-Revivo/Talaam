@@ -4,6 +4,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
 import questionsAPI from "../../api/questions";
 import { showErrorToast } from "../../utils/toastConfig";
+import { cleanHtmlForDisplay } from "../../utils/textUtils";
 
 const CreatorViewQuestion = () => {
   const navigate = useNavigate();
@@ -87,7 +88,10 @@ const CreatorViewQuestion = () => {
   // Extract question title from questionText
   const getQuestionTitle = (questionText) => {
     if (!questionText) return "—";
-    const text = questionText.replace(/<[^>]*>/g, '');
+    // First clean code tags with data attributes
+    let cleaned = questionText.replace(/<code[^>]*data-start[^>]*>(.*?)<\/code>/gi, '$1');
+    // Then strip all remaining HTML tags
+    const text = cleaned.replace(/<[^>]*>/g, '');
     return text;
   };
 
@@ -155,7 +159,7 @@ const CreatorViewQuestion = () => {
                   </label>
                   <div
                     className="font-roboto text-[16px] font-normal leading-[24px] text-dark-gray"
-                    dangerouslySetInnerHTML={{ __html: question.questionText || "—" }}
+                    dangerouslySetInnerHTML={{ __html: cleanHtmlForDisplay(question.questionText || "—") }}
                   />
                 </div>
                 {question.questionType && (

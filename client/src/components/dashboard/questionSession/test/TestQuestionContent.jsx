@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../../../../context/LanguageContext';
+import { cleanHtmlForDisplay } from '../../../../utils/textUtils';
 
 const TestQuestionContent = ({
   currentQuestion,
@@ -17,9 +18,12 @@ const TestQuestionContent = ({
       </h2>
 
       <div className="mb-4 md:mb-6">
-        <p className="text-[16px] md:text-[18px] font-normal text-oxford-blue font-roboto leading-[24px] tracking-[0%]">
-          {currentQuestion.prompt}
-        </p>
+        <div 
+          className="text-[16px] md:text-[18px] font-normal text-oxford-blue font-roboto leading-[24px] tracking-[0%]"
+          dangerouslySetInnerHTML={{ 
+            __html: cleanHtmlForDisplay(currentQuestion.prompt || '')
+          }}
+        />
       </div>
 
       <div className="mb-4 md:mb-6">

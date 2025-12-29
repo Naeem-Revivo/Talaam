@@ -26,16 +26,22 @@ const Announcement = {
 
   // Find active announcements for a specific audience
   async findActiveForAudience(targetAudience) {
+    // Use UTC dates to avoid timezone issues between local and deployed environments
     const now = new Date();
-    // Normalize current date to start of day (00:00:00) for comparison
-    // This ensures announcements with start date of today show at 12:00 AM on that day
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-    const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1); // 23:59:59.999 today
+    // Get UTC date components
+    const utcYear = now.getUTCFullYear();
+    const utcMonth = now.getUTCMonth();
+    const utcDate = now.getUTCDate();
+    
+    // Normalize current date to start of day in UTC (00:00:00 UTC)
+    // This ensures announcements with start date of today show at 12:00 AM UTC on that day
+    const startOfToday = new Date(Date.UTC(utcYear, utcMonth, utcDate, 0, 0, 0, 0));
+    const endOfToday = new Date(Date.UTC(utcYear, utcMonth, utcDate, 23, 59, 59, 999)); // 23:59:59.999 UTC today
     
     return await prisma.announcement.findMany({
       where: {
         isPublished: true,
-        // Use endOfToday to include announcements starting today at 12:00 AM
+        // Use endOfToday to include announcements starting today at 12:00 AM UTC
         startDate: { lte: endOfToday },
         endDate: { gte: startOfToday },
         OR: [
@@ -45,17 +51,19 @@ const Announcement = {
       },
       orderBy: { createdAt: 'desc' }
     }).then(announcements => {
-      // Filter to only show announcements where startDate's day is today or earlier
-      // This ensures if start date is Dec 19, it shows at 12:00 AM on Dec 19, not on Dec 18
+      // Filter to only show announcements where startDate's day is today or earlier (in UTC)
+      // This ensures if start date is Dec 19, it shows at 12:00 AM UTC on Dec 19, not on Dec 18
       return announcements.filter(announcement => {
         const announcementStartDate = new Date(announcement.startDate);
-        const announcementStartOfDay = new Date(
-          announcementStartDate.getFullYear(),
-          announcementStartDate.getMonth(),
-          announcementStartDate.getDate(),
-          0, 0, 0, 0
-        );
-        // Show if start date's day is today or earlier (compare day-level only)
+        // Get UTC date components for announcement
+        const annUtcYear = announcementStartDate.getUTCFullYear();
+        const annUtcMonth = announcementStartDate.getUTCMonth();
+        const annUtcDate = announcementStartDate.getUTCDate();
+        
+        // Create start of day in UTC for announcement
+        const announcementStartOfDay = new Date(Date.UTC(annUtcYear, annUtcMonth, annUtcDate, 0, 0, 0, 0));
+        
+        // Show if start date's day is today or earlier (compare day-level only in UTC)
         return announcementStartOfDay <= startOfToday;
       });
     });

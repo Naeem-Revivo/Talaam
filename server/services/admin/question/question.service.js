@@ -250,10 +250,19 @@ const createQuestionWithCompletedStatus = async (questionData, userId, variants 
 };
 
 /**
- * Get questions by status and role
+ * Get questions by status and role with pagination
  */
-const getQuestionsByStatus = async (status, userId, role, flagType = null) => {
-  const where = { status };
+const getQuestionsByStatus = async (status, userId, role, flagType = null, paginationOptions = {}) => {
+  const { page = 1, limit = 20, search = null, subject = null } = paginationOptions;
+  const normalizedPage = Math.max(parseInt(page, 10) || 1, 1);
+  const normalizedLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+  const skip = (normalizedPage - 1) * normalizedLimit;
+
+  // Build where clause - if status is null/undefined, don't filter by status (show all)
+  const where = {};
+  if (status) {
+    where.status = status;
+  }
 
   // Gatherer can only see their own questions
   if (role === 'gatherer') {
@@ -358,9 +367,68 @@ const getQuestionsByStatus = async (status, userId, role, flagType = null) => {
     ];
   }
 
+  // Add search filter - need to combine with existing OR conditions properly
+  if (search && search.trim()) {
+    const searchTerm = search.trim();
+    const searchConditions = [
+      { questionText: { contains: searchTerm, mode: 'insensitive' } },
+      {
+        subject: {
+          name: { contains: searchTerm, mode: 'insensitive' }
+        }
+      },
+      {
+        createdBy: {
+          OR: [
+            { name: { contains: searchTerm, mode: 'insensitive' } },
+            { fullName: { contains: searchTerm, mode: 'insensitive' } },
+            { email: { contains: searchTerm, mode: 'insensitive' } }
+          ]
+        }
+      }
+    ];
+
+    // If we already have OR conditions (from flagType), we need to wrap everything in AND
+    // We want: (flagType conditions) AND (search conditions)
+    if (where.OR && where.OR.length > 0) {
+      const existingOR = [...where.OR];
+      where.AND = [
+        { OR: existingOR },
+        { OR: searchConditions }
+      ];
+      delete where.OR;
+    } else {
+      // No existing OR, just add search conditions as OR
+      where.OR = searchConditions;
+    }
+  }
+
+  // Add subject filter
+  if (subject && subject.trim()) {
+    const subjectCondition = {
+      subject: {
+        name: { equals: subject.trim(), mode: 'insensitive' }
+      }
+    };
+
+    // If we have AND conditions, add to them; otherwise add directly to where
+    if (where.AND && where.AND.length > 0) {
+      where.AND.push(subjectCondition);
+    } else {
+      where.subject = subjectCondition.subject;
+    }
+  }
+
+  const { prisma } = require('../../../config/db/prisma');
+
+  // Get total count for pagination
+  const totalCount = await prisma.question.count({ where });
+
   const questions = await Question.findMany({
     where,
-    orderBy: { createdAt: 'desc' },
+    orderBy: { updatedAt: 'desc' },
+    skip: skip,
+    take: normalizedLimit,
     include: {
       exam: { select: { name: true } },
       subject: { select: { name: true } },
@@ -456,39 +524,79 @@ const getQuestionsByStatus = async (status, userId, role, flagType = null) => {
       orderedQuestions.push(...parentsWithoutVariants);
 
       // Ensure we return at least the original questions if ordering fails
-      return orderedQuestions.length > 0 ? orderedQuestions : questions;
+      const finalQuestions = orderedQuestions.length > 0 ? orderedQuestions : questions;
+      
+      return {
+        questions: finalQuestions,
+        pagination: {
+          page: normalizedPage,
+          limit: normalizedLimit,
+          totalItems: totalCount,
+          totalPages: Math.ceil(totalCount / normalizedLimit),
+          hasNextPage: skip + finalQuestions.length < totalCount,
+          hasPreviousPage: normalizedPage > 1,
+        },
+      };
     } catch (error) {
       console.error('Error grouping explainer questions:', error);
       // Return original questions if grouping fails
-      return questions;
+      return {
+        questions: questions,
+        pagination: {
+          page: normalizedPage,
+          limit: normalizedLimit,
+          totalItems: totalCount,
+          totalPages: Math.ceil(totalCount / normalizedLimit),
+          hasNextPage: skip + questions.length < totalCount,
+          hasPreviousPage: normalizedPage > 1,
+        },
+      };
     }
   }
 
-  return questions;
+  // Return with pagination metadata
+  return {
+    questions: questions,
+    pagination: {
+      page: normalizedPage,
+      limit: normalizedLimit,
+      totalItems: totalCount,
+      totalPages: Math.ceil(totalCount / normalizedLimit),
+      hasNextPage: skip + questions.length < totalCount,
+      hasPreviousPage: normalizedPage > 1,
+    },
+  };
 };
 
 /**
- * Get questions by status and filter by submitter role
+ * Get questions by status and filter by submitter role with pagination
  * Used by processor to see submissions from specific roles (creator, explainer, gatherer)
  * @param {string} status - Question status
  * @param {string} submittedByRole - Role that submitted the question (gatherer, creator, explainer)
  * @param {string} processorId - ID of the processor (to filter by assignedProcessorId)
+ * @param {string} flagType - Flag type filter
+ * @param {object} paginationOptions - Pagination options { page, limit, search, subject }
  */
-const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId = null, flagType = null) => {
+const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId = null, flagType = null, paginationOptions = {}) => {
+  const { page = 1, limit = 20, search = null, subject = null } = paginationOptions;
+  const normalizedPage = Math.max(parseInt(page, 10) || 1, 1);
+  const normalizedLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+  const skip = (normalizedPage - 1) * normalizedLimit;
+
   const { prisma } = require('../../../config/db/prisma');
   
   // Build where clause with status and role filtering
-  const where = {
-    status: status
-  };
+  const where = {};
+  if (status) {
+    where.status = status;
+  }
   
   // CRITICAL: Filter by assignedProcessorId if processorId is provided
-  // This ensures processors only see questions assigned to them
   if (processorId) {
     where.assignedProcessorId = processorId;
   }
   
-  // Get user IDs with the specified role (needed for filtering)
+  // Get user IDs with the specified role
   let userIdsWithRole = [];
   if (submittedByRole) {
     const usersWithRole = await prisma.user.findMany({
@@ -504,9 +612,6 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
 
   // If filtering by submitter role, we need to check history
   if (submittedByRole) {
-    // Get question IDs where the specified role has submitted/worked on them
-    // Include 'rejected' action for explainer to catch questions rejected after they submitted
-    // Include 'flagged' action for creator to catch questions flagged by creator
     const actionsToCheck = submittedByRole === 'explainer' 
       ? ['created', 'updated', 'submitted', 'approved', 'rejected']
       : submittedByRole === 'creator'
@@ -541,10 +646,9 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
       });
     }
 
-    // For gatherer: also check createdBy OR flagRejectionReason (gatherer rejected a flag)
-    // IMPORTANT: Exclude questions created by superadmin
+    // For gatherer: also check createdBy OR flagRejectionReason
     if (submittedByRole === 'gatherer' && userIdsWithRole.length > 0) {
-      // Get superadmin user IDs to exclude them (check both role and adminRole)
+      // Get superadmin user IDs to exclude them
       const superadminUsers = await prisma.user.findMany({
         where: {
           OR: [
@@ -582,8 +686,7 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
         });
       }
       
-      // Include questions where gatherer rejected a flag (has flagRejectionReason)
-      // These are in pending_processor status and need processor review
+      // Include questions where gatherer rejected a flag
       roleConditions.push({
         AND: [
           {
@@ -598,10 +701,9 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
       });
     }
     
-    // For admin: check createdBy (ONLY superadmin creates questions for admin submission page)
-    // Include ONLY questions created by superadmin (not regular admin)
+    // For admin: check createdBy (ONLY superadmin)
     if (submittedByRole === 'admin') {
-      // Get ONLY superadmin users (check both role and adminRole)
+      // Get ONLY superadmin users
       const superadminUsers = await prisma.user.findMany({
         where: {
           OR: [
@@ -622,8 +724,7 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
         });
       }
       
-      // Also check history for admin role (only if created by superadmin)
-      // Note: When superadmin creates, history role is 'admin', but we verify via createdById
+      // Also check history for admin role
       const adminHistoryEntries = await prisma.questionHistory.findMany({
         where: {
           role: 'admin',
@@ -656,7 +757,7 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
       }
     }
 
-    // For creator: check assignedCreatorId OR lastModifiedBy (creator modifies questions) OR flagged by creator
+    // For creator: check assignedCreatorId OR lastModifiedBy OR flagged by creator
     if (submittedByRole === 'creator' && userIdsWithRole.length > 0) {
       // First priority: questions assigned to specific creators
       roleConditions.push({
@@ -672,8 +773,6 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
       });
       
       // CRITICAL: Include questions in pending_processor that were submitted by creator
-      // These are questions where creator approved/created variants and sent back to processor
-      // They have: status=pending_processor, approvedBy (from processor), lastModifiedBy=creator
       roleConditions.push({
         AND: [
           {
@@ -692,7 +791,7 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
         ]
       });
       
-      // Include variant questions created by creator (they have isVariant=true and createdBy=creator)
+      // Include variant questions created by creator
       roleConditions.push({
         AND: [
           {
@@ -707,7 +806,6 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
       });
       
       // Include questions in pending_explainer or completed that have approvedBy
-      // These went through creator workflow, then processor approved and sent to explainer
       roleConditions.push({
         AND: [
           {
@@ -722,10 +820,29 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
           }
         ]
       });
+      
+      // IMPORTANT: Include creator-flagged questions (with pending status)
+      // This ensures flagged questions appear in "All Status" view
+      roleConditions.push({
+        AND: [
+          {
+            isFlagged: true
+          },
+          {
+            flagType: 'creator'
+          },
+          {
+            OR: [
+              { flagStatus: 'pending' },
+              { flagStatus: null },
+              { flagStatus: undefined }
+            ]
+          }
+        ]
+      });
     }
 
-    // For explainer: check assignedExplainerId OR lastModifiedBy and explanation exists OR flagged by explainer
-    // OR status is pending_explainer (assigned to explainer)
+    // For explainer: check assignedExplainerId OR lastModifiedBy
     if (submittedByRole === 'explainer' && userIdsWithRole.length > 0) {
       // First priority: questions assigned to specific explainers
       roleConditions.push({
@@ -734,7 +851,7 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
         }
       });
       
-      // Include questions with explanation that were modified by explainer (regardless of status)
+      // Include questions with explanation that were modified by explainer
       roleConditions.push({
         AND: [
           {
@@ -750,12 +867,12 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
         ]
       });
       
-      // Include questions with pending_explainer status (assigned to explainer, may or may not have explanation yet)
+      // Include questions with pending_explainer status
       roleConditions.push({
         status: 'pending_explainer'
       });
       
-      // Also include questions flagged by explainer (they have status pending_processor but are flagged)
+      // Also include questions flagged by explainer
       roleConditions.push({
         AND: [
           {
@@ -776,53 +893,33 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
 
     // If we have role conditions, add them to the where clause
     if (roleConditions.length > 0) {
-      where.AND = [
-        {
-          OR: roleConditions
-        }
-      ];
-      
-      // For creator: exclude questions flagged by creator until they're resolved and come back
-      if (submittedByRole === 'creator') {
-        where.AND.push({
-          NOT: {
-            AND: [
-              { isFlagged: true },
-              { flagType: 'creator' }
-            ]
-          }
-        });
-      }
-    } else {
-      // If no role conditions found, return empty result
-      return [];
+      where.AND = where.AND || [];
+      where.AND.push({
+        OR: roleConditions
+      });
     }
   }
 
   // Handle flagType parameter
-  // If flagType='student' is specified, only fetch student-flagged questions
-  // Otherwise, exclude student-flagged questions that are NOT accepted/approved
-  // Student-flagged questions should only appear in other pages after flag is accepted
   if (!where.AND) {
     where.AND = [];
   }
   
-  // Note: We don't exclude gatherer-updated questions here because this function is used by processor
-  // Processor needs to see ALL creator-submitted questions (including gatherer-updated ones) for review
-  // The exclusion for creator's own view is handled in getQuestionsByStatus function
-  
   if (flagType === 'student') {
-    // Only fetch student-flagged questions that are approved by admin
-    // Admin submission page should only show approved student flags
     where.AND.push({
       AND: [
         { flagType: 'student' },
         { flagStatus: 'approved' }
       ]
     });
+  } else if (flagType === 'flagged') {
+    // When specifically filtering by flagged, only show flagged questions
+    where.AND.push({
+      isFlagged: true
+    });
   } else {
-    // Exclude questions with flagType='student' that are NOT approved
-    // Only show student-flagged questions in other pages if flagStatus='approved'
+    // For "All Status" and other non-flagged filters, include both flagged and non-flagged
+    // But exclude student-flagged questions that are NOT approved
     where.AND.push({
       OR: [
         { flagType: { not: 'student' } },
@@ -837,9 +934,51 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
     });
   }
 
-  const questions = await Question.findMany({
+  // Add search filter
+  if (search && search.trim()) {
+    const searchTerm = search.trim();
+    const searchConditions = [
+      { questionText: { contains: searchTerm, mode: 'insensitive' } },
+      {
+        subject: {
+          name: { contains: searchTerm, mode: 'insensitive' }
+        }
+      }
+    ];
+    
+    // Add search in createdBy name/email
+    searchConditions.push({
+      createdBy: {
+        OR: [
+          { name: { contains: searchTerm, mode: 'insensitive' } },
+          { fullName: { contains: searchTerm, mode: 'insensitive' } },
+          { email: { contains: searchTerm, mode: 'insensitive' } }
+        ]
+      }
+    });
+
+    where.AND.push({
+      OR: searchConditions
+    });
+  }
+
+  // Add subject filter
+  if (subject && subject.trim()) {
+    where.AND.push({
+      subject: {
+        name: { equals: subject.trim(), mode: 'insensitive' }
+      }
+    });
+  }
+
+  // Get total count for pagination
+  const totalCount = await prisma.question.count({ where });
+
+  const questions = await prisma.question.findMany({
     where,
-    orderBy: { createdAt: 'desc' },
+    orderBy: { updatedAt: 'desc' },
+    skip: skip,
+    take: normalizedLimit,
     include: {
       exam: { select: { name: true } },
       subject: { select: { name: true } },
@@ -860,103 +999,25 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
     }
   });
 
-  // Populate role and adminRole for createdBy by fetching from user table
-  // Since these fields are not included in the select, we need to fetch them separately
-  const createdByIds = [];
-  
-  // Collect all createdByIds from questions - check multiple possible locations
-  questions.forEach(q => {
-    // Priority: createdById (direct field) > createdBy.id (relation) > createdBy (if string)
-    if (q.createdById) {
-      createdByIds.push(q.createdById);
-    } else if (q.createdBy?.id) {
-      createdByIds.push(q.createdBy.id);
-    } else if (q.createdBy && typeof q.createdBy === 'string') {
-      createdByIds.push(q.createdBy);
-    }
-  });
-  
-  if (createdByIds.length > 0) {
-    const uniqueCreatedByIds = [...new Set(createdByIds.filter(id => id))];
-    
-    if (uniqueCreatedByIds.length > 0) {
-      const users = await prisma.user.findMany({
-        where: {
-          id: { in: uniqueCreatedByIds }
-        },
-        select: {
-          id: true,
-          role: true,
-          adminRole: true
-        }
-      });
-      
-      const userRoleMap = new Map(users.map(u => [u.id, { role: u.role, adminRole: u.adminRole }]));
-      
-      // Populate role and adminRole for each question's createdBy
-      questions.forEach(question => {
-        let createdById = null;
-        
-        // Try to get the ID from different possible locations (same priority as above)
-        if (question.createdById) {
-          createdById = question.createdById;
-        } else if (question.createdBy?.id) {
-          createdById = question.createdBy.id;
-        } else if (question.createdBy && typeof question.createdBy === 'string') {
-          createdById = question.createdBy;
-        }
-        
-        if (createdById) {
-          // Ensure createdBy object exists and is an object (not string)
-          if (!question.createdBy || typeof question.createdBy === 'string') {
-            question.createdBy = { id: createdById };
-          }
-          
-          // Populate role and adminRole from the map
-          const userData = userRoleMap.get(createdById);
-          if (userData !== undefined) {
-            question.createdBy.role = userData.role;
-            question.createdBy.adminRole = userData.adminRole;
-          } else {
-            // If not found in map, set to null
-            question.createdBy.role = null;
-            question.createdBy.adminRole = null;
-          }
-        } else if (question.createdBy && typeof question.createdBy === 'object') {
-          // If createdBy exists but we couldn't find the ID, ensure role and adminRole are set
-          if (!question.createdBy.hasOwnProperty('role')) {
-            question.createdBy.role = null;
-          }
-          if (!question.createdBy.hasOwnProperty('adminRole')) {
-            question.createdBy.adminRole = null;
-          }
-        }
-      });
-    }
-  } else {
-    // If no createdByIds found, ensure all createdBy objects have role and adminRole set to null
-    questions.forEach(question => {
-      if (question.createdBy && typeof question.createdBy === 'object') {
-        if (!question.createdBy.hasOwnProperty('role')) {
-          question.createdBy.role = null;
-        }
-        if (!question.createdBy.hasOwnProperty('adminRole')) {
-          question.createdBy.adminRole = null;
-        }
-      }
-    });
-  }
-
   // Additional filtering: ensure questions actually went through the specified role
-  // Show questions that were: created, approved, or flagged by the role
   const filteredQuestions = questions.filter(question => {
     if (!submittedByRole) return true;
 
-    // Check history for the role (created, updated, submitted, approved, flagged)
+    // For creator: include flagged questions
+    if (submittedByRole === 'creator') {
+      const isCreatorFlagged = question.isFlagged === true && 
+                              question.flagType === 'creator' &&
+                              (question.flagStatus === 'pending' || 
+                               question.flagStatus === null || 
+                               question.flagStatus === undefined);
+      if (isCreatorFlagged) return true;
+    }
+
+    // Check history for the role
     const hasRoleHistory = question.history && Array.isArray(question.history) &&
       question.history.some(h => h.role === submittedByRole);
 
-    // Check if role approved the question (history with action='approved' and role)
+    // Check if role approved the question
     const hasRoleApproval = question.history && Array.isArray(question.history) &&
       question.history.some(h => h.role === submittedByRole && h.action === 'approved');
 
@@ -966,11 +1027,7 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
                            (question.flagStatus === 'pending' || question.flagStatus === null || question.flagStatus === undefined);
 
     // For gatherer: check createdBy (gatherer creates questions)
-    // IMPORTANT: Exclude questions created by superadmin
-    // Note: We don't exclude creator-submitted questions here - they can appear in gatherer submission
-    // The button logic in ProcessorViewQuestion will handle showing correct options
     if (submittedByRole === 'gatherer') {
-      // Check if question was created by superadmin - check both role and adminRole
       const isSuperadminCreated = question.createdBy?.role === 'superadmin' || 
                                   question.createdBy?.adminRole === 'superadmin' ||
                                   (question.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
@@ -986,23 +1043,19 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
       return hasRoleHistory || hasRoleApproval || isFlaggedByRole || createdByGatherer || createdByRole;
     }
     
-    // For admin: check createdBy (ONLY superadmin creates questions for admin submission page)
-    // Check both role and adminRole fields, but ONLY for superadmin
+    // For admin: check createdBy (ONLY superadmin)
     if (submittedByRole === 'admin') {
-      // Check if created by superadmin ONLY - check both role and adminRole
       const createdBySuperadmin = question.createdBy?.role === 'superadmin' ||
                                   question.createdBy?.adminRole === 'superadmin' ||
                                   (question.history?.find(h => h.action === 'created')?.performedBy?.role === 'superadmin') ||
                                   (question.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
-      // Check history role for 'admin' but verify it was created by superadmin via createdById
       const historyRoleIsAdmin = question.history?.some(h => h.role === 'admin' && h.action === 'created');
-      // Only return true if created by superadmin (not regular admin)
       return createdBySuperadmin || (historyRoleIsAdmin && createdBySuperadmin);
     }
 
     // For creator: check if question went through creator workflow
     if (submittedByRole === 'creator') {
-      // Check if creator modified it (lastModifiedBy is creator)
+      // Check if creator modified it
       const lastModifiedByCreator = question.lastModifiedById && userIdsWithRole && userIdsWithRole.includes(question.lastModifiedById);
       
       // Check if it's a variant created by creator
@@ -1014,12 +1067,12 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
       const hasCreatorVariants = hasVariants && question.history && Array.isArray(question.history) &&
         question.history.some(h => h.role === 'creator' && h.action === 'variant_created');
       
-      // Check if creator submitted question back to processor (pending_processor with approvedBy and lastModifiedBy=creator)
+      // Check if creator submitted question back to processor
       const isCreatorSubmitted = question.status === 'pending_processor' && 
         question.approvedById && 
         lastModifiedByCreator;
       
-      // Check if went through creator workflow (approved by processor and sent to creator, then to explainer/completed)
+      // Check if went through creator workflow
       const wentThroughCreatorWorkflow = question.approvedBy !== null || 
                                         question.status === 'pending_explainer' ||
                                         question.status === 'completed';
@@ -1030,7 +1083,6 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
 
     // For explainer: check if explainer worked on it
     if (submittedByRole === 'explainer') {
-      // Check if explainer modified it (lastModifiedBy is explainer and has explanation)
       const lastModifiedByExplainer = question.lastModifiedById && userIdsWithRole && userIdsWithRole.includes(question.lastModifiedById);
       const hasExplanation = question.explanation && question.explanation.trim() !== '';
       
@@ -1040,7 +1092,18 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
     return hasRoleHistory || hasRoleApproval || isFlaggedByRole;
   });
 
-  return filteredQuestions;
+  // Return with pagination metadata
+  return {
+    questions: filteredQuestions,
+    pagination: {
+      page: normalizedPage,
+      limit: normalizedLimit,
+      totalItems: totalCount,
+      totalPages: Math.ceil(totalCount / normalizedLimit),
+      hasNextPage: skip + filteredQuestions.length < totalCount,
+      hasPreviousPage: normalizedPage > 1,
+    },
+  };
 };
 
 /**

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import questionsAPI from "../../api/questions";
-import { toast } from "react-toastify";
+import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 import Loader from "../../components/common/Loader";
 
 const ContentDetailsPage = () => {
@@ -31,11 +31,11 @@ const ContentDetailsPage = () => {
       if (question) {
         setContentData(question);
       } else {
-        toast.error("Question not found");
+        showErrorToast("Question not found");
         navigate("/admin/moderation");
       }
     } catch (error) {
-      toast.error(error.message || "Failed to fetch question details");
+      showErrorToast(error.message || "Failed to fetch question details");
       navigate("/admin/moderation");
     } finally {
       setLoading(false);
@@ -58,10 +58,10 @@ const ContentDetailsPage = () => {
     setIsProcessing(true);
     try {
       await questionsAPI.approveStudentFlag(contentData.id);
-      toast.success("Flag approved. Question sent to processor.");
+      showSuccessToast("Flag approved. Question sent to processor.");
       navigate("/admin/moderation");
     } catch (error) {
-      toast.error(error.message || "Failed to approve flag");
+      showErrorToast(error.message || "Failed to approve flag");
     } finally {
       setIsProcessing(false);
     }
@@ -74,7 +74,7 @@ const ContentDetailsPage = () => {
 
   const handleRejectSubmit = async () => {
     if (!rejectReason.trim()) {
-      toast.error("Please provide a rejection reason");
+      showErrorToast("Please provide a rejection reason");
       return;
     }
     if (!contentData) return;
@@ -82,12 +82,12 @@ const ContentDetailsPage = () => {
     setIsProcessing(true);
     try {
       await questionsAPI.rejectStudentFlag(contentData.id, rejectReason);
-      toast.success("Flag rejected. Student will be notified.");
+      showSuccessToast("Flag rejected. Student will be notified.");
       setShowRejectModal(false);
       setRejectReason("");
       navigate("/admin/moderation");
     } catch (error) {
-      toast.error(error.message || "Failed to reject flag");
+      showErrorToast(error.message || "Failed to reject flag");
     } finally {
       setIsProcessing(false);
     }
@@ -95,12 +95,12 @@ const ContentDetailsPage = () => {
 
   const handleRequestChange = () => {
     // This functionality can be implemented later if needed
-    toast.info("Request change functionality coming soon");
+    showSuccessToast("Request change functionality coming soon");
   };
 
   const handleRevisionHistory = () => {
     // This functionality can be implemented later if needed
-    toast.info("Revision history functionality coming soon");
+    showSuccessToast("Revision history functionality coming soon");
   };
 
   // Convert options object to array for display

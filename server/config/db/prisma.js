@@ -3,11 +3,24 @@ const { PrismaPg } = require('@prisma/adapter-pg');
 const { Pool } = require('pg');
 
 // Vercel Postgres provides POSTGRES_PRISMA_DATABASE_URL for pooled connections
-// Priority: POSTGRES_PRISMA_DATABASE_URL (Vercel) > POSTGRES_PRISMA_URL (legacy) > DATABASE_URL (fallback)
-const connectionString = 
-  process.env.POSTGRES_PRISMA_DATABASE_URL || 
-  process.env.POSTGRES_PRISMA_URL || 
-  process.env.DATABASE_URL;
+// However, if it's a Prisma Accelerate URL (prisma+postgres://), it may timeout
+// For serverless, prefer direct POSTGRES_URL connection
+// Priority: POSTGRES_URL (direct, for serverless) > POSTGRES_PRISMA_DATABASE_URL (if not Accelerate) > POSTGRES_PRISMA_URL (legacy) > DATABASE_URL (fallback)
+let connectionString;
+
+// Check if POSTGRES_PRISMA_DATABASE_URL is a Prisma Accelerate URL
+const isAccelerateUrl = process.env.POSTGRES_PRISMA_DATABASE_URL?.startsWith('prisma+postgres://');
+
+// For serverless or when Accelerate URL is detected, prefer direct POSTGRES_URL
+if (process.env.POSTGRES_URL && (process.env.VERCEL === '1' || isAccelerateUrl)) {
+  connectionString = process.env.POSTGRES_URL;
+} else {
+  connectionString = 
+    process.env.POSTGRES_PRISMA_DATABASE_URL || 
+    process.env.POSTGRES_PRISMA_URL || 
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL;
+}
 
 if (!connectionString) {
   console.error('❌ Database connection string is missing!');
@@ -27,16 +40,24 @@ if (!connectionString) {
 
 // Log connection info (without sensitive data)
 const connectionInfo = connectionString.replace(/:[^:@]+@/, ':****@');
-const usingVar = process.env.POSTGRES_PRISMA_DATABASE_URL 
-  ? 'POSTGRES_PRISMA_DATABASE_URL' 
-  : process.env.POSTGRES_PRISMA_URL 
-    ? 'POSTGRES_PRISMA_URL' 
-    : 'DATABASE_URL';
+let usingVar;
+if (process.env.POSTGRES_URL && (process.env.VERCEL === '1' || isAccelerateUrl)) {
+  usingVar = 'POSTGRES_URL (direct connection)';
+} else if (process.env.POSTGRES_PRISMA_DATABASE_URL) {
+  usingVar = 'POSTGRES_PRISMA_DATABASE_URL';
+} else if (process.env.POSTGRES_PRISMA_URL) {
+  usingVar = 'POSTGRES_PRISMA_URL';
+} else if (process.env.POSTGRES_URL) {
+  usingVar = 'POSTGRES_URL';
+} else {
+  usingVar = 'DATABASE_URL';
+}
 console.log('🔌 Database connection:', {
   using: usingVar,
   connection: connectionInfo.substring(0, 50) + '...',
   isVercel: process.env.VERCEL === '1',
   nodeEnv: process.env.NODE_ENV,
+  isAccelerateUrl: isAccelerateUrl || false,
 });
 
 // Check if connection string requires SSL (Vercel Postgres or sslmode=require)
@@ -53,7 +74,7 @@ const pool = new Pool({
   // Optimize for serverless environments (Vercel)
   max: process.env.VERCEL ? 1 : 10, // Limit connections in serverless
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 20000, // Increased timeout for serverless
+  connectionTimeoutMillis: 30000, // Increased timeout for serverless (30 seconds)
   // Enable SSL for production/Vercel or when connection string requires it
   ssl: requiresSSL 
     ? { rejectUnauthorized: false } 

@@ -127,7 +127,10 @@ const CreatorViewVariant = () => {
   // Extract question title from questionText
   const getQuestionTitle = (questionText) => {
     if (!questionText) return "—";
-    const text = questionText.replace(/<[^>]*>/g, '');
+    // First clean code tags with data attributes
+    let cleaned = questionText.replace(/<code[^>]*data-start[^>]*>(.*?)<\/code>/gi, '$1');
+    // Then strip all remaining HTML tags
+    const text = cleaned.replace(/<[^>]*>/g, '');
     return text;
   };
 

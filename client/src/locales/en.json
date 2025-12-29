@@ -11,6 +11,7 @@
       "creator": {
         "dashboard": "Creator Dashboard",
         "questionBank": "Question Bank",
+        "announcements": "Announcements",
         "profile": "Profile",
         "default": "Creator Dashboard"
       },
@@ -3719,6 +3720,7 @@
       "title": "Creator Submissions",
       "back": "Back",
       "loading": "Loading...",
+      "searchPlaceholder": "Search questions...",
       "table": {
         "question": "QUESTION",
         "creator": "CREATOR",
@@ -3734,6 +3736,7 @@
       "title": "Gatherer Submissions",
       "back": "Back",
       "loading": "Loading...",
+      "searchPlaceholder": "Search questions...",
       "table": {
         "question": "QUESTION",
         "subject": "SUBJECT",
@@ -3764,6 +3767,7 @@
       "title": "Admin Submission",
       "back": "Back",
       "loading": "Loading...",
+      "searchPlaceholder": "Search questions...",
       "table": {
         "question": "QUESTION",
         "student": "STUDENT",
