@@ -525,8 +525,8 @@ const createQuestion = async (req, res, next) => {
     }
 
     // Get user role - use 'admin' for both admin and superadmin when creating questions
-    const userRole = (req.user.adminRole === 'admin' || req.user.adminRole === 'superadmin') 
-      ? 'admin' 
+    const userRole = ( req.user.role === 'superadmin') 
+      ? 'superadmin' 
       : req.user.adminRole || 'gatherer';
     
     const question = await questionService.createQuestion(questionData, req.user.id, userRole);
@@ -601,8 +601,10 @@ const getQuestions = async (req, res, next) => {
     // For processor: if no status is provided, show all questions (don't default to pending_processor)
     // For other roles: keep default behavior
     // Handle "flagged" status specially - it filters by isFlagged, not status
+    // Handle "all" status to return all questions without status filter
     let queryStatus = status;
     let queryFlagType = flagType;
+    let explicitlyRequestedAll = false;
     
     // If status is "flagged", set flagType and clear status
     if (queryStatus === 'flagged') {
@@ -610,8 +612,15 @@ const getQuestions = async (req, res, next) => {
       queryStatus = null; // Don't filter by status when showing flagged questions
     }
     
-    if (!queryStatus) {
+    // If status is "all", explicitly set to null to fetch all statuses
+    if (queryStatus === 'all') {
+      queryStatus = null;
+      explicitlyRequestedAll = true; // Mark that user explicitly requested all statuses
+    }
+    
+    if (!queryStatus && !explicitlyRequestedAll) {
       // Default status based on role (only for non-processor roles)
+      // Only apply default if status wasn't explicitly set to 'all'
       switch (req.user.adminRole) {
         case 'gatherer':
           queryStatus = 'pending_processor'; // Gatherer sees their submitted questions
@@ -2933,6 +2942,118 @@ const rejectStudentFlag = async (req, res, next) => {
   }
 };
 
+/**
+ * Get creator questions with variants (optimized endpoint)
+ * GET /admin/questions/creator/variants
+ * Query params: statuses (comma-separated list of statuses, optional)
+ */
+const getCreatorQuestionsWithVariants = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { statuses } = req.query;
+
+    console.log('[CREATOR] GET /admin/questions/creator/variants → requested', {
+      userId,
+      statuses,
+    });
+
+    // Parse statuses if provided
+    let statusesArray = null;
+    if (statuses) {
+      statusesArray = statuses.split(',').map(s => s.trim()).filter(s => s);
+    }
+
+    // Fetch questions with variants using optimized service
+    const questions = await questionService.getCreatorQuestionsWithVariants(userId, statusesArray);
+
+    // Transform the data to match frontend expectations
+    const transformedQuestions = questions.map(question => ({
+      id: question.id,
+      _id: question.id, // For compatibility
+      exam: question.exam,
+      subject: question.subject,
+      topic: question.topic,
+      questionText: question.questionText,
+      questionType: question.questionType,
+      options: question.options,
+      correctAnswer: question.correctAnswer,
+      explanation: question.explanation,
+      status: question.status,
+      createdBy: question.createdBy,
+      lastModifiedBy: question.lastModifiedBy,
+      assignedProcessor: question.assignedProcessor,
+      assignedCreator: question.assignedCreator,
+      assignedExplainer: question.assignedExplainer,
+      approvedBy: question.approvedBy,
+      rejectedBy: question.rejectedBy,
+      rejectionReason: question.rejectionReason,
+      isVariant: question.isVariant,
+      originalQuestionId: question.originalQuestionId,
+      isFlagged: question.isFlagged || false,
+      flagReason: question.flagReason || null,
+      flagType: question.flagType || null,
+      flagStatus: question.flagStatus || null,
+      flaggedBy: question.flaggedBy || null,
+      flagRejectionReason: question.flagRejectionReason || null,
+      createdAt: question.createdAt,
+      updatedAt: question.updatedAt,
+      // Include variants with transformed data
+      variants: (question.variants || []).map(variant => ({
+        id: variant.id,
+        _id: variant.id,
+        exam: variant.exam,
+        subject: variant.subject,
+        topic: variant.topic,
+        questionText: variant.questionText,
+        questionType: variant.questionType,
+        options: variant.options,
+        correctAnswer: variant.correctAnswer,
+        explanation: variant.explanation,
+        status: variant.status,
+        createdBy: variant.createdBy,
+        assignedProcessor: variant.assignedProcessor,
+        assignedCreator: variant.assignedCreator,
+        assignedExplainer: variant.assignedExplainer,
+        rejectedBy: variant.rejectedBy,
+        rejectionReason: variant.rejectionReason,
+        isVariant: variant.isVariant,
+        originalQuestionId: variant.originalQuestionId,
+        originalQuestion: variant.originalQuestionId, // For compatibility
+        isFlagged: variant.isFlagged || false,
+        flagReason: variant.flagReason || null,
+        flagType: variant.flagType || null,
+        flagStatus: variant.flagStatus || null,
+        flaggedBy: variant.flaggedBy || null,
+        flagRejectionReason: variant.flagRejectionReason || null,
+        createdAt: variant.createdAt,
+        updatedAt: variant.updatedAt,
+      })),
+    }));
+
+    const response = {
+      success: true,
+      data: {
+        questions: transformedQuestions,
+      },
+    };
+
+    console.log('[CREATOR] GET /admin/questions/creator/variants → 200 (ok)', {
+      userId,
+      questionCount: transformedQuestions.length,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[CREATOR] GET /admin/questions/creator/variants → error', error);
+    if (error.message === 'User not found' || error.message === 'User is not a creator') {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
 module.exports = {
   getAllQuestionsForSuperadmin,
   getQuestionDetailForSuperadmin,
@@ -2966,4 +3087,5 @@ module.exports = {
   getFlaggedQuestionsForModeration,
   approveStudentFlag,
   rejectStudentFlag,
+  getCreatorQuestionsWithVariants,
 };

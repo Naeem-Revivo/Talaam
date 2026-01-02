@@ -432,6 +432,27 @@ const questionsAPI = {
     }
   },
 
+  // Get creator questions with variants (optimized endpoint)
+  getCreatorQuestionsWithVariants: async (params = {}) => {
+    try {
+      const { statuses } = params;
+      const queryParams = new URLSearchParams();
+      if (statuses && Array.isArray(statuses) && statuses.length > 0) {
+        queryParams.append('statuses', statuses.join(','));
+      }
+
+      const url = queryParams.toString()
+        ? `/admin/questions/creator/variants?${queryParams.toString()}`
+        : '/admin/questions/creator/variants';
+
+      const response = await axiosClient.get(url);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to fetch questions with variants' };
+    }
+  },
+
   // Update question (Creator)
   updateQuestion: async (questionId, questionData) => {
     try {

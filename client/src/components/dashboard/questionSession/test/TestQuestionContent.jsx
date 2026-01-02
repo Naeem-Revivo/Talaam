@@ -13,11 +13,11 @@ const TestQuestionContent = ({
 
   return (
     <div className="max-w-4xl mx-auto lg:ml-5">
-      <h2 className="text-[24px] md:text-[32px] lg:text-[36px] font-bold text-oxford-blue mb-6 md:mb-10 font-archivo leading-tight tracking-[0%]">
+      <h2 className="text-[24px] md:text-[32px] lg:text-[36px] font-bold text-oxford-blue mb-6 font-archivo leading-tight tracking-[0%]">
         {t('dashboard.questionSession.title')}
       </h2>
 
-      <div className="mb-4 md:mb-6">
+      <div className="mb-4">
         <div 
           className="text-[16px] md:text-[18px] font-normal text-oxford-blue font-roboto leading-[24px] tracking-[0%]"
           dangerouslySetInnerHTML={{ 
@@ -26,8 +26,8 @@ const TestQuestionContent = ({
         />
       </div>
 
-      <div className="mb-4 md:mb-6">
-        <div className="space-y-3 mb-6 md:mb-10 w-full min-h-[300px] md:min-h-[400px] flex flex-col items-start justify-center p-4 md:pl-8 bg-white shadow-content rounded-lg">
+      <div className="mb-4">
+        <div className="space-y-3 w-full flex flex-col items-start justify-center p-4 md:pl-8 bg-white shadow-content rounded-lg">
           {currentQuestion.options.map((option) => {
             const isSelected = option.id === currentState?.selectedOption;
 
@@ -57,7 +57,7 @@ const TestQuestionContent = ({
         </div>
       </div>
 
-      <div className="flex justify-center md:justify-start mb-10">
+      <div className="flex justify-center md:justify-start mb-4">
         <button
           onClick={onSubmit}
           disabled={!hasSelectedOption}

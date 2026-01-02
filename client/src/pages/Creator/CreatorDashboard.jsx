@@ -51,8 +51,6 @@ const CreatorDashboard = () => {
         setLoading(true);
         setError(null);
         const response = await axiosClient.get('/creator/dashboard');
-
-        console.log(response.data.data, "`creator dashboard data`");
         
         if (response.data.success) {
           setDashboardData(response.data.data);
@@ -68,11 +66,6 @@ const CreatorDashboard = () => {
     };
 
     fetchDashboardData();
-    
-    // Refresh data every 30 seconds for real-time updates
-    const interval = setInterval(fetchDashboardData, 30000);
-    
-    return () => clearInterval(interval);
   }, []);
 
   const roleData = {

@@ -124,11 +124,6 @@ const Header = ({ onToggleSidebar, showSidebarToggle = true }) => {
 
     // Initial fetch
     fetchAnnouncements();
-    
-    // Poll for updates every 30 seconds
-    const interval = setInterval(fetchAnnouncements, 30000);
-    
-    return () => clearInterval(interval);
   }, [authUser]);
 
   const handleNotificationClick = async () => {
