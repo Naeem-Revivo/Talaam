@@ -93,7 +93,7 @@ const CreatorVariantsPage = () => {
   // Get question data from location state or fetch it
   const questionId = location.state?.questionId;
   const variantToEdit = location.state?.variant || null;
-  const isEditMode = location.state?.isFlagged === true && variantToEdit;
+  const isEditMode = location.state?.isFlagged === true && variantToEdit || location.state?.isRejected === true;
   const [originalQuestion, setOriginalQuestion] = useState(location.state?.originalQuestion || location.state?.question || null);
   const [loading, setLoading] = useState(!originalQuestion && !questionId && !isEditMode);
   const [questionIdDisplay, setQuestionIdDisplay] = useState(

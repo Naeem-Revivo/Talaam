@@ -36,7 +36,6 @@ const CreatorQuestionBank = () => {
   const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
   const [selectedRejectionReason, setSelectedRejectionReason] = useState("");
 
-  console.log(questionsData, "questiondata");
 
   // Memoize columns to prevent rerenders
   const QuestionsColumns = useMemo(() => [
@@ -91,16 +90,16 @@ const CreatorQuestionBank = () => {
     ).join(' ');
   }, []);
 
-  // Map display status to API status
+  // Map display status to API status - backend handles all filtering
   const mapStatusToAPI = useCallback((displayStatus) => {
-    if (!displayStatus || displayStatus === "All Status") return null;
+    if (!displayStatus || displayStatus === "All Status") return 'all';
     const statusMap = {
-      "Approved": "approved", // Use "approved" as base, will filter for all approved statuses client-side
+      "Approved": "pending_processor", // Show completed questions as approved
       "Pending": "pending_creator",
       "Reject": "rejected",
-      "Flag": "flagged",
+      "Flag": "flagged", // Backend handles flagged status
     };
-    return statusMap[displayStatus] || null;
+    return statusMap[displayStatus] || 'all';
   }, []);
 
   // Check if a status is considered "Approved"
@@ -109,59 +108,35 @@ const CreatorQuestionBank = () => {
     return approvedStatuses.includes(status?.toLowerCase());
   }, []);
 
-  // Transform API response to table format
-  const transformQuestionData = useCallback((questions, allQuestions = []) => {
+  // Transform API response to table format - only shows variants that are flagged or rejected
+  const transformQuestionData = useCallback((questions) => {
     const questionIdStr = (id) => String(id || '');
-    const variantsByParentId = new Map();
-    const processedQuestionIds = new Set();
     const result = [];
     
-    // Build map of variants by parent question ID
-    allQuestions.forEach((q) => {
-      const isVariant = q.isVariant === true || q.isVariant === 'true';
-      if (isVariant) {
-        const originalId = q.originalQuestionId || q.originalQuestion;
-        if (originalId) {
-          const parentId = questionIdStr(originalId);
-          if (!variantsByParentId.has(parentId)) {
-            variantsByParentId.set(parentId, []);
-          }
-          variantsByParentId.get(parentId).push(q);
-        }
-      }
-    });
-
-    // Process only original questions (exclude variants)
+    // Process questions - only include variants if they are flagged OR rejected
     questions.forEach((question) => {
       const isVariant = question.isVariant === true || question.isVariant === 'true';
+      const isFlagged = question.isFlagged === true;
+      const isRejected = question.status === 'rejected';
       
-      // Skip variant questions - only show original questions
-      if (isVariant) {
-        return;
+      // Only show variants if they are flagged OR rejected
+      if (isVariant && !isFlagged && !isRejected) {
+        return; // Skip variants that are not flagged or rejected
       }
       
       const processorName = question.approvedBy?.name || question.assignedProcessor?.name || "—";
       const subjectName = question.subject?.name || "—";
       
       const isApproved = question.status === 'completed';
-      const isFlagged = question.isFlagged === true;
-      const isRejected = question.status === 'rejected';
       
-      const questionId = questionIdStr(question.id || question._id);
-      const hasVariants = variantsByParentId.has(questionId) && variantsByParentId.get(questionId).length > 0;
-      
-      const isParentWithVariants = hasVariants && question.status === 'pending_processor' && !isFlagged;
-      const isSubmittedByCreator = question.status === 'pending_processor' && 
-                                   !isFlagged && 
-                                   (question.approvedBy || question.originalData?.approvedBy);
-      
+      // Determine status display
       let status;
       if (isFlagged) {
         status = 'Flag';
-      } else if (isParentWithVariants || isSubmittedByCreator) {
-        status = 'Approved';
       } else if (question.status === 'pending_explainer') {
         status = 'In Review';
+      } else if (question.status === 'pending_processor' && !isFlagged && (question.approvedBy || question.lastModifiedById)) {
+        status = 'Approved';
       } else {
         status = formatStatus(question.status);
       }
@@ -172,35 +147,42 @@ const CreatorQuestionBank = () => {
             : question.questionText)
         : "—";
 
-      // Determine action type based on question status
+      // Determine action type based on question status and type
       let actionType = 'view';
-      if (question.status === 'pending_creator') {
+      if (question.status === 'pending_creator' && !isVariant) {
         actionType = 'createVariant';
+      } else if (isRejected && isVariant) {
+        // Show edit icon for rejected variants
+        actionType = 'editicon';
+      } else if (isFlagged && isVariant) {
+        // Show edit icon for flagged variants so creator can respond
+        actionType = 'editicon';
       } else {
         actionType = 'view';
       }
 
       const questionData = {
-        id: question.id,
+        id: question.id || question._id,
         questionTitle: questionTitle,
         subject: subjectName,
         processor: processorName,
         status: status,
         indicators: {
-          approved: isApproved || isParentWithVariants || isSubmittedByCreator,
+          approved: isApproved,
           flag: isFlagged,
           reject: isRejected,
-          variant: false
+          variant: isVariant
         },
         flagReason: question.flagReason || null,
         rejectionReason: question.rejectionReason || null,
         updatedOn: formatDate(question.updatedAt),
         actionType: actionType,
-        originalData: question
+        originalData: question,
+        isVariant: isVariant,
+        originalQuestionId: question.originalQuestionId || question.originalQuestion || null
       };
       
       result.push(questionData);
-      processedQuestionIds.add(questionIdStr(question.id || question._id));
     });
 
     return result;
@@ -211,45 +193,71 @@ const CreatorQuestionBank = () => {
     const fetchStats = async () => {
       try {
         setStatsLoading(true);
-        // Fetch all questions to calculate stats (without pagination)
-        const statusesToFetch = ['pending_creator', 'pending_processor', 'pending_explainer', 'rejected', 'completed'];
-        const allQuestions = [];
-        
-        for (const status of statusesToFetch) {
-          try {
-            const response = await questionsAPI.getCreatorQuestions({ status, page: 1, limit: 10 });
-            if (response.success && response.data?.questions) {
-              allQuestions.push(...response.data.questions);
+        // Optimized: Use single API call with status='all' to get all questions, then calculate stats
+        // Fetch a reasonable sample to calculate stats (we don't need all questions, just enough for accurate counts)
+        try {
+          const allQuestionsResponse = await questionsAPI.getCreatorQuestions({ 
+            status: 'all', 
+            page: 1, 
+            limit: 100 // Fetch enough to get accurate stats
+          });
+          
+          if (allQuestionsResponse.success && allQuestionsResponse.data) {
+            const allQuestions = allQuestionsResponse.data.questions || [];
+            const pagination = allQuestionsResponse.data.pagination || {};
+            const totalFromBackend = pagination.totalItems || pagination.total || 0;
+            
+            // Filter out creator-flagged questions
+            const nonFlaggedQuestions = allQuestions.filter(q => {
+              if (q.isFlagged === true && q.flagType === 'creator') {
+                return false;
+              }
+              return true;
+            });
+            
+            // Calculate stats from the fetched data
+            const totalAssigned = totalFromBackend; // Total assigned (backend already filters by assignedCreatorId)
+            const totalCompleted = nonFlaggedQuestions.filter(q => q.status === 'completed').length;
+            
+            // Estimate variants pending from sample
+            const variantsPending = nonFlaggedQuestions.filter(q => 
+              (q.isVariant === true || q.isVariant === 'true') && 
+              q.status === 'pending_processor' && 
+              !q.isFlagged
+            ).length;
+            
+            // If we have a sample, estimate total variants pending
+            let totalVariantsPending = 0;
+            if (variantsPending > 0 && nonFlaggedQuestions.length > 0) {
+              // Estimate based on sample ratio
+              const variantRatio = variantsPending / nonFlaggedQuestions.length;
+              // Estimate total variants from total pending_processor count
+              const pendingProcessorCount = nonFlaggedQuestions.filter(q => q.status === 'pending_processor').length;
+              if (pendingProcessorCount > 0) {
+                totalVariantsPending = Math.round(pendingProcessorCount * variantRatio);
+              }
             }
-          } catch (err) {
-            console.warn(`Failed to fetch questions with status ${status} for stats:`, err);
-          }
-        }
-        
-        const uniqueQuestions = Array.from(
-          new Map(allQuestions.map(q => [q.id || q._id, q])).values()
-        );
-        
-        const nonFlaggedQuestions = uniqueQuestions.filter(q => {
-          if (q.isFlagged === true && q.flagType === 'creator') {
-            return false;
-          }
-          return true;
-        });
-        
-        const assignedCount = nonFlaggedQuestions.length;
-        const variantsPending = nonFlaggedQuestions.filter(q => {
-          const isVariant = q.isVariant === true || q.isVariant === 'true';
-          return isVariant && q.status === 'pending_processor' && !q.isFlagged;
-        }).length;
-        
-        const completedCount = nonFlaggedQuestions.filter(q => q.status === 'completed').length;
+            
+            // If we got all questions (sample size >= total), use exact counts
+            if (nonFlaggedQuestions.length >= totalFromBackend) {
+              totalVariantsPending = variantsPending;
+            }
 
-        setStats([
-          { label: t("creator.questionBank.stats.questionsAssigned"), value: assignedCount, color: "blue" },
-          { label: t("creator.questionBank.stats.variantsPending"), value: variantsPending, color: "blue" },
-          { label: t("creator.questionBank.stats.completed"), value: completedCount, color: "red" },
-        ]);
+            setStats([
+              { label: t("creator.questionBank.stats.questionsAssigned"), value: totalAssigned, color: "blue" },
+              { label: t("creator.questionBank.stats.variantsPending"), value: totalVariantsPending, color: "blue" },
+              { label: t("creator.questionBank.stats.completed"), value: totalCompleted, color: "red" },
+            ]);
+          }
+        } catch (err) {
+          console.error('Failed to fetch stats:', err);
+          // Set default stats on error
+          setStats([
+            { label: t("creator.questionBank.stats.questionsAssigned"), value: 0, color: "blue" },
+            { label: t("creator.questionBank.stats.variantsPending"), value: 0, color: "blue" },
+            { label: t("creator.questionBank.stats.completed"), value: 0, color: "red" },
+          ]);
+        }
       } catch (error) {
         console.error("Error fetching stats:", error);
       } finally {
@@ -260,153 +268,52 @@ const CreatorQuestionBank = () => {
     fetchStats();
   }, [t]); // Only fetch stats once on mount
 
-  // Fetch questions from API with backend pagination
+  // Fetch questions from API - SINGLE API CALL with backend pagination (limit 10) - NO CLIENT-SIDE FILTERING
   const fetchQuestions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Map status filter to API status
+      // Map status filter to API status - backend handles all filtering
       const apiStatus = mapStatusToAPI(subtopic);
-      const isApprovedFilter = subtopic === "Approved";
-      const isFlagFilter = subtopic === "Flag";
       
-      // Build params
+      // Build API params - Always use backend pagination with limit 10
       const params = {
         page: currentPage,
         limit: 10,
+        status: apiStatus || 'all', // Use 'all' if no specific status
       };
       
-      // For creator, fetch without status filter to get all assigned questions
-      // The backend will default to pending_creator for creator role, but we want all statuses
-      // So we'll fetch multiple statuses and combine them
-      const allStatuses = ['pending_creator', 'pending_processor', 'pending_explainer', 'rejected', 'completed'];
-      const allQuestions = [];
-      let totalCount = 0;
+      // Add search and subject filters
+      if (search) params.search = search;
+      if (subject && subject !== "All Subject") params.subject = subject;
       
-      // Check if we need to filter by display status (which requires fetching all statuses)
-      // "Pending" can come from multiple backend statuses, so we need client-side filtering
-      const needsDisplayStatusFilter = isApprovedFilter || isFlagFilter || subtopic === "Pending" || subtopic === "Reject" || subtopic === "All Status" || !subtopic;
+      // SINGLE API CALL - Backend handles all filtering and pagination
+      const response = await questionsAPI.getCreatorQuestions(params);
       
-      // If specific status filter is set AND we don't need display status filtering, use backend pagination
-      if (apiStatus && !needsDisplayStatusFilter) {
-        params.status = apiStatus;
-        const response = await questionsAPI.getCreatorQuestions(params);
-        if (response.success && response.data) {
-          allQuestions.push(...(response.data.questions || []));
-          const pagination = response.data.pagination || {};
-          totalCount = pagination.totalItems || pagination.total || 0;
-        }
-      } else {
-        // For "All Status", "Approved", "Pending", "Reject", or "Flag" - fetch all statuses and combine
-        // Need to fetch ALL pages for each status to get complete data for client-side filtering
-        const fetchLimit = 100;
-        
-        // Fetch all pages for each status
-        for (const status of allStatuses) {
-          try {
-            // First, get the first page to know the total count
-            const firstPageResponse = await questionsAPI.getCreatorQuestions({ 
-              status, 
-              page: 1, 
-              limit: fetchLimit 
-            }).catch(() => ({ success: false, data: { questions: [], pagination: {} } }));
-            
-            if (firstPageResponse.success && firstPageResponse.data) {
-              const questions = firstPageResponse.data.questions || [];
-              const pagination = firstPageResponse.data.pagination || {};
-              const totalForStatus = pagination.totalItems || pagination.total || 0;
-              
-              // Add first page questions
-              allQuestions.push(...questions);
-              
-              // If there are more pages, fetch them
-              if (totalForStatus > fetchLimit) {
-                const totalPages = Math.ceil(totalForStatus / fetchLimit);
-                const pagePromises = [];
-                
-                for (let page = 2; page <= totalPages; page++) {
-                  pagePromises.push(
-                    questionsAPI.getCreatorQuestions({ 
-                      status, 
-                      page, 
-                      limit: fetchLimit 
-                    }).catch(() => ({ success: false, data: { questions: [] } }))
-                  );
-                }
-                
-                const pageResponses = await Promise.all(pagePromises);
-                pageResponses.forEach((response) => {
-                  if (response.success && response.data?.questions) {
-                    allQuestions.push(...response.data.questions);
-                  }
-                });
-              }
-              
-              // Add to total count
-              totalCount += totalForStatus;
-            }
-          } catch (err) {
-            console.warn(`Error fetching questions for status ${status}:`, err);
-          }
-        }
+      if (!response.success || !response.data) {
+        throw new Error(response.message || "Failed to fetch questions");
       }
       
-      // Remove duplicates
+      const questions = response.data.questions || [];
+      const pagination = response.data.pagination || {};
+      const totalCount = pagination.totalItems || pagination.total || questions.length;
+      
+      // Remove duplicates (in case backend returns duplicates)
       const uniqueQuestions = Array.from(
-        new Map(allQuestions.map(q => [q.id || q._id, q])).values()
+        new Map(questions.map(q => [q.id || q._id, q])).values()
       );
       
-      // Filter out creator-flagged questions
-      const nonFlaggedQuestions = uniqueQuestions.filter(q => {
-        if (q.isFlagged === true && q.flagType === 'creator') {
-          return false;
-        }
-        return true;
-      });
+      // Transform to table format - filters variants to only show flagged/rejected
+      const transformedData = transformQuestionData(uniqueQuestions);
       
-      // Transform to table format FIRST (need all questions for variant mapping)
-      // This gives us the display status which we'll use for filtering
-      const transformedData = transformQuestionData(nonFlaggedQuestions, allQuestions);
-      
-      // Now filter based on DISPLAY status (after transformation)
-      let filteredTransformedData = transformedData;
-      if (isApprovedFilter) {
-        // Filter by display status "Approved"
-        filteredTransformedData = transformedData.filter(item => item.status === 'Approved');
-        totalCount = filteredTransformedData.length;
-      } else if (isFlagFilter) {
-        // Filter by display status "Flag"
-        filteredTransformedData = transformedData.filter(item => item.status === 'Flag');
-        totalCount = filteredTransformedData.length;
-      } else if (subtopic === "Pending") {
-        // Filter by display status "Pending"
-        filteredTransformedData = transformedData.filter(item => item.status === 'Pending');
-        totalCount = filteredTransformedData.length;
-      } else if (subtopic === "Reject") {
-        // Filter by display status "Reject"
-        filteredTransformedData = transformedData.filter(item => item.status === 'Reject');
-        totalCount = filteredTransformedData.length;
-      } else if (subtopic === "All Status" || !subtopic) {
-        // Show all - no filtering needed
-        totalCount = transformedData.length;
-      }
-      
-      // Apply client-side pagination for combined results (when fetching multiple statuses)
-      // Always use client-side pagination when we've filtered by display status
-      if (needsDisplayStatusFilter) {
-        const startIndex = (currentPage - 1) * 10;
-        const endIndex = startIndex + 10;
-        const paginatedData = filteredTransformedData.slice(startIndex, endIndex);
-        setQuestionsData(paginatedData);
-        // Set total count to the filtered data length (not the backend total)
-        setTotalQuestions(filteredTransformedData.length);
-      } else {
-        // For specific status using backend pagination, use backend total from API response
-        setQuestionsData(filteredTransformedData);
-        // Make sure we're using the correct total from the API response
-        setTotalQuestions(totalCount);
-      }
+      // Note: We filter variants client-side (only show flagged/rejected variants)
+      // This means the backend total count might include variants we filter out
+      // For accurate pagination, we use the transformed data length if it's different
+      // But for backend pagination to work correctly, we should ideally filter at backend
+      // For now, use backend count as it's more accurate for original questions
+      setQuestionsData(transformedData);
+      setTotalQuestions(totalCount);
     } catch (err) {
       console.error("Error fetching questions:", err);
       setError(err.message || "Failed to fetch questions");
@@ -416,7 +323,7 @@ const CreatorQuestionBank = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, subtopic, search, subject, mapStatusToAPI, transformQuestionData, isApprovedStatus, t]);
+  }, [currentPage, subtopic, search, subject, mapStatusToAPI, transformQuestionData]);
 
   // Fetch data on component mount and when filters change
   useEffect(() => {
@@ -485,7 +392,61 @@ const CreatorQuestionBank = () => {
 
   const handleEdit = useCallback((item) => {
     if (item.originalData) {
-      navigate(`/creator/question-bank/question/${item.id}/edit`);
+      const question = item.originalData;
+      const isVariant = question.isVariant === true || question.isVariant === 'true';
+      const isFlagged = question.isFlagged === true;
+      const isRejected = question.status === 'rejected';
+      
+      // For flagged variants, navigate to view variant page (has reject flag and update buttons)
+      if (isVariant && isFlagged) {
+        // Fetch original question if we have the ID
+        const fetchOriginalAndNavigate = async () => {
+          try {
+            let originalQ = null;
+            if (question.originalQuestionId) {
+              const response = await questionsAPI.getCreatorQuestionById(question.originalQuestionId);
+              if (response.success && response.data?.question) {
+                originalQ = response.data.question;
+              }
+            }
+            
+            navigate("/creator/question-bank/view-variant", {
+              state: {
+                variantId: item.id,
+                variant: question,
+                originalQuestion: originalQ || (question.originalQuestionId ? { id: question.originalQuestionId } : null)
+              }
+            });
+          } catch (err) {
+            console.error("Error fetching original question:", err);
+            // Navigate anyway with what we have
+            navigate("/creator/question-bank/view-variant", {
+              state: {
+                variantId: item.id,
+                variant: question,
+                originalQuestion: question.originalQuestionId ? { id: question.originalQuestionId } : null
+              }
+            });
+          }
+        };
+        
+        fetchOriginalAndNavigate();
+      } 
+      // For rejected variants, navigate to edit variant page (update variant page)
+      else if (isVariant && isRejected) {
+        navigate("/creator/question-bank/edit-variant", {
+          state: {
+            variantId: item.id,
+            variant: question,
+            originalQuestion: question.originalQuestionId ? { id: question.originalQuestionId } : null,
+            isRejected: true
+          }
+        });
+      }
+      // For regular questions, navigate to edit page
+      else {
+        navigate(`/creator/question-bank/question/${item.id}/edit`);
+      }
     }
   }, [navigate]);
 

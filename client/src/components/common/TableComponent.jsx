@@ -26,6 +26,9 @@ const TableRow = ({ item, columns, onView, onEdit, onCustomAction, onShowFlagRea
   const { language, t } = useLanguage();
   const isRTL = language === "ar";
 
+
+  console.log(item, 'item');
+
   return (
     <tr className="hidden border-b border-[#E5E7EB] bg-white text-oxford-blue last:border-none md:table-row">
       {columns.slice(0, -1).map((column) => {
