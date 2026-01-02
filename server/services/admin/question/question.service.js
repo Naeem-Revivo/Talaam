@@ -275,8 +275,40 @@ const getQuestionsByStatus = async (status, userId, role, flagType = null, pagin
   }
   
   // Creator can only see questions assigned to them
+  // IMPORTANT: Also include variants created by the creator (rejected/flagged variants)
   if (role === 'creator') {
-    where.assignedCreatorId = userId;
+    // Include both assigned questions AND variants created by creator
+    where.OR = [
+      { assignedCreatorId: userId },
+      {
+        AND: [
+          { isVariant: true },
+          { createdById: userId },
+        ]
+      }
+    ];
+
+    const excludeFlaggedPendingProcessor = {
+      NOT: {
+        AND: [
+          { status: 'pending_processor' },
+          { isFlagged: true }
+        ]
+      }
+    };
+    
+    // Merge this condition with existing where clause
+    if (where.AND) {
+      where.AND.push(excludeFlaggedPendingProcessor);
+    } else if (where.OR) {
+      where.AND = [
+        { OR: where.OR },
+        excludeFlaggedPendingProcessor
+      ];
+      delete where.OR;
+    } else {
+      Object.assign(where, excludeFlaggedPendingProcessor);
+    }
     
     // CRITICAL: Exclude gatherer-updated questions after flags from creator's view
     // These questions have flagType but isFlagged=false and status=pending_processor
@@ -287,7 +319,9 @@ const getQuestionsByStatus = async (status, userId, role, flagType = null, pagin
     if (status === 'pending_processor') {
       // Use OR to include questions where creator performed operations
       // This ensures questions where creator created variants or last modified are NOT excluded
+      const existingOR = where.OR || [];
       where.OR = [
+        ...existingOR,
         // Always include if creator last modified this question (creator performed operation)
         {
           lastModifiedById: userId
@@ -424,7 +458,7 @@ const getQuestionsByStatus = async (status, userId, role, flagType = null, pagin
   // Get total count for pagination
   const totalCount = await prisma.question.count({ where });
 
-  const questions = await Question.findMany({
+  const questions = await prisma.question.findMany({
     where,
     orderBy: { updatedAt: 'desc' },
     skip: skip,
@@ -449,110 +483,138 @@ const getQuestionsByStatus = async (status, userId, role, flagType = null, pagin
   }
 
   // For explainer, group questions: parent first, then variants
-  if (role === 'explainer' && status === 'pending_explainer') {
-    // If no questions, return empty array
-    if (!questions || questions.length === 0) {
-      return questions;
-    }
+  // For explainer, group questions: parent first, then variants
+if (role === 'explainer' && status === 'pending_explainer') {
+  // If no questions, return empty array
+  if (!questions || questions.length === 0) {
+    return {
+      questions: [],
+      pagination: {
+        page: normalizedPage,
+        limit: normalizedLimit,
+        totalItems: totalCount,
+        totalPages: Math.ceil(totalCount / normalizedLimit),
+        hasNextPage: false,
+        hasPreviousPage: normalizedPage > 1,
+      },
+    };
+  }
 
-    try {
-      const parentQuestions = [];
-      const variantQuestions = [];
-      const parentIdSet = new Set();
+  try {
+    const parentQuestions = [];
+    const variantQuestions = [];
+    const parentIdSet = new Set();
 
-      // Helper to normalize ID (handle both string and object IDs)
-      const normalizeId = (id) => {
-        if (!id) return null;
-        if (typeof id === 'string') return id;
-        if (typeof id === 'object' && id.toString) return id.toString();
-        return String(id);
-      };
+    // Helper to normalize ID (handle both string and object IDs)
+    const normalizeId = (id) => {
+      if (!id) return null;
+      if (typeof id === 'string') return id;
+      if (typeof id === 'object' && id.toString) return id.toString();
+      return String(id);
+    };
 
-      // Separate parents and variants
-      questions.forEach(q => {
-        const questionId = normalizeId(q.id);
-        // Check isVariant more flexibly
-        const isVariant = q.isVariant === true || 
-                         q.isVariant === 'true' || 
-                         q.isVariant === 1 ||
-                         (q.isVariant !== false && q.isVariant !== 'false' && q.isVariant !== 0 && q.originalQuestionId);
-        const originalQuestionId = normalizeId(q.originalQuestionId);
+    console.log('questions', questions);
+
+    // Separate parents and variants
+    questions.forEach(q => {
+      const questionId = normalizeId(q.id);
+      // Check isVariant more flexibly
+      const isVariant = q.isVariant === true || 
+                       q.isVariant === 'true' || 
+                       q.isVariant === 1 ||
+                       (q.isVariant !== false && q.isVariant !== 'false' && q.isVariant !== 0 && q.originalQuestionId);
+      const originalQuestionId = normalizeId(q.originalQuestionId);
+      
+      if (isVariant && originalQuestionId) {
+        variantQuestions.push(q);
+        parentIdSet.add(originalQuestionId);
+      } else {
+        parentQuestions.push(q);
+      }
+    });
+
+    // Get parent questions that have variants (normalize IDs for comparison)
+    const parentsWithVariants = parentQuestions.filter(p => {
+      const parentId = normalizeId(p.id);
+      return parentIdSet.has(parentId);
+    });
+    const parentsWithoutVariants = parentQuestions.filter(p => {
+      const parentId = normalizeId(p.id);
+      return !parentIdSet.has(parentId);
+    });
+
+    // Group variants by parent ID
+    const variantsByParent = {};
+    const orphanedVariants = []; // Variants whose parents are not in the result set
+    
+    variantQuestions.forEach(v => {
+      const parentId = normalizeId(v.originalQuestionId);
+      if (parentId) {
+        // Check if parent exists in current questions
+        const hasParent = parentQuestions.some(p => normalizeId(p.id) === parentId);
         
-        if (isVariant && originalQuestionId) {
-          variantQuestions.push(q);
-          parentIdSet.add(originalQuestionId);
-        } else {
-          parentQuestions.push(q);
-        }
-      });
-
-      // Get parent questions that have variants (normalize IDs for comparison)
-      const parentsWithVariants = parentQuestions.filter(p => {
-        const parentId = normalizeId(p.id);
-        return parentIdSet.has(parentId);
-      });
-      const parentsWithoutVariants = parentQuestions.filter(p => {
-        const parentId = normalizeId(p.id);
-        return !parentIdSet.has(parentId);
-      });
-
-      // Group variants by parent ID
-      const variantsByParent = {};
-      variantQuestions.forEach(v => {
-        const parentId = normalizeId(v.originalQuestionId);
-        if (parentId) {
+        if (hasParent) {
+          // Group with parent
           if (!variantsByParent[parentId]) {
             variantsByParent[parentId] = [];
           }
           variantsByParent[parentId].push(v);
+        } else {
+          // Parent not in result set - add as orphaned variant
+          orphanedVariants.push(v);
         }
-      });
+      }
+    });
 
-      // Build ordered list: parent with variants first, then their variants, then parents without variants
-      const orderedQuestions = [];
-      
-      // Add parents with variants, followed by their variants
-      parentsWithVariants.forEach(parent => {
-        orderedQuestions.push(parent);
-        const parentId = normalizeId(parent.id);
-        if (parentId && variantsByParent[parentId]) {
-          orderedQuestions.push(...variantsByParent[parentId]);
-        }
-      });
+    // Build ordered list: parent with variants first, then their variants, 
+    // then parents without variants, then orphaned variants
+    const orderedQuestions = [];
+    
+    // Add parents with variants, followed by their variants
+    parentsWithVariants.forEach(parent => {
+      orderedQuestions.push(parent);
+      const parentId = normalizeId(parent.id);
+      if (parentId && variantsByParent[parentId]) {
+        orderedQuestions.push(...variantsByParent[parentId]);
+      }
+    });
 
-      // Add parents without variants
-      orderedQuestions.push(...parentsWithoutVariants);
+    // Add parents without variants
+    orderedQuestions.push(...parentsWithoutVariants);
+    
+    // Add orphaned variants at the end
+    orderedQuestions.push(...orphanedVariants);
 
-      // Ensure we return at least the original questions if ordering fails
-      const finalQuestions = orderedQuestions.length > 0 ? orderedQuestions : questions;
-      
-      return {
-        questions: finalQuestions,
-        pagination: {
-          page: normalizedPage,
-          limit: normalizedLimit,
-          totalItems: totalCount,
-          totalPages: Math.ceil(totalCount / normalizedLimit),
-          hasNextPage: skip + finalQuestions.length < totalCount,
-          hasPreviousPage: normalizedPage > 1,
-        },
-      };
-    } catch (error) {
-      console.error('Error grouping explainer questions:', error);
-      // Return original questions if grouping fails
-      return {
-        questions: questions,
-        pagination: {
-          page: normalizedPage,
-          limit: normalizedLimit,
-          totalItems: totalCount,
-          totalPages: Math.ceil(totalCount / normalizedLimit),
-          hasNextPage: skip + questions.length < totalCount,
-          hasPreviousPage: normalizedPage > 1,
-        },
-      };
-    }
+    // Ensure we return at least the original questions if ordering fails
+    const finalQuestions = orderedQuestions.length > 0 ? orderedQuestions : questions;
+    
+    return {
+      questions: finalQuestions,
+      pagination: {
+        page: normalizedPage,
+        limit: normalizedLimit,
+        totalItems: totalCount,
+        totalPages: Math.ceil(totalCount / normalizedLimit),
+        hasNextPage: skip + finalQuestions.length < totalCount,
+        hasPreviousPage: normalizedPage > 1,
+      },
+    };
+  } catch (error) {
+    console.error('Error grouping explainer questions:', error);
+    // Return original questions if grouping fails
+    return {
+      questions: questions,
+      pagination: {
+        page: normalizedPage,
+        limit: normalizedLimit,
+        totalItems: totalCount,
+        totalPages: Math.ceil(totalCount / normalizedLimit),
+        hasNextPage: skip + questions.length < totalCount,
+        hasPreviousPage: normalizedPage > 1,
+      },
+    };
   }
+}
 
   // Return with pagination metadata
   return {
@@ -756,6 +818,7 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
         }
       }
     }
+
 
     // For creator: check assignedCreatorId OR lastModifiedBy OR flagged by creator
     if (submittedByRole === 'creator' && userIdsWithRole.length > 0) {
@@ -983,7 +1046,7 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
       exam: { select: { name: true } },
       subject: { select: { name: true } },
       topic: { select: { name: true } },
-      createdBy: { select: { id: true, name: true, email: true } },
+      createdBy: { select: { id: true, name: true, email: true, role: true, adminRole: true } },
       lastModifiedBy: { select: { name: true, email: true } },
       assignedProcessor: { select: { name: true, fullName: true, email: true } },
       assignedCreator: { select: { name: true, fullName: true, email: true } },
@@ -992,7 +1055,7 @@ const getQuestionsByStatusAndRole = async (status, submittedByRole, processorId 
       flaggedBy: { select: { name: true, fullName: true, email: true } },
       history: {
         include: {
-          performedBy: { select: { id: true, adminRole: true } }
+          performedBy: { select: { id: true, adminRole: true, role: true } }
         },
         orderBy: { timestamp: 'desc' }
       }
@@ -2954,6 +3017,61 @@ const handleGathererUpdateAfterFlag = async (questionId, updateData, userId) => 
   return updatedQuestion;
 };
 
+const handleCreatorUpdateVariantAfterRejection = async (questionId, updateData, userId) => {
+  const question = await Question.findById(questionId);
+
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  if (!question.isVariant) {
+    throw new Error('This method is for variants only');
+  }
+
+  if (question.status !== 'rejected') {
+    throw new Error('Question is not in rejected status');
+  }
+
+
+  const prismaUpdateData = {
+    lastModifiedBy: userId,
+    status: 'pending_processor', // Send back to processor for review
+    // Resolve the flag when creator updates the variant
+    history: [{
+      action: 'updated',
+      performedBy: userId,
+      role: 'creator',
+      timestamp: new Date(),
+      notes: `Question variant updated by creator after rejection. Question updated and sent to processor for review.`,
+    }],
+  };
+
+
+  if (updateData.questionText !== undefined) {
+    prismaUpdateData.questionText = updateData.questionText.trim();
+  }
+  if (updateData.questionType !== undefined) {
+    prismaUpdateData.questionType = updateData.questionType;
+  }
+  if (updateData.options !== undefined) {
+    prismaUpdateData.options = {
+      A: updateData.options.A.trim(),
+      B: updateData.options.B.trim(),
+      C: updateData.options.C.trim(),
+      D: updateData.options.D.trim(),
+    };
+  }
+  if (updateData.correctAnswer !== undefined) {
+    prismaUpdateData.correctAnswer = updateData.correctAnswer;
+  }
+  if (updateData.explanation !== undefined) {
+    prismaUpdateData.explanation = updateData.explanation.trim();
+  }
+
+  return await Question.update(questionId, prismaUpdateData);
+
+}
+
 /**
  * Handle Creator's updated question variant after flag approval
  * When creator updates a question variant that was flagged by explainer/student and approved by processor
@@ -3360,26 +3478,44 @@ const updateFlaggedVariantByCreator = async (questionId, updateData, userId) => 
     throw new Error('Question not found');
   }
 
-  // Check if question is a variant and is flagged and in pending_creator status
+  // Check if question is a variant
   if (!question.isVariant) {
     throw new Error('This method is for variants only');
   }
 
-  if (question.status !== 'pending_creator') {
-    throw new Error('Question is not in pending_creator status');
-  }
+  // Determine if this is a flagged question or a rejected question
+  const isFlagged = question.isFlagged && question.flagStatus === 'approved';
+  const isRejected = question.status === 'rejected';
 
-  if (!question.isFlagged || question.flagStatus !== 'approved') {
-    throw new Error('Question variant was not flagged and approved by processor');
-  }
+  if (isFlagged) {
+    // Handle flagged questions
+    // Flagged questions must be in pending_creator status
+    if (question.status !== 'pending_creator') {
+      throw new Error('Flagged question must be in pending_creator status for creator to update');
+    }
 
-  // Route to appropriate handler based on who flagged it
-  if (question.flagType === 'explainer' || question.flagType === 'student') {
-    // Explainer or student flagged variant - use handleCreatorUpdateVariantAfterFlag
-    // Both follow the same flow: creator updates and sends back to processor
-    return await handleCreatorUpdateVariantAfterFlag(questionId, updateData, userId, question.flagType);
+    // Validate flag type
+    if (!question.flagType || (question.flagType !== 'explainer' && question.flagType !== 'student')) {
+      throw new Error('Invalid flag type for flagged question');
+    }
+
+    // Both explainer and student flagged variants follow the same flow
+    return await handleCreatorUpdateVariantAfterFlag(
+      questionId, 
+      updateData, 
+      userId, 
+      question.flagType
+    );
+  } else if (isRejected) {
+    // Handle rejected questions
+    // Rejected questions have status 'rejected'
+    return await handleCreatorUpdateVariantAfterRejection(
+      questionId, 
+      updateData, 
+      userId
+    );
   } else {
-    throw new Error('Unknown flag type. Cannot determine update handler.');
+    throw new Error('Question is neither flagged (with approved status) nor rejected. Cannot determine update handler.');
   }
 };
 
@@ -3834,6 +3970,78 @@ const rejectStudentFlag = async (questionId, rejectionReason, adminId) => {
   return updatedQuestion;
 };
 
+/**
+ * Get questions with their variants for creator (optimized single query)
+ * This replaces multiple API calls with a single optimized query using Prisma relations
+ * @param {string} userId - Creator user ID
+ * @param {Array<string>} statuses - Array of statuses to fetch (optional, defaults to all relevant statuses)
+ * @returns {Promise<Array>} Array of questions with their variants included
+ */
+const getCreatorQuestionsWithVariants = async (userId, statuses = null) => {
+  const { prisma } = require('../../../config/db/prisma');
+  
+  // Default statuses if not provided
+  const statusesToFetch = statuses || [
+    'pending_creator',
+    'pending_processor',
+    'pending_explainer',
+    'completed',
+    'rejected'
+  ];
+
+  // Build where clause
+  const where = {
+    assignedCreatorId: userId,
+    isVariant: false, // Only fetch original questions, not variants themselves
+    status: {
+      in: statusesToFetch
+    },
+    // Only include questions that have variants
+    variants: {
+      some: {
+        isVariant: true
+      }
+    }
+  };
+
+  // Fetch questions with variants in a single optimized query
+  const questions = await prisma.question.findMany({
+    where,
+    orderBy: { updatedAt: 'desc' },
+    include: {
+      exam: { select: { id: true, name: true } },
+      subject: { select: { id: true, name: true } },
+      topic: { select: { id: true, name: true } },
+      createdBy: { select: { id: true, name: true, email: true, fullName: true } },
+      lastModifiedBy: { select: { id: true, name: true, email: true, fullName: true } },
+      assignedProcessor: { select: { id: true, name: true, fullName: true, email: true } },
+      assignedCreator: { select: { id: true, name: true, fullName: true, email: true } },
+      assignedExplainer: { select: { id: true, name: true, fullName: true, email: true } },
+      approvedBy: { select: { id: true, name: true, fullName: true, email: true } },
+      flaggedBy: { select: { id: true, name: true, fullName: true, email: true } },
+      // Include variants with all necessary fields
+      variants: {
+        where: {
+          isVariant: true
+        },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          exam: { select: { id: true, name: true } },
+          subject: { select: { id: true, name: true } },
+          topic: { select: { id: true, name: true } },
+          createdBy: { select: { id: true, name: true, email: true, fullName: true } },
+          assignedProcessor: { select: { id: true, name: true, fullName: true, email: true } },
+          assignedCreator: { select: { id: true, name: true, fullName: true, email: true } },
+          assignedExplainer: { select: { id: true, name: true, fullName: true, email: true } },
+          flaggedBy: { select: { id: true, name: true, fullName: true, email: true } }
+        }
+      }
+    }
+  });
+
+  return questions;
+};
+
 module.exports = {
   createQuestion,
   createQuestionWithCompletedStatus,
@@ -3877,5 +4085,6 @@ module.exports = {
   getFlaggedQuestionsForModeration,
   approveStudentFlag,
   rejectStudentFlag,
+  getCreatorQuestionsWithVariants,
 };
 

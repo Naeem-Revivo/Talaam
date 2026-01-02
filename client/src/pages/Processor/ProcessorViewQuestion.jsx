@@ -44,24 +44,50 @@ const Attachments = ({ files, t }) => {
 // Question History Component
 const QuestionHistory = ({ historyItems, t }) => {
   return (
-    <div className="bg-white border border-[#BCBCBD] rounded-lg p-5">
-      <h3 className="text-blue-dark font-bold text-[20px] leading-[32px] font-archivo mb-5">
-        {t("processor.viewQuestion.questionHistory")}
-      </h3>
-      <div className="space-y-3">
-        {historyItems.map((item, index) => (
-          <div key={index} className="flex items-start gap-2">
-            <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5 flex-shrink-0"></div>
-            <div>
-              <p className="text-blue-dark text-[16px] leading-5 font-normal font-roboto">
-                {item.text}
-              </p>
-              <p className="text-[#6B7280] text-[12px] leading-5 font-normal font-roboto mt-0.5">
-                {item.date}
-              </p>
+    <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full h-auto">
+      <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
+        {t("admin.questionDetails.sections.activityLog")}
+      </h2>
+      <div className="space-y-4 overflow-y-auto">
+        {historyItems && historyItems.length > 0 ? (
+          historyItems.map((activity, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-full h-auto"
+              dir="ltr"
+            >
+              <div className="flex-shrink-0">
+                <svg
+                  width="30"
+                  height="30"
+                  viewBox="0 0 30 30"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle cx="15" cy="15" r="15" fill="#ED4122" />
+                  <path
+                    d="M21.125 14.125H15.875V8.875C15.875 8.392 15.483 8 15 8C14.517 8 14.125 8.392 14.125 8.875V14.125H8.875C8.392 14.125 8 14.517 8 15C8 15.483 8.392 15.875 8.875 15.875H14.125V21.125C14.125 21.608 14.517 22 15 22C15.483 22 15.875 21.608 15.875 21.125V15.875H21.125C21.608 15.875 22 15.483 22 15C22 14.517 21.608 14.125 21.125 14.125Z"
+                    fill="white"
+                    stroke="white"
+                    strokeWidth="0.5"
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
+                  {activity.notes || activity.action || activity.description || "Activity"}
+                </p>
+                <p className="font-roboto text-[12px] font-normal leading-[20px] text-dark-gray">
+                  {activity.performedBy?.name || activity.performedBy?.username || activity.createdBy?.name || "Unknown"} - {activity.timestamp ? new Date(activity.timestamp).toLocaleDateString() : "No date"}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="font-roboto text-[14px] text-gray-500">
+            No activity log available
+          </p>
+        )}
       </div>
     </div>
   );
@@ -168,6 +194,17 @@ const ProcessorViewQuestion = () => {
 
   console.log("flagType", flagType);
   console.log("isFlagged", isFlagged);
+
+  const getFormattedHistory = () => {
+    if (!question || !question.history) return [];
+    
+    return question.history.map(item => ({
+      ...item,
+      performedBy: item.performedBy || item.createdBy,
+      notes: item.notes || item.action || item.description,
+      timestamp: item.timestamp || item.createdAt
+    }));
+  };
 
   // Check if processor has already made a decision (approved or rejected)
   // Hide buttons if status is not pending_processor (already processed)
@@ -1343,9 +1380,9 @@ const ProcessorViewQuestion = () => {
               {question.attachments && question.attachments.length > 0 && (
                 <Attachments files={question.attachments} t={t} />
               )}
-              {getHistory().length > 0 && (
-                <QuestionHistory historyItems={getHistory()} t={t} />
-              )}
+             {getFormattedHistory().length > 0 && (
+                  <QuestionHistory historyItems={getFormattedHistory()} t={t} />
+                )}
             </div>
 
             <div className="flex flex-col gap-4 lg:w-[376px]">

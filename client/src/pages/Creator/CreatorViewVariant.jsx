@@ -66,11 +66,10 @@ const CreatorViewVariant = () => {
   };
 
 
-  // Check if variant is flagged and approved (needs creator action)
+  // Check if variant is flagged and needs creator action
+  // Show action buttons if variant is flagged (regardless of flagStatus or status)
   const isFlaggedAndApproved = variant && 
-                                variant.isFlagged === true && 
-                                variant.flagStatus === 'approved' &&
-                                variant.status === 'pending_creator';
+                                variant.isFlagged === true;
 
   // Check if variant is rejected
   const isRejected = variant && variant.status === 'rejected' && variant.rejectionReason;

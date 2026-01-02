@@ -128,7 +128,7 @@ const StudyQuestionContent = ({
 
   return (
     <div className="max-w-4xl mx-auto lg:ml-5" dir={dir}>
-      <div className="mb-4 md:mb-6">
+      <div className="mb-4">
         <div
           dir="ltr"
           className="text-[16px] md:text-[18px] font-normal text-oxford-blue font-roboto leading-[24px] tracking-[0%] text-left"
@@ -138,8 +138,8 @@ const StudyQuestionContent = ({
         />
       </div>
 
-      <div className="mb-4 md:mb-6">
-        <div className="space-y-3 mb-6 md:mb-10 w-full min-h-[300px] md:min-h-[400px] flex flex-col items-start justify-center p-4 md:pl-8 bg-white shadow-content rounded-lg">
+      <div className="mb-4">
+        <div className="space-y-3 mb-6 w-full flex flex-col items-start justify-center p-4 md:pl-8 bg-white shadow-content rounded-lg">
           {currentQuestion.options.map((option) => {
             const isSelected = option.id === currentState?.selectedOption;
             const selectedForReview = showReview && option.id === selectedOption?.id;
@@ -160,7 +160,7 @@ const StudyQuestionContent = ({
       </div>
 
       {!showReview && (
-        <div className="flex justify-center md:justify-start mb-10">
+        <div className="flex justify-center md:justify-start mb-4">
           <button
             onClick={onSubmit}
             disabled={!hasSelectedOption}

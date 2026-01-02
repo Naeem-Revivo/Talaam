@@ -151,264 +151,230 @@ const CreaterSubmission = () => {
 
   // Fetch creator submissions from API
   const fetchCreatorSubmissions = useCallback(async () => {
-  try {
-    setLoading(true);
-
-    // Build base params
-    const baseParams = {
-      submittedBy: "creator",
-      page: currentPage,
-      limit: 10,
-    };
-
-    // Add search filter if provided
-    if (search && search.trim()) {
-      baseParams.search = search.trim();
-    }
-
-    let allQuestions = [];
-    let totalCount = 0;
-
-    // Handle different filter cases
-    if (subtopic === "Flag") {
-      // For Flag filter: fetch flagged questions
-      const params = {
-        ...baseParams,
-        flagType: 'flagged', // This is the key parameter
+    try {
+      setLoading(true);
+  
+      // Build base params
+      const baseParams = {
+        submittedBy: "creator",
+        page: currentPage,
+        limit: 10,
       };
-
-      console.log("Fetching flagged questions with params:", params);
-
-      const response = await questionsAPI.getProcessorQuestions(params);
-      console.log("Flag filter API response:", response);
-
-      if (response.success && response.data) {
-        allQuestions = response.data.questions || [];
-        const pagination = response.data.pagination || {};
-        totalCount = pagination.totalItems || allQuestions.length;
+  
+      // Add search filter if provided
+      if (search && search.trim()) {
+        baseParams.search = search.trim();
       }
-    } else if (subtopic === "Approved") {
-      // For Approved filter: fetch all and filter approved statuses
-      const params = {
-        ...baseParams,
-      };
-
-      const response = await questionsAPI.getProcessorQuestions(params);
-      if (response.success && response.data) {
-        const questions = response.data.questions || [];
-        
-        // Filter for approved statuses on frontend
-        const approvedQuestions = questions.filter((q) => {
-          const status = q.status?.toLowerCase();
-          return [
-            "pending_creator",
-            "pending_explainer",
-            "completed",
-            "approved",
-            "accepted",
-          ].includes(status);
-        });
-        
-        allQuestions = approvedQuestions;
-        const pagination = response.data.pagination || {};
-        totalCount = approvedQuestions.length;
-      }
-    } else if (subtopic === "Rejected") {
-      // For Rejected filter
-      const params = {
-        ...baseParams,
-        status: "rejected",
-      };
-
-      const response = await questionsAPI.getProcessorQuestions(params);
-      if (response.success && response.data) {
-        allQuestions = response.data.questions || [];
-        const pagination = response.data.pagination || {};
-        totalCount = pagination.totalItems || allQuestions.length;
-      }
-    } else if (subtopic === "Pending Review") {
-      // For Pending Review filter
-      const params = {
-        ...baseParams,
-        status: "pending_processor",
-      };
-
-      const response = await questionsAPI.getProcessorQuestions(params);
-      if (response.success && response.data) {
-        allQuestions = response.data.questions || [];
-        const pagination = response.data.pagination || {};
-        totalCount = pagination.totalItems || allQuestions.length;
-      }
-    } else {
-      // For "All Status" or when subtopic is empty
-      // Fetch all creator submissions (including flagged)
-      const params = {
-        ...baseParams,
-        // No status or flagType filter - get all creator submissions
-      };
-
-      const response = await questionsAPI.getProcessorQuestions(params);
-      console.log("All status API response:", response);
-
-      if (response.success && response.data) {
-        allQuestions = response.data.questions || [];
-        const pagination = response.data.pagination || {};
-        totalCount = pagination.totalItems || allQuestions.length;
-      }
-    }
-
-    // Fetch detailed information for each question
-    const questionsWithDetails = await Promise.all(
-      allQuestions.map(async (question) => {
-        try {
-          const detailResponse = await questionsAPI.getProcessorQuestionById(
-            question.id
-          );
-          if (detailResponse.success && detailResponse.data) {
-            const detailedQuestion = detailResponse.data.question;
-            return {
-              ...question,
-              ...detailedQuestion,
-              rejectionReason: detailedQuestion?.rejectionReason || null,
-              flagReason: detailedQuestion?.flagReason || null,
-              flagStatus: detailedQuestion?.flagStatus || null,
-              // Check if flagged by creator
-              isFlagged: (detailedQuestion?.isFlagged === true ||
-                         detailedQuestion?.isFlagged === "true") &&
-                        detailedQuestion?.flagType === 'creator' &&
-                        (detailedQuestion?.flagStatus === 'pending' ||
-                         detailedQuestion?.flagStatus === null ||
-                         detailedQuestion?.flagStatus === undefined),
-              variants: detailedQuestion?.variants || [],
-              history: detailedQuestion?.history || [],
-              approvedBy: detailedQuestion?.approvedBy || null,
-              assignedCreator: detailedQuestion?.assignedCreator || null,
-              isVariant: detailedQuestion?.isVariant || false,
-            };
-          }
-          return question;
-        } catch (error) {
-          console.error(`Error fetching details for question ${question.id}:`, error);
-          return question;
+  
+      let allQuestions = [];
+      let totalCount = 0;
+  
+      // Handle different filter cases
+      if (subtopic === "Flag") {
+        // For Flag filter: fetch flagged questions
+        const params = {
+          ...baseParams,
+          flagType: 'flagged',
+        };
+  
+        console.log("Fetching flagged questions with params:", params);
+        const response = await questionsAPI.getProcessorQuestions(params);
+        console.log("Flag filter API response:", response);
+  
+        if (response.success && response.data) {
+          allQuestions = response.data.questions || [];
+          const pagination = response.data.pagination || {};
+          totalCount = pagination.totalItems || allQuestions.length;
         }
-      })
-    );
-
-    // Transform data for table
-    const transformedData = questionsWithDetails.map((question) => {
-      // Get creator name
-      let creatorName = "Unknown";
-      
-      if (question.assignedCreator) {
-        creatorName =
-          question.assignedCreator.name ||
-          question.assignedCreator.username ||
-          question.assignedCreator.fullName ||
-          "Unknown";
-      }
-
-      if (!creatorName || creatorName === "Unknown") {
-        creatorName =
-          question.lastModifiedBy?.name ||
-          question.lastModifiedBy?.username ||
-          question.createdBy?.name ||
-          question.createdBy?.username ||
-          "Unknown";
-      }
-
-      // Check for variants
-      const hasVariants =
-        (question.variants && question.variants.length > 0) ||
-        (question.history &&
-          question.history.some((h) => h.action === "variant_created"));
-
-      // Check if flagged by creator
-      const isFlagged = question.isFlagged === true;
-
-      const hasApprovedBy = question.approvedBy;
-      const wasInCreatorWorkflow =
-        question.history &&
-        question.history.some(
-          (h) => h.status === 'pending_creator' || h.action === 'approved'
-        );
-
-      const isSubmittedByCreator =
-        question.status === 'pending_processor' &&
-        !isFlagged &&
-        (hasApprovedBy || wasInCreatorWorkflow);
-
-      const isCompleted = question.status === 'completed' && !isFlagged;
-
-      // Get statuses
-      const processorStatus = mapProcessorStatus(question.status);
-      const isVariant = question.isVariant === true || question.isVariant === "true";
-
-      let creatorStatus;
-      if (isVariant) {
-        creatorStatus = "Variant";
-      } else if (hasVariants) {
-        creatorStatus = "Variant Created";
+      } else if (subtopic === "Approved") {
+        // For Approved filter: fetch all and filter approved statuses
+        const params = {
+          ...baseParams,
+        };
+  
+        const response = await questionsAPI.getProcessorQuestions(params);
+        if (response.success && response.data) {
+          const questions = response.data.questions || [];
+          
+          // Filter for approved statuses on frontend
+          const approvedQuestions = questions.filter((q) => {
+            const status = q.status?.toLowerCase();
+            return [
+              "pending_creator",
+              "pending_explainer",
+              "completed",
+              "approved",
+              "accepted",
+            ].includes(status);
+          });
+          
+          allQuestions = approvedQuestions;
+          totalCount = approvedQuestions.length;
+        }
+      } else if (subtopic === "Rejected") {
+        // For Rejected filter
+        const params = {
+          ...baseParams,
+          status: "rejected",
+        };
+  
+        const response = await questionsAPI.getProcessorQuestions(params);
+        if (response.success && response.data) {
+          allQuestions = response.data.questions || [];
+          const pagination = response.data.pagination || {};
+          totalCount = pagination.totalItems || allQuestions.length;
+        }
+      } else if (subtopic === "Pending Review") {
+        // For Pending Review filter
+        const params = {
+          ...baseParams,
+          status: "pending_processor",
+        };
+  
+        const response = await questionsAPI.getProcessorQuestions(params);
+        if (response.success && response.data) {
+          allQuestions = response.data.questions || [];
+          const pagination = response.data.pagination || {};
+          totalCount = pagination.totalItems || allQuestions.length;
+        }
       } else {
-        creatorStatus = mapCreatorStatus(
-          question.status,
-          isFlagged,
-          false,
-          isSubmittedByCreator,
-          isCompleted
-        );
+        // For "All Status" or when subtopic is empty
+        const params = {
+          ...baseParams,
+        };
+  
+        const response = await questionsAPI.getProcessorQuestions(params);
+        console.log("All status API response:", response);
+  
+        if (response.success && response.data) {
+          allQuestions = response.data.questions || [];
+          const pagination = response.data.pagination || {};
+          totalCount = pagination.totalItems || allQuestions.length;
+        }
       }
-
-      return {
-        id: question.id,
-        questionTitle: question.questionText || "Untitled Question",
-        creator: creatorName,
-        processorStatus: processorStatus,
-        creatorStatus: creatorStatus,
-        submittedOn: formatDate(question.updatedAt || question.createdAt),
-        flagReason: question.flagReason || null,
-        isVariant: isVariant,
-        indicators: {
-          approved:
-            creatorStatus.includes("Approved") ||
-            question.status === "completed" ||
+  
+      // IMPORTANT: REMOVE THE UNNECESSARY DETAILED API CALLS!
+      // The data is already complete from the list API
+      // Transform data directly from the list response
+      const transformedData = allQuestions.map((question) => {
+        // Get creator name
+        let creatorName = "Unknown";
+        
+        if (question.assignedCreator) {
+          creatorName =
+            question.assignedCreator.name ||
+            question.assignedCreator.username ||
+            question.assignedCreator.fullName ||
+            "Unknown";
+        }
+  
+        if (!creatorName || creatorName === "Unknown") {
+          creatorName =
+            question.lastModifiedBy?.name ||
+            question.lastModifiedBy?.username ||
+            question.createdBy?.name ||
+            question.createdBy?.username ||
+            "Unknown";
+        }
+  
+        // Check for variants - use the question data already available
+        // Note: You may need to modify your service to include variants in the include
+        // For now, check history for variant_created action
+        const hasVariants =
+          (question.history &&
+            question.history.some((h) => h.action === "variant_created"));
+  
+        // Check if flagged by creator
+        const isFlagged = (question.isFlagged === true || question.isFlagged === "true") &&
+                         question.flagType === 'creator' &&
+                         (question.flagStatus === 'pending' ||
+                          question.flagStatus === null ||
+                          question.flagStatus === undefined);
+  
+        const hasApprovedBy = question.approvedBy;
+        const wasInCreatorWorkflow =
+          question.history &&
+          question.history.some(
+            (h) => h.status === 'pending_creator' || h.action === 'approved'
+          );
+  
+        const isSubmittedByCreator =
+          question.status === 'pending_processor' &&
+          !isFlagged &&
+          (hasApprovedBy || wasInCreatorWorkflow);
+  
+        const isCompleted = question.status === 'completed' && !isFlagged;
+  
+        // Get statuses
+        const processorStatus = mapProcessorStatus(question.status);
+        const isVariant = question.isVariant === true || question.isVariant === "true";
+  
+        let creatorStatus;
+        if (isVariant) {
+          creatorStatus = "Variant";
+        } else if (hasVariants) {
+          creatorStatus = "Variant Created";
+        } else {
+          creatorStatus = mapCreatorStatus(
+            question.status,
+            isFlagged,
+            false,
             isSubmittedByCreator,
-          flag: isFlagged,
-          reject: question.status === "rejected",
-          variant: hasVariants || isVariant,
-        },
-        actionType: isFlagged ? "review" : "view",
-        originalData: question,
-      };
-    });
-
-    // Sort: flagged questions first, then pending_processor, then by date
-    transformedData.sort((a, b) => {
-      // Flagged questions come first
-      if (a.indicators.flag && !b.indicators.flag) return -1;
-      if (!a.indicators.flag && b.indicators.flag) return 1;
-      
-      // Then pending_processor status
-      const isAPendingProcessor = a.originalData?.status === 'pending_processor';
-      const isBPendingProcessor = b.originalData?.status === 'pending_processor';
-      if (isAPendingProcessor && !isBPendingProcessor) return -1;
-      if (!isAPendingProcessor && isBPendingProcessor) return 1;
-
-      // Then by date (most recent first)
-      const dateA = new Date(a.originalData?.updatedAt || a.originalData?.createdAt);
-      const dateB = new Date(b.originalData?.updatedAt || b.originalData?.createdAt);
-      return dateB - dateA;
-    });
-
-    setSubmissions(transformedData);
-    setTotalQuestions(totalCount);
-  } catch (error) {
-    console.error("Error fetching creator submissions:", error);
-    setSubmissions([]);
-    setTotalQuestions(0);
-  } finally {
-    setLoading(false);
-  }
-}, [currentPage, subtopic, search, mapProcessorStatus, mapCreatorStatus, t]);
+            isCompleted
+          );
+        }
+  
+        return {
+          id: question.id,
+          questionTitle: question.questionText || "Untitled Question",
+          creator: creatorName,
+          processorStatus: processorStatus,
+          creatorStatus: creatorStatus,
+          submittedOn: formatDate(question.updatedAt || question.createdAt),
+          flagReason: question.flagReason || null,
+          isVariant: isVariant,
+          indicators: {
+            approved:
+              creatorStatus.includes("Approved") ||
+              question.status === "completed" ||
+              isSubmittedByCreator,
+            flag: isFlagged,
+            reject: question.status === "rejected",
+            variant: hasVariants || isVariant,
+          },
+          actionType: isFlagged ? "review" : "view",
+          originalData: question, // This now has all the data already
+        };
+      });
+  
+      // Sort: flagged questions first, then pending_processor, then by date
+      transformedData.sort((a, b) => {
+        // Flagged questions come first
+        if (a.indicators.flag && !b.indicators.flag) return -1;
+        if (!a.indicators.flag && b.indicators.flag) return 1;
+        
+        // Then pending_processor status
+        const isAPendingProcessor = a.originalData?.status === 'pending_processor';
+        const isBPendingProcessor = b.originalData?.status === 'pending_processor';
+        if (isAPendingProcessor && !isBPendingProcessor) return -1;
+        if (!isAPendingProcessor && isBPendingProcessor) return 1;
+  
+        // Then by date (most recent first)
+        const dateA = new Date(a.originalData?.updatedAt || a.originalData?.createdAt);
+        const dateB = new Date(b.originalData?.updatedAt || b.originalData?.createdAt);
+        return dateB - dateA;
+      });
+  
+      setSubmissions(transformedData);
+      setTotalQuestions(totalCount);
+    } catch (error) {
+      console.error("Error fetching creator submissions:", error);
+      setSubmissions([]);
+      setTotalQuestions(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, subtopic, search, mapProcessorStatus, mapCreatorStatus]);
 
   // Fetch data on component mount and when filters change
   useEffect(() => {

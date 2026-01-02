@@ -36,7 +36,7 @@ const TestModeLayout = ({
         onNavigate={onNavigate}
       />
 
-      <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-145px)] pb-[180px] md:pb-0">
+      <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-180px)] pb-[180px] md:pb-0">
         <TestQuestionNavigator
           questions={questions}
           currentIndex={currentIndex}
