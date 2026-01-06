@@ -38,18 +38,17 @@ const ScienceStrategiesSection = () => {
             <div className="mobile:space-y-3 laptop:space-y-4">
               {strategies.map((strategy) => (
                 <div key={strategy.id} className="bg-white rounded-lg mobile:w-full mobile:h-[136px] laptop:w-[580px] laptop:h-[143px] flex items-center justify-center shadow-md border border-gray-100">
-                  <button
+                  <div
                     className={`w-full mobile:px-6 mobile:py-4 laptop:px-6 laptop:py-4 rounded-lg ${language === 'ar' ? 'text-right' : 'text-left'}`}
-                    onClick={() => setActiveStrategy(activeStrategy === strategy.id ? null : strategy.id)}
                   >
                     <div className='flex flex-col mobile:gap-2 laptop:gap-4'>
                       <div className="flex items-center justify-between">
                         <h3 className="font-archivo font-semibold text-[22px] leading-[100%] tracking-[0] text-oxford-blue">{strategy.title}</h3>
-                        <img src={downarrow} alt="down arrow" className="w-[12.64px] h-[5.99px]" />
+                        {/* <img src={downarrow} alt="down arrow" className="w-[12.64px] h-[5.99px]" /> */}
                       </div>
                       <p className="font-roboto font-normal text-[16px] leading-[21px] tracking-[0] text-oxford-blue">{strategy.description}</p>
                     </div>
-                  </button>
+                  </div>
                 </div>
               ))}
             </div>

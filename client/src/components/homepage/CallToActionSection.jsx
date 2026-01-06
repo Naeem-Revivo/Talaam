@@ -1,8 +1,10 @@
 import React from "react";
 import { useLanguage } from "../../context/LanguageContext";
+import { useNavigate } from "react-router-dom";
 
 const CallToActionSection = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   return (
     <div className="w-full mobile:h-auto tablet:h-auto laptop:h-[366px] bg-soft-blue-green flex items-center justify-center mobile:py-12 tablet:py-16 laptop:py-0">
       <div className="max-w-[1400px] mx-auto w-full text-center px-4 md:px-8 lg:px-12">
@@ -17,7 +19,7 @@ const CallToActionSection = () => {
         </p>
 
         {/* Call-to-Action Button */}
-        <button className="bg-white shadow-lg font-roboto font-semibold text-[20px] leading-[100%] tracking-[0] uppercase mobile:px-8 mobile:py-3 tablet:px-10 tablet:py-4 laptop:w-[250px] rounded-lg mobile:w-auto tablet:w-auto laptop:h-[62px] text-oxford-blue">
+        <button onClick={() => navigate("/question-banks")} className="bg-white shadow-lg font-roboto font-semibold text-[20px] leading-[100%] tracking-[0] uppercase mobile:px-8 mobile:py-3 tablet:px-10 tablet:py-4 laptop:w-[250px] rounded-lg mobile:w-auto tablet:w-auto laptop:h-[62px] text-oxford-blue">
           {t('homepage.cta.button')}
         </button>
       </div>

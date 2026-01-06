@@ -33,7 +33,7 @@ const AddNewPlanPage = () => {
       setFormData({
         planName: originalPlan.name || editPlan.planname || "",
         description: originalPlan.description || "",
-        price: originalPlan.price?.toString() || editPlan.price?.replace('$', '') || "",
+        price: originalPlan.price?.toString() || editPlan.price?.replace('SAR', '') || "",
         duration: originalPlan.duration || editPlan.duration || "Annual",
         status: originalPlan.status?.toLowerCase() || editPlan.status?.toLowerCase() || "",
       });

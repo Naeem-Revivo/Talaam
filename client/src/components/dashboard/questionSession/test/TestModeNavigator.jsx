@@ -4,12 +4,23 @@ import { useLanguage } from '../../../../context/LanguageContext';
 const TestQuestionNavigator = ({
   questions,
   currentIndex,
+  questionState = [],
   showQuestionNav,
   visitedIndices,
   onGoToIndex,
   onCloseQuestionNav,
 }) => {
   const { t } = useLanguage();
+
+  // Check if a question is submitted (cannot navigate to it)
+  const isQuestionSubmitted = (index) => {
+    return questionState[index]?.isSubmitted || questionState[index]?.status === 'submit';
+  };
+
+  // Check if a question is submitted (anywhere, not just before current)
+  const isQuestionSubmittedAnywhere = (index) => {
+    return questionState[index]?.isSubmitted || questionState[index]?.status === 'submit';
+  };
 
   return (
     <>
@@ -27,21 +38,32 @@ const TestQuestionNavigator = ({
             </div>
             <div className="p-2">
               <div className="grid grid-cols-3 gap-2">
-                {questions.map((_, index) => (
+                {questions.map((_, index) => {
+                  const isSubmitted = isQuestionSubmitted(index);
+                  const isDisabled = isSubmitted;
+                  const isSubmittedAnywhere = isQuestionSubmittedAnywhere(index);
+                  const isVisited = visitedIndices.has(index);
+                  return (
                   <button
                     key={index}
-                    onClick={() => onGoToIndex(index)}
+                      onClick={() => !isDisabled && onGoToIndex(index)}
+                      disabled={isDisabled}
                     className={`py-2 px-3 text-[14px] font-medium font-roboto transition-colors text-center border border-[#B9C9C5] rounded ${
                       index === currentIndex
                         ? 'bg-[#EF4444] text-white border-[#EF4444]'
-                        : visitedIndices.has(index)
+                          : isSubmittedAnywhere
+                          ? isDisabled
+                            ? 'bg-[#9BB5AD] text-oxford-blue border-[#9BB5AD] cursor-not-allowed opacity-80'
+                            : 'bg-[#9BB5AD] text-oxford-blue hover:opacity-90'
+                          : isVisited
                         ? 'bg-[#C6D8D3] text-oxford-blue hover:opacity-80'
                         : 'bg-white text-oxford-blue hover:opacity-80'
                     }`}
                   >
                     {index + 1}
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -50,21 +72,32 @@ const TestQuestionNavigator = ({
 
       <div className="hidden lg:flex w-[110px] h-full bg-white overflow-y-auto flex-col border-r border-[#E5E7EB]">
         <div className="flex-1 py-2">
-          {questions.map((_, index) => (
+          {questions.map((_, index) => {
+            const isSubmitted = isQuestionSubmitted(index);
+            const isDisabled = isSubmitted;
+            const isSubmittedAnywhere = isQuestionSubmittedAnywhere(index);
+            const isVisited = visitedIndices.has(index);
+            return (
             <button
               key={index}
-              onClick={() => onGoToIndex(index)}
+                onClick={() => !isDisabled && onGoToIndex(index)}
+                disabled={isDisabled}
               className={`w-full py-2 text-[14px] font-medium font-roboto transition-colors text-center border border-[#B9C9C5] ${
                 index === currentIndex
                   ? 'bg-[#EF4444] text-white border-[#EF4444]'
-                  : visitedIndices.has(index)
+                    : isSubmittedAnywhere
+                    ? isDisabled
+                      ? 'bg-[#9BB5AD] text-oxford-blue border-[#9BB5AD] cursor-not-allowed opacity-80'
+                      : 'bg-[#9BB5AD] text-oxford-blue hover:opacity-90'
+                    : isVisited
                   ? 'bg-[#C6D8D3] text-oxford-blue hover:opacity-80'
                   : 'bg-white text-oxford-blue hover:opacity-80'
               }`}
             >
               {index + 1}
             </button>
-          ))}
+            );
+          })}
         </div>
       </div>
     </>

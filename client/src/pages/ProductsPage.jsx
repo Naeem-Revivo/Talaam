@@ -40,17 +40,18 @@ const ProductsPage = () => {
         imageSrc={logoimg}
         imageAlt="Products"
         buttons={[
-          {
-            text: t("products.hero.getStarted"),
-            variant: "primary",
-          },
+          // {
+          //   text: t("products.hero.getStarted"),
+          //   variant: "primary",
+          //   onClick: () => navigate("/signupfree"),
+          // },
           {
             text:
               exploreLabel === "products.hero.exploreQbank"
                 ? "EXPLORE QBANK"
                 : exploreLabel,
-            variant: "secondary",
-            icon: buttonvedio,
+            variant: "primary",
+            // icon: buttonvedio,
             onClick: () => navigate("/question-banks"),
           },
         ]}

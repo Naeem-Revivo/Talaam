@@ -28,7 +28,7 @@ const UnifiedCreateAccount = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    country: 'United States',
+    country: 'Saudi Arabia',
     language: 'English'
   });
 
@@ -40,8 +40,8 @@ const UnifiedCreateAccount = () => {
     verificationCode: ''
   });
 
-  const countries = ['United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Spain', 'Italy', 'Pakistan', 'India'];
-  const languages = ['English', 'Arabic'];
+  const countries = ['Saudi Arabia', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Spain', 'Italy', 'Pakistan', 'India'];
+  const languages = ['English', 'العربية'];
 
   // Password requirement validation functions
   const checkPasswordRequirements = (password) => {

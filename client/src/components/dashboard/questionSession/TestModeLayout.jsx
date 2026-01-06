@@ -8,6 +8,7 @@ const TestModeLayout = ({
   questions,
   currentIndex,
   currentState,
+  questionState,
   visitedIndices,
   showQuestionNav,
   sessionStartTime,
@@ -19,6 +20,8 @@ const TestModeLayout = ({
   onOptionChange,
   onSubmit,
   onExit,
+  onPause,
+  isPauseDisabled = false,
 }) => {
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
@@ -40,6 +43,7 @@ const TestModeLayout = ({
         <TestQuestionNavigator
           questions={questions}
           currentIndex={currentIndex}
+          questionState={questionState}
           showQuestionNav={showQuestionNav}
           visitedIndices={visitedIndices}
           onGoToIndex={onGoToIndex}
@@ -59,6 +63,8 @@ const TestModeLayout = ({
 
       <TestModeFooter
         onExit={onExit}
+        onPause={onPause}
+        isPauseDisabled={isPauseDisabled}
       />
     </div>
   );

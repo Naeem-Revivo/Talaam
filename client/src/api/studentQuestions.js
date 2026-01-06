@@ -235,6 +235,42 @@ const studentQuestionsAPI = {
       throw apiError || { message: 'Failed to fetch flagged questions' };
     }
   },
+
+  // Pause a session (study or test mode)
+  // POST /api/student/questions/sessions/pause
+  pauseSession: async (sessionData) => {
+    try {
+      const response = await axiosClient.post('/student/questions/sessions/pause', sessionData);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to pause session' };
+    }
+  },
+
+  // Get paused session for resuming
+  // GET /api/student/questions/sessions/:sessionId/resume
+  getPausedSession: async (sessionId) => {
+    try {
+      const response = await axiosClient.get(`/student/questions/sessions/${sessionId}/resume`);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to fetch paused session' };
+    }
+  },
+
+  // Complete a paused session (update status from paused to completed)
+  // PUT /api/student/questions/sessions/:sessionId/complete
+  completePausedSession: async (sessionId, sessionData) => {
+    try {
+      const response = await axiosClient.put(`/student/questions/sessions/${sessionId}/complete`, sessionData);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to complete paused session' };
+    }
+  },
 };
 
 export default studentQuestionsAPI;

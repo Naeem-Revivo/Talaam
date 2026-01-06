@@ -85,7 +85,7 @@ const MoyassarPaymentPage = () => {
       if (syncResponse.success) {
         if (syncResponse.data?.subscription?.paymentStatus === 'Paid') {
           showSuccessToast('Payment successful! Your subscription is now active.');
-          navigate('/dashboard/subscription-billings');
+          navigate('/dashboard');
         } else {
           showErrorToast(`Payment status: ${syncResponse.data?.subscription?.paymentStatus || 'Pending'}`);
           navigate('/dashboard/subscription-billings');

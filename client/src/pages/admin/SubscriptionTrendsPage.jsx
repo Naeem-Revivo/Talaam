@@ -85,7 +85,7 @@ const SubscriptionTrendsPage = () => {
   // Format currency
   const formatCurrency = (amount) => {
     if (typeof amount === 'string') return amount;
-    return `$${amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}`;
+    return `SAR ${amount?.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || '0'}`;
   };
 
   // Format number
@@ -511,7 +511,7 @@ const SubscriptionTrendsPage = () => {
                           fontSize="10"
                           fontFamily="Roboto, sans-serif"
                         >
-                          ${val.toFixed(0)}
+                          SAR {val.toFixed(0)}
                         </text>
                       </g>
                     );
@@ -675,7 +675,7 @@ const SubscriptionTrendsPage = () => {
                               fontFamily="Roboto, sans-serif"
                               fontWeight="600"
                             >
-                              ${point.revenue.toFixed(0)}
+                              SAR {point.revenue.toFixed(0)}
                             </text>
                           )}
                         </g>
