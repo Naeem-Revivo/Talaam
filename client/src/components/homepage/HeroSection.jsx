@@ -2,9 +2,11 @@ import React from "react";
 import { buttonvedio, heropagelogo, herocardimg1, herocardimg2, herocardimg3 } from "../../assets/svg";
 import Card from "../shared/Card";
 import { useLanguage } from "../../context/LanguageContext";
+import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
   const cardsData = [
     {
@@ -38,10 +40,10 @@ const HeroSection = () => {
               {t('homepage.hero.subtitle')}
             </p>
             <div className="flex  tablet:flex-row gap-5 mobile:w-full tablet:w-auto laptop:w-auto mobile:items-center tablet:items-center laptop:items-start">
-              <button className="mobile:w-[140px] mobile:h-[44px] tablet:w-[140px] tablet:h-[44px] laptop:w-[164px] laptop:h-[54px] bg-orange-gradient rounded-[12px] text-white font-archivo font-semibold mobile:text-[12px] mobile:leading-[14px] laptop:text-[14px] laptop:leading-[14px] tracking-[0] align-middle uppercase">
+              <button onClick={() => navigate("/signupfree")} className="mobile:w-[140px] mobile:h-[44px] tablet:w-[140px] tablet:h-[44px] laptop:w-[164px] laptop:h-[54px] bg-orange-gradient rounded-[12px] text-white font-archivo font-semibold mobile:text-[12px] mobile:leading-[14px] laptop:text-[14px] laptop:leading-[14px] tracking-[0] align-middle uppercase">
                 {t('homepage.hero.getStarted')}
               </button>
-              <button className="mobile:w-[156px] mobile:h-[44px] tablet:w-[156px] tablet:h-[44px] laptop:w-[193px] laptop:h-[54px] font-archivo font-semibold border border-oxford-blue rounded-[12px] mobile:text-[12px] mobile:leading-[14px] laptop:text-[14px] laptop:leading-[14px] tracking-[0] align-middle uppercase text-oxford-blue">
+              <button onClick={() => navigate("/products")} className="mobile:w-[156px] mobile:h-[44px] tablet:w-[156px] tablet:h-[44px] laptop:w-[193px] laptop:h-[54px] font-archivo font-semibold border border-oxford-blue rounded-[12px] mobile:text-[12px] mobile:leading-[14px] laptop:text-[14px] laptop:leading-[14px] tracking-[0] align-middle uppercase text-oxford-blue">
                 <div className="flex items-center justify-center gap-1">
                 <p className="">{t('homepage.hero.exploreMore')}</p>
                 <p className="">

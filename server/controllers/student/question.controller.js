@@ -566,6 +566,99 @@ const getStudentFlaggedQuestions = async (req, res, next) => {
   }
 };
 
+/**
+ * Pause a session (study or test mode)
+ * POST /api/student/questions/sessions/pause
+ * Body: { mode, examId, subjectId?, topicId?, questions: [{ questionId, selectedAnswer, isCorrect? }], currentIndex, timeTaken, timerEndTime? }
+ */
+const pauseSession = async (req, res, next) => {
+  try {
+    const { mode, examId, subjectId, topicId, questions, currentIndex, timeTaken, timerEndTime } = req.body;
+    const studentId = req.user.id;
+
+    if (!mode || !['study', 'test'].includes(mode)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mode is required and must be "study" or "test"',
+      });
+    }
+
+    if (!examId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Exam ID is required',
+      });
+    }
+
+    if (!questions || !Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Questions array is required and must not be empty',
+      });
+    }
+
+    const result = await questionService.pauseSession(studentId, {
+      mode,
+      examId,
+      subjectId,
+      topicId,
+      questions,
+      currentIndex: currentIndex || 0,
+      timeTaken: timeTaken || null,
+      timerEndTime: timerEndTime || null,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: result,
+      message: 'Session paused successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get paused session for resuming
+ * GET /api/student/questions/sessions/:sessionId/resume
+ */
+const getPausedSession = async (req, res, next) => {
+  try {
+    const { sessionId } = req.params;
+    const studentId = req.user.id;
+
+    const result = await questionService.getPausedSession(studentId, sessionId);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Complete a paused session (update status from paused to completed)
+ * PUT /api/student/questions/sessions/:sessionId/complete
+ */
+const completePausedSession = async (req, res, next) => {
+  try {
+    const { sessionId } = req.params;
+    const studentId = req.user.id;
+    const sessionData = req.body;
+
+    const result = await questionService.completePausedSession(studentId, sessionId, sessionData);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAvailableQuestions,
   getQuestionById,
@@ -584,6 +677,9 @@ module.exports = {
   getSessionIncorrect,
   getPlanStructure,
   getStudyHistory,
+  pauseSession,
+  getPausedSession,
+  completePausedSession,
   flagQuestion,
   getStudentFlaggedQuestions,
 };

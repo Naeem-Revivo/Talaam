@@ -2,9 +2,11 @@ import React from "react";
 import { computer } from "../../assets/svg";
 import { study, performance, minding, teach, science } from "../../assets/svg/products";
 import { useLanguage } from "../../context/LanguageContext";
+import { useNavigate } from "react-router-dom";
 
 const WhatYouGetSection = () => {
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
   
   const features = [
     {
@@ -57,7 +59,7 @@ const WhatYouGetSection = () => {
               <p className="font-roboto font-normal text-[13px] sm:text-[14px] md:text-[16px] leading-[140%] tracking-[0] text-center text-oxford-blue px-2">
                 {t('products.whatYouGet.tryItFreeDesc')}
               </p>
-              <button className="w-full max-w-[280px] sm:max-w-[320px] md:w-[498px] h-[48px] sm:h-[50px] md:h-[54px] bg-orange-gradient rounded-[12px] font-archivo font-semibold text-[13px] sm:text-[14px] leading-[14px] tracking-[0] align-middle uppercase text-white hover:opacity-90 transition-opacity">
+              <button onClick={() => navigate("/signupfree")} className="w-full max-w-[280px] sm:max-w-[320px] md:w-[498px] h-[48px] sm:h-[50px] md:h-[54px] bg-orange-gradient rounded-[12px] font-archivo font-semibold text-[13px] sm:text-[14px] leading-[14px] tracking-[0] align-middle uppercase text-white hover:opacity-90 transition-opacity">
                 {t('products.whatYouGet.getStartedFree')}
               </button>
             </div>

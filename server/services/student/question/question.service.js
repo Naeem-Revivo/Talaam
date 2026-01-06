@@ -982,10 +982,12 @@ const getSessionHistory = async (studentId, filters = {}) => {
   limit = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 100);
   const skip = (page - 1) * limit;
 
-  // Build Prisma where clause - only show completed sessions with actual questions
+  // Build Prisma where clause - show completed and paused sessions with actual questions
   const baseWhere = {
     studentId: studentId,
-    status: 'completed', // Only show completed sessions
+    status: {
+      in: ['completed', 'paused'], // Show both completed and paused sessions
+    },
   };
 
   // Build mode-specific where clause
@@ -1112,6 +1114,7 @@ const getSessionHistory = async (studentId, filters = {}) => {
       id: session.id,
       sessionCode: `S${String(sessionNumber).padStart(3, '0')}`,
       mode: session.mode,
+      status: session.status, // Include status (completed or paused)
       attemptDate: session.createdAt,
       totalQuestions,
       correctAnswers,
@@ -1614,6 +1617,506 @@ const saveStudySessionResults = async (studentId, sessionData) => {
 };
 
 /**
+ * Pause a session (study or test mode)
+ * Saves the current session state with status "paused"
+ */
+const pauseSession = async (studentId, sessionData) => {
+  const {
+    mode, // 'study' or 'test'
+    examId,
+    subjectId,
+    topicId,
+    questions, // Array of { questionId, selectedAnswer, isCorrect? }
+    currentIndex,
+    timeTaken, // Time in milliseconds
+    timerEndTime, // For test mode - when timer should end
+  } = sessionData;
+
+  // Ensure examId is a string (not an object)
+  const examIdString = typeof examId === 'string' ? examId : (examId?.id || examId);
+  if (!examIdString) {
+    throw new Error('Exam ID is required');
+  }
+
+  if (!questions || !Array.isArray(questions) || questions.length === 0) {
+    throw new Error('Questions array is required');
+  }
+
+  // Get exam to validate
+  const exam = await prisma.exam.findUnique({
+    where: { id: examIdString },
+  });
+  if (!exam) {
+    throw new Error('Exam not found');
+  }
+
+  // Process answers for StudentAnswerQuestion records
+  // Format 1: For StudentAnswer.create() - uses questionId as string
+  const processedAnswersForCreate = questions.map((q) => {
+    const hasAnswer = q.selectedAnswer !== null && 
+                     q.selectedAnswer !== undefined && 
+                     q.selectedAnswer !== '';
+    
+    // For study mode: isCorrect should be null for unanswered questions
+    // For test mode: isCorrect can be false for unanswered (they count as incorrect)
+    const isCorrect = mode === 'study' 
+      ? (hasAnswer ? (q.isCorrect ?? null) : null)
+      : (hasAnswer ? (q.isCorrect ?? false) : false);
+    
+    return {
+      question: q.questionId, // StudentAnswer model expects 'question' key that maps to questionId
+      selectedAnswer: q.selectedAnswer || '',
+      isCorrect: isCorrect,
+    };
+  });
+  
+  // Format 2: For nested create in Prisma update - uses connect syntax
+  const processedAnswersForUpdate = questions.map((q) => {
+    const hasAnswer = q.selectedAnswer !== null && 
+                     q.selectedAnswer !== undefined && 
+                     q.selectedAnswer !== '';
+    
+    // For study mode: isCorrect should be null for unanswered questions
+    // For test mode: isCorrect can be false for unanswered (they count as incorrect)
+    const isCorrect = mode === 'study' 
+      ? (hasAnswer ? (q.isCorrect ?? null) : null)
+      : (hasAnswer ? (q.isCorrect ?? false) : false);
+    
+    return {
+      question: {
+        connect: { id: q.questionId },
+      },
+      selectedAnswer: q.selectedAnswer || '',
+      isCorrect: isCorrect,
+    };
+  });
+
+  // Calculate statistics from answered questions
+  const totalQuestions = questions.length;
+  const answeredQuestions = questions.filter((q) => {
+    const hasAnswer = q.selectedAnswer !== null && 
+                     q.selectedAnswer !== undefined && 
+                     q.selectedAnswer !== '';
+    return hasAnswer;
+  });
+  
+  // For study mode, only count answered questions; for test mode, count all
+  const correctAnswers = mode === 'study'
+    ? answeredQuestions.filter((q) => q.isCorrect === true).length
+    : questions.filter((q) => q.isCorrect === true).length;
+  const incorrectAnswers = mode === 'study'
+    ? answeredQuestions.filter((q) => q.isCorrect === false).length
+    : questions.filter((q) => q.isCorrect === false).length;
+  const score = correctAnswers;
+  const percentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+
+  // Check if a paused session already exists for this exam/mode/subject/topic
+  const existingPausedSession = await prisma.studentAnswer.findFirst({
+    where: {
+      studentId: studentId,
+      mode: mode,
+      examId: examIdString,
+      subjectId: subjectId || null,
+      topicId: topicId || null,
+      status: 'paused',
+    },
+    include: {
+      answers: true,
+    },
+  });
+
+  let studentAnswer;
+  
+  if (existingPausedSession) {
+    // Update existing paused session
+    // First, delete existing answers
+    await prisma.studentAnswerQuestion.deleteMany({
+      where: {
+        studentAnswerId: existingPausedSession.id,
+      },
+    });
+
+    // Update the session
+    studentAnswer = await prisma.studentAnswer.update({
+      where: {
+        id: existingPausedSession.id,
+      },
+      data: {
+        answers: {
+          create: processedAnswersForUpdate,
+        },
+        totalQuestions,
+        correctAnswers,
+        incorrectAnswers,
+        score,
+        percentage,
+        timeTaken: timeTaken || null,
+        status: 'paused',
+        updatedAt: new Date(),
+      },
+      include: {
+        exam: true,
+        subject: true,
+        topic: true,
+        answers: {
+          include: {
+            question: true,
+          },
+        },
+      },
+    });
+  } else {
+    // Create new paused session
+    studentAnswer = await StudentAnswer.create({
+      student: studentId,
+      mode: mode,
+      exam: examIdString,
+      subject: subjectId || null,
+      topic: topicId || null,
+      answers: processedAnswersForCreate,
+      totalQuestions,
+      correctAnswers,
+      incorrectAnswers,
+      score,
+      percentage,
+      timeTaken: timeTaken || null,
+      status: 'paused', // Mark as paused
+    });
+  }
+
+  // Store additional pause metadata in a JSON field if needed
+  // For now, we'll use the currentIndex from the questions array structure
+  // The paused session can be resumed by fetching the session detail
+
+  // Get exam info (might be included in studentAnswer or need to fetch)
+  const examInfo = studentAnswer.exam || exam;
+
+  return {
+    sessionId: studentAnswer.id,
+    exam: {
+      id: examInfo.id,
+      name: examInfo.name,
+    },
+    mode,
+    currentIndex: currentIndex || 0,
+    timerEndTime: timerEndTime || null,
+    summary: {
+      totalQuestions,
+      correctAnswers,
+      incorrectAnswers,
+      score,
+      percentage,
+      timeTaken: timeTaken || null,
+    },
+    pausedAt: existingPausedSession ? studentAnswer.updatedAt : studentAnswer.createdAt,
+    updated: !!existingPausedSession, // Indicate if this was an update
+  };
+};
+
+/**
+ * Complete a paused session (update status from paused to completed)
+ */
+const completePausedSession = async (studentId, sessionId, sessionData) => {
+  const {
+    mode, // 'study' or 'test'
+    questions, // Array of { questionId, selectedAnswer, isCorrect? }
+    timeTaken, // Time in milliseconds
+  } = sessionData;
+
+  // Find the paused session
+  const pausedSession = await prisma.studentAnswer.findFirst({
+    where: {
+      id: sessionId,
+      studentId: studentId,
+      status: 'paused',
+    },
+    include: {
+      answers: true,
+    },
+  });
+
+  if (!pausedSession) {
+    throw new Error('Paused session not found');
+  }
+
+  // Process answers for update
+  const processedAnswersForUpdate = questions.map((q) => {
+    const hasAnswer = q.selectedAnswer !== null && 
+                     q.selectedAnswer !== undefined && 
+                     q.selectedAnswer !== '';
+    
+    // For study mode: isCorrect should be null for unanswered questions
+    // For test mode: isCorrect can be false for unanswered (they count as incorrect)
+    const isCorrect = mode === 'study' 
+      ? (hasAnswer ? (q.isCorrect ?? null) : null)
+      : (hasAnswer ? (q.isCorrect ?? false) : false);
+    
+    return {
+      question: {
+        connect: { id: q.questionId },
+      },
+      selectedAnswer: q.selectedAnswer || '',
+      isCorrect: isCorrect,
+    };
+  });
+
+  // Calculate statistics - only count answered questions for study mode
+  const totalQuestions = questions.length;
+  const answeredQuestions = questions.filter((q) => {
+    const hasAnswer = q.selectedAnswer !== null && 
+                     q.selectedAnswer !== undefined && 
+                     q.selectedAnswer !== '';
+    return hasAnswer;
+  });
+  
+  const correctAnswers = mode === 'study'
+    ? answeredQuestions.filter((q) => q.isCorrect === true).length
+    : questions.filter((q) => q.isCorrect === true).length;
+  const incorrectAnswers = mode === 'study'
+    ? answeredQuestions.filter((q) => q.isCorrect === false).length
+    : questions.filter((q) => q.isCorrect === false).length;
+  const score = correctAnswers;
+  const percentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+
+  // Delete existing answers
+  await prisma.studentAnswerQuestion.deleteMany({
+    where: {
+      studentAnswerId: pausedSession.id,
+    },
+  });
+
+  // Update the session to completed status
+  const updatedSession = await prisma.studentAnswer.update({
+    where: {
+      id: pausedSession.id,
+    },
+    data: {
+      answers: {
+        create: processedAnswersForUpdate,
+      },
+      totalQuestions,
+      correctAnswers,
+      incorrectAnswers,
+      score,
+      percentage,
+      timeTaken: timeTaken || pausedSession.timeTaken,
+      status: 'completed',
+      updatedAt: new Date(),
+    },
+    include: {
+      exam: true,
+      subject: true,
+      topic: true,
+      answers: {
+        include: {
+          question: true,
+        },
+      },
+    },
+  });
+
+  // For test mode, calculate detailed results
+  if (mode === 'test') {
+    const questionIds = questions.map((q) => q.questionId);
+    const questionDetails = await prisma.question.findMany({
+      where: {
+        id: { in: questionIds },
+      },
+    });
+
+    const questionMap = new Map();
+    questionDetails.forEach((q) => {
+      questionMap.set(q.id.toString(), q);
+    });
+
+    const detailedResults = questions.map((answer) => {
+      const question = questionMap.get(answer.questionId);
+      if (!question) return null;
+
+      const hasAnswer = answer.selectedAnswer !== null && 
+                       answer.selectedAnswer !== undefined && 
+                       answer.selectedAnswer !== '';
+      const isCorrect = hasAnswer && question.correctAnswer === answer.selectedAnswer;
+
+      return {
+        questionId: question.id,
+        questionText: question.questionText,
+        selectedAnswer: answer.selectedAnswer || '',
+        correctAnswer: question.correctAnswer,
+        isCorrect: hasAnswer ? isCorrect : false,
+        explanation: question.explanation || '',
+      };
+    }).filter(Boolean);
+
+    return {
+      sessionId: updatedSession.id,
+      summary: {
+        totalQuestions,
+        correctAnswers,
+        incorrectAnswers,
+        score,
+        percentage,
+        timeTaken: timeTaken || pausedSession.timeTaken,
+      },
+      results: detailedResults,
+    };
+  }
+
+  return {
+    sessionId: updatedSession.id,
+    summary: {
+      totalQuestions,
+      correctAnswers,
+      incorrectAnswers,
+      score,
+      percentage,
+      timeTaken: timeTaken || pausedSession.timeTaken,
+    },
+  };
+};
+
+/**
+ * Get paused session details for resuming
+ */
+const getPausedSession = async (studentId, sessionId) => {
+  const session = await prisma.studentAnswer.findFirst({
+    where: {
+      id: sessionId,
+      studentId: studentId,
+      status: 'paused',
+    },
+    include: {
+      exam: true,
+      subject: true,
+      topic: true,
+      answers: {
+        include: {
+          question: {
+            include: {
+              exam: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              subject: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              topic: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        // Note: Answers are created in order during pause, so order should be preserved
+        // No orderBy needed since StudentAnswerQuestion doesn't have createdAt
+      },
+    },
+  });
+
+  if (!session) {
+    throw new Error('Paused session not found');
+  }
+
+  // Transform to format needed for resuming
+  const questions = session.answers.map((answer, index) => {
+    const question = answer.question;
+    if (!question) return null;
+
+    const optionsObj = question.options || {};
+    const options = ['A', 'B', 'C', 'D'].map((key) => ({
+      id: key,
+      text: optionsObj[key] || '',
+    })).filter(opt => opt.text);
+
+    return {
+      id: question.id,
+      itemNumber: index + 1,
+      prompt: question.questionText || '',
+      options,
+      correctAnswer: question.correctAnswer || null,
+      explanation: question.explanation || '',
+      questionType: question.questionType || 'MCQ',
+      exam: session.exam,
+      subject: session.subject,
+      topic: session.topic,
+    };
+  }).filter(Boolean);
+
+  // Build question state from answers
+  const questionState = session.answers.map((answer, index) => {
+    // Check if question was actually answered (has a non-empty selectedAnswer)
+    const hasAnswer = answer.selectedAnswer !== null && 
+                     answer.selectedAnswer !== undefined && 
+                     answer.selectedAnswer !== '';
+    
+    // For test mode, don't show feedback until test is completed
+    // For study mode, show feedback if answer was submitted and has feedback
+    const showFeedback = session.mode === 'study' && 
+                         hasAnswer &&
+                         answer.isCorrect !== null && 
+                         answer.isCorrect !== undefined;
+    
+    // In test mode, determine status based on selectedAnswer
+    // Non-empty = submitted, empty = might be skipped (we'll infer from context)
+    const isSubmitted = session.mode === 'test' && hasAnswer;
+    
+    // For paused sessions, if selectedAnswer is empty, it might have been skipped
+    // But we can't be 100% sure, so we'll set status based on isSubmitted
+    // The frontend will handle setting status to 'skipped' when appropriate
+    const status = session.mode === 'test' 
+      ? (isSubmitted ? 'submit' : null) 
+      : null;
+    
+    // For study mode: if question hasn't been answered, isCorrect should be null (not false)
+    // false means "answered incorrectly", null means "not answered yet"
+    const isCorrect = hasAnswer ? answer.isCorrect : null;
+    
+    return {
+      selectedOption: answer.selectedAnswer || null,
+      isCorrect: isCorrect,
+      showFeedback: showFeedback,
+      showHint: false,
+      isSubmitted: isSubmitted,
+      status: status,
+    };
+  });
+
+  // Find the first unanswered question as current index
+  let currentIndex = 0;
+  for (let i = 0; i < questionState.length; i++) {
+    if (!questionState[i].selectedOption || questionState[i].selectedOption === '') {
+      currentIndex = i;
+      break;
+    }
+  }
+  // If all answered, go to last question
+  if (currentIndex === 0 && questionState.every(q => q.selectedOption)) {
+    currentIndex = questionState.length - 1;
+  }
+
+  return {
+    sessionId: session.id,
+    mode: session.mode,
+    examId: session.examId,
+    subjectId: session.subjectId,
+    topicId: session.topicId,
+    questions,
+    questionState,
+    currentIndex,
+    sessionStartTime: session.createdAt.getTime(),
+    timeTaken: session.timeTaken || 0,
+    timerEndTime: null, // Will be recalculated when resuming test mode
+  };
+};
+
+/**
  * Flag question by Student
  * POST /api/student/questions/:questionId/flag
  */
@@ -1714,6 +2217,9 @@ module.exports = {
   getSessionDetail,
   getSessionIncorrectItems,
   getPlanStructure,
+  pauseSession,
+  getPausedSession,
+  completePausedSession,
   flagQuestionByStudent,
   getStudentFlaggedQuestions,
 };

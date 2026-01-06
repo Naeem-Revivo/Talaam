@@ -56,6 +56,7 @@ const ReviewPage = () => {
               questions: session.totalQuestions || 0,
               correct: Math.round(session.percentCorrect || 0),
               avgTime,
+              status: session.status || 'completed', // Include status
             };
           });
 
@@ -241,18 +242,31 @@ const ReviewPage = () => {
 
             {/* Bottom Row: Action Buttons */}
             <div className="flex gap-2 flex-wrap">
-              <button
-                className="flex-1 min-w-[120px] px-[10px] py-[5px] bg-[#ED4122] text-[#FFFFFF] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity"
-                onClick={() => navigate(`/dashboard/review-all?sessionId=${session.id}`)}
-              >
-                {t('dashboard.review.table.actions.reviewAll')}
-              </button>
-              <button
-                className="flex-1 min-w-[120px] px-[10px] py-[5px] bg-[#C6D8D3] text-oxford-blue rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity"
-                onClick={() => navigate(`/dashboard/review-incorrect?sessionId=${session.id}`)}
-              >
-                {t('dashboard.review.table.actions.reviewIncorrect')}
-              </button>
+              {session.status === 'paused' ? (
+                <button
+                  className="flex-1 min-w-[120px] px-[10px] py-[5px] bg-[#EF4444] text-[#FFFFFF] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity"
+                  onClick={() => navigate(`/dashboard/session?mode=${session.mode === 'Test' ? 'test' : 'study'}&resume=${session.id}`, {
+                    state: { pausedSessionId: session.id }
+                  })}
+                >
+                  {t('dashboard.review.table.actions.continue') || 'Continue'}
+                </button>
+              ) : (
+                <>
+                  <button
+                    className="flex-1 min-w-[120px] px-[10px] py-[5px] bg-[#ED4122] text-[#FFFFFF] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity"
+                    onClick={() => navigate(`/dashboard/review-all?sessionId=${session.id}`)}
+                  >
+                    {t('dashboard.review.table.actions.reviewAll')}
+                  </button>
+                  <button
+                    className="flex-1 min-w-[120px] px-[10px] py-[5px] bg-[#C6D8D3] text-oxford-blue rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity"
+                    onClick={() => navigate(`/dashboard/review-incorrect?sessionId=${session.id}`)}
+                  >
+                    {t('dashboard.review.table.actions.reviewIncorrect')}
+                  </button>
+                </>
+              )}
             </div>
           </div>
             ))
@@ -337,18 +351,31 @@ const ReviewPage = () => {
 
               {/* Actions */}
               <div className="flex items-center gap-[10px] flex-wrap justify-center">
-                <button
-                  className="px-[10px] py-[5px] bg-[#ED4122] text-[#FFFFFF] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
-                  onClick={() => navigate(`/dashboard/review-all?sessionId=${session.id}`)}
-                >
-                  {t('dashboard.review.table.actions.reviewAll')}
-                </button>
-                <button
-                  className="px-[10px] py-[5px] bg-[#C6D8D3] text-oxford-blue rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
-                  onClick={() => navigate(`/dashboard/review-incorrect?sessionId=${session.id}`)}
-                >
-                  {t('dashboard.review.table.actions.reviewIncorrect')}
-                </button>
+                {session.status === 'paused' ? (
+                  <button
+                    className="px-[10px] py-[5px] bg-[#EF4444] text-[#FFFFFF] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
+                    onClick={() => navigate(`/dashboard/session?mode=${session.mode === 'Test' ? 'test' : 'study'}&resume=${session.id}`, {
+                      state: { pausedSessionId: session.id }
+                    })}
+                  >
+                    {t('dashboard.review.table.actions.continue') || 'Continue'}
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="px-[10px] py-[5px] bg-[#ED4122] text-[#FFFFFF] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
+                      onClick={() => navigate(`/dashboard/review-all?sessionId=${session.id}`)}
+                    >
+                      {t('dashboard.review.table.actions.reviewAll')}
+                    </button>
+                    <button
+                      className="px-[10px] py-[5px] bg-[#C6D8D3] text-oxford-blue rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
+                      onClick={() => navigate(`/dashboard/review-incorrect?sessionId=${session.id}`)}
+                    >
+                      {t('dashboard.review.table.actions.reviewIncorrect')}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
               ))

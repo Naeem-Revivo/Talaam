@@ -26,6 +26,9 @@ router.get('/study/summary', questionController.getStudySummary);
 router.get('/sessions', questionController.getSessionHistory);
 router.get('/sessions/:sessionId/incorrect', questionController.getSessionIncorrect);
 router.get('/sessions/:sessionId', questionController.getSessionDetail);
+router.get('/sessions/:sessionId/resume', questionController.getPausedSession);
+router.post('/sessions/pause', questionController.pauseSession);
+router.put('/sessions/:sessionId/complete', questionController.completePausedSession);
 
 // Test Mode: Start a test (get questions)
 router.get('/test/start', questionController.startTest);
