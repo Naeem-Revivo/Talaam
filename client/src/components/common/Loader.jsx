@@ -44,7 +44,7 @@ export const Loader = ({
   if (fullScreen) {
     return (
       <div className={`min-h-screen bg-[#F5F7FB] px-4 py-6 sm:px-6 sm:py-8 2xl:px-16 flex items-center justify-center ${className}`}>
-        <div className="text-center">
+        <div className="text-center flex flex-col items-center justify-center">
           {spinner}
           {text && (
             <p className="mt-4 text-oxford-blue font-roboto">{text}</p>

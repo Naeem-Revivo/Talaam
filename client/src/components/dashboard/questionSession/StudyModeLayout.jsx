@@ -22,6 +22,8 @@ const StudyModeLayout = ({
   onSubmit,
   onToggleHint,
   onExit,
+  onPause,
+  isPauseDisabled = false,
   onToggleExplanation,
   onToggleExplanationPanel,
 }) => {
@@ -91,6 +93,8 @@ const StudyModeLayout = ({
         totalQuestions={totalQuestions}
         onNavigate={onNavigate}
         onExit={onExit}
+        onPause={onPause}
+        isPauseDisabled={isPauseDisabled}
       />
     </div>
   );

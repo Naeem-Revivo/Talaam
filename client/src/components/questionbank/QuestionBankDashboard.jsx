@@ -128,7 +128,7 @@ const QuestionBankDashboard = () => {
           <h1 className="text-oxford-blue font-archivo font-bold text-[32px] md:text-[50px] lg:text-[70px] leading-[120%] md:leading-[105%] lg:leading-[91px] tracking-[0] align-middle">
             {t("questionBanks.hero.title")}
           </h1>
-          <p className="font-roboto font-normal text-[14px] md:text-[15px] lg:text-[16px] leading-[140%] md:leading-[130%] lg:leading-[25.6px] tracking-[0] align-middle text-oxford-blue mt-2 px-4 md:px-8 lg:px-0">
+          <p className="font-roboto font-normal text-[14px] md:text-[15px] lg:text-[16px] leading-[140%] md:leading-[130%] lg:leading-[25.6px] tracking-[0] align-middle text-oxford-blue mt-2 px-4 md:px-8 lg:px-0 max-w-[800px] mx-auto">
             {t("questionBanks.hero.subtitle")}
           </p>
         </div>
@@ -182,7 +182,7 @@ const QuestionBankDashboard = () => {
                             </h3>
                             <span className="text-dark-gray font-roboto text-sm md:text-base">
                               {plan.price !== undefined && plan.price !== null 
-                                ? `$${parseFloat(plan.price).toFixed(2)} / ${plan.duration || 'plan'}` 
+                                ? `SAR ${parseFloat(plan.price).toFixed(2)} / ${plan.duration || 'plan'}` 
                                 : plan.duration ? plan.duration : ''}
                             </span>
                           </div>
@@ -201,18 +201,26 @@ const QuestionBankDashboard = () => {
                         </div>
                       </div>
 
-                      {/* Bottom Section - Action Button */}
-                      <button
-                        onClick={() => handleSubscribe(plan.id)}
-                        className="w-full lg:w-[530px] h-[40px] md:h-[52px] lg:h-[54px] rounded-lg bg-gradient-to-r from-orange-dark to-orange-light text-white hover:opacity-90 transition-opacity font-archivo font-semibold text-[11px] md:text-[13px] lg:text-[14px] leading-[14px] tracking-[0] align-middle uppercase"
-                      >
-                        <div className="flex items-center justify-center gap-1.5">
-                          {buttonText === t("questionBanks.exams.upgradeToAccess") && (
-                            <p><img src={arrowup} alt="" className="w-[9px] h-[11px] md:w-[11px] md:h-[13px] lg:w-[12px] lg:h-[14px]" /></p>
-                          )}
-                          <p className="">{buttonText}</p>
-                        </div>
-                      </button>
+                      {/* Bottom Section - Action Buttons */}
+                      <div className="w-full lg:w-[530px] flex flex-col sm:flex-row gap-3">
+                        <button
+                          onClick={() => handleSubscribe(plan.id)}
+                          className="flex-1 h-[40px] md:h-[52px] lg:h-[54px] rounded-lg bg-gradient-to-r from-orange-dark to-orange-light text-white hover:opacity-90 transition-opacity font-archivo font-semibold text-[11px] md:text-[13px] lg:text-[14px] leading-[14px] tracking-[0] align-middle uppercase"
+                        >
+                          <div className="flex items-center justify-center gap-1.5">
+                            {buttonText === t("questionBanks.exams.upgradeToAccess") && (
+                              <p><img src={arrowup} alt="" className="w-[9px] h-[11px] md:w-[11px] md:h-[13px] lg:w-[12px] lg:h-[14px]" /></p>
+                            )}
+                            <p className="">{buttonText}</p>
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => navigate("/products")}
+                          className="flex-1 h-[40px] md:h-[52px] lg:h-[54px] rounded-lg bg-white border-2 border-orange-dark text-orange-dark hover:bg-orange-dark hover:text-white transition-colors font-archivo font-semibold text-[11px] md:text-[13px] lg:text-[14px] leading-[14px] tracking-[0] align-middle uppercase"
+                        >
+                          {t("questionBanks.exams.moreDetail")}
+                        </button>
+                      </div>
                     </>
                   </div>
                 </div>

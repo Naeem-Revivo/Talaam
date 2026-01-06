@@ -8,9 +8,11 @@ import QuestionBankSection from '../components/howitworks/QuestionBankSection';
 import WantToGoDeeperSection from '../components/howitworks/WantToGoDeeperSection';
 import { logoimg } from '../assets/svg/howitworks';
 import { useLanguage } from '../context/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 
 const HowItWorksPage = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -23,7 +25,10 @@ const HowItWorksPage = () => {
         imageSrc={logoimg}
         imageAlt="How it works"
         buttons={[
-          { text: t('howItWorks.hero.getStarted'), variant: 'primary' }
+          {
+            text: t("homepage.hero.getStarted"),
+            onClick: () => navigate("/signupfree") // ✅ redirect to signup
+          }
         ]}
         textWidth="lg:w-[507px]"
         paddingTop="lg:pt-20 lg:pl-3"

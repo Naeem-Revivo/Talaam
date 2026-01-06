@@ -79,6 +79,7 @@
   },
   "navbar": {
     "howItWorks": "How it works",
+    "goToApp": "Go to App",
     "products": "Products",
     "about": "About",
     "contact": "Contact",
@@ -340,13 +341,14 @@
   "questionBanks": {
     "hero": {
       "title": "Your Question Banks",
-      "subtitle": "Access the exams you're subscribed to, or upgrade to unlock more."
+      "subtitle": "Unlock access to comprehensive question banks featuring 1,000+ high-yield practice questions, detailed explanations that teach, performance tracking, and personalized study plans. Master Qudurat and Tahseely exams with proven learning techniques like active recall and spaced repetition."
     },
     "exams": {
       "subscribed": "Subscribed",
       "notSubscribed": "Not Subscribed",
       "startStudying": "START STUDYING",
       "upgradeToAccess": "UPGRADE TO ACCESS",
+      "moreDetail": "MORE DETAIL",
       "moreExamsComingSoon": "More Exams Coming Soon",
       "advancedFeatures": "Advanced Features"
     }
@@ -976,7 +978,8 @@
         },
         "actions": {
           "reviewAll": "Review All",
-          "reviewIncorrect": "Review Incorrect"
+          "reviewIncorrect": "Review Incorrect",
+          "continue": "Continue"
         }
       },
       "pagination": {
@@ -1069,6 +1072,7 @@
         "submit": "Submit",
         "exit": "Exit",
         "exitSession": "Exit Session",
+        "pauseSession": "Pause Session",
         "showHint": "Show Hint",
         "hideHint": "Hide Hint"
       },
@@ -1965,7 +1969,7 @@
       },
       "fields": {
         "planName": "Plan Name",
-        "price": "Price ($)",
+        "price": "Price (SAR)",
         "duration": "Duration",
         "description": "Description",
         "status": "Status"
