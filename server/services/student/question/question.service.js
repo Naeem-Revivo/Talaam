@@ -1839,28 +1839,52 @@ const completePausedSession = async (studentId, sessionId, sessionData) => {
     throw new Error('Paused session not found');
   }
 
+  // For test mode, we need to fetch questions to calculate correctness
+  // For study mode, we use the isCorrect value from the frontend
+  let questionMap = new Map();
+  if (mode === 'test') {
+    const questionIds = questions.map((q) => q.questionId);
+    const questionDetails = await prisma.question.findMany({
+      where: {
+        id: { in: questionIds },
+      },
+    });
+    questionDetails.forEach((q) => {
+      questionMap.set(q.id.toString(), q);
+    });
+  }
+
   // Process answers for update
   const processedAnswersForUpdate = questions.map((q) => {
     const hasAnswer = q.selectedAnswer !== null && 
                      q.selectedAnswer !== undefined && 
                      q.selectedAnswer !== '';
     
-    // For study mode: isCorrect should be null for unanswered questions
-    // For test mode: isCorrect can be false for unanswered (they count as incorrect)
-    const isCorrect = mode === 'study' 
-      ? (hasAnswer ? (q.isCorrect ?? null) : null)
-      : (hasAnswer ? (q.isCorrect ?? false) : false);
+    let isCorrect;
+    if (mode === 'test') {
+      // For test mode: calculate correctness by comparing with question's correctAnswer
+      const question = questionMap.get(q.questionId);
+      if (question) {
+        isCorrect = hasAnswer && question.correctAnswer === q.selectedAnswer;
+      } else {
+        // Question not found, default to false
+        isCorrect = false;
+      }
+    } else {
+      // For study mode: use the isCorrect value from frontend (already calculated)
+      isCorrect = hasAnswer ? (q.isCorrect ?? null) : null;
+    }
     
     return {
       question: {
         connect: { id: q.questionId },
       },
       selectedAnswer: q.selectedAnswer || '',
-      isCorrect: isCorrect,
+      isCorrect: isCorrect ?? false,
     };
   });
 
-  // Calculate statistics - only count answered questions for study mode
+  // Calculate statistics
   const totalQuestions = questions.length;
   const answeredQuestions = questions.filter((q) => {
     const hasAnswer = q.selectedAnswer !== null && 
@@ -1869,12 +1893,17 @@ const completePausedSession = async (studentId, sessionId, sessionData) => {
     return hasAnswer;
   });
   
-  const correctAnswers = mode === 'study'
-    ? answeredQuestions.filter((q) => q.isCorrect === true).length
-    : questions.filter((q) => q.isCorrect === true).length;
-  const incorrectAnswers = mode === 'study'
-    ? answeredQuestions.filter((q) => q.isCorrect === false).length
-    : questions.filter((q) => q.isCorrect === false).length;
+  // Recalculate correctness for statistics if in test mode
+  let correctAnswers, incorrectAnswers;
+  if (mode === 'test') {
+    // For test mode, recalculate based on actual correctness
+    correctAnswers = processedAnswersForUpdate.filter((a) => a.isCorrect === true).length;
+    incorrectAnswers = processedAnswersForUpdate.filter((a) => a.isCorrect === false && a.selectedAnswer !== '').length;
+  } else {
+    // For study mode, use the isCorrect values from frontend
+    correctAnswers = answeredQuestions.filter((q) => q.isCorrect === true).length;
+    incorrectAnswers = answeredQuestions.filter((q) => q.isCorrect === false).length;
+  }
   const score = correctAnswers;
   const percentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
 
@@ -1915,20 +1944,8 @@ const completePausedSession = async (studentId, sessionId, sessionData) => {
     },
   });
 
-  // For test mode, calculate detailed results
+  // For test mode, calculate detailed results (reuse questionMap from earlier)
   if (mode === 'test') {
-    const questionIds = questions.map((q) => q.questionId);
-    const questionDetails = await prisma.question.findMany({
-      where: {
-        id: { in: questionIds },
-      },
-    });
-
-    const questionMap = new Map();
-    questionDetails.forEach((q) => {
-      questionMap.set(q.id.toString(), q);
-    });
-
     const detailedResults = questions.map((answer) => {
       const question = questionMap.get(answer.questionId);
       if (!question) return null;
