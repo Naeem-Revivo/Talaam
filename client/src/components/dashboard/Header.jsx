@@ -454,6 +454,29 @@ const Header = ({ onToggleSidebar, showSidebarToggle = true }) => {
             </button>
           )}
           
+          {/* Back Button - Only for /question-banks route */}
+          {location.pathname === '/question-banks' && (
+            <button
+              onClick={() => navigate('/')}
+              className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
+              aria-label="Go to home"
+            >
+              <svg 
+                className="w-5 h-5 text-oxford-blue" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M15 19l-7-7 7-7" 
+                />
+              </svg>
+            </button>
+          )}
+          
           {/* Title */}
           <h1 className="text-lg md:text-[20px] text-oxford-blue leading-[100%] tracking-[0%] font-archivo font-[600]">
             {headerTitle}
