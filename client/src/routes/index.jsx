@@ -151,9 +151,9 @@ export const AppRoutes = () => {
       {/* Complete Profile page - protected route for authenticated users (especially students) */}
       <Route element={<ProtectedRoute />}>
         <Route path="/complete-profile" element={<CompleteProfilePage />} />
-        <Route path="/subscription-bridge" element={<SubscriptionBridgePage />} />
       </Route>
       <Route path="/moyassar-payment" element={<MoyassarPaymentPage />} />
+        <Route path="/subscription-bridge" element={<SubscriptionBridgePage />} />
       
       {/* Dashboard Routes (User) */}
       <Route element={<RoleRoute allow={['user']} />}>
