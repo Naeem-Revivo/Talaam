@@ -458,22 +458,10 @@ const Header = ({ onToggleSidebar, showSidebarToggle = true }) => {
           {location.pathname === '/question-banks' && (
             <button
               onClick={() => navigate('/')}
-              className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
+              className="font-archivo font-medium text-[18px] leading-[100%] tracking-[0] transition-colors text-oxford-blue hover:text-[#ED4122]"
               aria-label="Go to home"
             >
-              <svg 
-                className="w-5 h-5 text-oxford-blue" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M15 19l-7-7 7-7" 
-                />
-              </svg>
+              Home
             </button>
           )}
           
