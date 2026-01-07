@@ -1,5 +1,15 @@
 {
   "header": {
+    "roles": {
+      "superadmin": "مسؤول",
+      "admin": "مسؤول",
+      "user": "طالب",
+      "student": "طالب",
+      "gatherer": "جامع",
+      "creator": "منشئ",
+      "processor": "معالج",
+      "explainer": "شارح"
+    },
     "titles": {
       "gatherer": {
         "dashboard": "لوحة تحكم المجمع",

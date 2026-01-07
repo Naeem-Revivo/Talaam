@@ -181,7 +181,7 @@ const Navbar = () => {
                       className="flex justify-between items-center w-full px-4 py-2 text-left text-gray-400 cursor-not-allowed"
                       disabled
                     >
-                      <span className="font-medium">Qudraat</span>
+                      <span className="font-medium">Qudurat</span>
                       <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">Coming Soon</span>
                     </button>
                   </div>
@@ -295,7 +295,7 @@ const Navbar = () => {
                     className="flex justify-between items-center w-full px-3 py-2 text-base font-archivo font-medium rounded-md transition-colors text-gray-400 cursor-not-allowed"
                     disabled
                   >
-                    <span>Qudraat</span>
+                    <span>Qudurat</span>
                     <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">Coming Soon</span>
                   </button>
                 </div>

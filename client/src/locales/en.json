@@ -1,5 +1,15 @@
 {
   "header": {
+    "roles": {
+      "superadmin": "Admin",
+      "admin": "Admin",
+      "user": "Student",
+      "student": "Student",
+      "gatherer": "Gatherer",
+      "creator": "Creator",
+      "processor": "Processor",
+      "explainer": "Explainer"
+    },
     "titles": {
       "gatherer": {
         "dashboard": "Gatherer Dashboard",
