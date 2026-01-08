@@ -84,7 +84,7 @@ const TestModeHeader = ({
             {t('dashboard.questionSession.item').replace('{{current}}', (currentIndex + 1).toString()).replace('{{total}}', totalQuestions.toString())}
           </div>
           <div className="hidden lg:block text-[14px] md:text-[16px] font-normal text-dark-gray font-roboto">
-            {t('dashboard.questionSession.questionId')} {currentQuestion.id}
+            {t('dashboard.questionSession.questionId')} {currentQuestion.shortId || currentQuestion.id}
           </div>
           <div className="hidden lg:flex items-center gap-2">
             <button 
@@ -165,11 +165,6 @@ const TestModeHeader = ({
             >
               {t('dashboard.questionSession.actions.next')}
             </button>
-            {studentId && (
-              <span className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto">
-                Student ID: <span className="font-semibold text-oxford-blue">{studentId}</span>
-              </span>
-            )}
           </div>
         </div>
 

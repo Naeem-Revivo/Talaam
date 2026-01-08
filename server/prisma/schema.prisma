@@ -11,6 +11,7 @@ datasource db {
 
 model User {
   id                    String    @id @default(uuid())
+  shortId               String?   @unique @map("short_id")
   name                  String?
   authProvider          String    @default("local") // local, google, linkedin
   googleId              String?   @unique @map("google_id")
@@ -54,6 +55,7 @@ model User {
   @@index([googleId])
   @@index([linkedinId])
   @@index([email])
+  @@index([shortId])
   @@map("users")
 }
 
@@ -174,6 +176,7 @@ model Classification {
 
 model Question {
   id                String   @id @default(uuid())
+  shortId           String?  @unique @map("short_id")
   status            String   @default("pending_processor") // pending_gatherer, pending_processor, pending_creator, pending_explainer, completed, rejected
   examId            String   @map("exam_id")
   subjectId         String   @map("subject_id")
@@ -230,6 +233,7 @@ model Question {
   @@index([createdById])
   @@index([originalQuestionId])
   @@index([isFlagged, flagStatus])
+  @@index([shortId])
   @@map("questions")
 }
 

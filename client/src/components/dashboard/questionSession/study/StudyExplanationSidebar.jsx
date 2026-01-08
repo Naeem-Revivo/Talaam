@@ -13,18 +13,50 @@ const StudyExplanationSidebar = ({
 }) => {
   const { t, language } = useLanguage();
   const dir = language === 'ar' ? 'rtl' : 'ltr'
+  
+  // Collapsed state: narrow sidebar with a chevron "<<" style button
+  if (!showExplanation) {
+    return (
+      <div
+        className={`hidden lg:flex w-[48px] h-full bg-[#F9FAFB] border-[#E5E7EB] ${
+          dir === 'rtl' ? 'border-r' : 'border-l'
+        } items-center justify-center`}
+      >
+        <button
+          onClick={onToggleExplanation}
+          aria-label={t('dashboard.questionSession.explanation.show')}
+          className="flex h-10 w-10 items-center justify-center rounded-full text-oxford-blue hover:bg-[#E5E7EB] transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            {/* Double chevron pointing towards the content area */}
+            <path d="M13 5L8 12l5 7" />
+            <path d="M19 5L14 12l5 7" />
+          </svg>
+        </button>
+      </div>
+    );
+  }
+  
   return (
     <div className={`hidden lg:flex w-[256px] h-full bg-[#F9FAFB] border-l border-[#E5E7EB] overflow-y-auto ${dir === 'rtl' ? "border-r" : "border-l"}`}>
       <div className="p-4 md:p-6 w-full">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[18px] leading-[24px] font-bold text-oxford-blue font-archivo">{t('dashboard.questionSession.explanation.title')}</h3>
           <button onClick={onToggleExplanation} className="text-[18px] leading-[14px] font-normal text-oxford-blue font-archivo hover:opacity-70">
-            {showExplanation ? t('dashboard.questionSession.explanation.hide') : t('dashboard.questionSession.explanation.show')}
+            {t('dashboard.questionSession.explanation.hide')}
           </button>
         </div>
 
-      {showExplanation ? (
-        showReview ? (
+        {showReview ? (
           <div className="space-y-6">
             <div>
               <h4 className="text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-3">
@@ -58,36 +90,15 @@ const StudyExplanationSidebar = ({
               </div>
             )}
 
-            <div>
-              <h4 className="text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-3">
-                {t('dashboard.questionSession.hints')}
-              </h4>
-              <button onClick={onToggleHint} className="text-[14px] font-roboto text-[#0369A1] hover:underline mb-2">
-                {currentState.showHint ? t('dashboard.questionSession.hideHints') : t('dashboard.questionSession.showHints')}
-              </button>
-              {currentState.showHint ? (
-                <ul className="space-y-3">
-                  {currentQuestion.hints.map((hint, index) => (
-                    <li key={index} className="rounded-md bg-white p-3 text-[14px] text-[#4B5563] font-roboto border border-[#E5E7EB]">
-                      {hint}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
-                  {t('dashboard.questionSession.revealHints')}
-                </p>
-              )}
-            </div>
+           
           </div>
         ) : (
           <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
             {t('dashboard.questionSession.submitToSee')}
           </p>
-        )
-      ) : null}
+        )}
+      </div>
     </div>
-  </div>
   );
 };
 

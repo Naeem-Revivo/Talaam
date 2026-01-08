@@ -57,6 +57,7 @@ const QuestionSessionPage = () => {
 
     return {
       id: apiQuestion._id || apiQuestion.id || `Q-${index + 1}`,
+      shortId: apiQuestion.shortId || null,
       itemNumber: index + 1,
       prompt: apiQuestion.questionText || '',
       options,
@@ -530,40 +531,40 @@ const QuestionSessionPage = () => {
       
       // Submit answers after state update
       (async () => {
-        try {
-          const totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
-          const timeTakenMs = totalTime;
-          
-          if (sessionInfoRef.current.examId) {
+    try {
+      const totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+      const timeTakenMs = totalTime;
+      
+      if (sessionInfoRef.current.examId) {
             // Prepare answers - include all questions
             // Skipped questions should have empty string (counts as incorrect)
             const answers = questions.map((q, idx) => {
               const state = updatedState[idx];
               return {
-                questionId: q.id,
+          questionId: q.id,
                 selectedAnswer: state?.status === 'skipped' ? '' : (state?.selectedOption || ''),
               };
             });
 
-            const response = await studentQuestionsAPI.submitTestAnswers(
-              sessionInfoRef.current.examId,
-              answers,
-              timeTakenMs
-            );
+        const response = await studentQuestionsAPI.submitTestAnswers(
+          sessionInfoRef.current.examId,
+          answers,
+          timeTakenMs
+        );
 
-            // Store results
-            if (response.success && response.data) {
-              const resultsKey = `test_results_${sessionIdRef.current}`;
-              sessionStorage.setItem(resultsKey, JSON.stringify(response.data));
-            }
-            
-            const sessionKey = `session_saved_${sessionIdRef.current}`;
-            sessionStorage.setItem(sessionKey, 'true');
-          }
-        } catch (error) {
-          console.error('Error auto-submitting test:', error);
-          showErrorToast('Test time expired. Answers have been submitted.');
+        // Store results
+        if (response.success && response.data) {
+          const resultsKey = `test_results_${sessionIdRef.current}`;
+          sessionStorage.setItem(resultsKey, JSON.stringify(response.data));
         }
+        
+        const sessionKey = `session_saved_${sessionIdRef.current}`;
+        sessionStorage.setItem(sessionKey, 'true');
+      }
+    } catch (error) {
+      console.error('Error auto-submitting test:', error);
+      showErrorToast('Test time expired. Answers have been submitted.');
+    }
       })();
       
       return updatedState;
@@ -695,47 +696,47 @@ const QuestionSessionPage = () => {
           }
         } else {
           // Normal flow: create new session
-          if (mode === 'study') {
-            // Save study mode session results
-            if (sessionInfoRef.current.examId) {
-              const questionsData = questions.map((q, idx) => ({
-                questionId: q.id,
+        if (mode === 'study') {
+          // Save study mode session results
+          if (sessionInfoRef.current.examId) {
+            const questionsData = questions.map((q, idx) => ({
+              questionId: q.id,
                 selectedAnswer: getSelectedAnswer(questionState[idx]), // Handles skipped questions
-                isCorrect: questionState[idx]?.isCorrect || false,
-              }));
+              isCorrect: questionState[idx]?.isCorrect || false,
+            }));
 
-              await studentQuestionsAPI.saveStudySessionResults({
-                examId: sessionInfoRef.current.examId,
-                subjectId: sessionInfoRef.current.subjectId,
-                topicId: sessionInfoRef.current.topicId,
-                questions: questionsData,
-                timeTaken: timeTakenMs,
-              });
+            await studentQuestionsAPI.saveStudySessionResults({
+              examId: sessionInfoRef.current.examId,
+              subjectId: sessionInfoRef.current.subjectId,
+              topicId: sessionInfoRef.current.topicId,
+              questions: questionsData,
+              timeTaken: timeTakenMs,
+            });
 
-              // Mark as saved
-              sessionStorage.setItem(sessionKey, 'true');
-            }
-          } else if (mode === 'test') {
-            // Save test mode session results
-            if (sessionInfoRef.current.examId) {
-              const answers = questions.map((q, idx) => ({
-                questionId: q.id,
+            // Mark as saved
+            sessionStorage.setItem(sessionKey, 'true');
+          }
+        } else if (mode === 'test') {
+          // Save test mode session results
+          if (sessionInfoRef.current.examId) {
+            const answers = questions.map((q, idx) => ({
+              questionId: q.id,
                 selectedAnswer: getSelectedAnswer(questionState[idx]), // Handles skipped questions
-              }));
+            }));
 
-              const response = await studentQuestionsAPI.submitTestAnswers(
-                sessionInfoRef.current.examId,
-                answers,
-                timeTakenMs
-              );
+            const response = await studentQuestionsAPI.submitTestAnswers(
+              sessionInfoRef.current.examId,
+              answers,
+              timeTakenMs
+            );
 
-              // Mark as saved
-              sessionStorage.setItem(sessionKey, 'true');
-              
-              // Store test results for later use when viewing summary
-              if (response.success && response.data) {
-                const resultsKey = `test_results_${sessionIdRef.current}`;
-                sessionStorage.setItem(resultsKey, JSON.stringify(response.data));
+            // Mark as saved
+            sessionStorage.setItem(sessionKey, 'true');
+            
+            // Store test results for later use when viewing summary
+            if (response.success && response.data) {
+              const resultsKey = `test_results_${sessionIdRef.current}`;
+              sessionStorage.setItem(resultsKey, JSON.stringify(response.data));
               }
             }
           }
@@ -763,9 +764,9 @@ const QuestionSessionPage = () => {
     if (questionState.length > 0 && questions.length > 0 && questionState.length === questions.length && !sessionComplete) {
       if (mode === 'study') {
         // Study mode: all questions must have feedback
-        const allAnswered = questionState.every((state) => state.showFeedback);
+      const allAnswered = questionState.every((state) => state.showFeedback);
         if (allAnswered) {
-          setSessionComplete(true);
+        setSessionComplete(true);
         }
       } else if (mode === 'test') {
         // Test mode: all questions must be attempted (either submitted or skipped)
@@ -966,11 +967,11 @@ const QuestionSessionPage = () => {
       }
     } else {
       // Study mode: normal navigation
-      if (isLastQuestion) {
-        setSessionComplete(true);
-        return;
-      }
-      goToIndex(currentIndex + 1);
+    if (isLastQuestion) {
+      setSessionComplete(true);
+      return;
+    }
+    goToIndex(currentIndex + 1);
     }
   };
 
@@ -1095,8 +1096,8 @@ const QuestionSessionPage = () => {
       }
     } else {
       // Study mode: normal navigation
-      const nextIndex = currentIndex + direction;
-      goToIndex(nextIndex);
+    const nextIndex = currentIndex + direction;
+    goToIndex(nextIndex);
     }
   };
 
@@ -1159,7 +1160,7 @@ const QuestionSessionPage = () => {
       if (response.success) {
         // Clear session storage (don't save paused sessions in session storage)
         if (sessionIdRef.current) {
-          clearSession(sessionIdRef.current);
+      clearSession(sessionIdRef.current);
         }
         
         // Show success message and navigate to review page
