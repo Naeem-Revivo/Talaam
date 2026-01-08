@@ -184,17 +184,17 @@ const SubscriptionBridgePage = () => {
 
                       {/* Bottom Section - Action Buttons */}
                       <div className="w-full lg:w-[530px] flex flex-col sm:flex-row gap-3">
-                        <button
-                          onClick={() => handleSubscribe(plan.id)}
+                      <button
+                        onClick={() => handleSubscribe(plan.id)}
                           className="flex-1 h-[40px] md:h-[52px] lg:h-[54px] rounded-lg bg-gradient-to-r from-orange-dark to-orange-light text-white hover:opacity-90 transition-opacity font-archivo font-semibold text-[11px] md:text-[13px] lg:text-[14px] leading-[14px] tracking-[0] align-middle uppercase"
-                        >
-                          <div className="flex items-center justify-center gap-1.5">
-                            {buttonText === t("questionBanks.exams.upgradeToAccess") && (
-                              <p><img src={arrowup} alt="" className="w-[9px] h-[11px] md:w-[11px] md:h-[13px] lg:w-[12px] lg:h-[14px]" /></p>
-                            )}
-                            <p className="">{buttonText}</p>
-                          </div>
-                        </button>
+                      >
+                        <div className="flex items-center justify-center gap-1.5">
+                          {buttonText === t("questionBanks.exams.upgradeToAccess") && (
+                            <p><img src={arrowup} alt="" className="w-[9px] h-[11px] md:w-[11px] md:h-[13px] lg:w-[12px] lg:h-[14px]" /></p>
+                          )}
+                          <p className="">{buttonText}</p>
+                        </div>
+                      </button>
                         <button
                           onClick={() => navigate("/products")}
                           className="flex-1 h-[40px] md:h-[52px] lg:h-[54px] rounded-lg bg-white border-2 border-orange-dark text-orange-dark hover:bg-orange-dark hover:text-white transition-colors font-archivo font-semibold text-[11px] md:text-[13px] lg:text-[14px] leading-[14px] tracking-[0] align-middle uppercase"
