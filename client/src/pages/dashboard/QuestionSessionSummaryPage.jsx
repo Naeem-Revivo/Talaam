@@ -52,12 +52,12 @@ const QuestionSessionSummaryPage = () => {
             <div className="text-[20px] font-bold text-oxford-blue font-archivo leading-[28px] tracking-[0%]">
               {t('dashboard.sessionSummary.item').replace('{{current}}', '3').replace('{{total}}', '20')}
             </div>
-            <div className="hidden lg:block text-[14px] md:text-[16px] font-normal text-dark-gray font-roboto">
+            {/* <div className="hidden lg:block text-[14px] md:text-[16px] font-normal text-dark-gray font-roboto">
               {t('dashboard.sessionSummary.questionId')} icl-02
-            </div>
-            <button className="hidden lg:block text-oxford-blue hover:opacity-70">
+            </div> */}
+            {/* <button className="hidden lg:block text-oxford-blue hover:opacity-70">
               <img src={flag} alt="Flag" />
-            </button>
+            </button> */}
             <button className="lg:hidden text-oxford-blue hover:opacity-70">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -88,9 +88,9 @@ const QuestionSessionSummaryPage = () => {
               <span className="text-[12px] md:text-[14px] font-normal text-oxford-blue font-roboto">
                 <span className="hidden sm:inline">{t('dashboard.sessionSummary.timeRemaining')} </span>12:45
               </span>
-              <button className="text-oxford-blue hover:opacity-70">
+              {/* <button className="text-oxford-blue hover:opacity-70">
                 <img src={setting} alt="Settings" className="w-4 h-4 md:w-5 md:h-5" />
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

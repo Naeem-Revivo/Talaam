@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { setting, flag } from '../../assets/svg/dashboard';
+import { flag } from '../../assets/svg/dashboard';
 import { useLanguage } from '../../context/LanguageContext';
 import studentQuestionsAPI from '../../api/studentQuestions';
 import { showErrorToast } from '../../utils/toastConfig';
@@ -49,6 +49,7 @@ const ReviewAllPage = () => {
 
                 return {
                   id: result.questionId || `q-${index + 1}`,
+                  shortId: result.shortId || null,
                   question: result.questionText || '',
                   options,
                   correctAnswer: result.correctAnswer,
@@ -67,6 +68,7 @@ const ReviewAllPage = () => {
 
             formattedQuestions = [{
               id: sessionData.question.id || 1,
+              shortId: sessionData.question.shortId || null,
               question: sessionData.question.questionText || '',
               options,
               correctAnswer: sessionData.question.correctAnswer,
@@ -157,7 +159,7 @@ const ReviewAllPage = () => {
               {t('dashboard.reviewAll.item').replace('{{current}}', (currentQuestionIndex + 1).toString()).replace('{{total}}', totalQuestions.toString())}
             </div>
             <div className="hidden lg:block text-[14px] md:text-[16px] leading-[100%] font-normal text-blue-dark font-roboto">
-              {t('dashboard.reviewAll.questionId')} {currentQuestion.id || currentQuestionIndex + 1}
+              {t('dashboard.reviewAll.questionId')} {currentQuestion.shortId || currentQuestion.id || currentQuestionIndex + 1}
             </div>
             <button className="hidden lg:block text-oxford-blue hover:opacity-70">
               <img src={flag} alt="Flag" className="" />
@@ -227,9 +229,9 @@ const ReviewAllPage = () => {
               <span className="text-[12px] md:text-[14px] font-normal text-oxford-blue font-roboto">
                 <span className="hidden sm:inline">{t('dashboard.reviewAll.timeRemaining')} </span>12:45
               </span>
-              <button className="text-oxford-blue hover:opacity-70">
+              {/* <button className="text-oxford-blue hover:opacity-70">
                 <img src={setting} alt="Settings" className="w-4 h-4 md:w-5 md:h-5" />
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -309,7 +311,7 @@ const ReviewAllPage = () => {
           <div className="max-w-4xl mx-auto lg:ml-5">
             {/* Question Id - Mobile */}
             <div className="lg:hidden text-[14px] font-normal text-dark-gray font-roboto mb-2">
-              {t('dashboard.reviewAll.questionId')} {currentQuestion.id || currentQuestionIndex + 1}
+              {t('dashboard.reviewAll.questionId')} {currentQuestion.shortId || currentQuestion.id || currentQuestionIndex + 1}
             </div>
 
             {/* Title */}

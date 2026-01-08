@@ -416,6 +416,7 @@ const getTestResultById = async (studentId, testId) => {
           question: {
             select: {
               id: true,
+              shortId: true,
               questionText: true,
               questionType: true,
               options: true,
@@ -438,6 +439,7 @@ const getTestResultById = async (studentId, testId) => {
     if (!question) return null;
     return {
       questionId: question.id,
+      shortId: question.shortId,
       questionText: question.questionText,
       questionType: question.questionType,
       options: question.options,
@@ -1198,6 +1200,7 @@ const getSessionDetail = async (studentId, sessionId) => {
           question: {
             select: {
               id: true,
+              shortId: true,
               questionText: true,
               questionType: true,
               options: true,
@@ -1230,6 +1233,7 @@ const getSessionDetail = async (studentId, sessionId) => {
 
         return {
           questionId: question.id,
+          shortId: question.shortId,
           questionText: question.questionText,
           questionType: question.questionType,
           options: question.options,
@@ -1259,6 +1263,7 @@ const getSessionDetail = async (studentId, sessionId) => {
         topic: session.topic ? { id: session.topic.id, name: session.topic.name } : null,
         question: {
           id: session.question.id,
+          shortId: session.question.shortId,
           questionText: session.question.questionText,
           questionType: session.question.questionType,
           options: session.question.options,
@@ -1308,6 +1313,7 @@ const getSessionIncorrectItems = async (studentId, sessionId) => {
       question: {
         select: {
           id: true,
+          shortId: true,
           questionText: true,
           questionType: true,
           options: true,
@@ -1320,6 +1326,7 @@ const getSessionIncorrectItems = async (studentId, sessionId) => {
           question: {
             select: {
               id: true,
+              shortId: true,
               questionText: true,
               questionType: true,
               options: true,
@@ -1374,6 +1381,7 @@ const getSessionIncorrectItems = async (studentId, sessionId) => {
 
         return {
           questionId: question.id,
+          shortId: question.shortId,
           questionText: question.questionText,
           questionType: question.questionType,
           options: question.options,
@@ -1404,6 +1412,7 @@ const getSessionIncorrectItems = async (studentId, sessionId) => {
           : [
               {
                 questionId: session.question.id,
+                shortId: session.question.shortId,
                 questionText: session.question.questionText,
                 questionType: session.question.questionType,
                 options: session.question.options,

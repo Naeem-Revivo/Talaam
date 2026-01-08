@@ -6,7 +6,7 @@ import studentQuestionsAPI from '../../api/studentQuestions';
 import { showErrorToast } from '../../utils/toastConfig';
 
 const ReviewIncorrectPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -43,6 +43,7 @@ const ReviewIncorrectPage = () => {
 
             return {
               id: item.questionId || index + 1,
+              shortId: item.shortId || null,
               question: item.questionText || '',
               options,
               correctAnswer: item.correctAnswer,
@@ -96,6 +97,7 @@ const ReviewIncorrectPage = () => {
 
               return {
                 id: item.questionId || index + 1,
+                shortId: item.shortId || null,
                 question: item.questionText || '',
                 options,
                 correctAnswer: item.correctAnswer,
@@ -184,7 +186,7 @@ const ReviewIncorrectPage = () => {
               {t('dashboard.reviewIncorrect.item').replace('{{current}}', (currentQuestionIndex + 1).toString()).replace('{{total}}', totalQuestions.toString())}
             </div>
             <div className="hidden lg:block text-[14px] md:text-[16px] font-normal text-dark-gray font-roboto">
-              {t('dashboard.reviewIncorrect.questionId')} {currentQuestion.id || currentQuestionIndex + 1}
+              {t('dashboard.reviewIncorrect.questionId')} {currentQuestion.shortId || currentQuestion.id || currentQuestionIndex + 1}
             </div>
             <button className="hidden lg:block text-oxford-blue hover:opacity-70">
               <img src={flag} alt="Flag" className="" />
@@ -256,9 +258,9 @@ const ReviewIncorrectPage = () => {
               <span className="text-[12px] md:text-[14px] font-normal text-oxford-blue font-roboto">
                 <span className="hidden sm:inline">{t('dashboard.reviewIncorrect.timeRemaining')} </span>12:45
               </span>
-              <button className="text-oxford-blue hover:opacity-70">
-                <img src={setting} alt="Settings" className="w-4 h-4 md:w-5 md:h-5" />
-              </button>
+                {/* <button className="text-oxford-blue hover:opacity-70">
+                  <img src={setting} alt="Settings" className="w-4 h-4 md:w-5 md:h-5" />
+                </button> */}
             </div>
           </div>
         </div>
@@ -510,21 +512,48 @@ const ReviewIncorrectPage = () => {
         </div>
 
         {/* Right Explanation Panel - Desktop */}
-        <div className="hidden lg:flex w-[256px] h-full bg-[#F9FAFB] border-l border-[#E5E7EB] overflow-y-auto">
-          <div className="p-4 md:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[18px] md:text-[20px] font-bold text-oxford-blue font-archivo">
-                {t('dashboard.reviewIncorrect.explanation.title')}
-              </h3>
-              <button
-                onClick={() => setShowExplanation(!showExplanation)}
-                className="text-[14px] font-normal text-oxford-blue font-roboto hover:opacity-70"
+        {!showExplanation ? (
+          <div
+            className={`hidden lg:flex w-[48px] h-full bg-[#F9FAFB] border-[#E5E7EB] ${
+              language === 'ar' ? 'border-r' : 'border-l'
+            } items-center justify-center`}
+          >
+            <button
+              onClick={() => setShowExplanation(!showExplanation)}
+              aria-label={t('dashboard.reviewIncorrect.explanation.show')}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-oxford-blue hover:bg-[#E5E7EB] transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className={`w-4 h-4 ${language === 'ar' ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                {showExplanation ? t('dashboard.reviewIncorrect.explanation.hide') : t('dashboard.reviewIncorrect.explanation.show')}
-              </button>
-            </div>
+                {/* Double chevron pointing towards the content area */}
+                <path d="M13 5L8 12l5 7" />
+                <path d="M19 5L14 12l5 7" />
+              </svg>
+            </button>
+          </div>
+        ) : (
+          <div className={`hidden lg:flex w-[256px] h-full bg-[#F9FAFB] border-l border-[#E5E7EB] overflow-y-auto ${language === 'ar' ? "border-r" : "border-l"}`}>
+            <div className="p-4 md:p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-[18px] md:text-[20px] font-bold text-oxford-blue font-archivo">
+                  {t('dashboard.reviewIncorrect.explanation.title')}
+                </h3>
+                <button
+                  onClick={() => setShowExplanation(!showExplanation)}
+                  className="text-[14px] font-normal text-oxford-blue font-roboto hover:opacity-70"
+                >
+                  {t('dashboard.reviewIncorrect.explanation.hide')}
+                </button>
+              </div>
 
-            {showExplanation && (
               <div className="space-y-6">
                 {/* Correct Answer Explanation */}
                 <div>
@@ -542,9 +571,9 @@ const ReviewIncorrectPage = () => {
                   </p>
                 </div>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Bottom Footer Bar */}

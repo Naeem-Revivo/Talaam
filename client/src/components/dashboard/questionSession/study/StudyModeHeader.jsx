@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { flag, setting, listcheck } from '../icons';
+import { flag, listcheck } from '../icons';
 import { useLanguage } from '../../../../context/LanguageContext';
 import studentQuestionsAPI from '../../../../api/studentQuestions';
 import { showSuccessToast, showErrorToast } from '../../../../utils/toastConfig';
@@ -80,7 +80,7 @@ const StudyModeHeader = ({
             {t('dashboard.questionSession.item').replace('{{current}}', (currentIndex + 1).toString()).replace('{{total}}', totalQuestions.toString())}
           </div>
           <div className="hidden lg:block text-[14px] md:text-[16px] leading-[100%] font-normal font-archivo text-oxford-blue">
-            {t('dashboard.questionSession.questionId')} {currentQuestion.id}
+            {t('dashboard.questionSession.questionId')} {currentQuestion.shortId || currentQuestion.id}
           </div>
           <div className="hidden lg:flex items-center gap-2">
             <button 
@@ -162,18 +162,10 @@ const StudyModeHeader = ({
             <span className="sm:hidden">{t('dashboard.questionSession.formulaSheet')}</span>
           </button> */}
           <div className="hidden lg:flex items-center gap-2">
-          {studentId && (
-              <span className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto">
-                Student ID: <span className="font-semibold text-oxford-blue">{studentId}</span>
-              </span>
-            )}
             <span className="text-[12px] md:text-[14px] leading-[24px] font-normal text-black font-archivo border py-2 px-4 border-[#E5E7EB] rounded-lg flex flex-col">
               <span className="hidden sm:inline text-[10px] leading-[16px] font-roboto font-normal text-[#4B5563]">{t('dashboard.questionSession.timeRunning')} </span>
               <span className="text-[12px] font-bold">{timeRunning}</span>
             </span>
-            <button className="text-oxford-blue hover:opacity-70">
-              <img src={setting} alt="Settings" className="w-4 h-4" />
-            </button>
           </div>
         </div>
       </div>
