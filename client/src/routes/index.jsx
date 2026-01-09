@@ -24,6 +24,7 @@ import AnalyticsPage from '../pages/dashboard/AnalyticsPage';
 import ReviewPage from '../pages/dashboard/ReviewPage';
 import ReviewIncorrectPage from '../pages/dashboard/ReviewIncorrectPage';
 import ReviewAllPage from '../pages/dashboard/ReviewAllPage';
+import ReviewMarkedQuestionPage from '../pages/dashboard/ReviewMarkedQuestionPage';
 import QuestionSessionPage from '../pages/dashboard/QuestionSessionPage';
 import QuestionSessionSummaryPage from '../pages/dashboard/QuestionSessionSummaryPage';
 import AdminLayout from '../pages/admin/AdminLayout';
@@ -169,6 +170,7 @@ export const AppRoutes = () => {
         {/* Review Pages - No sidebar */}
         <Route path="/dashboard/review-incorrect" element={<ReviewIncorrectPage />} />
         <Route path="/dashboard/review-all" element={<ReviewAllPage />} />
+        <Route path="/dashboard/review-marked" element={<ReviewMarkedQuestionPage />} />
         <Route path="/dashboard/session" element={<QuestionSessionPage />} />
         <Route path="/dashboard/session-summary" element={<QuestionSessionSummaryPage />} />
       </Route>

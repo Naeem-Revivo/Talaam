@@ -12,17 +12,40 @@ const createTopic = async (topicData) => {
 
 /**
  * Get all topics with optional filter by parent subject
+ * Includes question counts for each topic
  */
 const getAllTopics = async (filter = {}) => {
+  const { prisma } = require('../../../config/db/prisma');
   const where = {};
   if (filter.parentSubject) {
     where.parentSubject = filter.parentSubject;
   }
-  return await Topic.findMany({
+  const topics = await Topic.findMany({
     where,
     include: { subject: true },
     orderBy: { createdAt: 'desc' }
   });
+
+  // Get question counts for all topics in parallel
+  const topicsWithCounts = await Promise.all(
+    topics.map(async (topic) => {
+      const topicId = topic.id || topic._id;
+      // Count questions that are completed and visible
+      const questionCount = await prisma.question.count({
+        where: {
+          topicId: topicId,
+          status: 'completed',
+          isVisible: true,
+        },
+      });
+      return {
+        ...topic,
+        questionCount,
+      };
+    })
+  );
+
+  return topicsWithCounts;
 };
 
 /**
@@ -34,8 +57,10 @@ const findTopicById = async (topicId) => {
 
 /**
  * Find topics by parent subject ID with optional search
+ * Includes question counts for each topic
  */
 const findTopicsByParentSubject = async (parentSubjectId, search = null) => {
+  const { prisma } = require('../../../config/db/prisma');
   const where = { parentSubject: parentSubjectId };
   
   if (search) {
@@ -45,11 +70,32 @@ const findTopicsByParentSubject = async (parentSubjectId, search = null) => {
     ];
   }
   
-  return await Topic.findMany({
+  const topics = await Topic.findMany({
     where,
     include: { subject: true },
     orderBy: { createdAt: 'desc' }
   });
+
+  // Get question counts for all topics in parallel
+  const topicsWithCounts = await Promise.all(
+    topics.map(async (topic) => {
+      const topicId = topic.id || topic._id;
+      // Count questions that are completed and visible
+      const questionCount = await prisma.question.count({
+        where: {
+          topicId: topicId,
+          status: 'completed',
+          isVisible: true,
+        },
+      });
+      return {
+        ...topic,
+        questionCount,
+      };
+    })
+  );
+
+  return topicsWithCounts;
 };
 
 /**

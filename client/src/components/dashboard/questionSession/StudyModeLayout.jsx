@@ -26,10 +26,12 @@ const StudyModeLayout = ({
   isPauseDisabled = false,
   onToggleExplanation,
   onToggleExplanationPanel,
+  onToggleMark,
 }) => {
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
   const hasSelectedOption = Boolean(currentState?.selectedOption);
+  const isMarked = currentState?.isMarked || false;
 
   const showReview = currentState?.showFeedback;
   const isCorrect = Boolean(currentState?.isCorrect);
@@ -45,6 +47,9 @@ const StudyModeLayout = ({
         sessionStartTime={sessionStartTime}
         onToggleQuestionNav={onToggleQuestionNav}
         onNavigate={onNavigate}
+        onToggleMark={onToggleMark}
+        isMarked={isMarked}
+        onExit={onExit}
       />
 
       <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-170px)] pb-[180px] md:pb-0">
@@ -92,7 +97,6 @@ const StudyModeLayout = ({
         currentIndex={currentIndex}
         totalQuestions={totalQuestions}
         onNavigate={onNavigate}
-        onExit={onExit}
         onPause={onPause}
         isPauseDisabled={isPauseDisabled}
       />
