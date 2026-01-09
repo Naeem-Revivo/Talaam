@@ -92,12 +92,6 @@ const StudyModeFooter = ({ currentIndex, totalQuestions, onNavigate, onExit, onP
         >
           {t('dashboard.questionSession.actions.pauseSession') || 'Pause Session'}
         </button>
-        <button
-          onClick={onExit}
-          className="w-full sm:w-auto px-4 py-2 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity"
-        >
-          {t('dashboard.questionSession.actions.exitSession')}
-        </button>
         </div>
       </div>
     </div>

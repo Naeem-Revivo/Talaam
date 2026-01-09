@@ -60,6 +60,18 @@ router.post('/:questionId/flag', questionController.flagQuestion);
 // Get student's flagged questions
 router.get('/flagged', questionController.getStudentFlaggedQuestions);
 
+// Mark question for review
+router.post('/:questionId/mark', questionController.markQuestion);
+
+// Unmark question (remove from marked list)
+router.delete('/:questionId/mark', questionController.unmarkQuestion);
+
+// Get student's marked questions
+router.get('/marked', questionController.getStudentMarkedQuestions);
+
+// Get marked question for review (includes correct answer)
+router.get('/marked/:questionId', questionController.getMarkedQuestionForReview);
+
 // Get question by ID (must be last to avoid conflicts with specific routes)
 router.get('/:questionId', questionController.getQuestionById);
 

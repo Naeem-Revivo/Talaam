@@ -22,10 +22,12 @@ const TestModeLayout = ({
   onExit,
   onPause,
   isPauseDisabled = false,
+  onToggleMark,
 }) => {
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
   const hasSelectedOption = Boolean(currentState?.selectedOption);
+  const isMarked = currentState?.isMarked || false;
 
   return (
     <div className="min-h-screen bg-white">
@@ -37,6 +39,9 @@ const TestModeLayout = ({
         timeRemaining={timeRemaining}
         onToggleQuestionNav={onToggleQuestionNav}
         onNavigate={onNavigate}
+        onToggleMark={onToggleMark}
+        isMarked={isMarked}
+        onExit={onExit}
       />
 
       <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-180px)] pb-[180px] md:pb-0">
@@ -62,7 +67,6 @@ const TestModeLayout = ({
       </div>
 
       <TestModeFooter
-        onExit={onExit}
         onPause={onPause}
         isPauseDisabled={isPauseDisabled}
       />

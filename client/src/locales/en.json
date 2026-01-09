@@ -791,6 +791,8 @@
       "sessionSize": {
         "title": "Session Size",
         "numberOfQuestions": "Number of Questions",
+        "timeLimit": "Time Limit",
+        "minutes": "minutes",
         "enterRange": "Enter between 1-50.",
         "onlyQuestionsAvailable": "Only 0 questions available with current filters."
       },
@@ -998,7 +1000,35 @@
         "next": "Next",
         "loadMore": "Load More Results"
       },
-      "noSessions": "No sessions found"
+      "noSessions": "No sessions found",
+      "markedQuestions": {
+        "title": "Marked Questions",
+        "loading": "Loading marked questions...",
+        "noQuestions": "No marked questions",
+        "review": "Review",
+        "table": {
+          "questionId": "Question ID",
+          "question": "Question",
+          "exam": "Exam",
+          "subject": "Subject",
+          "topic": "Topic",
+          "markedDate": "Marked Date",
+          "actions": "Actions"
+        }
+      },
+      "reviewMarked": {
+        "title": "Review Marked Question",
+        "questionId": "Question ID:",
+        "back": "Back to Review",
+        "backToReview": "Back to Review",
+        "question": "Question",
+        "options": "Options",
+        "correct": "Correct Answer",
+        "explanation": "Explanation",
+        "exam": "Exam",
+        "subject": "Subject",
+        "topic": "Topic"
+      }
     },
     "reviewIncorrect": {
       "item": "Item {{current}} of {{total}}",
@@ -1111,6 +1141,9 @@
       "flagReason": "Flag Reason",
       "yourReason": "Your reason:",
       "noReasonProvided": "No reason provided",
+      "reportIssue": "Report Issue",
+      "reportIssueLabel": "Please provide a reason for reporting this question:",
+      "reportIssuePlaceholder": "Enter reason for reporting this question...",
       "noReasonAvailable": "No reason available",
       "close": "Close"
     },
