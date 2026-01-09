@@ -800,7 +800,7 @@
         }
       },
       "sessionSize": {
-        "title": "حجم الجلسة",
+        "title": "حجم الجلسة والحد الزمني",
         "numberOfQuestions": "عدد الأسئلة",
         "timeLimit": "الحد الزمني",
         "minutes": "دقائق",
