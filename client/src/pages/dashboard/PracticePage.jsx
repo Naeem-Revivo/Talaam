@@ -865,7 +865,7 @@ const PracticePage = () => {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {/* Number of Questions - For both modes */}
-          <div className="w-full">
+          <div className="w-full max-w-[200px]">
             <label className="block font-archivo font-bold text-[16px] leading-[24px] text-oxford-blue mb-2">
               {t('dashboard.practice.sessionSize.numberOfQuestions')}
             </label>
@@ -880,7 +880,7 @@ const PracticePage = () => {
               }}
               min="1"
               max="50"
-              className="w-full h-[48px] px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-cinnebar-red focus:border-transparent font-roboto font-medium text-[16px] leading-[24px] text-black placeholder:text-[16px] placeholder:text-black max-w-[200px]"
+              className="w-full h-[48px] px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-cinnebar-red focus:border-transparent font-roboto font-medium text-[16px] leading-[24px] text-black placeholder:text-[16px] placeholder:text-black"
             />
           </div>
           {/* Time Limit - Only for test mode, positioned on the right */}
