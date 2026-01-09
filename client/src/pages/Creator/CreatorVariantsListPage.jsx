@@ -4,6 +4,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
 import questionsAPI from "../../api/questions";
 import { showErrorToast } from "../../utils/toastConfig";
+import Loader from "../../components/common/Loader";
 
 const CreatorVariantsListPage = () => {
   const navigate = useNavigate();
@@ -13,89 +14,27 @@ const CreatorVariantsListPage = () => {
   const [error, setError] = useState(null);
   const [expandedQuestions, setExpandedQuestions] = useState(new Set());
 
-  // Fetch questions with their variants
+  // Fetch questions with their variants (optimized single API call)
   useEffect(() => {
     const fetchQuestionsWithVariants = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Fetch all creator questions (including completed and pending_explainer to show variants)
+        // Use the optimized endpoint that fetches questions with variants in a single query
         const statusesToFetch = ['pending_creator', 'pending_processor', 'pending_explainer', 'completed', 'rejected'];
-        const allQuestions = [];
+        const response = await questionsAPI.getCreatorQuestionsWithVariants({ statuses: statusesToFetch });
 
-        for (const status of statusesToFetch) {
-          try {
-            const response = await questionsAPI.getCreatorQuestions({ status });
-            if (response.success && response.data?.questions) {
-              allQuestions.push(...response.data.questions);
-            }
-          } catch (err) {
-            console.warn(`Failed to fetch questions with status ${status}:`, err);
-          }
+        if (response.success && response.data?.questions) {
+          // The endpoint already returns only questions with variants, so we can use them directly
+          setQuestions(response.data.questions);
+        } else {
+          setQuestions([]);
         }
-
-        // Remove duplicates
-        const uniqueQuestions = Array.from(
-          new Map(allQuestions.map(q => [q.id || q._id, q])).values()
-        );
-
-        // Fetch variants for each question
-        const questionsWithVariants = await Promise.all(
-          uniqueQuestions.map(async (question) => {
-            try {
-              // Fetch full question details which includes variants
-              const detailResponse = await questionsAPI.getCreatorQuestionById(question.id || question._id);
-              if (detailResponse.success && detailResponse.data?.question) {
-                const detailedQuestion = detailResponse.data.question;
-                // Get variants - they might be in the question object or we need to fetch them separately
-                const variants = detailedQuestion.variants || [];
-                
-                // Also check if there are variants by fetching all questions and filtering
-                // Variants have isVariant: true and originalQuestionId pointing to this question
-                const allCreatorQuestions = [];
-                for (const status of statusesToFetch) {
-                  try {
-                    const response = await questionsAPI.getCreatorQuestions({ status });
-                    if (response.success && response.data?.questions) {
-                      allCreatorQuestions.push(...response.data.questions);
-                    }
-                  } catch (err) {
-                    // Ignore errors
-                  }
-                }
-
-                const questionIdStr = String(question.id || question._id);
-                const relatedVariants = allCreatorQuestions.filter(
-                  (q) => {
-                    const isVariant = q.isVariant === true || q.isVariant === 'true';
-                    const originalId = q.originalQuestionId || q.originalQuestion;
-                    return isVariant && originalId && String(originalId) === questionIdStr;
-                  }
-                );
-
-                return {
-                  ...detailedQuestion,
-                  variants: relatedVariants.length > 0 ? relatedVariants : variants,
-                };
-              }
-              return question;
-            } catch (err) {
-              console.error(`Error fetching details for question ${question.id}:`, err);
-              return question;
-            }
-          })
-        );
-
-        // Filter to only show questions that have variants
-        const questionsWithVariantsOnly = questionsWithVariants.filter(
-          (q) => q.variants && q.variants.length > 0
-        );
-
-        setQuestions(questionsWithVariantsOnly);
       } catch (err) {
         console.error("Error fetching questions with variants:", err);
         setError(err.message || "Failed to fetch questions");
+        showErrorToast(err.message || "Failed to fetch questions with variants");
       } finally {
         setLoading(false);
       }
@@ -168,9 +107,7 @@ const CreatorVariantsListPage = () => {
 
         {/* Loading State */}
         {loading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-oxford-blue text-lg font-roboto">Loading questions...</div>
-          </div>
+          <Loader fullScreen={false} size="lg" text={"Loading questions..."} className="py-10" />
         )}
 
         {/* Error State */}

@@ -16,6 +16,8 @@ import { showLogoutToast } from "../utils/toastConfig";
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+  const [mobileProductsDropdownOpen, setMobileProductsDropdownOpen] = useState(false);
   const { language, toggleLanguage, t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
@@ -79,6 +81,24 @@ const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // Handle Tahseely click - redirects to products page
+  const handleTahseelyClick = (e) => {
+    e.preventDefault();
+    navigate('/products');
+    setProductsDropdownOpen(false);
+    setMobileProductsDropdownOpen(false);
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+    }
+  };
+
+  // Handle Qudraat click - disabled
+  const handleQudraatClick = (e) => {
+    e.preventDefault();
+    // Optionally, you can show a toast message here
+    console.log("Qudraat is coming soon");
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md w-full">
       {/* Top Bar with Social Icons */}
@@ -110,15 +130,24 @@ const Navbar = () => {
 
             {/* Desktop Navigation Links */}
             <div className={`hidden font-archivo lg:flex items-center ${language === 'ar' ? 'gap-8' : 'space-x-8'}`}>
+            <Link
+                to="/"
+                className={getLinkClasses("/")}
+              >
+                {t('navbar.goToApp')}
+              </Link>
               <Link
                 to="/how-it-works"
                 className={getLinkClasses("/how-it-works")}
               >
                 {t('navbar.howItWorks')}
               </Link>
-              <div className="relative products-nav-item">
-                <Link
-                  to="/products"
+              <div 
+                className="relative products-nav-item group"
+                onMouseEnter={() => setProductsDropdownOpen(true)}
+                onMouseLeave={() => setProductsDropdownOpen(false)}
+              >
+                <button
                   className={`${getLinkClasses("/products")} flex items-center ${language === 'ar' ? 'flex-row-reverse gap-1' : 'gap-0'}`}
                 >
                   {t('navbar.products')}
@@ -132,11 +161,31 @@ const Navbar = () => {
                   >
                     <path 
                       d="M7 3L12 8L17 3H7Z" 
-                      fill={isActive("/products") ? "#ED4122" : "#032746"}
+                      fill={productsDropdownOpen || isActive("/products") ? "#ED4122" : "#032746"}
                       className="transition-colors"
                     />
                   </svg>
-                </Link>
+                </button>
+                
+                {/* Dropdown Menu */}
+                {productsDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-0 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-2 z-50">
+                    <button
+                      onClick={handleTahseelyClick}
+                      className="flex justify-between items-center w-full px-4 py-2 text-left text-oxford-blue hover:bg-gray-50 hover:text-[#ED4122] transition-colors"
+                    >
+                      <span className="font-medium">Tahseely</span>
+                    </button>
+                    <button
+                      onClick={handleQudraatClick}
+                      className="flex justify-between items-center w-full px-4 py-2 text-left text-gray-400 cursor-not-allowed"
+                      disabled
+                    >
+                      <span className="font-medium">Qudurat</span>
+                      <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">Coming Soon</span>
+                    </button>
+                  </div>
+                )}
               </div>
               <style>{`
                 .products-nav-item:hover .products-arrow path {
@@ -223,13 +272,36 @@ const Navbar = () => {
             >
               {t('navbar.howItWorks')}
             </Link>
-            <Link
-              to="/products"
-              className={getMobileLinkClasses("/products")}
-              onClick={toggleMenu}
-            >
-              {t('navbar.products')}
-            </Link>
+            
+            {/* Mobile Products Dropdown */}
+            <div>
+              <button
+                onClick={() => setMobileProductsDropdownOpen(!mobileProductsDropdownOpen)}
+                className="block w-full text-left px-3 py-2 text-lg font-archivo font-medium rounded-md transition-colors text-oxford-blue hover:bg-gray-50 hover:text-[#ED4122]"
+              >
+                {t('navbar.products')}
+              </button>
+              
+              {mobileProductsDropdownOpen && (
+                <div className="pl-4 mt-1 space-y-2">
+                  <button
+                    onClick={handleTahseelyClick}
+                    className="block w-full text-left px-3 py-2 text-base font-archivo font-medium rounded-md transition-colors text-oxford-blue hover:bg-gray-50 hover:text-[#ED4122]"
+                  >
+                    Tahseely
+                  </button>
+                  <button
+                    onClick={handleQudraatClick}
+                    className="flex justify-between items-center w-full px-3 py-2 text-base font-archivo font-medium rounded-md transition-colors text-gray-400 cursor-not-allowed"
+                    disabled
+                  >
+                    <span>Qudurat</span>
+                    <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">Coming Soon</span>
+                  </button>
+                </div>
+              )}
+            </div>
+            
             <Link
               to="/about"
               className={getMobileLinkClasses("/about")}

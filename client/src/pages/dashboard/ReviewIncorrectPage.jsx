@@ -4,9 +4,10 @@ import { tick, cross, analytics, watch, setting, flag } from '../../assets/svg/d
 import { useLanguage } from '../../context/LanguageContext';
 import studentQuestionsAPI from '../../api/studentQuestions';
 import { showErrorToast } from '../../utils/toastConfig';
+import ReportIssueModal, { FlagReasonModal } from '../../components/common/ReportIssueModal';
 
 const ReviewIncorrectPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -24,6 +25,8 @@ const ReviewIncorrectPage = () => {
   const [visitedQuestions, setVisitedQuestions] = useState(new Set([0]));
   const [showQuestionNav, setShowQuestionNav] = useState(false);
   const [showExplanationPanel, setShowExplanationPanel] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showReasonModal, setShowReasonModal] = useState(false);
 
   // Fetch incorrect questions
   useEffect(() => {
@@ -43,6 +46,7 @@ const ReviewIncorrectPage = () => {
 
             return {
               id: item.questionId || index + 1,
+              shortId: item.shortId || null,
               question: item.questionText || '',
               options,
               correctAnswer: item.correctAnswer,
@@ -96,6 +100,7 @@ const ReviewIncorrectPage = () => {
 
               return {
                 id: item.questionId || index + 1,
+                shortId: item.shortId || null,
                 question: item.questionText || '',
                 options,
                 correctAnswer: item.correctAnswer,
@@ -184,11 +189,24 @@ const ReviewIncorrectPage = () => {
               {t('dashboard.reviewIncorrect.item').replace('{{current}}', (currentQuestionIndex + 1).toString()).replace('{{total}}', totalQuestions.toString())}
             </div>
             <div className="hidden lg:block text-[14px] md:text-[16px] font-normal text-dark-gray font-roboto">
-              {t('dashboard.reviewIncorrect.questionId')} {currentQuestion.id || currentQuestionIndex + 1}
+              {t('dashboard.reviewIncorrect.questionId')} {currentQuestion.shortId || currentQuestion.id || currentQuestionIndex + 1}
             </div>
-            <button className="hidden lg:block text-oxford-blue hover:opacity-70">
-              <img src={flag} alt="Flag" className="" />
-            </button>
+            <div className="hidden lg:flex items-center gap-2">
+              <button 
+                onClick={() => setShowReportModal(true)}
+                className="flex items-center justify-center gap-1 border-[0.5px] border-[#032746] rounded-[4px] px-3 h-[35px] hover:bg-[#F3F4F6] transition"
+              >
+                <p className='text-[10px] leading-[100%] font-normal font-archivo'>Report Issue</p>
+              </button>
+              {(currentQuestion?.isFlagged || currentQuestion?.flagStatus) && (
+                <button 
+                  onClick={() => setShowReasonModal(true)}
+                  className="flex items-center justify-center gap-1 border-[0.5px] border-[#ED4122] rounded-[4px] px-2 h-[35px] hover:bg-[#FEF2F2] transition"
+                >
+                  <p className='text-[10px] leading-[100%] font-normal font-archivo text-[#ED4122]'>{t('dashboard.questionSession.reason') || 'Reason'}</p>
+                </button>
+              )}
+            </div>
             {/* Mobile Menu Button */}
             <button
               onClick={() => setShowQuestionNav(!showQuestionNav)}
@@ -200,11 +218,24 @@ const ReviewIncorrectPage = () => {
             </button>
           </div>
 
-          {/* Mobile: Mark, Formula Sheet, and Time Remaining */}
+          {/* Mobile: Report Issue, Formula Sheet, and Time Remaining */}
           <div className="lg:hidden flex items-center gap-2 w-full justify-between">
-            <button className="px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:opacity-70 flex items-center gap-2">
-              <img src={flag} alt="Mark" className="" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setShowReportModal(true)}
+                className="px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:opacity-70 flex items-center gap-2"
+              >
+                <span>Report Issue</span>
+              </button>
+              {(currentQuestion?.isFlagged || currentQuestion?.flagStatus) && (
+                <button 
+                  onClick={() => setShowReasonModal(true)}
+                  className="px-3 py-1.5 bg-[#FEF2F2] text-[#ED4122] border border-[#ED4122] rounded text-[14px] font-normal font-roboto hover:opacity-70"
+                >
+                  {t('dashboard.questionSession.reason') || 'Reason'}
+                </button>
+              )}
+            </div>
             {/* <button className="px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:opacity-70 flex items-center gap-2">
               {t('dashboard.reviewIncorrect.formulaSheet')}
             </button> */}
@@ -212,6 +243,12 @@ const ReviewIncorrectPage = () => {
               <span className="text-[14px] font-normal text-oxford-blue font-roboto">
                 {t('dashboard.reviewIncorrect.timeRemaining')} <span className="font-bold">12:45</span>
               </span>
+              <button
+                onClick={() => navigate('/dashboard/review')}
+                className="px-3 py-1.5 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] font-normal font-roboto hover:opacity-90 transition-opacity"
+              >
+                {t('dashboard.reviewIncorrect.actions.exitSession') || t('dashboard.reviewAll.actions.exitSession')}
+              </button>
             </div>
           </div>
 
@@ -256,8 +293,11 @@ const ReviewIncorrectPage = () => {
               <span className="text-[12px] md:text-[14px] font-normal text-oxford-blue font-roboto">
                 <span className="hidden sm:inline">{t('dashboard.reviewIncorrect.timeRemaining')} </span>12:45
               </span>
-              <button className="text-oxford-blue hover:opacity-70">
-                <img src={setting} alt="Settings" className="w-4 h-4 md:w-5 md:h-5" />
+              <button
+                onClick={() => navigate('/dashboard/review')}
+                className="px-4 py-2 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity"
+              >
+                {t('dashboard.reviewIncorrect.actions.exitSession') || t('dashboard.reviewAll.actions.exitSession')}
               </button>
             </div>
           </div>
@@ -510,21 +550,48 @@ const ReviewIncorrectPage = () => {
         </div>
 
         {/* Right Explanation Panel - Desktop */}
-        <div className="hidden lg:flex w-[256px] h-full bg-[#F9FAFB] border-l border-[#E5E7EB] overflow-y-auto">
-          <div className="p-4 md:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[18px] md:text-[20px] font-bold text-oxford-blue font-archivo">
-                {t('dashboard.reviewIncorrect.explanation.title')}
-              </h3>
-              <button
-                onClick={() => setShowExplanation(!showExplanation)}
-                className="text-[14px] font-normal text-oxford-blue font-roboto hover:opacity-70"
+        {!showExplanation ? (
+          <div
+            className={`hidden lg:flex w-[48px] h-full bg-[#F9FAFB] border-[#E5E7EB] ${
+              language === 'ar' ? 'border-r' : 'border-l'
+            } items-center justify-center`}
+          >
+            <button
+              onClick={() => setShowExplanation(!showExplanation)}
+              aria-label={t('dashboard.reviewIncorrect.explanation.show')}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-oxford-blue hover:bg-[#E5E7EB] transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className={`w-4 h-4 ${language === 'ar' ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                {showExplanation ? t('dashboard.reviewIncorrect.explanation.hide') : t('dashboard.reviewIncorrect.explanation.show')}
-              </button>
-            </div>
+                {/* Double chevron pointing towards the content area */}
+                <path d="M13 5L8 12l5 7" />
+                <path d="M19 5L14 12l5 7" />
+              </svg>
+            </button>
+          </div>
+        ) : (
+          <div className={`hidden lg:flex w-[256px] h-full bg-[#F9FAFB] border-l border-[#E5E7EB] overflow-y-auto ${language === 'ar' ? "border-r" : "border-l"}`}>
+            <div className="p-4 md:p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-[18px] md:text-[20px] font-bold text-oxford-blue font-archivo">
+                  {t('dashboard.reviewIncorrect.explanation.title')}
+                </h3>
+                <button
+                  onClick={() => setShowExplanation(!showExplanation)}
+                  className="text-[14px] font-normal text-oxford-blue font-roboto hover:opacity-70"
+                >
+                  {t('dashboard.reviewIncorrect.explanation.hide')}
+                </button>
+              </div>
 
-            {showExplanation && (
               <div className="space-y-6">
                 {/* Correct Answer Explanation */}
                 <div>
@@ -542,9 +609,9 @@ const ReviewIncorrectPage = () => {
                   </p>
                 </div>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Bottom Footer Bar */}
@@ -588,14 +655,23 @@ const ReviewIncorrectPage = () => {
               {t('dashboard.reviewIncorrect.actions.reviewAll')}
             </button>
           )}
-          <button
-            onClick={() => navigate('/dashboard/review')}
-            className="w-full sm:w-auto px-4 py-2 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity"
-          >
-            {t('dashboard.reviewIncorrect.actions.exitSession')}
-          </button>
         </div>
       </div>
+
+      {/* Report Issue Modal */}
+      <ReportIssueModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        questionId={currentQuestion?.id}
+        question={currentQuestion}
+      />
+
+      {/* Flag Reason Modal */}
+      <FlagReasonModal
+        isOpen={showReasonModal}
+        onClose={() => setShowReasonModal(false)}
+        question={currentQuestion}
+      />
     </div>
   );
 };

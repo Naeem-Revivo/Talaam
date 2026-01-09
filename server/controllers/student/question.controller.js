@@ -6,7 +6,7 @@ const questionService = require('../../services/student').questionService;
  */
 const getAvailableQuestions = async (req, res, next) => {
   try {
-    const { exam, subject, topic, topics } = req.query;
+    const { exam, subject, topic, topics, size } = req.query;
 
     const filters = {};
     if (exam) filters.exam = exam;
@@ -15,6 +15,10 @@ const getAvailableQuestions = async (req, res, next) => {
     // Support multiple topics (comma-separated string or array)
     if (topics) {
       filters.topics = topics;
+    }
+    // Session size (number of questions)
+    if (size) {
+      filters.size = parseInt(size, 10);
     }
 
     const questions = await questionService.getAvailableQuestions(filters);
@@ -97,7 +101,7 @@ const submitStudyAnswer = async (req, res, next) => {
  */
 const startTest = async (req, res, next) => {
   try {
-    const { exam, subject, topic, topics } = req.query;
+    const { exam, subject, topic, topics, size, timeLimit } = req.query;
 
     const filters = {};
     // Exam is optional - can be derived from questions if not provided
@@ -108,6 +112,14 @@ const startTest = async (req, res, next) => {
     if (topics) {
       filters.topics = topics;
     }
+    // Session size (number of questions)
+    if (size) {
+      filters.size = parseInt(size, 10);
+    }
+    // Time limit in minutes
+    if (timeLimit) {
+      filters.timeLimit = parseInt(timeLimit, 10);
+    }
 
     const questions = await questionService.startTest(filters);
 
@@ -116,6 +128,7 @@ const startTest = async (req, res, next) => {
       data: {
         questions,
         count: questions.length,
+        timeLimit: filters.timeLimit || null,
       },
       message: 'Test started. Answer all questions and submit when done.',
     });
@@ -566,6 +579,184 @@ const getStudentFlaggedQuestions = async (req, res, next) => {
   }
 };
 
+/**
+ * Mark question for review by student
+ * POST /api/student/questions/:questionId/mark
+ */
+const markQuestion = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const studentId = req.user.id;
+
+    const result = await questionService.markQuestion(questionId, studentId);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+      message: result.message || 'Question marked successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Unmark question (remove from marked list)
+ * DELETE /api/student/questions/:questionId/mark
+ */
+const unmarkQuestion = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const studentId = req.user.id;
+
+    const result = await questionService.unmarkQuestion(questionId, studentId);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+      message: result.message || 'Question unmarked successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get student's marked questions with pagination
+ * GET /api/student/questions/marked?page=1&limit=10
+ */
+const getStudentMarkedQuestions = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const studentId = req.user.id;
+
+    const result = await questionService.getStudentMarkedQuestions(studentId, {
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+    });
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get marked question for review (includes correct answer and explanation)
+ * GET /api/student/questions/marked/:questionId
+ */
+const getMarkedQuestionForReview = async (req, res, next) => {
+  try {
+    const { questionId } = req.params;
+    const studentId = req.user.id;
+
+    const question = await questionService.getMarkedQuestionForReview(questionId, studentId);
+
+    res.status(200).json({
+      success: true,
+      data: question,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Pause a session (study or test mode)
+ * POST /api/student/questions/sessions/pause
+ * Body: { mode, examId, subjectId?, topicId?, questions: [{ questionId, selectedAnswer, isCorrect? }], currentIndex, timeTaken, timerEndTime? }
+ */
+const pauseSession = async (req, res, next) => {
+  try {
+    const { mode, examId, subjectId, topicId, questions, currentIndex, timeTaken, timerEndTime } = req.body;
+    const studentId = req.user.id;
+
+    if (!mode || !['study', 'test'].includes(mode)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mode is required and must be "study" or "test"',
+      });
+    }
+
+    if (!examId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Exam ID is required',
+      });
+    }
+
+    if (!questions || !Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Questions array is required and must not be empty',
+      });
+    }
+
+    const result = await questionService.pauseSession(studentId, {
+      mode,
+      examId,
+      subjectId,
+      topicId,
+      questions,
+      currentIndex: currentIndex || 0,
+      timeTaken: timeTaken || null,
+      timerEndTime: timerEndTime || null,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: result,
+      message: 'Session paused successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get paused session for resuming
+ * GET /api/student/questions/sessions/:sessionId/resume
+ */
+const getPausedSession = async (req, res, next) => {
+  try {
+    const { sessionId } = req.params;
+    const studentId = req.user.id;
+
+    const result = await questionService.getPausedSession(studentId, sessionId);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Complete a paused session (update status from paused to completed)
+ * PUT /api/student/questions/sessions/:sessionId/complete
+ */
+const completePausedSession = async (req, res, next) => {
+  try {
+    const { sessionId } = req.params;
+    const studentId = req.user.id;
+    const sessionData = req.body;
+
+    const result = await questionService.completePausedSession(studentId, sessionId, sessionData);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAvailableQuestions,
   getQuestionById,
@@ -584,8 +775,15 @@ module.exports = {
   getSessionIncorrect,
   getPlanStructure,
   getStudyHistory,
+  pauseSession,
+  getPausedSession,
+  completePausedSession,
   flagQuestion,
   getStudentFlaggedQuestions,
+  markQuestion,
+  unmarkQuestion,
+  getStudentMarkedQuestions,
+  getMarkedQuestionForReview,
 };
 
 

@@ -22,13 +22,13 @@ const AboutPage = () => {
         subtitle={t('about.hero.subtitle')}
         imageSrc={aboutherologo}
         imageAlt="About us"
-        buttons={[
-          { text: t('about.hero.getStarted'), variant: 'primary' },
-          { text: t('about.hero.exploreMore'), variant: 'secondary', icon: buttonvedio }
-        ]}
+        // buttons={[
+        //   { text: t('about.hero.getStarted'), variant: 'primary' },
+        //   { text: t('about.hero.exploreMore'), variant: 'secondary', icon: buttonvedio }
+        // ]}
         textWidth="lg:w-[656px]"
-        paddingTop="lg:pt-28"
-        titleLayout="flex"
+        paddingTop="lg:pt-40"
+        titleLayout="flex "
         imageClassName="w-[352px] h-[231px] md:w-auto md:px-7 laptop:px-0 md:h-auto lg:w-[670px] lg:h-[403px] rounded-[12px]"
       />
       <WhoWeAre />

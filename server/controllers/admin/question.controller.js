@@ -525,8 +525,8 @@ const createQuestion = async (req, res, next) => {
     }
 
     // Get user role - use 'admin' for both admin and superadmin when creating questions
-    const userRole = (req.user.adminRole === 'admin' || req.user.adminRole === 'superadmin') 
-      ? 'admin' 
+    const userRole = ( req.user.role === 'superadmin') 
+      ? 'superadmin' 
       : req.user.adminRole || 'gatherer';
     
     const question = await questionService.createQuestion(questionData, req.user.id, userRole);
@@ -578,25 +578,49 @@ const createQuestion = async (req, res, next) => {
 
 /**
  * Get questions by status
- * GET /admin/questions?status=pending_processor&submittedBy=creator
+ * GET /admin/questions?status=pending_processor&submittedBy=creator&page=1&limit=10&search=term&subject=subjectName
  * For processor: can filter by submittedBy role (creator, explainer, gatherer)
  */
 const getQuestions = async (req, res, next) => {
   try {
-    const { status, submittedBy, flagType } = req.query;
+    const { status, submittedBy, flagType, page, limit, search, subject } = req.query;
 
     console.log('[QUESTION] GET /admin/questions → requested', {
       status,
       submittedBy,
       flagType,
+      page,
+      limit,
+      search,
+      subject,
       requestedBy: req.user.id,
       requesterRole: req.user.adminRole,
     });
 
     // Determine status based on role
+    // For processor: if no status is provided, show all questions (don't default to pending_processor)
+    // For other roles: keep default behavior
+    // Handle "flagged" status specially - it filters by isFlagged, not status
+    // Handle "all" status to return all questions without status filter
     let queryStatus = status;
-    if (!queryStatus) {
-      // Default status based on role
+    let queryFlagType = flagType;
+    let explicitlyRequestedAll = false;
+    
+    // If status is "flagged", set flagType and clear status
+    if (queryStatus === 'flagged') {
+      queryFlagType = 'flagged';
+      queryStatus = null; // Don't filter by status when showing flagged questions
+    }
+    
+    // If status is "all", explicitly set to null to fetch all statuses
+    if (queryStatus === 'all') {
+      queryStatus = null;
+      explicitlyRequestedAll = true; // Mark that user explicitly requested all statuses
+    }
+    
+    if (!queryStatus && !explicitlyRequestedAll) {
+      // Default status based on role (only for non-processor roles)
+      // Only apply default if status wasn't explicitly set to 'all'
       switch (req.user.adminRole) {
         case 'gatherer':
           queryStatus = 'pending_processor'; // Gatherer sees their submitted questions
@@ -608,35 +632,46 @@ const getQuestions = async (req, res, next) => {
           queryStatus = 'pending_explainer';
           break;
         case 'processor':
-          queryStatus = 'pending_processor';
+          // Processor: don't set default status - show all questions
+          queryStatus = null;
           break;
         default:
           queryStatus = 'pending_processor';
       }
     }
 
+    // Prepare pagination and filter options
+    const paginationOptions = {
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 20,
+      search: search || null,
+      subject: subject || null,
+    };
+
     // If processor is requesting and submittedBy is specified, use role-based filtering
-    let questions;
+    let result;
     if (req.user.adminRole === 'processor' && submittedBy) {
-      questions = await questionService.getQuestionsByStatusAndRole(
+      result = await questionService.getQuestionsByStatusAndRole(
         queryStatus,
         submittedBy,
         req.user.id, // Pass processor ID to filter by assignedProcessorId
-        flagType // Pass flagType to allow fetching student-flagged questions
+        queryFlagType, // Pass flagType (may be 'flagged' for flagged status filter)
+        paginationOptions
       );
     } else {
-      questions = await questionService.getQuestionsByStatus(
+      result = await questionService.getQuestionsByStatus(
         queryStatus,
         req.user.id,
         req.user.adminRole,
-        flagType // Pass flagType to allow fetching student-flagged questions
+        queryFlagType, // Pass flagType (may be 'flagged' for flagged status filter)
+        paginationOptions
       );
     }
 
     const response = {
       success: true,
       data: {
-        questions: questions.map((q) => ({
+        questions: result.questions.map((q) => ({
           id: q._id || q.id,
           exam: q.exam,
           subject: q.subject,
@@ -668,10 +703,14 @@ const getQuestions = async (req, res, next) => {
           createdAt: q.createdAt,
           updatedAt: q.updatedAt,
         })),
+        pagination: result.pagination || null,
       },
     };
 
-    console.log('[QUESTION] GET /admin/questions → 200 (ok)', { count: questions.length });
+    console.log('[QUESTION] GET /admin/questions → 200 (ok)', { 
+      count: result.questions.length,
+      totalItems: result.pagination?.totalItems || result.questions.length
+    });
     res.status(200).json(response);
   } catch (error) {
     console.error('[QUESTION] GET /admin/questions → error', error);
@@ -2903,6 +2942,118 @@ const rejectStudentFlag = async (req, res, next) => {
   }
 };
 
+/**
+ * Get creator questions with variants (optimized endpoint)
+ * GET /admin/questions/creator/variants
+ * Query params: statuses (comma-separated list of statuses, optional)
+ */
+const getCreatorQuestionsWithVariants = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { statuses } = req.query;
+
+    console.log('[CREATOR] GET /admin/questions/creator/variants → requested', {
+      userId,
+      statuses,
+    });
+
+    // Parse statuses if provided
+    let statusesArray = null;
+    if (statuses) {
+      statusesArray = statuses.split(',').map(s => s.trim()).filter(s => s);
+    }
+
+    // Fetch questions with variants using optimized service
+    const questions = await questionService.getCreatorQuestionsWithVariants(userId, statusesArray);
+
+    // Transform the data to match frontend expectations
+    const transformedQuestions = questions.map(question => ({
+      id: question.id,
+      _id: question.id, // For compatibility
+      exam: question.exam,
+      subject: question.subject,
+      topic: question.topic,
+      questionText: question.questionText,
+      questionType: question.questionType,
+      options: question.options,
+      correctAnswer: question.correctAnswer,
+      explanation: question.explanation,
+      status: question.status,
+      createdBy: question.createdBy,
+      lastModifiedBy: question.lastModifiedBy,
+      assignedProcessor: question.assignedProcessor,
+      assignedCreator: question.assignedCreator,
+      assignedExplainer: question.assignedExplainer,
+      approvedBy: question.approvedBy,
+      rejectedBy: question.rejectedBy,
+      rejectionReason: question.rejectionReason,
+      isVariant: question.isVariant,
+      originalQuestionId: question.originalQuestionId,
+      isFlagged: question.isFlagged || false,
+      flagReason: question.flagReason || null,
+      flagType: question.flagType || null,
+      flagStatus: question.flagStatus || null,
+      flaggedBy: question.flaggedBy || null,
+      flagRejectionReason: question.flagRejectionReason || null,
+      createdAt: question.createdAt,
+      updatedAt: question.updatedAt,
+      // Include variants with transformed data
+      variants: (question.variants || []).map(variant => ({
+        id: variant.id,
+        _id: variant.id,
+        exam: variant.exam,
+        subject: variant.subject,
+        topic: variant.topic,
+        questionText: variant.questionText,
+        questionType: variant.questionType,
+        options: variant.options,
+        correctAnswer: variant.correctAnswer,
+        explanation: variant.explanation,
+        status: variant.status,
+        createdBy: variant.createdBy,
+        assignedProcessor: variant.assignedProcessor,
+        assignedCreator: variant.assignedCreator,
+        assignedExplainer: variant.assignedExplainer,
+        rejectedBy: variant.rejectedBy,
+        rejectionReason: variant.rejectionReason,
+        isVariant: variant.isVariant,
+        originalQuestionId: variant.originalQuestionId,
+        originalQuestion: variant.originalQuestionId, // For compatibility
+        isFlagged: variant.isFlagged || false,
+        flagReason: variant.flagReason || null,
+        flagType: variant.flagType || null,
+        flagStatus: variant.flagStatus || null,
+        flaggedBy: variant.flaggedBy || null,
+        flagRejectionReason: variant.flagRejectionReason || null,
+        createdAt: variant.createdAt,
+        updatedAt: variant.updatedAt,
+      })),
+    }));
+
+    const response = {
+      success: true,
+      data: {
+        questions: transformedQuestions,
+      },
+    };
+
+    console.log('[CREATOR] GET /admin/questions/creator/variants → 200 (ok)', {
+      userId,
+      questionCount: transformedQuestions.length,
+    });
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('[CREATOR] GET /admin/questions/creator/variants → error', error);
+    if (error.message === 'User not found' || error.message === 'User is not a creator') {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
 module.exports = {
   getAllQuestionsForSuperadmin,
   getQuestionDetailForSuperadmin,
@@ -2936,4 +3087,5 @@ module.exports = {
   getFlaggedQuestionsForModeration,
   approveStudentFlag,
   rejectStudentFlag,
+  getCreatorQuestionsWithVariants,
 };

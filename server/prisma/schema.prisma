@@ -11,6 +11,7 @@ datasource db {
 
 model User {
   id                    String    @id @default(uuid())
+  shortId               String?   @unique @map("short_id")
   name                  String?
   authProvider          String    @default("local") // local, google, linkedin
   googleId              String?   @unique @map("google_id")
@@ -50,10 +51,12 @@ model User {
   questionHistory       QuestionHistory[]
   questionComments      QuestionComment[]
   announcementReads     AnnouncementRead[]
+  markedQuestions       StudentMarkedQuestion[] @relation("StudentMarkedQuestions")
 
   @@index([googleId])
   @@index([linkedinId])
   @@index([email])
+  @@index([shortId])
   @@map("users")
 }
 
@@ -174,6 +177,7 @@ model Classification {
 
 model Question {
   id                String   @id @default(uuid())
+  shortId           String?  @unique @map("short_id")
   status            String   @default("pending_processor") // pending_gatherer, pending_processor, pending_creator, pending_explainer, completed, rejected
   examId            String   @map("exam_id")
   subjectId         String   @map("subject_id")
@@ -224,12 +228,14 @@ model Question {
   comments          QuestionComment[]
   studentAnswers    StudentAnswerQuestion[]
   studyModeAnswers  StudentAnswer[] @relation("QuestionStudyMode")
+  markedByStudents  StudentMarkedQuestion[] @relation("MarkedQuestions")
 
   @@index([examId, subjectId, topicId])
   @@index([status])
   @@index([createdById])
   @@index([originalQuestionId])
   @@index([isFlagged, flagStatus])
+  @@index([shortId])
   @@map("questions")
 }
 
@@ -368,4 +374,21 @@ model AnnouncementRead {
   @@index([announcementId])
   @@index([isDeleted])
   @@map("announcement_reads")
+}
+
+model StudentMarkedQuestion {
+  id          String   @id @default(uuid())
+  studentId   String   @map("student_id")
+  questionId  String   @map("question_id")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  student     User     @relation("StudentMarkedQuestions", fields: [studentId], references: [id], onDelete: Cascade)
+  question    Question @relation("MarkedQuestions", fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, questionId])
+  @@index([studentId])
+  @@index([questionId])
+  @@map("student_marked_questions")
 }

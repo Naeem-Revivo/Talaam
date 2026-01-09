@@ -124,11 +124,6 @@ const Header = ({ onToggleSidebar, showSidebarToggle = true }) => {
 
     // Initial fetch
     fetchAnnouncements();
-    
-    // Poll for updates every 30 seconds
-    const interval = setInterval(fetchAnnouncements, 30000);
-    
-    return () => clearInterval(interval);
   }, [authUser]);
 
   const handleNotificationClick = async () => {
@@ -409,6 +404,29 @@ const Header = ({ onToggleSidebar, showSidebarToggle = true }) => {
     return 'User';
   };
 
+  // Get role display text using translations
+  const getRoleDisplay = () => {
+    let roleKey = '';
+    
+    if (authUser?.role === 'admin' && authUser?.adminRole) {
+      roleKey = authUser.adminRole; // gatherer, creator, processor, explainer
+    } else if (authUser?.role) {
+      roleKey = authUser.role; // superadmin, user, student
+    } else {
+      roleKey = 'user';
+    }
+
+    // Get translated role based on current language
+    const translatedRole = t(`header.roles.${roleKey}`);
+    
+    // Fallback to capitalized role name if translation not found
+    if (translatedRole === `header.roles.${roleKey}`) {
+      return roleKey.charAt(0).toUpperCase() + roleKey.slice(1);
+    }
+    
+    return translatedRole;
+  };
+
   return (
     <>
       {/* Alert Cards for New Announcements */}
@@ -433,6 +451,17 @@ const Header = ({ onToggleSidebar, showSidebarToggle = true }) => {
               aria-label="Toggle sidebar"
             >
               <img src={hamburger} alt="Menu" className="w-6 h-6" />
+            </button>
+          )}
+          
+          {/* Back Button - Only for /question-banks route */}
+          {location.pathname === '/question-banks' && (
+            <button
+              onClick={() => navigate('/')}
+              className="font-archivo font-medium text-[18px] leading-[100%] tracking-[0] transition-colors text-oxford-blue hover:text-[#ED4122]"
+              aria-label="Go to home"
+            >
+              Home
             </button>
           )}
           
@@ -482,11 +511,7 @@ const Header = ({ onToggleSidebar, showSidebarToggle = true }) => {
                 {getDisplayName() || (isFetchingUser ? '...' : 'User')}
               </p>
               <p className="text-[12px] leading-[100%] tracking-[0px] text-left pt-1 pl-1 font-roboto font-[400] text-dark-gray">
-                {authUser?.role === 'admin' && authUser?.adminRole
-                  ? authUser.adminRole.charAt(0).toUpperCase() + authUser.adminRole.slice(1)
-                  : authUser?.role
-                  ? authUser.role.charAt(0).toUpperCase() + authUser.role.slice(1)
-                  : 'User'}
+                {getRoleDisplay()}
               </p>
             </div>
 

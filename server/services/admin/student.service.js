@@ -13,9 +13,12 @@ const getAllStudents = async (filters = {}, pagination = {}) => {
   // Build where clause
   const where = { role: 'student' };
 
-  // Filter by student ID (exact match)
+  // Filter by student shortId (exact match) or id (fallback)
   if (studentId && studentId.trim()) {
-    where.id = studentId.trim();
+    where.OR = [
+      { shortId: { equals: studentId.trim() } },
+      { id: { equals: studentId.trim() } },
+    ];
   }
 
   // Filter by status
@@ -85,15 +88,28 @@ const getAllStudents = async (filters = {}, pagination = {}) => {
     }
   }
 
-  // Search by name or email or ID (when no explicit studentId filter)
-  if (!where.id && search && search.trim()) {
+  // Search by name or email or shortId (instead of id)
+  if (search && search.trim()) {
     const searchTerm = search.trim();
-    where.OR = [
-      { name: { contains: searchTerm, mode: 'insensitive' } },
-      { fullName: { contains: searchTerm, mode: 'insensitive' } },
-      { email: { contains: searchTerm, mode: 'insensitive' } },
-      { id: { equals: searchTerm } },
-    ];
+    const searchConditions = {
+      OR: [
+        { name: { contains: searchTerm, mode: 'insensitive' } },
+        { fullName: { contains: searchTerm, mode: 'insensitive' } },
+        { email: { contains: searchTerm, mode: 'insensitive' } },
+        { shortId: { equals: searchTerm } },
+      ],
+    };
+    
+    // If studentId filter already exists, combine with AND
+    if (where.OR && where.OR.length > 0) {
+      where.AND = [
+        { OR: where.OR },
+        searchConditions,
+      ];
+      delete where.OR;
+    } else {
+      where.OR = searchConditions.OR;
+    }
   }
 
   // Calculate skip

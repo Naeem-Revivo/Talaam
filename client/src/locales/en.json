@@ -1,5 +1,15 @@
 {
   "header": {
+    "roles": {
+      "superadmin": "Admin",
+      "admin": "Admin",
+      "user": "Student",
+      "student": "Student",
+      "gatherer": "Gatherer",
+      "creator": "Creator",
+      "processor": "Processor",
+      "explainer": "Explainer"
+    },
     "titles": {
       "gatherer": {
         "dashboard": "Gatherer Dashboard",
@@ -11,6 +21,7 @@
       "creator": {
         "dashboard": "Creator Dashboard",
         "questionBank": "Question Bank",
+        "announcements": "Announcements",
         "profile": "Profile",
         "default": "Creator Dashboard"
       },
@@ -78,6 +89,7 @@
   },
   "navbar": {
     "howItWorks": "How it works",
+    "goToApp": "Go to App",
     "products": "Products",
     "about": "About",
     "contact": "Contact",
@@ -339,13 +351,14 @@
   "questionBanks": {
     "hero": {
       "title": "Your Question Banks",
-      "subtitle": "Access the exams you're subscribed to, or upgrade to unlock more."
+      "subtitle": "Unlock access to comprehensive question banks featuring 1,000+ high-yield practice questions, detailed explanations that teach, performance tracking, and personalized study plans. Master Qudurat and Tahseely exams with proven learning techniques like active recall and spaced repetition."
     },
     "exams": {
       "subscribed": "Subscribed",
       "notSubscribed": "Not Subscribed",
       "startStudying": "START STUDYING",
       "upgradeToAccess": "UPGRADE TO ACCESS",
+      "moreDetail": "MORE DETAIL",
       "moreExamsComingSoon": "More Exams Coming Soon",
       "advancedFeatures": "Advanced Features"
     }
@@ -449,7 +462,14 @@
     "validation": {
       "emailRequired": "Email is required",
       "emailInvalid": "Please enter a valid email address",
+      "emailMaxLength": "Email must not exceed 50 characters",
       "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordMaxLength": "Password must not exceed 25 characters",
+      "passwordUppercase": "Password must contain at least one uppercase letter",
+      "passwordLowercase": "Password must contain at least one lowercase letter",
+      "passwordNumber": "Password must contain at least one number",
+      "passwordSpecial": "Password must contain at least one special character",
       "passwordRequirements": "Password must meet all requirements",
       "confirmPasswordRequired": "Please confirm your password",
       "passwordsMismatch": "Passwords do not match"
@@ -771,6 +791,8 @@
       "sessionSize": {
         "title": "Session Size",
         "numberOfQuestions": "Number of Questions",
+        "timeLimit": "Time Limit",
+        "minutes": "minutes",
         "enterRange": "Enter between 1-50.",
         "onlyQuestionsAvailable": "Only 0 questions available with current filters."
       },
@@ -968,7 +990,8 @@
         },
         "actions": {
           "reviewAll": "Review All",
-          "reviewIncorrect": "Review Incorrect"
+          "reviewIncorrect": "Review Incorrect",
+          "continue": "Continue"
         }
       },
       "pagination": {
@@ -977,7 +1000,35 @@
         "next": "Next",
         "loadMore": "Load More Results"
       },
-      "noSessions": "No sessions found"
+      "noSessions": "No sessions found",
+      "markedQuestions": {
+        "title": "Marked Questions",
+        "loading": "Loading marked questions...",
+        "noQuestions": "No marked questions",
+        "review": "Review",
+        "table": {
+          "questionId": "Question ID",
+          "question": "Question",
+          "exam": "Exam",
+          "subject": "Subject",
+          "topic": "Topic",
+          "markedDate": "Marked Date",
+          "actions": "Actions"
+        }
+      },
+      "reviewMarked": {
+        "title": "Review Marked Question",
+        "questionId": "Question ID:",
+        "back": "Back to Review",
+        "backToReview": "Back to Review",
+        "question": "Question",
+        "options": "Options",
+        "correct": "Correct Answer",
+        "explanation": "Explanation",
+        "exam": "Exam",
+        "subject": "Subject",
+        "topic": "Topic"
+      }
     },
     "reviewIncorrect": {
       "item": "Item {{current}} of {{total}}",
@@ -1061,6 +1112,7 @@
         "submit": "Submit",
         "exit": "Exit",
         "exitSession": "Exit Session",
+        "pauseSession": "Pause Session",
         "showHint": "Show Hint",
         "hideHint": "Hide Hint"
       },
@@ -1089,6 +1141,9 @@
       "flagReason": "Flag Reason",
       "yourReason": "Your reason:",
       "noReasonProvided": "No reason provided",
+      "reportIssue": "Report Issue",
+      "reportIssueLabel": "Please provide a reason for reporting this question:",
+      "reportIssuePlaceholder": "Enter reason for reporting this question...",
       "noReasonAvailable": "No reason available",
       "close": "Close"
     },
@@ -1957,7 +2012,7 @@
       },
       "fields": {
         "planName": "Plan Name",
-        "price": "Price ($)",
+        "price": "Price (SAR)",
         "duration": "Duration",
         "description": "Description",
         "status": "Status"
@@ -3042,32 +3097,32 @@
       }
     },
     "approvedQuestion": {
-    "title": "Approved Questions",
-    "heading": "Final Questions Management",
-    "table": {
-      "question": "Question",
-      "subject": "Subject",
-      "exam": "Exam",
-      "topic": "Topic",
-      "status": "Status",
-      "actions": "Visibility"
-    },
-    "filter": {
+      "title": "Approved Questions",
+      "heading": "Final Questions Management",
+      "table": {
+        "question": "Question",
+        "subject": "Subject",
+        "exam": "Exam",
+        "topic": "Topic",
+        "status": "Status",
+        "actions": "Visibility"
+      },
+      "filter": {
         "search": "Search by Questions, subject, topic",
         "subject": "All Subject",
         "exam": "Exam",
         "topic": "Topic"
       },
-    "status": {
-      "visible": "Visible",
-      "hidden": "Hidden"
-    },
-    "back": "Back to Question Bank",
-    "emptyMessage": "No approved questions found",
-    "pagination": {
-      "showing": "Showing {{first}} to {{last}} of {{total}} results"
+      "status": {
+        "visible": "Visible",
+        "hidden": "Hidden"
+      },
+      "back": "Back to Question Bank",
+      "emptyMessage": "No approved questions found",
+      "pagination": {
+        "showing": "Showing {{first}} to {{last}} of {{total}} results"
+      }
     }
-  }
   },
   "gatherer": {
     "sidebar": {
@@ -3683,7 +3738,6 @@
       "loading": "Loading dashboard data..."
     },
     "questionBank": {
-      "loading": "Loading questions...",
       "title": "Processor Dashboard",
       "subtitle": "Review incoming questions, accept or reject, and pass them to creators.",
       "allProcessedQuestions": "All Processed Questions",
@@ -3713,6 +3767,7 @@
       "title": "Creator Submissions",
       "back": "Back",
       "loading": "Loading...",
+      "searchPlaceholder": "Search questions...",
       "table": {
         "question": "QUESTION",
         "creator": "CREATOR",
@@ -3728,6 +3783,7 @@
       "title": "Gatherer Submissions",
       "back": "Back",
       "loading": "Loading...",
+      "searchPlaceholder": "Search questions...",
       "table": {
         "question": "QUESTION",
         "subject": "SUBJECT",
@@ -3758,6 +3814,7 @@
       "title": "Admin Submission",
       "back": "Back",
       "loading": "Loading...",
+      "searchPlaceholder": "Search questions...",
       "table": {
         "question": "QUESTION",
         "student": "STUDENT",

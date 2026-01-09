@@ -9,6 +9,7 @@ import examsAPI from "../../api/exams";
 import subjectsAPI from "../../api/subjects";
 import topicsAPI from "../../api/topics";
 import { showErrorToast } from "../../utils/toastConfig";
+import Loader from "../../components/common/Loader";
 
 const pageSize = 5;
 
@@ -361,9 +362,12 @@ const PendingProcessorPage = () => {
         </QuestionBankFilters>
 
         {loading ? (
-          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-8 text-center">
-            <p className="text-dark-gray">{t('admin.questionBank.loading') || 'Loading questions...'}</p>
-          </div>
+          <Loader
+            size="lg"
+            color="oxford-blue"
+            text={t("common.loading") || "Loading..."}
+            className="py-10"
+          />
         ) : (
           <QuestionBankTable
             questions={questions}

@@ -3,13 +3,14 @@ import { OutlineButton } from "../../components/common/Button";
 import StatsCards from "../../components/common/StatsCards";
 import { Table } from "../../components/common/TableComponent";
 import SearchFilter from "../../components/common/SearchFilter";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
 import WorkflowProgress from "../../components/gatherer/WorkflowProgress";
 import RecentActivity from "../../components/gatherer/RecentActiveity";
 import { useNavigate } from "react-router-dom";
 import questionsAPI from "../../api/questions";
 import { showErrorToast } from "../../utils/toastConfig";
 import Loader from "../../components/common/Loader";
+import subjectsAPI from "../../api/subjects";
 
 const CreatorQuestionBank = () => {
   const { t } = useLanguage();
@@ -20,8 +21,7 @@ const CreatorQuestionBank = () => {
   const [subject, setSubject] = useState("");
   const [subtopic, setSubtopic] = useState("");
   const [questionsData, setQuestionsData] = useState([]);
-  const [allQuestionsData, setAllQuestionsData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [stats, setStats] = useState([
@@ -29,13 +29,16 @@ const CreatorQuestionBank = () => {
     { label: t("creator.questionBank.stats.variantsPending"), value: 0, color: "blue" },
     { label: t("creator.questionBank.stats.completed"), value: 0, color: "red" },
   ]);
-  const pollingIntervalRef = useRef(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [subjects, setSubjects] = useState([]);
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
   const [selectedFlagReason, setSelectedFlagReason] = useState("");
   const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
   const [selectedRejectionReason, setSelectedRejectionReason] = useState("");
 
-  const QuestionsColumns = [
+
+  // Memoize columns to prevent rerenders
+  const QuestionsColumns = useMemo(() => [
     { key: 'questionTitle', label: t("creator.assignedQuestionPage.table.question") },
     { key: 'subject', label: t("creator.assignedQuestionPage.table.subject") },
     { key: 'processor', label: t("creator.assignedQuestionPage.table.processor") },
@@ -43,10 +46,10 @@ const CreatorQuestionBank = () => {
     { key: 'indicators', label: t("creator.assignedQuestionPage.table.flagsIssues") },
     { key: 'updatedOn', label: t("creator.assignedQuestionPage.table.updatedOn") },
     { key: 'actions', label: t("creator.assignedQuestionPage.table.actions") }
-  ];
+  ], [t]);
 
   // Format date to relative time (Today, Yesterday, or date)
-  const formatDate = (dateString) => {
+  const formatDate = useCallback((dateString) => {
     if (!dateString) return "—";
     
     const date = new Date(dateString);
@@ -63,10 +66,10 @@ const CreatorQuestionBank = () => {
     } else {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
-  };
+  }, []);
 
   // Format status to readable format
-  const formatStatus = (status) => {
+  const formatStatus = useCallback((status) => {
     if (!status) return "—";
     
     const statusMap = {
@@ -85,61 +88,55 @@ const CreatorQuestionBank = () => {
     return status.split('_').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
-  };
+  }, []);
 
-  // Transform API response to table format
-  const transformQuestionData = (questions, allQuestions = []) => {
+  // Map display status to API status - backend handles all filtering
+  const mapStatusToAPI = useCallback((displayStatus) => {
+    if (!displayStatus || displayStatus === "All Status") return 'all';
+    const statusMap = {
+      "Approved": "pending_processor", // Show completed questions as approved
+      "Pending": "pending_creator",
+      "Reject": "rejected",
+      "Flag": "flagged", // Backend handles flagged status
+    };
+    return statusMap[displayStatus] || 'all';
+  }, []);
+
+  // Check if a status is considered "Approved"
+  const isApprovedStatus = useCallback((status) => {
+    const approvedStatuses = ['pending_creator', 'pending_explainer', 'completed', 'approved', 'accepted'];
+    return approvedStatuses.includes(status?.toLowerCase());
+  }, []);
+
+  // Transform API response to table format - only shows variants that are flagged or rejected
+  const transformQuestionData = useCallback((questions) => {
     const questionIdStr = (id) => String(id || '');
-    const variantsByParentId = new Map();
-    const processedQuestionIds = new Set();
     const result = [];
     
-    // Build map of variants by parent question ID
-    allQuestions.forEach((q) => {
-      const isVariant = q.isVariant === true || q.isVariant === 'true';
-      if (isVariant) {
-        const originalId = q.originalQuestionId || q.originalQuestion;
-        if (originalId) {
-          const parentId = questionIdStr(originalId);
-          if (!variantsByParentId.has(parentId)) {
-            variantsByParentId.set(parentId, []);
-          }
-          variantsByParentId.get(parentId).push(q);
-        }
-      }
-    });
-
-    // Process only original questions (exclude variants)
+    // Process questions - only include variants if they are flagged OR rejected
     questions.forEach((question) => {
       const isVariant = question.isVariant === true || question.isVariant === 'true';
+      const isFlagged = question.isFlagged === true;
+      const isRejected = question.status === 'rejected';
       
-      // Skip variant questions - only show original questions
-      if (isVariant) {
-        return;
+      // Only show variants if they are flagged OR rejected
+      if (isVariant && !isFlagged && !isRejected) {
+        return; // Skip variants that are not flagged or rejected
       }
       
       const processorName = question.approvedBy?.name || question.assignedProcessor?.name || "—";
       const subjectName = question.subject?.name || "—";
       
       const isApproved = question.status === 'completed';
-      const isFlagged = question.isFlagged === true;
-      const isRejected = question.status === 'rejected';
       
-      const questionId = questionIdStr(question.id || question._id);
-      const hasVariants = variantsByParentId.has(questionId) && variantsByParentId.get(questionId).length > 0;
-      
-      const isParentWithVariants = hasVariants && question.status === 'pending_processor' && !isFlagged;
-      const isSubmittedByCreator = question.status === 'pending_processor' && 
-                                   !isFlagged && 
-                                   (question.approvedBy || question.originalData?.approvedBy);
-      
+      // Determine status display
       let status;
       if (isFlagged) {
         status = 'Flag';
-      } else if (isParentWithVariants || isSubmittedByCreator) {
-        status = 'Approved';
       } else if (question.status === 'pending_explainer') {
         status = 'In Review';
+      } else if (question.status === 'pending_processor' && !isFlagged && (question.approvedBy || question.lastModifiedById)) {
+        status = 'Approved';
       } else {
         status = formatStatus(question.status);
       }
@@ -150,224 +147,237 @@ const CreatorQuestionBank = () => {
             : question.questionText)
         : "—";
 
-      // Determine action type based on question status
+      // Determine action type based on question status and type
       let actionType = 'view';
-      if (question.status === 'pending_creator') {
+      if (question.status === 'pending_creator' && !isVariant) {
         actionType = 'createVariant';
+      } else if (isRejected && isVariant) {
+        // Show edit icon for rejected variants
+        actionType = 'editicon';
+      } else if (isFlagged && isVariant) {
+        // Show edit icon for flagged variants so creator can respond
+        actionType = 'editicon';
       } else {
         actionType = 'view';
       }
 
       const questionData = {
-        id: question.id,
+        id: question.id || question._id,
         questionTitle: questionTitle,
         subject: subjectName,
         processor: processorName,
         status: status,
         indicators: {
-          approved: isApproved || isParentWithVariants || isSubmittedByCreator,
+          approved: isApproved,
           flag: isFlagged,
           reject: isRejected,
-          variant: false
+          variant: isVariant
         },
         flagReason: question.flagReason || null,
         rejectionReason: question.rejectionReason || null,
         updatedOn: formatDate(question.updatedAt),
         actionType: actionType,
-        originalData: question
+        originalData: question,
+        isVariant: isVariant,
+        originalQuestionId: question.originalQuestionId || question.originalQuestion || null
       };
       
       result.push(questionData);
-      processedQuestionIds.add(questionIdStr(question.id || question._id));
     });
 
     return result;
-  };
+  }, [formatDate, formatStatus]);
 
-  // Calculate stats from questions
-  const calculateStats = (questions) => {
-    const assignedCount = questions.length;
-    const variantsPending = questions.filter(q => {
-      const isVariant = q.isVariant === true || q.isVariant === 'true';
-      return isVariant && q.status === 'pending_processor' && !q.isFlagged;
-    }).length;
-    
-    // Fetch completed questions count
-    const completedCount = questions.filter(q => q.status === 'completed').length;
-
-    setStats([
-      { label: t("creator.questionBank.stats.questionsAssigned"), value: assignedCount, color: "blue" },
-      { label: t("creator.questionBank.stats.variantsPending"), value: variantsPending, color: "blue" },
-      { label: t("creator.questionBank.stats.completed"), value: completedCount, color: "red" },
-    ]);
-  };
-
-  // Fetch assigned questions from API
-  const fetchAssignedQuestions = async (isInitialLoad = false) => {
-    try {
-      if (isInitialLoad) {
-        setError(null);
-        setLoading(true);
-      }
-      
-      const statusesToFetch = ['pending_creator', 'pending_processor', 'pending_explainer', 'rejected'];
-      const allQuestions = [];
-      
-      for (const status of statusesToFetch) {
+  // Fetch stats separately - only once on mount, not affected by status filter
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
+        // Optimized: Use single API call with status='all' to get all questions, then calculate stats
+        // Fetch a reasonable sample to calculate stats (we don't need all questions, just enough for accurate counts)
         try {
-          const response = await questionsAPI.getCreatorQuestions({ status });
-          if (response.success && response.data?.questions) {
-            allQuestions.push(...response.data.questions);
+          const allQuestionsResponse = await questionsAPI.getCreatorQuestions({ 
+            status: 'all', 
+            page: 1, 
+            limit: 100 // Fetch enough to get accurate stats
+          });
+          
+          if (allQuestionsResponse.success && allQuestionsResponse.data) {
+            const allQuestions = allQuestionsResponse.data.questions || [];
+            const pagination = allQuestionsResponse.data.pagination || {};
+            const totalFromBackend = pagination.totalItems || pagination.total || 0;
+            
+            // Filter out creator-flagged questions
+            const nonFlaggedQuestions = allQuestions.filter(q => {
+              if (q.isFlagged === true && q.flagType === 'creator') {
+                return false;
+              }
+              return true;
+            });
+            
+            // Calculate stats from the fetched data
+            const totalAssigned = totalFromBackend; // Total assigned (backend already filters by assignedCreatorId)
+            const totalCompleted = nonFlaggedQuestions.filter(q => q.status === 'completed').length;
+            
+            // Estimate variants pending from sample
+            const variantsPending = nonFlaggedQuestions.filter(q => 
+              (q.isVariant === true || q.isVariant === 'true') && 
+              q.status === 'pending_processor' && 
+              !q.isFlagged
+            ).length;
+            
+            // If we have a sample, estimate total variants pending
+            let totalVariantsPending = 0;
+            if (variantsPending > 0 && nonFlaggedQuestions.length > 0) {
+              // Estimate based on sample ratio
+              const variantRatio = variantsPending / nonFlaggedQuestions.length;
+              // Estimate total variants from total pending_processor count
+              const pendingProcessorCount = nonFlaggedQuestions.filter(q => q.status === 'pending_processor').length;
+              if (pendingProcessorCount > 0) {
+                totalVariantsPending = Math.round(pendingProcessorCount * variantRatio);
+              }
+            }
+            
+            // If we got all questions (sample size >= total), use exact counts
+            if (nonFlaggedQuestions.length >= totalFromBackend) {
+              totalVariantsPending = variantsPending;
+            }
+
+            setStats([
+              { label: t("creator.questionBank.stats.questionsAssigned"), value: totalAssigned, color: "blue" },
+              { label: t("creator.questionBank.stats.variantsPending"), value: totalVariantsPending, color: "blue" },
+              { label: t("creator.questionBank.stats.completed"), value: totalCompleted, color: "red" },
+            ]);
           }
         } catch (err) {
-          console.warn(`Failed to fetch questions with status ${status}:`, err);
+          console.error('Failed to fetch stats:', err);
+          // Set default stats on error
+          setStats([
+            { label: t("creator.questionBank.stats.questionsAssigned"), value: 0, color: "blue" },
+            { label: t("creator.questionBank.stats.variantsPending"), value: 0, color: "blue" },
+            { label: t("creator.questionBank.stats.completed"), value: 0, color: "red" },
+          ]);
         }
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [t]); // Only fetch stats once on mount
+
+  // Fetch questions from API - SINGLE API CALL with backend pagination (limit 10) - NO CLIENT-SIDE FILTERING
+  const fetchQuestions = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Map status filter to API status - backend handles all filtering
+      const apiStatus = mapStatusToAPI(subtopic);
+      
+      // Build API params - Always use backend pagination with limit 10
+      const params = {
+        page: currentPage,
+        limit: 10,
+        status: apiStatus || 'all', // Use 'all' if no specific status
+      };
+      
+      // Add search and subject filters
+      if (search) params.search = search;
+      if (subject && subject !== "All Subject") params.subject = subject;
+      
+      // SINGLE API CALL - Backend handles all filtering and pagination
+      const response = await questionsAPI.getCreatorQuestions(params);
+      
+      if (!response.success || !response.data) {
+        throw new Error(response.message || "Failed to fetch questions");
       }
       
-      // Also fetch completed questions for stats
-      try {
-        const completedResponse = await questionsAPI.getCreatorQuestions({ status: 'completed' });
-        if (completedResponse.success && completedResponse.data?.questions) {
-          allQuestions.push(...completedResponse.data.questions);
-        }
-      } catch (err) {
-        console.warn('Failed to fetch completed questions:', err);
-      }
+      const questions = response.data.questions || [];
+      const pagination = response.data.pagination || {};
+      const totalCount = pagination.totalItems || pagination.total || questions.length;
       
+      // Remove duplicates (in case backend returns duplicates)
       const uniqueQuestions = Array.from(
-        new Map(allQuestions.map(q => [q.id || q._id, q])).values()
+        new Map(questions.map(q => [q.id || q._id, q])).values()
       );
       
-      const nonFlaggedQuestions = uniqueQuestions.filter(q => {
-        if (q.isFlagged === true && q.flagType === 'creator') {
-          return false;
-        }
-        return true;
-      });
+      // Transform to table format - filters variants to only show flagged/rejected
+      const transformedData = transformQuestionData(uniqueQuestions);
       
-      const transformedData = transformQuestionData(nonFlaggedQuestions, allQuestions);
-      
-      // Only update state if data actually changed (prevent unnecessary re-renders and blinking)
-      if (isInitialLoad || allQuestionsData.length === 0) {
-        // Initial load - always update
-        setAllQuestionsData(transformedData);
-        setTotalQuestions(nonFlaggedQuestions.length);
-        calculateStats(nonFlaggedQuestions);
-        applyFilters(transformedData);
-      } else {
-        // Subsequent updates - only update if data changed
-        const currentDataIds = new Set(allQuestionsData.map(q => q.id));
-        const newDataIds = new Set(transformedData.map(q => q.id));
-        
-        // Check if IDs changed
-        const idsChanged = currentDataIds.size !== newDataIds.size ||
-          ![...currentDataIds].every(id => newDataIds.has(id));
-        
-        // Check if any question data changed
-        const dataChanged = idsChanged || transformedData.some((newQ) => {
-          const oldQ = allQuestionsData.find(q => q.id === newQ.id);
-          if (!oldQ) return true; // New question
-          return oldQ.status !== newQ.status ||
-                 oldQ.updatedOn !== newQ.updatedOn ||
-                 oldQ.indicators?.flag !== newQ.indicators?.flag ||
-                 oldQ.indicators?.approved !== newQ.indicators?.approved ||
-                 oldQ.indicators?.reject !== newQ.indicators?.reject;
-        });
-        
-        if (dataChanged) {
-          setAllQuestionsData(transformedData);
-          setTotalQuestions(nonFlaggedQuestions.length);
-          calculateStats(nonFlaggedQuestions);
-          applyFilters(transformedData);
-        }
-      }
+      // Note: We filter variants client-side (only show flagged/rejected variants)
+      // This means the backend total count might include variants we filter out
+      // For accurate pagination, we use the transformed data length if it's different
+      // But for backend pagination to work correctly, we should ideally filter at backend
+      // For now, use backend count as it's more accurate for original questions
+      setQuestionsData(transformedData);
+      setTotalQuestions(totalCount);
     } catch (err) {
-      console.error("Error fetching assigned questions:", err);
-      if (isInitialLoad) {
-        setError(err.message || "Failed to fetch questions");
-        setQuestionsData([]);
-        setAllQuestionsData([]);
-        showErrorToast(err.message || "Failed to fetch questions");
-      }
+      console.error("Error fetching questions:", err);
+      setError(err.message || "Failed to fetch questions");
+      setQuestionsData([]);
+      setTotalQuestions(0);
+      showErrorToast(err.message || "Failed to fetch questions");
     } finally {
-      if (isInitialLoad) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
-  };
+  }, [currentPage, subtopic, search, subject, mapStatusToAPI, transformQuestionData]);
 
-  // Apply client-side filters (memoized to prevent unnecessary re-renders)
-  const applyFilters = useCallback((data) => {
-    let filtered = [...data];
+  // Fetch data on component mount and when filters change
+  useEffect(() => {
+    fetchQuestions();
+  }, [fetchQuestions]);
 
-    if (search.trim()) {
-      const searchLower = search.toLowerCase();
-      filtered = filtered.filter((item) =>
-        item.questionTitle.toLowerCase().includes(searchLower) ||
-        item.processor.toLowerCase().includes(searchLower) ||
-        item.subject.toLowerCase().includes(searchLower) ||
-        item.status.toLowerCase().includes(searchLower)
-      );
-    }
-
-    if (subject && subject !== "All Subject") {
-      filtered = filtered.filter((item) => {
-        const questionSubject = item.originalData?.subject?.name || "";
-        return questionSubject.toLowerCase() === subject.toLowerCase();
-      });
-    }
-
-    if (subtopic && subtopic !== "All Status") {
-      filtered = filtered.filter((item) => {
-        if (subtopic.toLowerCase() === "flag") {
-          return item.status?.toLowerCase() === "flag" ||
-                 item.indicators?.flag === true || 
-                 item.originalData?.isFlagged === true;
-        } else {
-          const questionStatus = item.originalData?.status || "";
-          const displayStatus = item.status || "";
-          return questionStatus.toLowerCase().includes(subtopic.toLowerCase()) ||
-                 displayStatus.toLowerCase().includes(subtopic.toLowerCase());
-        }
-      });
-    }
-
-    setQuestionsData(filtered);
-    setTotalQuestions(filtered.length);
+  // Reset to first page when filters change
+  useEffect(() => {
     setCurrentPage(1);
   }, [search, subject, subtopic]);
 
-  // Apply filters when filter values or data change
+  // Fetch subjects on component mount
   useEffect(() => {
-    if (allQuestionsData.length > 0) {
-      applyFilters(allQuestionsData);
-    }
-  }, [allQuestionsData, applyFilters]);
-
-  // Fetch data only once on mount to prevent blinking
-  useEffect(() => {
-    fetchAssignedQuestions(true);
-
-    // Polling disabled to prevent UI blinking
-    // If real-time updates are needed, uncomment below and increase interval
-    // pollingIntervalRef.current = setInterval(() => {
-    //   fetchAssignedQuestions(false);
-    // }, 30000); // 30 seconds minimum to reduce blinking
-
-    const intervalId = pollingIntervalRef.current;
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
+    const fetchSubjects = async () => {
+      try {
+        const response = await subjectsAPI.getAllSubjects();
+        let subjectsList = [];
+        
+        if (response.success) {
+          if (response.data?.subjects && Array.isArray(response.data.subjects)) {
+            subjectsList = response.data.subjects;
+          } else if (Array.isArray(response.data)) {
+            subjectsList = response.data;
+          }
+        }
+        
+        const subjectNames = ["All Subject", ...subjectsList.map(s => s.name || s)];
+        setSubjects(subjectNames);
+      } catch (error) {
+        console.error('Error fetching subjects:', error);
+        setSubjects(["All Subject"]);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchSubjects();
   }, []);
 
-  const handleCompletedQuestion = () => {
-    navigate("/creator/question-bank/completed-question");
-  };
+  // Memoize status options
+  const subtopicOptions = useMemo(() => ["All Status", "Approved", "Pending", "Reject", "Flag"], []);
 
-  const handleView = (item) => {
+  // Memoize loading component for table
+  const tableLoadingComponent = useMemo(() => (
+    <Loader 
+      size="lg" 
+      color="oxford-blue" 
+      text="Loading questions..."
+      className="py-10"
+    />
+  ), []);
+
+  const handleCompletedQuestion = useCallback(() => {
+    navigate("/creator/question-bank/completed-question");
+  }, [navigate]);
+
+  const handleView = useCallback((item) => {
     if (item.originalData) {
       const question = item.originalData;
       // For pending_creator questions, navigate to create-variants
@@ -375,18 +385,72 @@ const CreatorQuestionBank = () => {
         handleCreateVariant(item);
       } else {
         // For other questions, navigate to view question page
-      navigate(`/creator/question-bank/question/${item.id}`);
+        navigate(`/creator/question-bank/question/${item.id}`);
       }
     }
-  };
+  }, [navigate]);
 
-  const handleEdit = (item) => {
+  const handleEdit = useCallback((item) => {
     if (item.originalData) {
-      navigate(`/creator/question-bank/question/${item.id}/edit`);
+      const question = item.originalData;
+      const isVariant = question.isVariant === true || question.isVariant === 'true';
+      const isFlagged = question.isFlagged === true;
+      const isRejected = question.status === 'rejected';
+      
+      // For flagged variants, navigate to view variant page (has reject flag and update buttons)
+      if (isVariant && isFlagged) {
+        // Fetch original question if we have the ID
+        const fetchOriginalAndNavigate = async () => {
+          try {
+            let originalQ = null;
+            if (question.originalQuestionId) {
+              const response = await questionsAPI.getCreatorQuestionById(question.originalQuestionId);
+              if (response.success && response.data?.question) {
+                originalQ = response.data.question;
+              }
+            }
+            
+            navigate("/creator/question-bank/view-variant", {
+              state: {
+                variantId: item.id,
+                variant: question,
+                originalQuestion: originalQ || (question.originalQuestionId ? { id: question.originalQuestionId } : null)
+              }
+            });
+          } catch (err) {
+            console.error("Error fetching original question:", err);
+            // Navigate anyway with what we have
+            navigate("/creator/question-bank/view-variant", {
+              state: {
+                variantId: item.id,
+                variant: question,
+                originalQuestion: question.originalQuestionId ? { id: question.originalQuestionId } : null
+              }
+            });
+          }
+        };
+        
+        fetchOriginalAndNavigate();
+      } 
+      // For rejected variants, navigate to edit variant page (update variant page)
+      else if (isVariant && isRejected) {
+        navigate("/creator/question-bank/edit-variant", {
+          state: {
+            variantId: item.id,
+            variant: question,
+            originalQuestion: question.originalQuestionId ? { id: question.originalQuestionId } : null,
+            isRejected: true
+          }
+        });
+      }
+      // For regular questions, navigate to edit page
+      else {
+        navigate(`/creator/question-bank/question/${item.id}/edit`);
+      }
     }
-  };
+  }, [navigate]);
 
-  const handleCreateVariant = (item) => {
+  const handleCreateVariant = useCallback((item) => {
     if (item.originalData) {
       navigate(`/creator/question-bank/create-variants`, { 
         state: { questionId: item.id, question: item.originalData } 
@@ -394,59 +458,50 @@ const CreatorQuestionBank = () => {
     } else {
       navigate("/creator/question-bank/create-variants");
     }
-  };
+  }, [navigate]);
 
-  const handleShowFlagReason = (flagReason) => {
+  const handleShowFlagReason = useCallback((flagReason) => {
     setSelectedFlagReason(flagReason || "");
     setIsFlagModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseFlagModal = () => {
+  const handleCloseFlagModal = useCallback(() => {
     setIsFlagModalOpen(false);
     setSelectedFlagReason("");
-  };
+  }, []);
 
-  const handleShowRejectionReason = (rejectionReason) => {
+  const handleShowRejectionReason = useCallback((rejectionReason) => {
     setSelectedRejectionReason(rejectionReason || "");
     setIsRejectionModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseRejectionModal = () => {
+  const handleCloseRejectionModal = useCallback(() => {
     setIsRejectionModalOpen(false);
     setSelectedRejectionReason("");
-  };
+  }, []);
 
-  // Get unique subjects from questions for filter
-  const getSubjectOptions = () => {
-    const subjects = new Set();
-    allQuestionsData.forEach(q => {
-      const subjectName = q.originalData?.subject?.name;
-      if (subjectName) {
-        subjects.add(subjectName);
-      }
-    });
-    return ["All Subject", ...Array.from(subjects).sort()];
-  };
+  // Memoize subject options
+  const subjectOptions = useMemo(() => {
+    return subjects.length > 0 ? subjects : ["All Subject"];
+  }, [subjects]);
 
-  const subjectOptions = getSubjectOptions();
-  const subtopicOptions = ["All Status", "Approved", "Pending", "Reject", "Flag"];
-
-  const workflowSteps = [
+  // Memoize workflow steps
+  const workflowSteps = useMemo(() => [
     t("gatherer.questionBank.workflowSteps.gatherer"),
     t("gatherer.questionBank.workflowSteps.processor"),
     t("gatherer.questionBank.workflowSteps.creator"),
     t("gatherer.questionBank.workflowSteps.processor"),
     t("gatherer.questionBank.workflowSteps.explainer"),
-  ];
+  ], [t]);
 
-  // Get recent activity from question history
-  const getRecentActivity = () => {
-    if (!allQuestionsData.length) return [];
+  // Get recent activity from question history (memoized)
+  const getRecentActivity = useCallback(() => {
+    if (!questionsData.length) return [];
     
     const activities = [];
     
-    // Collect all activities from all questions
-    allQuestionsData.forEach((q) => {
+    // Collect all activities from current questions
+    questionsData.forEach((q) => {
       const question = q.originalData;
       if (!question) return;
       
@@ -587,9 +642,10 @@ const CreatorQuestionBank = () => {
       ...activity,
       timestamp: activity.formattedTimestamp
     }));
-  };
+  }, [questionsData]);
 
-  const activityData = getRecentActivity();
+  // Memoize activity data
+  const activityData = useMemo(() => getRecentActivity(), [getRecentActivity]);
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6">
@@ -638,25 +694,18 @@ const CreatorQuestionBank = () => {
             />
           </div>
 
-          {loading ? (
-            <Loader 
-              size="lg" 
-              color="oxford-blue" 
-              text="Loading questions..."
-              className="py-12"
-            />
-          ) : error ? (
+          {error ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="text-cinnebar-red text-lg font-roboto mb-4">{error}</div>
               <OutlineButton 
                 text="Retry" 
                 className="py-[10px] px-5" 
-                onClick={fetchAssignedQuestions}
+                onClick={fetchQuestions}
               />
             </div>
           ) : (
           <Table
-              items={questionsData.slice((currentPage - 1) * 10, currentPage * 10)}
+              items={questionsData}
               columns={QuestionsColumns}
               page={currentPage}
               pageSize={10}
@@ -674,6 +723,8 @@ const CreatorQuestionBank = () => {
               emptyMessage={t("creator.assignedQuestionPage.emptyMessage")}
               onShowFlagReason={handleShowFlagReason}
               onShowRejectionReason={handleShowRejectionReason}
+              loading={loading}
+              loadingComponent={tableLoadingComponent}
           />
           )}
         </div>

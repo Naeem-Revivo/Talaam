@@ -157,7 +157,7 @@ const PaymentHistoryPage = () => {
             invoiceid: payment.invoiceId || payment.transactionId || `Inv-${String(payment.id).padStart(3, "0")}`,
             user: user,
             plan: payment.planName || payment.plan?.name || 'N/A',
-            amount: payment.amount ? `$${parseFloat(payment.amount).toFixed(2)}` : '$0.00',
+            amount: payment.amount ? `SAR ${parseFloat(payment.amount).toFixed(0)}` : 'SAR 0',
             date: date,
             paymentmethod: payment.paymentMethod || 'N/A',
             status: payment.status || 'Pending',

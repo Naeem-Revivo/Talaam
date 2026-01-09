@@ -37,12 +37,12 @@ const TimingMattersSection = () => {
               </div>
               
               {/* Button */}
-              <button className={`flex items-center gap-4 w-[164px] h-[38px] border text-oxford-blue border-oxford-blue font-archivo font-semibold text-[14px] rounded-[8px] leading-[14px] align-middle uppercase tracking-[0] ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+              {/* <button className={`flex items-center gap-4 w-[164px] h-[38px] border text-oxford-blue border-oxford-blue font-archivo font-semibold text-[14px] rounded-[8px] leading-[14px] align-middle uppercase tracking-[0] ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
                <div className="pl-6">
                 {t('howItWorks.timingMatters.learnMore')} 
                 </div> 
                 <img src={greaterthan} alt="" className="" />
-              </button>
+              </button> */}
             </div>
           </div>
 
