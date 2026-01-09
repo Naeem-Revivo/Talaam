@@ -4,6 +4,7 @@ import { tick, cross, analytics, watch, setting, flag } from '../../assets/svg/d
 import { useLanguage } from '../../context/LanguageContext';
 import studentQuestionsAPI from '../../api/studentQuestions';
 import { showErrorToast } from '../../utils/toastConfig';
+import ReportIssueModal, { FlagReasonModal } from '../../components/common/ReportIssueModal';
 
 const ReviewIncorrectPage = () => {
   const { t, language } = useLanguage();
@@ -24,6 +25,8 @@ const ReviewIncorrectPage = () => {
   const [visitedQuestions, setVisitedQuestions] = useState(new Set([0]));
   const [showQuestionNav, setShowQuestionNav] = useState(false);
   const [showExplanationPanel, setShowExplanationPanel] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showReasonModal, setShowReasonModal] = useState(false);
 
   // Fetch incorrect questions
   useEffect(() => {
@@ -188,9 +191,22 @@ const ReviewIncorrectPage = () => {
             <div className="hidden lg:block text-[14px] md:text-[16px] font-normal text-dark-gray font-roboto">
               {t('dashboard.reviewIncorrect.questionId')} {currentQuestion.shortId || currentQuestion.id || currentQuestionIndex + 1}
             </div>
-            <button className="hidden lg:block text-oxford-blue hover:opacity-70">
-              <img src={flag} alt="Flag" className="" />
-            </button>
+            <div className="hidden lg:flex items-center gap-2">
+              <button 
+                onClick={() => setShowReportModal(true)}
+                className="flex items-center justify-center gap-1 border-[0.5px] border-[#032746] rounded-[4px] px-3 h-[35px] hover:bg-[#F3F4F6] transition"
+              >
+                <p className='text-[10px] leading-[100%] font-normal font-archivo'>Report Issue</p>
+              </button>
+              {(currentQuestion?.isFlagged || currentQuestion?.flagStatus) && (
+                <button 
+                  onClick={() => setShowReasonModal(true)}
+                  className="flex items-center justify-center gap-1 border-[0.5px] border-[#ED4122] rounded-[4px] px-2 h-[35px] hover:bg-[#FEF2F2] transition"
+                >
+                  <p className='text-[10px] leading-[100%] font-normal font-archivo text-[#ED4122]'>{t('dashboard.questionSession.reason') || 'Reason'}</p>
+                </button>
+              )}
+            </div>
             {/* Mobile Menu Button */}
             <button
               onClick={() => setShowQuestionNav(!showQuestionNav)}
@@ -202,11 +218,24 @@ const ReviewIncorrectPage = () => {
             </button>
           </div>
 
-          {/* Mobile: Mark, Formula Sheet, and Time Remaining */}
+          {/* Mobile: Report Issue, Formula Sheet, and Time Remaining */}
           <div className="lg:hidden flex items-center gap-2 w-full justify-between">
-            <button className="px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:opacity-70 flex items-center gap-2">
-              <img src={flag} alt="Mark" className="" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setShowReportModal(true)}
+                className="px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:opacity-70 flex items-center gap-2"
+              >
+                <span>Report Issue</span>
+              </button>
+              {(currentQuestion?.isFlagged || currentQuestion?.flagStatus) && (
+                <button 
+                  onClick={() => setShowReasonModal(true)}
+                  className="px-3 py-1.5 bg-[#FEF2F2] text-[#ED4122] border border-[#ED4122] rounded text-[14px] font-normal font-roboto hover:opacity-70"
+                >
+                  {t('dashboard.questionSession.reason') || 'Reason'}
+                </button>
+              )}
+            </div>
             {/* <button className="px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:opacity-70 flex items-center gap-2">
               {t('dashboard.reviewIncorrect.formulaSheet')}
             </button> */}
@@ -214,6 +243,12 @@ const ReviewIncorrectPage = () => {
               <span className="text-[14px] font-normal text-oxford-blue font-roboto">
                 {t('dashboard.reviewIncorrect.timeRemaining')} <span className="font-bold">12:45</span>
               </span>
+              <button
+                onClick={() => navigate('/dashboard/review')}
+                className="px-3 py-1.5 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] font-normal font-roboto hover:opacity-90 transition-opacity"
+              >
+                {t('dashboard.reviewIncorrect.actions.exitSession') || t('dashboard.reviewAll.actions.exitSession')}
+              </button>
             </div>
           </div>
 
@@ -258,9 +293,12 @@ const ReviewIncorrectPage = () => {
               <span className="text-[12px] md:text-[14px] font-normal text-oxford-blue font-roboto">
                 <span className="hidden sm:inline">{t('dashboard.reviewIncorrect.timeRemaining')} </span>12:45
               </span>
-                {/* <button className="text-oxford-blue hover:opacity-70">
-                  <img src={setting} alt="Settings" className="w-4 h-4 md:w-5 md:h-5" />
-                </button> */}
+              <button
+                onClick={() => navigate('/dashboard/review')}
+                className="px-4 py-2 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity"
+              >
+                {t('dashboard.reviewIncorrect.actions.exitSession') || t('dashboard.reviewAll.actions.exitSession')}
+              </button>
             </div>
           </div>
         </div>
@@ -617,14 +655,23 @@ const ReviewIncorrectPage = () => {
               {t('dashboard.reviewIncorrect.actions.reviewAll')}
             </button>
           )}
-          <button
-            onClick={() => navigate('/dashboard/review')}
-            className="w-full sm:w-auto px-4 py-2 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity"
-          >
-            {t('dashboard.reviewIncorrect.actions.exitSession')}
-          </button>
         </div>
       </div>
+
+      {/* Report Issue Modal */}
+      <ReportIssueModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        questionId={currentQuestion?.id}
+        question={currentQuestion}
+      />
+
+      {/* Flag Reason Modal */}
+      <FlagReasonModal
+        isOpen={showReasonModal}
+        onClose={() => setShowReasonModal(false)}
+        question={currentQuestion}
+      />
     </div>
   );
 };

@@ -22,6 +22,7 @@ const buildInitialState = (questions, mode = 'study') =>
     showFeedback: false,
     showHint: false,
     isSubmitted: false, // Track if question has been submitted
+    isMarked: false, // Track if question is marked for review
     status: mode === 'test' && index === 0 ? 'current' : null, // First question is current in test mode
   }));
 
@@ -46,6 +47,7 @@ const QuestionSessionPage = () => {
   const pausedSessionIdRef = useRef(null); // Store paused session ID for updating on completion
   const pausedTimeTakenRef = useRef(0); // Store original paused time for calculating total time
   const hasInteractedAfterResumeRef = useRef(false); // Track if user has interacted after resuming paused session
+  const timeLimitRef = useRef(null); // Store time limit in minutes from API response
 
   // Transform API question format to component format
   const transformQuestion = (apiQuestion, index) => {
@@ -140,6 +142,11 @@ const QuestionSessionPage = () => {
               pausedSessionIdRef.current = pausedSessionId;
               pausedTimeTakenRef.current = pausedData.timeTaken || 0;
               
+              // Store timeLimit if available
+              if (pausedData.timeLimit) {
+                timeLimitRef.current = pausedData.timeLimit;
+              }
+              
               // Set session info
               sessionInfoRef.current = {
                 examId: pausedData.examId,
@@ -153,13 +160,14 @@ const QuestionSessionPage = () => {
               // Ensure status is set correctly for restored state
               const restoredWithStatus = restoredState.map((state) => {
                 // If status is already set, use it; otherwise infer from isSubmitted
-                if (state.status) {
-                  return state;
-                }
-                // Infer status: if submitted, status is 'submit'; otherwise null (will be set to 'current' for current index)
-                return {
+                const baseState = state.status ? state : {
                   ...state,
                   status: state.isSubmitted ? 'submit' : null,
+                };
+                // Ensure isMarked is preserved
+                return {
+                  ...baseState,
+                  isMarked: baseState.isMarked || false,
                 };
               });
               setQuestionState(restoredWithStatus);
@@ -194,7 +202,9 @@ const QuestionSessionPage = () => {
               // Restore timer for test mode (recalculate remaining time)
               if (pausedData.mode === 'test' && pausedData.questions?.length > 0) {
                 const elapsedTime = pausedData.timeTaken || 0;
-                const totalTimeMs = pausedData.questions.length * 60 * 1000;
+                // Use stored timeLimit if available, otherwise default to 1 minute per question
+                const timeLimitMinutes = pausedData.timeLimit || pausedData.questions.length;
+                const totalTimeMs = timeLimitMinutes * 60 * 1000;
                 const remaining = Math.max(0, totalTimeMs - elapsedTime);
                 if (remaining > 0) {
                   timerEndTimeRef.current = Date.now() + remaining;
@@ -245,14 +255,25 @@ const QuestionSessionPage = () => {
         const filters = {};
         
         // Use state filters first (from navigation state)
+        // If topics are provided, use only topics (they take precedence)
         if (stateFilters.topics && stateFilters.topics.length > 0) {
           // Multiple topics from state - join as comma-separated string
           params.topics = stateFilters.topics.join(',');
           filters.topics = stateFilters.topics;
-        }
-        if (stateFilters.subject) {
+        } else if (stateFilters.subject) {
+          // Only use subject if no topics are selected
           params.subject = stateFilters.subject;
           filters.subject = stateFilters.subject;
+        }
+        
+        // Add size for both modes
+        if (stateFilters.size) {
+          params.size = stateFilters.size;
+        }
+        
+        // Add timeLimit only for test mode
+        if (mode === 'test' && stateFilters.timeLimit) {
+          params.timeLimit = stateFilters.timeLimit;
         }
         
         // If no state filters, fallback to URL params for backward compatibility
@@ -307,6 +328,11 @@ const QuestionSessionPage = () => {
             transformQuestion(q, index)
           );
           setQuestions(transformedQuestions);
+          
+          // Store timeLimit from API response for test mode
+          if (mode === 'test' && response.data?.timeLimit) {
+            timeLimitRef.current = response.data.timeLimit;
+          }
           
           // Store session info from first question for saving results later
           if (transformedQuestions.length > 0 && rawQuestions.length > 0) {
@@ -381,6 +407,7 @@ const QuestionSessionPage = () => {
               const restoredWithStatus = restoredStateData.map((state) => ({
                 ...state,
                 status: state.status || (state.isSubmitted ? 'submit' : null),
+                isMarked: state.isMarked || false, // Preserve marked state
               }));
               setQuestionState(restoredWithStatus);
               const restoredIndex = restoredState.currentIndex || 0;
@@ -497,9 +524,11 @@ const QuestionSessionPage = () => {
         totalQuestions: questions.length,
       }));
       
-      // Initialize timer for test mode (1 minute per question)
+      // Initialize timer for test mode
       if (mode === 'test' && questions.length > 0) {
-        const totalTimeMs = questions.length * 60 * 1000; // 1 minute per question in milliseconds
+        // Use timeLimit from API response if available, otherwise default to 1 minute per question
+        const timeLimitMinutes = timeLimitRef.current || questions.length;
+        const totalTimeMs = timeLimitMinutes * 60 * 1000; // Convert minutes to milliseconds
         timerEndTimeRef.current = Date.now() + totalTimeMs;
         setTimeRemaining(totalTimeMs);
       }
@@ -1155,6 +1184,7 @@ const QuestionSessionPage = () => {
         currentIndex,
         timeTaken: timeTakenMs,
         timerEndTime: mode === 'test' ? timerEndTimeRef.current : null,
+        timeLimit: mode === 'test' ? timeLimitRef.current : null,
       });
 
       if (response.success) {
@@ -1505,6 +1535,40 @@ const QuestionSessionPage = () => {
   const closeQuestionNav = () => setShowQuestionNav(false);
   const toggleExplanation = () => setShowExplanation((prev) => !prev);
   const toggleExplanationPanel = () => setShowExplanationPanel((prev) => !prev);
+  
+  // Toggle mark status for a question (for later review)
+  const toggleMark = async (index) => {
+    const question = questions[index];
+    if (!question || !question.id) return;
+
+    const currentState = questionState[index];
+    const isCurrentlyMarked = currentState?.isMarked || false;
+
+    // Optimistically update UI
+    setQuestionState((prev) =>
+      prev.map((state, idx) =>
+        idx === index ? { ...state, isMarked: !state.isMarked } : state
+      )
+    );
+
+    try {
+      if (isCurrentlyMarked) {
+        // Unmark question
+        await studentQuestionsAPI.unmarkQuestion(question.id);
+      } else {
+        // Mark question
+        await studentQuestionsAPI.markQuestion(question.id);
+      }
+    } catch (error) {
+      // Revert on error
+      setQuestionState((prev) =>
+        prev.map((state, idx) =>
+          idx === index ? { ...state, isMarked: isCurrentlyMarked } : state
+        )
+      );
+      showErrorToast(error.response?.data?.message || error.message || 'Failed to update mark status');
+    }
+  };
 
   // Check if any question has been submitted (for disabling pause button)
   // In test mode, check for isSubmitted or status === 'submit' or 'skipped'; in study mode, check for showFeedback
@@ -1534,6 +1598,7 @@ const QuestionSessionPage = () => {
           onExit={handleExit}
           onPause={handlePauseSession}
           isPauseDisabled={isPauseDisabled}
+          onToggleMark={toggleMark}
         />
       ) : (
         <StudyModeLayout
@@ -1557,6 +1622,7 @@ const QuestionSessionPage = () => {
           isPauseDisabled={isPauseDisabled}
           onToggleExplanation={toggleExplanation}
           onToggleExplanationPanel={toggleExplanationPanel}
+          onToggleMark={toggleMark}
         />
       )}
 

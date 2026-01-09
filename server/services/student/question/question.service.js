@@ -7,6 +7,18 @@ const Plan = require('../../../models/plan');
 const { prisma } = require('../../../config/db/prisma');
 
 /**
+ * Shuffle array using Fisher-Yates algorithm
+ */
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
+/**
  * Get available questions for students (only completed and visible questions)
  * Can filter by exam, subject, topic
  */
@@ -35,7 +47,7 @@ const getAvailableQuestions = async (filters = {}) => {
     where.topicId = filters.topic;
   }
 
-  const questions = await prisma.question.findMany({
+  let questions = await prisma.question.findMany({
     where,
     include: {
       exam: {
@@ -50,6 +62,134 @@ const getAvailableQuestions = async (filters = {}) => {
     },
     orderBy: { createdAt: 'desc' }
   });
+
+  // If size is specified, limit the number of questions
+  if (filters.size && filters.size > 0) {
+    const requestedSize = filters.size;
+    
+    // Check if multiple topics are selected
+    let topicIds = [];
+    if (filters.topics) {
+      topicIds = Array.isArray(filters.topics) 
+        ? filters.topics 
+        : filters.topics.split(',').map(id => id.trim()).filter(Boolean);
+    } else if (filters.topic) {
+      topicIds = [filters.topic];
+    }
+
+    // If multiple topics are selected, select questions equally from each topic
+    if (topicIds.length > 1) {
+      // Group questions by topic
+      const questionsByTopic = {};
+      questions.forEach(q => {
+        const topicId = q.topicId;
+        if (topicId) {
+          if (!questionsByTopic[topicId]) {
+            questionsByTopic[topicId] = [];
+          }
+          questionsByTopic[topicId].push(q);
+        }
+      });
+
+      // Filter to only topics that have questions available
+      const availableTopicIds = topicIds.filter(topicId => 
+        questionsByTopic[topicId] && questionsByTopic[topicId].length > 0
+      );
+
+      if (availableTopicIds.length === 0) {
+        // No questions available in any selected topic
+        questions = [];
+      } else if (availableTopicIds.length === 1) {
+        // Only one topic has questions, just take what we need
+        const topicQuestions = shuffleArray(questionsByTopic[availableTopicIds[0]]);
+        questions = topicQuestions.slice(0, Math.min(requestedSize, topicQuestions.length));
+      } else {
+        // Multiple topics have questions - distribute equally
+        // Shuffle questions within each topic first
+        availableTopicIds.forEach(topicId => {
+          questionsByTopic[topicId] = shuffleArray(questionsByTopic[topicId]);
+        });
+
+        // Calculate initial distribution - try to get at least 1 question from each topic
+        const selectedQuestions = [];
+        const questionsPerTopic = Math.floor(requestedSize / availableTopicIds.length);
+        const remainder = requestedSize % availableTopicIds.length;
+        
+        // Track how many questions we've taken from each topic
+        const topicUsage = {};
+        availableTopicIds.forEach(topicId => {
+          topicUsage[topicId] = 0;
+        });
+        
+        // First pass: distribute questions equally, ensuring each topic gets at least 1 if possible
+        availableTopicIds.forEach((topicId, index) => {
+          const topicQuestions = questionsByTopic[topicId];
+          const targetCount = questionsPerTopic + (index < remainder ? 1 : 0);
+          const available = topicQuestions.length;
+          
+          if (available > 0) {
+            // Ensure we take at least 1 from each topic if we have enough slots
+            const minToTake = selectedQuestions.length + availableTopicIds.length - index <= requestedSize ? 1 : 0;
+            const toTake = Math.max(minToTake, Math.min(targetCount, available));
+            
+            if (toTake > 0) {
+              selectedQuestions.push(...topicQuestions.slice(0, toTake));
+              topicUsage[topicId] = toTake;
+            }
+          }
+        });
+
+        // Second pass: if we haven't reached requestedSize, fill from remaining questions
+        // Use round-robin to ensure fair distribution across all topics
+        if (selectedQuestions.length < requestedSize) {
+          const remainingTopics = availableTopicIds.filter(topicId => {
+            const used = topicUsage[topicId] || 0;
+            const available = questionsByTopic[topicId].length;
+            return used < available;
+          });
+          
+          if (remainingTopics.length > 0) {
+            let needed = requestedSize - selectedQuestions.length;
+            let topicIndex = 0;
+            
+            while (needed > 0 && remainingTopics.length > 0) {
+              const topicId = remainingTopics[topicIndex % remainingTopics.length];
+              const used = topicUsage[topicId] || 0;
+              const available = questionsByTopic[topicId].length;
+              
+              if (used < available) {
+                const question = questionsByTopic[topicId][used];
+                selectedQuestions.push(question);
+                topicUsage[topicId] = used + 1;
+                needed--;
+              } else {
+                // Remove topic from remaining list if exhausted
+                const index = remainingTopics.indexOf(topicId);
+                if (index > -1) {
+                  remainingTopics.splice(index, 1);
+                }
+              }
+              
+              topicIndex++;
+              
+              // Safety check to avoid infinite loop
+              if (topicIndex > 10000) break;
+            }
+          }
+        }
+
+        // Shuffle the final selection to mix questions from different topics
+        questions = shuffleArray(selectedQuestions);
+      }
+    } else {
+      // Single topic or subject selected - randomly select requested number
+      questions = shuffleArray(questions);
+      questions = questions.slice(0, Math.min(requestedSize, questions.length));
+    }
+  } else {
+    // No size specified - shuffle all questions
+    questions = shuffleArray(questions);
+  }
 
   // Remove correctAnswer from response (students shouldn't see it before answering)
   return questions.map((q) => {
@@ -124,6 +264,71 @@ const getQuestionById = async (questionId, studentId = null) => {
 };
 
 /**
+ * Get marked question for review (includes correct answer and explanation)
+ * GET /api/student/questions/marked/:questionId
+ */
+const getMarkedQuestionForReview = async (questionId, studentId) => {
+  // Verify the question is marked by this student
+  const markedQuestion = await prisma.studentMarkedQuestion.findUnique({
+    where: {
+      studentId_questionId: {
+        studentId,
+        questionId,
+      },
+    },
+  });
+
+  if (!markedQuestion) {
+    throw new Error('Question is not marked by this student');
+  }
+
+  // Get question with correct answer and explanation
+  const question = await prisma.question.findFirst({
+    where: {
+      id: questionId,
+      status: 'completed',
+      isVisible: true,
+    },
+    include: {
+      exam: {
+        select: { id: true, name: true }
+      },
+      subject: {
+        select: { id: true, name: true }
+      },
+      topic: {
+        select: { id: true, name: true }
+      }
+    }
+  });
+
+  if (!question) {
+    throw new Error('Question not found or not available');
+  }
+
+  // Map Prisma fields to expected format (include correct answer for review)
+  return {
+    id: question.id,
+    _id: question.id,
+    shortId: question.shortId,
+    questionText: question.questionText,
+    questionType: question.questionType,
+    options: question.options,
+    correctAnswer: question.correctAnswer, // Include correct answer for review
+    explanation: question.explanation,
+    exam: question.exam ? { id: question.examId, ...question.exam } : null,
+    subject: question.subject ? { id: question.subjectId, ...question.subject } : null,
+    topic: question.topic ? { id: question.topicId, ...question.topic } : null,
+    markedAt: markedQuestion.createdAt,
+    // Include flag status for report issue functionality
+    isFlagged: question.isFlagged || false,
+    flagStatus: question.flagStatus || null,
+    flagReason: question.flagReason || null,
+    flagRejectionReason: question.flagRejectionReason || null,
+  };
+};
+
+/**
  * Study Mode: Submit answer and get immediate feedback
  */
 const submitStudyAnswer = async (studentId, questionId, selectedAnswer) => {
@@ -172,12 +377,141 @@ const submitStudyAnswer = async (studentId, questionId, selectedAnswer) => {
 
 /**
  * Test Mode: Start a test (get questions without answers)
+ * If size is specified and multiple topics are selected, selects questions equally from each topic
  */
 const startTest = async (filters = {}) => {
-  const questions = await getAvailableQuestions(filters);
+  let questions = await getAvailableQuestions(filters);
 
   if (questions.length === 0) {
     throw new Error('No questions available for the selected filters');
+  }
+
+  // If size is specified, limit the number of questions
+  if (filters.size && filters.size > 0) {
+    const requestedSize = filters.size;
+    
+    // Check if multiple topics are selected
+    let topicIds = [];
+    if (filters.topics) {
+      topicIds = Array.isArray(filters.topics) 
+        ? filters.topics 
+        : filters.topics.split(',').map(id => id.trim()).filter(Boolean);
+    } else if (filters.topic) {
+      topicIds = [filters.topic];
+    }
+
+    // If multiple topics are selected, select questions equally from each topic
+    if (topicIds.length > 1) {
+      // Group questions by topic
+      const questionsByTopic = {};
+      questions.forEach(q => {
+        const topicId = q.topicId || (q.topic?.id || q.topic?._id || q.topic);
+        if (topicId) {
+          if (!questionsByTopic[topicId]) {
+            questionsByTopic[topicId] = [];
+          }
+          questionsByTopic[topicId].push(q);
+        }
+      });
+
+      // Filter to only topics that have questions available
+      const availableTopicIds = topicIds.filter(topicId => 
+        questionsByTopic[topicId] && questionsByTopic[topicId].length > 0
+      );
+
+      if (availableTopicIds.length === 0) {
+        // No questions available in any selected topic
+        questions = [];
+      } else if (availableTopicIds.length === 1) {
+        // Only one topic has questions, just take what we need
+        const topicQuestions = shuffleArray(questionsByTopic[availableTopicIds[0]]);
+        questions = topicQuestions.slice(0, Math.min(requestedSize, topicQuestions.length));
+      } else {
+        // Multiple topics have questions - distribute equally
+        // Shuffle questions within each topic first
+        availableTopicIds.forEach(topicId => {
+          questionsByTopic[topicId] = shuffleArray(questionsByTopic[topicId]);
+        });
+
+        // Calculate initial distribution - try to get at least 1 question from each topic
+        const selectedQuestions = [];
+        const questionsPerTopic = Math.floor(requestedSize / availableTopicIds.length);
+        const remainder = requestedSize % availableTopicIds.length;
+        
+        // Track how many questions we've taken from each topic
+        const topicUsage = {};
+        availableTopicIds.forEach(topicId => {
+          topicUsage[topicId] = 0;
+        });
+        
+        // First pass: distribute questions equally, ensuring each topic gets at least 1 if possible
+        availableTopicIds.forEach((topicId, index) => {
+          const topicQuestions = questionsByTopic[topicId];
+          const targetCount = questionsPerTopic + (index < remainder ? 1 : 0);
+          const available = topicQuestions.length;
+          
+          if (available > 0) {
+            // Ensure we take at least 1 from each topic if we have enough slots
+            const minToTake = selectedQuestions.length + availableTopicIds.length - index <= requestedSize ? 1 : 0;
+            const toTake = Math.max(minToTake, Math.min(targetCount, available));
+            
+            if (toTake > 0) {
+              selectedQuestions.push(...topicQuestions.slice(0, toTake));
+              topicUsage[topicId] = toTake;
+            }
+          }
+        });
+
+        // Second pass: if we haven't reached requestedSize, fill from remaining questions
+        // Use round-robin to ensure fair distribution across all topics
+        if (selectedQuestions.length < requestedSize) {
+          const remainingTopics = availableTopicIds.filter(topicId => {
+            const used = topicUsage[topicId] || 0;
+            const available = questionsByTopic[topicId].length;
+            return used < available;
+          });
+          
+          if (remainingTopics.length > 0) {
+            let needed = requestedSize - selectedQuestions.length;
+            let topicIndex = 0;
+            
+            while (needed > 0 && remainingTopics.length > 0) {
+              const topicId = remainingTopics[topicIndex % remainingTopics.length];
+              const used = topicUsage[topicId] || 0;
+              const available = questionsByTopic[topicId].length;
+              
+              if (used < available) {
+                const question = questionsByTopic[topicId][used];
+                selectedQuestions.push(question);
+                topicUsage[topicId] = used + 1;
+                needed--;
+              } else {
+                // Remove topic from remaining list if exhausted
+                const index = remainingTopics.indexOf(topicId);
+                if (index > -1) {
+                  remainingTopics.splice(index, 1);
+                }
+              }
+              
+              topicIndex++;
+              
+              // Safety check to avoid infinite loop
+              if (topicIndex > 10000) break;
+            }
+          }
+        }
+
+        // Shuffle the final selection to mix questions from different topics
+        questions = shuffleArray(selectedQuestions);
+      }
+    } else {
+      // Single topic or subject selected - randomly select requested number
+      questions = shuffleArray(questions);
+      questions = questions.slice(0, Math.min(requestedSize, questions.length));
+    }
+  } else {
+    // No size specified - shuffle all questions
+    questions = shuffleArray(questions);
   }
 
   return questions;
@@ -2225,6 +2559,181 @@ const getStudentFlaggedQuestions = async (studentId) => {
   }));
 };
 
+/**
+ * Mark question for review by student
+ * POST /api/student/questions/:questionId/mark
+ */
+const markQuestion = async (questionId, studentId) => {
+  // Check if question exists and is visible
+  const question = await prisma.question.findFirst({
+    where: {
+      id: questionId,
+      status: 'completed',
+      isVisible: true,
+    },
+  });
+
+  if (!question) {
+    throw new Error('Question not found or not available');
+  }
+
+  // Check if already marked
+  const existingMark = await prisma.studentMarkedQuestion.findUnique({
+    where: {
+      studentId_questionId: {
+        studentId,
+        questionId,
+      },
+    },
+  });
+
+  if (existingMark) {
+    return { message: 'Question already marked', marked: true };
+  }
+
+  // Create marked question record
+  await prisma.studentMarkedQuestion.create({
+    data: {
+      studentId,
+      questionId,
+    },
+  });
+
+  return { message: 'Question marked successfully', marked: true };
+};
+
+/**
+ * Unmark question (remove from marked list)
+ * DELETE /api/student/questions/:questionId/mark
+ */
+const unmarkQuestion = async (questionId, studentId) => {
+  // Check if marked
+  const existingMark = await prisma.studentMarkedQuestion.findUnique({
+    where: {
+      studentId_questionId: {
+        studentId,
+        questionId,
+      },
+    },
+  });
+
+  if (!existingMark) {
+    return { message: 'Question not marked', marked: false };
+  }
+
+  // Remove marked question record
+  await prisma.studentMarkedQuestion.delete({
+    where: {
+      studentId_questionId: {
+        studentId,
+        questionId,
+      },
+    },
+  });
+
+  return { message: 'Question unmarked successfully', marked: false };
+};
+
+/**
+ * Get student's marked questions with pagination
+ * GET /api/student/questions/marked
+ */
+const getStudentMarkedQuestions = async (studentId, filters = {}) => {
+  let { page = 1, limit = 10 } = filters;
+
+  page = Math.max(parseInt(page, 10) || 1, 1);
+  limit = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 100);
+  const skip = (page - 1) * limit;
+
+  // Fetch marked questions with pagination
+  const [markedQuestions, total] = await Promise.all([
+    prisma.studentMarkedQuestion.findMany({
+      where: {
+        studentId,
+      },
+      include: {
+        question: {
+          include: {
+            exam: {
+              select: { id: true, name: true },
+            },
+            subject: {
+              select: { id: true, name: true },
+            },
+            topic: {
+              select: { id: true, name: true },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+    }),
+    prisma.studentMarkedQuestion.count({
+      where: {
+        studentId,
+      },
+    }),
+  ]);
+
+  const questions = markedQuestions.map((mq) => ({
+    id: mq.question.id,
+    shortId: mq.question.shortId,
+    questionText: mq.question.questionText,
+    questionType: mq.question.questionType,
+    options: mq.question.options,
+    correctAnswer: mq.question.correctAnswer,
+    explanation: mq.question.explanation,
+    exam: mq.question.exam ? { id: mq.question.examId, ...mq.question.exam } : null,
+    subject: mq.question.subject ? { id: mq.question.subjectId, ...mq.question.subject } : null,
+    topic: mq.question.topic ? { id: mq.question.topicId, ...mq.question.topic } : null,
+    markedAt: mq.createdAt,
+  }));
+
+  return {
+    questions,
+    pagination: {
+      totalItems: total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      hasNextPage: skip + questions.length < total,
+      hasPreviousPage: page > 1,
+    },
+  };
+};
+
+/**
+ * Check if questions are marked by student
+ * Returns a map of questionId -> isMarked
+ */
+const getMarkedStatusForQuestions = async (questionIds, studentId) => {
+  if (!questionIds || questionIds.length === 0) {
+    return {};
+  }
+
+  const markedQuestions = await prisma.studentMarkedQuestion.findMany({
+    where: {
+      studentId,
+      questionId: {
+        in: questionIds,
+      },
+    },
+    select: {
+      questionId: true,
+    },
+  });
+
+  const markedSet = new Set(markedQuestions.map((mq) => mq.questionId));
+  const statusMap = {};
+  questionIds.forEach((qId) => {
+    statusMap[qId] = markedSet.has(qId);
+  });
+
+  return statusMap;
+};
+
 module.exports = {
   getAvailableQuestions,
   getQuestionById,
@@ -2248,6 +2757,11 @@ module.exports = {
   completePausedSession,
   flagQuestionByStudent,
   getStudentFlaggedQuestions,
+  markQuestion,
+  unmarkQuestion,
+  getStudentMarkedQuestions,
+  getMarkedStatusForQuestions,
+  getMarkedQuestionForReview,
 };
 
 

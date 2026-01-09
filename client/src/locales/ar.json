@@ -802,6 +802,8 @@
       "sessionSize": {
         "title": "حجم الجلسة",
         "numberOfQuestions": "عدد الأسئلة",
+        "timeLimit": "الحد الزمني",
+        "minutes": "دقائق",
         "enterRange": "أدخل بين 1-50.",
         "onlyQuestionsAvailable": "0 أسئلة فقط متاحة مع المرشحات الحالية."
       },
@@ -1009,7 +1011,35 @@
         "next": "التالي",
         "loadMore": "تحميل المزيد من النتائج"
       },
-      "noSessions": "لم يتم العثور على جلسات"
+      "noSessions": "لم يتم العثور على جلسات",
+      "markedQuestions": {
+        "title": "الأسئلة المميزة",
+        "loading": "جاري تحميل الأسئلة المميزة...",
+        "noQuestions": "لا توجد أسئلة مميزة",
+        "review": "مراجعة",
+        "table": {
+          "questionId": "معرف السؤال",
+          "question": "السؤال",
+          "exam": "الامتحان",
+          "subject": "الموضوع",
+          "topic": "الموضوع",
+          "markedDate": "تاريخ التمييز",
+          "actions": "الإجراءات"
+        }
+      },
+      "reviewMarked": {
+        "title": "مراجعة السؤال المميز",
+        "questionId": "معرف السؤال:",
+        "back": "العودة إلى المراجعة",
+        "backToReview": "العودة إلى المراجعة",
+        "question": "السؤال",
+        "options": "الخيارات",
+        "correct": "الإجابة الصحيحة",
+        "explanation": "الشرح",
+        "exam": "الامتحان",
+        "subject": "الموضوع",
+        "topic": "الموضوع"
+      }
     },
     "reviewIncorrect": {
       "item": "عنصر {{current}} من {{total}}",
@@ -1122,6 +1152,9 @@
       "flagReason": "سبب الإبلاغ",
       "yourReason": "سببك:",
       "noReasonProvided": "لم يتم تقديم سبب",
+      "reportIssue": "الإبلاغ عن مشكلة",
+      "reportIssueLabel": "يرجى تقديم سبب للإبلاغ عن هذا السؤال:",
+      "reportIssuePlaceholder": "أدخل سبب الإبلاغ عن هذا السؤال...",
       "noReasonAvailable": "لا يوجد سبب متاح",
       "close": "إغلاق"
     },

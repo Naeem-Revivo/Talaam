@@ -84,7 +84,7 @@ const Dropdown = ({
       {/* Dropdown Box */}
       <div
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`relative flex ${height} cursor-pointer items-center justify-between rounded-lg border border-transparent bg-white px-4 ${textClassName || "text-sm font-semibold"} text-oxford-blue shadow-filter-hover`}
+        className={`relative flex ${height} cursor-pointer items-center justify-between rounded-lg border border-[#E5E7EB] bg-white px-4 ${textClassName || "text-sm font-semibold"} text-oxford-blue focus-within:outline-none focus-within:ring-2 focus-within:ring-cinnebar-red focus-within:border-transparent ${isOpen ? 'ring-2 ring-cinnebar-red border-transparent' : ''}`}
       >
         <span className={`${!displayValue ? "text-gray-400" : ""} ${textClassName || ""}`}>
           {displayValue || placeholder}

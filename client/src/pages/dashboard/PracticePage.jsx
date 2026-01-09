@@ -7,6 +7,7 @@ import studentQuestionsAPI from '../../api/studentQuestions';
 import subscriptionAPI from '../../api/subscription';
 import { showErrorToast } from '../../utils/toastConfig';
 import Loader from '../../components/common/Loader';
+import Dropdown from '../../components/shared/Dropdown';
 
 const PracticePage = () => {
   const { t } = useLanguage();
@@ -23,11 +24,13 @@ const PracticePage = () => {
   const [selectedSubtopics, setSelectedSubtopics] = useState({});
   const [allTopics, setAllTopics] = useState([]); // Store all topics for "select all" functionality
   const [sessionSize, setSessionSize] = useState('20');
+  const [timeLimit, setTimeLimit] = useState('30'); // Time limit in minutes for test mode
   const [subjects, setSubjects] = useState([]);
   const [topics, setTopics] = useState([]);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
   const [loadingTopics, setLoadingTopics] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
+  const [selectedSubjects, setSelectedSubjects] = useState({}); // Track selected subjects
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const [testSummary, setTestSummary] = useState(null);
@@ -35,18 +38,24 @@ const PracticePage = () => {
   const [loadingSummary, setLoadingSummary] = useState(false);
 
   const selectedSubtopicCount = Object.values(selectedSubtopics).filter(Boolean).length;
+  const selectedSubjectCount = Object.values(selectedSubjects).filter(Boolean).length;
   const parsedSessionSize = Number(sessionSize);
   const isSessionSizeValid =
     Number.isInteger(parsedSessionSize) && parsedSessionSize >= 1 && parsedSessionSize <= 50;
+  // Enable session if subject OR topic is selected
   const canStartTestSession =
-    sessionMode === 'test' && selectedSubtopicCount > 0 && isSessionSizeValid;
+    sessionMode === 'test' && (selectedSubtopicCount > 0 || selectedSubjectCount > 0) && isSessionSizeValid;
   const canStartStudySession =
-    sessionMode === 'study' && selectedSubtopicCount > 0;
+    sessionMode === 'study' && (selectedSubtopicCount > 0 || selectedSubjectCount > 0);
   const canStartSession = canStartTestSession || canStartStudySession;
 
   // Calculate total available questions from selected topics
+  // If only subjects are selected (no topics), return null to indicate we can't calculate
   const totalAvailableQuestions = useMemo(() => {
-    if (selectedSubtopicCount === 0) return 0;
+    if (selectedSubtopicCount === 0) {
+      // If only subjects are selected, we can't calculate without API call
+      return selectedSubjectCount > 0 ? null : 0;
+    }
     
     const selectedTopicIds = Object.keys(selectedSubtopics).filter(
       (topicId) => selectedSubtopics[topicId]
@@ -71,7 +80,7 @@ const PracticePage = () => {
     });
     
     return total;
-  }, [selectedSubtopics, allTopics, topics, selectedSubtopicCount]);
+  }, [selectedSubtopics, allTopics, topics, selectedSubtopicCount, selectedSubjectCount]);
   const handleStartSession = () => {
     if (!canStartSession) return;
     
@@ -89,22 +98,33 @@ const PracticePage = () => {
       (topicId) => selectedSubtopics[topicId]
     );
     
+    // Get selected subject IDs
+    const selectedSubjectIds = Object.keys(selectedSubjects).filter(
+      (subjectId) => selectedSubjects[subjectId]
+    );
+    
     // Build filters object to pass via navigation state
     const filters = {};
     
-    // Add selected topics (array of topic IDs)
+    // If topics are selected, use topics (they take precedence)
     if (selectedTopicIds.length > 0) {
       filters.topics = selectedTopicIds;
     }
-    
-    // Add selected subject if available
-    if (selectedSubjectId) {
-      filters.subject = selectedSubjectId;
+    // If only subjects are selected (no topics), use subjects
+    else if (selectedSubjectIds.length > 0) {
+      // If multiple subjects selected, use first one (or we could support multiple)
+      // For now, use the first selected subject
+      filters.subject = selectedSubjectIds[0];
     }
     
-    // Add session size for test mode
-    if (sessionMode === 'test' && sessionSize) {
+    // Add session size for both modes
+    if (sessionSize) {
       filters.size = sessionSize;
+    }
+    
+    // Add time limit only for test mode
+    if (sessionMode === 'test' && timeLimit) {
+      filters.timeLimit = timeLimit; // Time limit in minutes
     }
     
     // Navigate with filters in state instead of URL params
@@ -208,28 +228,11 @@ const PracticePage = () => {
         const response = await topicsAPI.getAllTopics(); // Fetch all topics without subject filter
         if (response.success && response.data) {
           const topicsList = response.data.topics || response.data;
-          // Fetch question counts for each topic
-          const topicsWithCounts = await Promise.all(
-            topicsList.map(async (topic) => {
-              try {
-                // Get question count for this topic
-                const questionsResponse = await studentQuestionsAPI.getAvailableQuestions({ 
-                  topic: topic.id || topic._id 
-                });
-                const count = questionsResponse.success && questionsResponse.data?.questions 
-                  ? questionsResponse.data.questions.length 
-                  : 0;
-                return {
-                  ...topic,
-                  count: count,
-                };
-              } catch (error) {
-                console.error(`Error fetching count for topic ${topic.id}:`, error);
-                // Don't show toast for individual topic count errors
-                return { ...topic, count: 0 };
-              }
-            })
-          );
+          // Use question counts from API response
+          const topicsWithCounts = topicsList.map((topic) => ({
+            ...topic,
+            count: topic.count || 0, // Use count from API response
+          }));
           setAllTopics(topicsWithCounts);
         }
       } catch (error) {
@@ -250,28 +253,11 @@ const PracticePage = () => {
           const response = await topicsAPI.getAllTopics({ parentSubject: selectedSubjectId });
           if (response.success && response.data) {
             const topicsList = response.data.topics || response.data;
-            // Fetch question counts for each topic
-            const topicsWithCounts = await Promise.all(
-              topicsList.map(async (topic) => {
-                try {
-                  // Get question count for this topic
-                  const questionsResponse = await studentQuestionsAPI.getAvailableQuestions({ 
-                    topic: topic.id || topic._id 
-                  });
-                  const count = questionsResponse.success && questionsResponse.data?.questions 
-                    ? questionsResponse.data.questions.length 
-                    : 0;
-                  return {
-                    ...topic,
-                    count: count,
-                  };
-                } catch (error) {
-                  console.error(`Error fetching count for topic ${topic.id}:`, error);
-                  // Don't show toast for individual topic count errors
-                  return { ...topic, count: 0 };
-                }
-              })
-            );
+            // Use question counts from API response
+            const topicsWithCounts = topicsList.map((topic) => ({
+              ...topic,
+              count: topic.count || 0, // Use count from API response
+            }));
             setTopics(topicsWithCounts);
           } else {
             setTopics([]);
@@ -296,18 +282,91 @@ const PracticePage = () => {
   }, [selectedSubjectId]);
 
   const toggleSubject = (subjectId) => {
-    if (expandedDomains[subjectId]) {
-      // Collapsing - clear topics
+    const isCurrentlyExpanded = expandedDomains[subjectId];
+    const isCurrentlySelected = selectedSubjects[subjectId];
+    
+    if (isCurrentlyExpanded) {
+      // Collapsing - clear topics for this subject
+      if (selectedSubjectId === subjectId) {
       setSelectedSubjectId(null);
       setTopics([]);
+      }
     } else {
       // Expanding - fetch topics for this subject
       setSelectedSubjectId(subjectId);
     }
+    
+    // Toggle expansion
     setExpandedDomains(prev => ({
       ...prev,
       [subjectId]: !prev[subjectId],
     }));
+    
+    // Toggle selection (independent of expansion)
+    setSelectedSubjects(prev => {
+      const newState = {
+        ...prev,
+        [subjectId]: !prev[subjectId],
+      };
+      
+      // If unselecting subject, clear its topics from selectedSubtopics
+      if (isCurrentlySelected) {
+        // Find topics that belong to this subject from both topics and allTopics
+        // Topics use parentSubject field to link to subject
+        const allAvailableTopics = [...topics, ...allTopics];
+        const subjectIdStr = String(subjectId);
+        
+        // Build a map of topic ID to topic for quick lookup
+        const topicMap = new Map();
+        allAvailableTopics.forEach(t => {
+          const topicId = t.id || t._id;
+          if (topicId) {
+            topicMap.set(String(topicId), t);
+            topicMap.set(topicId, t); // Also store with original type
+          }
+        });
+        
+        setSelectedSubtopics(prevSubtopics => {
+          const updated = { ...prevSubtopics };
+          
+          // Iterate through all selected topic IDs and check if they belong to this subject
+          Object.keys(prevSubtopics).forEach(topicKey => {
+            const topic = topicMap.get(topicKey) || topicMap.get(String(topicKey));
+            if (topic) {
+              // parentSubject can be a string ID or an object with { id, name }
+              let topicSubjectId = null;
+              if (topic.parentSubject) {
+                if (typeof topic.parentSubject === 'object' && topic.parentSubject.id) {
+                  topicSubjectId = topic.parentSubject.id;
+                } else {
+                  topicSubjectId = topic.parentSubject;
+                }
+              } else {
+                // Fallback to other possible fields
+                topicSubjectId = topic.subjectId || topic.subject?.id || topic.subject?._id || topic.subject;
+              }
+              
+              const topicSubjectIdStr = topicSubjectId ? String(topicSubjectId) : '';
+              if (topicSubjectIdStr === subjectIdStr) {
+                // This topic belongs to the unselected subject, remove it
+                delete updated[topicKey];
+              }
+            }
+          });
+          
+          return updated;
+        });
+      }
+      
+      // Update "All Questions" checkbox
+      if (allTopics.length > 0) {
+        const allTopicIds = allTopics.map(t => t.id || t._id).filter(Boolean);
+        const allSelected = allTopicIds.length > 0 && allTopicIds.every(id => selectedSubtopics[id] === true);
+        setSelectedAllQuestions(allSelected);
+      }
+      
+      return newState;
+    });
   };
 
   const toggleTopic = (topicId) => {
@@ -317,15 +376,37 @@ const PracticePage = () => {
       [topicId]: !prev[topicId],
       };
       
-      // Update "All Questions" checkbox based on whether all topics are selected
-      if (allTopics.length > 0) {
-        const allTopicIds = allTopics.map(t => t.id || t._id).filter(Boolean);
-        const allSelected = allTopicIds.length > 0 && allTopicIds.every(id => newState[id] === true);
-        setSelectedAllQuestions(allSelected);
-      } else {
-        // If allTopics not loaded, uncheck "All Questions" when manually toggling
-        setSelectedAllQuestions(false);
+      // If selecting a topic, ensure its subject is also selected
+      if (newState[topicId]) {
+        // Find the topic to get its subject
+        const topic = topics.find(t => (t.id || t._id) === topicId) || 
+                     allTopics.find(t => (t.id || t._id) === topicId);
+        if (topic) {
+          // Topics use parentSubject field to link to subject
+          // parentSubject can be a string ID or an object with { id, name }
+          let topicSubjectId = null;
+          if (topic.parentSubject) {
+            if (typeof topic.parentSubject === 'object' && topic.parentSubject.id) {
+              topicSubjectId = topic.parentSubject.id;
+            } else {
+              topicSubjectId = topic.parentSubject;
+            }
+          } else {
+            // Fallback to other possible fields
+            topicSubjectId = topic.subjectId || topic.subject?.id || topic.subject?._id || topic.subject;
+          }
+          
+          if (topicSubjectId) {
+            setSelectedSubjects(prevSubjects => ({
+              ...prevSubjects,
+              [topicSubjectId]: true,
+            }));
+          }
+        }
       }
+      
+      // Turn off "All Questions" when manually selecting/unselecting topics
+        setSelectedAllQuestions(false);
       
       return newState;
     });
@@ -504,7 +585,8 @@ const PracticePage = () => {
             <input
               type="checkbox"
               checked={selectedAllQuestions}
-              onChange={async () => {
+              onChange={async (e) => {
+                e.stopPropagation();
                 const newValue = !selectedAllQuestions;
                 setSelectedAllQuestions(newValue);
                 
@@ -519,6 +601,16 @@ const PracticePage = () => {
                       }
                     });
                     setSelectedSubtopics(allTopicIds);
+                    
+                    // Select all subjects
+                    const allSubjectIds = {};
+                    subjects.forEach(subject => {
+                      const subjectId = subject.id || subject._id;
+                      if (subjectId) {
+                        allSubjectIds[subjectId] = true;
+                      }
+                    });
+                    setSelectedSubjects(allSubjectIds);
                     
                     // Expand all subjects in the UI
                     const allExpanded = {};
@@ -536,21 +628,11 @@ const PracticePage = () => {
                       const response = await topicsAPI.getAllTopics();
                       if (response.success && response.data) {
                         const topicsList = response.data.topics || response.data;
-                        const topicsWithCounts = await Promise.all(
-                          topicsList.map(async (topic) => {
-                            try {
-                              const questionsResponse = await studentQuestionsAPI.getAvailableQuestions({ 
-                                topic: topic.id || topic._id 
-                              });
-                              const count = questionsResponse.success && questionsResponse.data?.questions 
-                                ? questionsResponse.data.questions.length 
-                                : 0;
-                              return { ...topic, count: count };
-                            } catch (error) {
-                              return { ...topic, count: 0 };
-                            }
-                          })
-                        );
+                        // Use question counts from API response
+                        const topicsWithCounts = topicsList.map((topic) => ({
+                          ...topic,
+                          count: topic.count || 0, // Use count from API response
+                        }));
                         setAllTopics(topicsWithCounts);
                         
                         const allTopicIds = {};
@@ -561,6 +643,16 @@ const PracticePage = () => {
                           }
                   });
                         setSelectedSubtopics(allTopicIds);
+                        
+                        // Select all subjects
+                        const allSubjectIds = {};
+                        subjects.forEach(subject => {
+                          const subjectId = subject.id || subject._id;
+                          if (subjectId) {
+                            allSubjectIds[subjectId] = true;
+                          }
+                        });
+                        setSelectedSubjects(allSubjectIds);
                         
                         // Expand all subjects
                         const allExpanded = {};
@@ -581,8 +673,9 @@ const PracticePage = () => {
                     }
                   }
                 } else {
-                  // Unselect all topics
+                  // Unselect all topics and subjects when "All Questions" is unchecked
                   setSelectedSubtopics({});
+                  setSelectedSubjects({});
                 }
               }}
               className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red"
@@ -607,21 +700,112 @@ const PracticePage = () => {
               ) : (
                 subjects.map((subject) => {
                   const subjectId = subject.id || subject._id;
-                  const isSelected = selectedSubjectId === subjectId;
+                  const isExpanded = expandedDomains[subjectId];
+                  const isSelected = selectedSubjects[subjectId] || false;
                   return (
                 <button
                     key={subjectId}
-                    onClick={() => toggleSubject(subjectId)}
+                    onClick={(e) => {
+                      // Only toggle expansion on button click, not checkbox
+                      if (e.target.type === 'checkbox') {
+                        return; // Let checkbox handle its own click
+                      }
+                      // Toggle expansion only
+                      if (isExpanded) {
+                        if (selectedSubjectId === subjectId) {
+                          setSelectedSubjectId(null);
+                          setTopics([]);
+                        }
+                      } else {
+                        setSelectedSubjectId(subjectId);
+                      }
+                      setExpandedDomains(prev => ({
+                        ...prev,
+                        [subjectId]: !prev[subjectId],
+                      }));
+                    }}
                   className={`w-full flex items-center justify-between rounded-lg transition-colors h-[44px] px-4 py-3 bg-white border ${
-                    isSelected ? 'border-cinnebar-red border-2' : 'border-[#E5E7EB]'
+                    isExpanded ? 'border-cinnebar-red border-2' : 'border-[#E5E7EB]'
                   }`}
                 >
+                  <div className="flex items-center gap-3 flex-1">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={(e) => {
+                        e.stopPropagation(); // Prevent button click
+                        // Toggle selection without expanding
+                        setSelectedSubjects(prev => {
+                          const newState = {
+                            ...prev,
+                            [subjectId]: !prev[subjectId],
+                          };
+                          
+                          // If unselecting subject, clear its topics from selectedSubtopics
+                          if (isSelected) {
+                            // Find topics that belong to this subject from both topics and allTopics
+                            // Topics use parentSubject field to link to subject
+                            const allAvailableTopics = [...topics, ...allTopics];
+                            const subjectIdStr = String(subjectId);
+                            
+                            // Build a map of topic ID to topic for quick lookup
+                            const topicMap = new Map();
+                            allAvailableTopics.forEach(t => {
+                              const topicId = t.id || t._id;
+                              if (topicId) {
+                                topicMap.set(String(topicId), t);
+                                topicMap.set(topicId, t); // Also store with original type
+                              }
+                            });
+                            
+                            setSelectedSubtopics(prevSubtopics => {
+                              const updated = { ...prevSubtopics };
+                              
+                              // Iterate through all selected topic IDs and check if they belong to this subject
+                              Object.keys(prevSubtopics).forEach(topicKey => {
+                                const topic = topicMap.get(topicKey) || topicMap.get(String(topicKey));
+                                if (topic) {
+                                  // parentSubject can be a string ID or an object with { id, name }
+                                  let topicSubjectId = null;
+                                  if (topic.parentSubject) {
+                                    if (typeof topic.parentSubject === 'object' && topic.parentSubject.id) {
+                                      topicSubjectId = topic.parentSubject.id;
+                                    } else {
+                                      topicSubjectId = topic.parentSubject;
+                                    }
+                                  } else {
+                                    // Fallback to other possible fields
+                                    topicSubjectId = topic.subjectId || topic.subject?.id || topic.subject?._id || topic.subject;
+                                  }
+                                  
+                                  const topicSubjectIdStr = topicSubjectId ? String(topicSubjectId) : '';
+                                  if (topicSubjectIdStr === subjectIdStr) {
+                                    // This topic belongs to the unselected subject, remove it
+                                    delete updated[topicKey];
+                                  }
+                                }
+                              });
+                              
+                              return updated;
+                            });
+                          }
+                          
+                          // Turn off "All Questions" when manually selecting/unselecting
+                          setSelectedAllQuestions(false);
+                          
+                          return newState;
+                        });
+                      }}
+                      onClick={(e) => e.stopPropagation()} // Prevent button click
+                      className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red flex-shrink-0"
+                    />
                   <span className="font-archivo font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
-                      {subject.name}
+                      {subject.name} {isSelected && <span className="text-cinnebar-red font-semibold">(Selected)</span>}
                   </span>
+                  </div>
                   <svg
-                    className={`w-5 h-5 text-oxford-blue transition-transform ${
-                        expandedDomains[subjectId] ? 'rotate-90' : ''
+                    className={`w-5 h-5 text-oxford-blue transition-transform flex-shrink-0 ${
+                      isExpanded ? 'rotate-90' : ''
                     }`}
                     fill="none"
                     stroke="currentColor"
@@ -679,18 +863,48 @@ const PracticePage = () => {
         <h2 className="font-archivo font-bold text-[18px] md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-4">
           {t('dashboard.practice.sessionSize.title')}
         </h2>
-        <div className="mb-2">
-          <label className="block font-archivo font-bold text-[16px] leading-[24px] text-oxford-blue mb-2">
-            {t('dashboard.practice.sessionSize.numberOfQuestions')}
-          </label>
-          <input
-            type="number"
-            value={sessionSize}
-            onChange={(e) => setSessionSize(e.target.value)}
-            min="1"
-            max="50"
-            className="w-full max-w-[200px] px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-cinnebar-red focus:border-transparent font-roboto font-medium text-[16px] leading-[24px] text-black placeholder:text-[16px] placeholder:text-black"
-          />
+        <div className="flex flex-col md:flex-row gap-4 mb-4">
+
+        <div className="w-full max-w-[200px]">
+            <label className="block font-archivo font-bold text-[16px] leading-[24px] text-oxford-blue mb-2">
+              {t('dashboard.practice.sessionSize.numberOfQuestions')}
+            </label>
+            <input
+              type="number"
+              value={sessionSize}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '' || (Number(value) >= 1 && Number(value) <= 50)) {
+                  setSessionSize(value);
+                }
+              }}
+              min="1"
+              max="50"
+              className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-cinnebar-red focus:border-transparent font-roboto font-medium text-[16px] leading-[24px] text-black placeholder:text-[16px] placeholder:text-black"
+            />
+          </div>
+          {/* Time Limit - Only for test mode, shown first */}
+          {sessionMode === 'test' && (
+            <div className="w-full max-w-[200px]">
+              <label className="block font-archivo font-bold text-[16px] leading-[24px] text-oxford-blue mb-2">
+                {t('dashboard.practice.sessionSize.timeLimit')}
+              </label>
+              <Dropdown
+                value={timeLimit}
+                onChange={(value) => setTimeLimit(value)}
+                options={[
+                  { value: '15', label: `15 ${t('dashboard.practice.sessionSize.minutes')}` },
+                  { value: '30', label: `30 ${t('dashboard.practice.sessionSize.minutes')}` },
+                  { value: '45', label: `45 ${t('dashboard.practice.sessionSize.minutes')}` },
+                  { value: '60', label: `60 ${t('dashboard.practice.sessionSize.minutes')}` },
+                ]}
+                className="w-full"
+                height="h-[48px]"
+                textClassName="font-roboto font-medium text-[16px] leading-[24px]"
+              />
+            </div>
+          )}
+          {/* Number of Questions - For both modes */}
         </div>
         <p className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-gray-500 mb-4">
           {t('dashboard.practice.sessionSize.enterRange')}

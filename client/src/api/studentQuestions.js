@@ -3,16 +3,17 @@ import axiosClient from './client';
 
 const studentQuestionsAPI = {
   // Get available questions for study mode
-  // GET /api/student/questions?exam=...&subject=...&topic=...&topics=...
+  // GET /api/student/questions?exam=...&subject=...&topic=...&topics=...&size=...
   getAvailableQuestions: async (params = {}) => {
     try {
-      const { exam, subject, topic, topics } = params;
+      const { exam, subject, topic, topics, size } = params;
       const queryParams = new URLSearchParams();
       
       if (exam) queryParams.append('exam', exam);
       if (subject) queryParams.append('subject', subject);
       if (topic) queryParams.append('topic', topic);
       if (topics) queryParams.append('topics', topics); // Support multiple topics
+      if (size) queryParams.append('size', size);
 
       const url = queryParams.toString()
         ? `/student/questions?${queryParams.toString()}`
@@ -27,16 +28,18 @@ const studentQuestionsAPI = {
   },
 
   // Start a test (get questions for test mode)
-  // GET /api/student/questions/test/start?exam=...&subject=...&topic=...&topics=...
+  // GET /api/student/questions/test/start?exam=...&subject=...&topic=...&topics=...&size=...&timeLimit=...
   startTest: async (params = {}) => {
     try {
-      const { exam, subject, topic, topics } = params;
+      const { exam, subject, topic, topics, size, timeLimit } = params;
       const queryParams = new URLSearchParams();
       
       if (exam) queryParams.append('exam', exam);
       if (subject) queryParams.append('subject', subject);
       if (topic) queryParams.append('topic', topic);
       if (topics) queryParams.append('topics', topics); // Support multiple topics
+      if (size) queryParams.append('size', size);
+      if (timeLimit) queryParams.append('timeLimit', timeLimit);
 
       const url = queryParams.toString()
         ? `/student/questions/test/start?${queryParams.toString()}`
@@ -233,6 +236,63 @@ const studentQuestionsAPI = {
     } catch (error) {
       const apiError = error.response?.data;
       throw apiError || { message: 'Failed to fetch flagged questions' };
+    }
+  },
+
+  // Mark question for review
+  // POST /api/student/questions/:questionId/mark
+  markQuestion: async (questionId) => {
+    try {
+      const response = await axiosClient.post(`/student/questions/${questionId}/mark`);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to mark question' };
+    }
+  },
+
+  // Unmark question (remove from marked list)
+  // DELETE /api/student/questions/:questionId/mark
+  unmarkQuestion: async (questionId) => {
+    try {
+      const response = await axiosClient.delete(`/student/questions/${questionId}/mark`);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to unmark question' };
+    }
+  },
+
+  // Get student's marked questions with pagination
+  // GET /api/student/questions/marked?page=1&limit=10
+  getStudentMarkedQuestions: async (params = {}) => {
+    try {
+      const { page = 1, limit = 10 } = params;
+      const queryParams = new URLSearchParams();
+      if (page) queryParams.append('page', page);
+      if (limit) queryParams.append('limit', limit);
+
+      const url = queryParams.toString()
+        ? `/student/questions/marked?${queryParams.toString()}`
+        : '/student/questions/marked';
+
+      const response = await axiosClient.get(url);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to fetch marked questions' };
+    }
+  },
+
+  // Get marked question for review (includes correct answer and explanation)
+  // GET /api/student/questions/marked/:questionId
+  getMarkedQuestionForReview: async (questionId) => {
+    try {
+      const response = await axiosClient.get(`/student/questions/marked/${questionId}`);
+      return response.data;
+    } catch (error) {
+      const apiError = error.response?.data;
+      throw apiError || { message: 'Failed to fetch marked question for review' };
     }
   },
 

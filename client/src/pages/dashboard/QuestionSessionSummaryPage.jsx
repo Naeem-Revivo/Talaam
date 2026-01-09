@@ -88,9 +88,6 @@ const QuestionSessionSummaryPage = () => {
               <span className="text-[12px] md:text-[14px] font-normal text-oxford-blue font-roboto">
                 <span className="hidden sm:inline">{t('dashboard.sessionSummary.timeRemaining')} </span>12:45
               </span>
-              {/* <button className="text-oxford-blue hover:opacity-70">
-                <img src={setting} alt="Settings" className="w-4 h-4 md:w-5 md:h-5" />
-              </button> */}
             </div>
           </div>
         </div>
@@ -119,23 +116,31 @@ const QuestionSessionSummaryPage = () => {
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <div className="max-w-6xl mx-auto">
-            <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue mb-1">
-              {t('dashboard.sessionSummary.hero.title')}
-            </h1>
-            <p className="font-roboto text-[18px] leading-[28px] text-dark-gray mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-1">
+              <h1 className="font-archivo text-[28px] sm:text-[32px] lg:text-[36px] leading-[32px] sm:leading-[36px] lg:leading-[40px] font-bold text-oxford-blue flex-1">
+                {t('dashboard.sessionSummary.hero.title')}
+              </h1>
+              <button
+                onClick={handleGoToDashboard}
+                className="w-full sm:w-auto px-4 py-2.5 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity whitespace-nowrap flex-shrink-0"
+              >
+                {t('dashboard.sessionSummary.actions.goToDashboard')}
+              </button>
+            </div>
+            <p className="font-roboto text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28px] text-dark-gray mb-6 sm:mb-8">
               {t('dashboard.sessionSummary.hero.subtitle')}
             </p>
 
-            <div className="grid gap-6 lg:grid-cols-2">
-              <div className="bg-white rounded-2xl shadow-summary border border-[#E5E7EB] w-full md:w-[548px] md:h-[251px] p-6 flex flex-col">
-                <h2 className="font-archivo text-[18px] font-semibold leading-[28px] text-oxford-blue mb-4">{t('dashboard.sessionSummary.accuracySnapshot.title')}</h2>
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 flex-1">
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+              <div className="bg-white rounded-2xl shadow-summary border border-[#E5E7EB] w-full md:w-[548px] md:h-[251px] p-4 sm:p-6 flex flex-col">
+                <h2 className="font-archivo text-[16px] sm:text-[18px] font-semibold leading-[24px] sm:leading-[28px] text-oxford-blue mb-3 sm:mb-4">{t('dashboard.sessionSummary.accuracySnapshot.title')}</h2>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 sm:gap-6 flex-1">
                   <div className="flex flex-col gap-1 md:max-w-[160px]">
-                    <div className="font-roboto text-[16px] leading-[25px] text-dark-gray">
+                    <div className="font-roboto text-[14px] sm:text-[16px] leading-[20px] sm:leading-[25px] text-dark-gray">
                       {t('dashboard.sessionSummary.accuracySnapshot.description')}
                     </div>
                   </div>
-                  <div className="relative flex items-center justify-center w-[120px] h-[120px] mx-auto md:mx-0">
+                  <div className="relative flex items-center justify-center w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] mx-auto md:mx-0 flex-shrink-0">
                     <svg className="w-full h-full">
                       <circle
                         cx="60"
@@ -157,54 +162,54 @@ const QuestionSessionSummaryPage = () => {
                         transform="rotate(-90 60 60)"
                       />
                     </svg>
-                    <div className="absolute text-[24px] font-bold text-oxford-blue font-archivo">
+                    <div className="absolute text-[20px] sm:text-[24px] font-bold text-oxford-blue font-archivo">
                       {summary.accuracyPercent}%
                     </div>
                   </div>
-                  <div className="flex flex-col gap-3 min-w-[150px] md:items-start">
+                  <div className="flex flex-col gap-2 sm:gap-3 min-w-[150px] md:items-start">
                     <div className="flex flex-col">
-                      <span className="font-roboto text-[16px] leading-[24px] font-normal text-[#ED4122]">
+                      <span className="font-roboto text-[14px] sm:text-[16px] leading-[20px] sm:leading-[24px] font-normal text-[#ED4122]">
                         {t('dashboard.sessionSummary.accuracySnapshot.correct')}
                       </span>
-                      <span className="font-roboto text-[16px] leading-[24px] font-normal text-oxford-blue">
+                      <span className="font-roboto text-[14px] sm:text-[16px] leading-[20px] sm:leading-[24px] font-normal text-oxford-blue">
                         {summary.correctCount} {t('dashboard.sessionSummary.accuracySnapshot.questions')}
                       </span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="font-roboto text-[16px] leading-[24px] font-normal text-dark-gray">
+                      <span className="font-roboto text-[14px] sm:text-[16px] leading-[20px] sm:leading-[24px] font-normal text-dark-gray">
                         {t('dashboard.sessionSummary.accuracySnapshot.incorrect')}
                       </span>
-                      <span className="font-roboto text-[16px] leading-[24px] font-normal text-oxford-blue">
+                      <span className="font-roboto text-[14px] sm:text-[16px] leading-[20px] sm:leading-[24px] font-normal text-oxford-blue">
                         {summary.incorrectCount} {t('dashboard.sessionSummary.accuracySnapshot.questions')}
                       </span>
                     </div>
                   </div>
                 </div>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 pt-1 gap-3 text-[16px] leading-[24px] font-roboto text-oxford-blue">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 pt-2 sm:pt-1 gap-2 sm:gap-3 text-[14px] sm:text-[16px] leading-[20px] sm:leading-[24px] font-roboto text-oxford-blue">
                   <span>{t('dashboard.sessionSummary.accuracySnapshot.questionsAnswered')} {summary.questionsAnswered}</span>
                   <span className="sm:text-right">{t('dashboard.sessionSummary.accuracySnapshot.averagePace')} {summary.averagePace}</span>
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-summary border border-[#E5E7EB] w-full md:w-[548px] md:h-[251px] p-6 flex flex-col">
-                <span className="font-roboto text-[16px] leading-[24px] text-dark-gray mb-1">
+              <div className="bg-white rounded-2xl shadow-summary border border-[#E5E7EB] w-full md:w-[548px] md:h-[251px] p-4 sm:p-6 flex flex-col">
+                <span className="font-roboto text-[14px] sm:text-[16px] leading-[20px] sm:leading-[24px] text-dark-gray mb-1">
                   {summary.testMode ? t('dashboard.sessionSummary.sessionOverview.testMode') : t('dashboard.sessionSummary.sessionOverview.studyMode')}
                 </span>
-                <h3 className="font-archivo text-[18px] leading-[28px] font-semibold text-oxford-blue mb-1">
+                <h3 className="font-archivo text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28px] font-semibold text-oxford-blue mb-1">
                   {t('dashboard.sessionSummary.sessionOverview.title')}
                 </h3>
-                <p className="font-roboto text-[16px] leading-[25px] text-dark-gray mb-2">
+                <p className="font-roboto text-[14px] sm:text-[16px] leading-[20px] sm:leading-[25px] text-dark-gray mb-2 sm:mb-3">
                   {t('dashboard.sessionSummary.sessionOverview.description')}
                 </p>
-                <div className="bg-[#EF4444] rounded-2xl w-full md:w-[499px] h-[90px] py-4 flex items-center gap-4 justify-center text-white">
-                  <div className="w-[64px] h-[64px] rounded-full bg-white text-[#EF4444] flex items-center justify-center text-[20px] font-archivo font-bold">
+                <div className="bg-[#EF4444] rounded-2xl w-full md:w-[499px] h-auto min-h-[90px] py-3 sm:py-4 px-3 sm:px-4 flex items-center gap-3 sm:gap-4 justify-center text-white">
+                  <div className="w-[56px] h-[56px] sm:w-[64px] sm:h-[64px] rounded-full bg-white text-[#EF4444] flex items-center justify-center text-[18px] sm:text-[20px] font-archivo font-bold flex-shrink-0">
                     {summary.questionsAnswered}
                   </div>
-                  <div>
-                    <div className="text-[16px] font-archivo font-bold">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[14px] sm:text-[16px] font-archivo font-bold">
                       {t('dashboard.sessionSummary.sessionOverview.questionsCompleted')}
                     </div>
-                    <div className="text-[13px] font-roboto text-white/80">
+                    <div className="text-[12px] sm:text-[13px] font-roboto text-white/80 break-words">
                       {summary.questionsAnswered} {t('dashboard.sessionSummary.sessionOverview.total')}, {summary.timeTaken} {t('dashboard.sessionSummary.sessionOverview.overall')}, {summary.averagePace} {t('dashboard.sessionSummary.sessionOverview.average')}
                     </div>
                   </div>
@@ -212,31 +217,31 @@ const QuestionSessionSummaryPage = () => {
               </div>
             </div>
 
-            <div className="grid gap-6 mt-6 md:grid-cols-3">
-              <div className="bg-white rounded-2xl shadow-summary border border-[#E5E7EB] p-6">
-                <h4 className="font-archivo text-[18px] leading-[28px] font-semibold text-oxford-blue mb-2">{t('dashboard.sessionSummary.metrics.accuracy.title')}</h4>
-                <div className="font-archivo text-[24px] leading-[32px] font-bold text-oxford-blue mb-2">
+            <div className="grid gap-4 sm:gap-6 mt-4 sm:mt-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="bg-white rounded-2xl shadow-summary border border-[#E5E7EB] p-4 sm:p-6">
+                <h4 className="font-archivo text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28px] font-semibold text-oxford-blue mb-2">{t('dashboard.sessionSummary.metrics.accuracy.title')}</h4>
+                <div className="font-archivo text-[20px] sm:text-[24px] leading-[28px] sm:leading-[32px] font-bold text-oxford-blue mb-2">
                   {summary.accuracyPercent}%
                 </div>
-                <div className="font-roboto text-[16px] leading-[25px] text-dark-gray">
+                <div className="font-roboto text-[14px] sm:text-[16px] leading-[20px] sm:leading-[25px] text-dark-gray">
                   {t('dashboard.sessionSummary.metrics.accuracy.description')}
                 </div>
               </div>
-              <div className="bg-white rounded-2xl shadow-summary border border-[#E5E7EB] p-6">
-                <h4 className="font-archivo text-[18px] leading-[28px] font-semibold text-oxford-blue mb-2">{t('dashboard.sessionSummary.metrics.questionOutcome.title')}</h4>
-                <div className="font-archivo text-[24px] leading-[32px] font-bold text-oxford-blue mb-2">
+              <div className="bg-white rounded-2xl shadow-summary border border-[#E5E7EB] p-4 sm:p-6">
+                <h4 className="font-archivo text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28px] font-semibold text-oxford-blue mb-2">{t('dashboard.sessionSummary.metrics.questionOutcome.title')}</h4>
+                <div className="font-archivo text-[20px] sm:text-[24px] leading-[28px] sm:leading-[32px] font-bold text-oxford-blue mb-2">
                   {summary.correctCount} {t('dashboard.sessionSummary.accuracySnapshot.correct')} / {summary.incorrectCount} {t('dashboard.sessionSummary.accuracySnapshot.incorrect')}
                 </div>
-                <div className="font-roboto text-[16px] leading-[25px] text-dark-gray">
+                <div className="font-roboto text-[14px] sm:text-[16px] leading-[20px] sm:leading-[25px] text-dark-gray">
                   {summary.questionsAnswered} {t('dashboard.sessionSummary.metrics.questionOutcome.description')}
                 </div>
               </div>
-              <div className="bg-white rounded-2xl shadow-summary border border-[#E5E7EB] p-6">
-                <h4 className="font-archivo text-[18px] leading-[28px] font-semibold text-oxford-blue mb-2">{t('dashboard.sessionSummary.metrics.timeTaken.title')}</h4>
-                <div className="font-archivo text-[24px] leading-[32px] font-bold text-oxford-blue mb-2">
+              <div className="bg-white rounded-2xl shadow-summary border border-[#E5E7EB] p-4 sm:p-6">
+                <h4 className="font-archivo text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28px] font-semibold text-oxford-blue mb-2">{t('dashboard.sessionSummary.metrics.timeTaken.title')}</h4>
+                <div className="font-archivo text-[20px] sm:text-[24px] leading-[28px] sm:leading-[32px] font-bold text-oxford-blue mb-2">
                   {summary.timeTaken}
                 </div>
-                <div className="font-roboto text-[16px] leading-[25px] text-dark-gray">
+                <div className="font-roboto text-[14px] sm:text-[16px] leading-[20px] sm:leading-[25px] text-dark-gray">
                   {t('dashboard.sessionSummary.metrics.timeTaken.description').replace('{{pace}}', summary.averagePace)}
                 </div>
               </div>
@@ -246,16 +251,6 @@ const QuestionSessionSummaryPage = () => {
         </main>
       </div>
 
-      <footer className="bg-white border-t border-[#E5E7EB] px-4 md:px-6 py-3 md:py-4 sticky bottom-0 z-20">
-        <div className="mx-auto flex max-w-5xl justify-end">
-          <button
-            onClick={handleGoToDashboard}
-            className="px-5 py-2.5 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-roboto hover:opacity-90 transition"
-          >
-            {t('dashboard.sessionSummary.actions.goToDashboard')}
-          </button>
-        </div>
-      </footer>
     </div>
   );
 };
