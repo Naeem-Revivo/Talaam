@@ -789,7 +789,7 @@
         }
       },
       "sessionSize": {
-        "title": "Session Size",
+        "title": "Session Size & Time Limit",
         "numberOfQuestions": "Number of Questions",
         "timeLimit": "Time Limit",
         "minutes": "minutes",
