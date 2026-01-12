@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import studentQuestionsAPI from '../../api/studentQuestions';
 import { showErrorToast } from '../../utils/toastConfig';
+import { Loader } from '../../components/common/Loader';
 
 const ReviewPage = () => {
   const { t } = useLanguage();
@@ -415,7 +416,7 @@ const ReviewPage = () => {
       {/* Loading State */}
       {loading && (
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-oxford-blue text-lg">Loading sessions...</div>
+          <Loader size="lg" />
         </div>
       )}
 
@@ -614,7 +615,7 @@ const ReviewPage = () => {
         
         {loadingMarked ? (
           <div className="flex items-center justify-center min-h-[200px]">
-            <div className="text-oxford-blue text-lg">{t('dashboard.review.markedQuestions.loading')}</div>
+            <Loader size="lg" />
           </div>
         ) : (
           <>

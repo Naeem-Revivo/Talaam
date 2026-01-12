@@ -4,6 +4,7 @@ import { BarChart } from "@mui/x-charts/BarChart";
 import { vedio, timer } from "../../assets/svg/dashboard";
 import { useNavigate } from "react-router-dom";
 import studentQuestionsAPI from "../../api/studentQuestions";
+import { Loader } from "../../components/common/Loader";
 
 const DashboardPage = () => {
   const { t } = useLanguage();
@@ -126,81 +127,81 @@ const DashboardPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 pt-4">
           {/* Progress Card */}
-          <div className="rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full h-auto min-h-[200px] md:min-h-[251px]">
+          <div className="rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full h-auto min-h-[200px] md:min-h-[251px] flex flex-col">
             <h3 className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue mb-3 md:mb-4">
               {t("dashboard.overview.progress")}
             </h3>
-            <div className="flex items-center justify-center">
-              {loading ? (
-                <div className="text-gray-400">Loading...</div>
-              ) : (
-                <div className="relative w-[90px] h-[90px] md:w-[115px] md:h-[115px]">
-                  <svg
-                    className="transform -rotate-90 w-full h-full"
-                    viewBox="0 0 192 192"
-                  >
-                    <circle
-                      cx="96"
-                      cy="96"
-                      r="84"
-                      stroke="currentColor"
-                      strokeWidth="16"
-                      fill="none"
-                      className="text-gray-200"
-                    />
-                    <circle
-                      cx="96"
-                      cy="96"
-                      r="84"
-                      stroke="currentColor"
-                      strokeWidth="16"
-                      fill="none"
-                      strokeDasharray={`${2 * Math.PI * 84 * (getProgressData().percentage / 100)} ${
-                        2 * Math.PI * 84
-                      }`}
-                      className="text-moonstone-blue"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <p className="font-archivo font-bold text-[24px] leading-[32px] text-oxford-blue">
-                        {getProgressData().percentage.toFixed(1)}%
-                      </p>
+            {loading ? (
+              <div className="flex-1 flex items-center justify-center">
+                <Loader size="lg" />
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-center">
+                  <div className="relative w-[90px] h-[90px] md:w-[115px] md:h-[115px]">
+                    <svg
+                      className="transform -rotate-90 w-full h-full"
+                      viewBox="0 0 192 192"
+                    >
+                      <circle
+                        cx="96"
+                        cy="96"
+                        r="84"
+                        stroke="currentColor"
+                        strokeWidth="16"
+                        fill="none"
+                        className="text-gray-200"
+                      />
+                      <circle
+                        cx="96"
+                        cy="96"
+                        r="84"
+                        stroke="currentColor"
+                        strokeWidth="16"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 84 * (getProgressData().percentage / 100)} ${
+                          2 * Math.PI * 84
+                        }`}
+                        className="text-moonstone-blue"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <p className="font-archivo font-bold text-[24px] leading-[32px] text-oxford-blue">
+                          {getProgressData().percentage.toFixed(1)}%
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-            <p className="text-center font-roboto font-normal text-sm md:text-[16px] leading-5 md:leading-6 text-gray-500 mt-3 md:mt-4">
-              {loading
-                ? "Loading..."
-                : `${getProgressData().completed}/${getProgressData().total} ${t("dashboard.overview.questionsCompleted")}`}
-            </p>
+                <p className="text-center font-roboto font-normal text-sm md:text-[16px] leading-5 md:leading-6 text-gray-500 mt-3 md:mt-4">
+                  {`${getProgressData().completed}/${getProgressData().total} ${t("dashboard.overview.questionsCompleted")}`}
+                </p>
+              </>
+            )}
           </div>
 
           {/* Accuracy Card */}
-          <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full h-auto min-h-[200px] md:min-h-[251px]">
+          <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full h-auto min-h-[200px] md:min-h-[251px] flex flex-col">
             <h3 className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue mb-3 md:mb-10">
               {t("dashboard.overview.accuracy")}
             </h3>
-            <div className="flex items-start justify-center h-full">
-              <div className="text-center">
-                {loading ? (
-                  <p className="font-roboto font-normal text-sm md:text-base text-gray-400">
-                    Loading...
-                  </p>
-                ) : (
-                  <>
-                    <p className="font-archivo font-bold text-[36px] leading-[40px] text-cinnebar-red">
-                      {getAccuracy().toFixed(0)}%
-                    </p>
-                    <p className="font-roboto font-normal text-sm md:text-base leading-5 md:leading-6 tracking-normal text-center align-middle text-gray-500">
-                      {t("dashboard.overview.overall")}
-                    </p>
-                  </>
-                )}
+            {loading ? (
+              <div className="flex-1 mb-6 flex items-center justify-center">
+                <Loader size="lg" />
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <p className="font-archivo font-bold text-[36px] leading-[40px] text-cinnebar-red">
+                    {getAccuracy().toFixed(0)}%
+                  </p>
+                  <p className="font-roboto font-normal text-sm md:text-base leading-5 md:leading-6 tracking-normal text-center align-middle text-gray-500">
+                    {t("dashboard.overview.overall")}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -211,10 +212,10 @@ const DashboardPage = () => {
           {t("dashboard.performance.title")}
         </h2>
         <div className="rounded-xl flex flex-col items-center justify-center p-3 md:p-6 overflow-x-auto md:overflow-x-visible scroll-smooth">
-          <div className="min-w-[650px] md:min-w-0 w-full md:w-[1070px] h-[320px]">
+          <div className="min-w-[650px] md:min-w-0 w-full md:w-[1070px] h-[320px] relative">
             {loading ? (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-gray-400">Loading performance data...</p>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader size="lg" />
               </div>
             ) : (
               <BarChart
