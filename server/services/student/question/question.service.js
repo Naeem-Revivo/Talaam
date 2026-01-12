@@ -1972,8 +1972,16 @@ const pauseSession = async (studentId, sessionData) => {
     questions, // Array of { questionId, selectedAnswer, isCorrect? }
     currentIndex,
     timeTaken, // Time in milliseconds
-    timerEndTime, // For test mode - when timer should end
+    timerEndTime, // For test mode - when timer should end (absolute timestamp)
+    timeLimit, // For test mode - time limit in minutes
   } = sessionData;
+  
+  // Calculate remaining time for test mode (to restore timer correctly on resume)
+  let remainingTime = null;
+  if (mode === 'test' && timerEndTime) {
+    const now = Date.now();
+    remainingTime = Math.max(0, timerEndTime - now); // Remaining time in milliseconds
+  }
 
   // Ensure examId is a string (not an object)
   const examIdString = typeof examId === 'string' ? examId : (examId?.id || examId);
@@ -2000,11 +2008,12 @@ const pauseSession = async (studentId, sessionData) => {
                      q.selectedAnswer !== undefined && 
                      q.selectedAnswer !== '';
     
-    // For study mode: isCorrect should be null for unanswered questions
-    // For test mode: isCorrect can be false for unanswered (they count as incorrect)
-    const isCorrect = mode === 'study' 
-      ? (hasAnswer ? (q.isCorrect ?? null) : null)
-      : (hasAnswer ? (q.isCorrect ?? false) : false);
+    // isCorrect must always be a boolean (not null) per Prisma schema
+    // For unanswered questions, use false (default)
+    // For answered questions, use the provided isCorrect value or false
+    const isCorrect = hasAnswer 
+      ? (q.isCorrect === true ? true : false)
+      : false;
     
     return {
       question: q.questionId, // StudentAnswer model expects 'question' key that maps to questionId
@@ -2019,11 +2028,12 @@ const pauseSession = async (studentId, sessionData) => {
                      q.selectedAnswer !== undefined && 
                      q.selectedAnswer !== '';
     
-    // For study mode: isCorrect should be null for unanswered questions
-    // For test mode: isCorrect can be false for unanswered (they count as incorrect)
-    const isCorrect = mode === 'study' 
-      ? (hasAnswer ? (q.isCorrect ?? null) : null)
-      : (hasAnswer ? (q.isCorrect ?? false) : false);
+    // isCorrect must always be a boolean (not null) per Prisma schema
+    // For unanswered questions, use false (default)
+    // For answered questions, use the provided isCorrect value or false
+    const isCorrect = hasAnswer 
+      ? (q.isCorrect === true ? true : false)
+      : false;
     
     return {
       question: {
@@ -2053,79 +2063,23 @@ const pauseSession = async (studentId, sessionData) => {
   const score = correctAnswers;
   const percentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
 
-  // Check if a paused session already exists for this exam/mode/subject/topic
-  const existingPausedSession = await prisma.studentAnswer.findFirst({
-    where: {
-      studentId: studentId,
-      mode: mode,
-      examId: examIdString,
-      subjectId: subjectId || null,
-      topicId: topicId || null,
-      status: 'paused',
-    },
-    include: {
-      answers: true,
-    },
+  // Always create a new paused session (allow multiple paused sessions for the same exam/subject/topic)
+  // This allows users to have multiple paused sessions and resume any of them
+  const studentAnswer = await StudentAnswer.create({
+    student: studentId,
+    mode: mode,
+    exam: examIdString,
+    subject: subjectId || null,
+    topic: topicId || null,
+    answers: processedAnswersForCreate,
+    totalQuestions,
+    correctAnswers,
+    incorrectAnswers,
+    score,
+    percentage,
+    timeTaken: timeTaken || null,
+    status: 'paused', // Mark as paused
   });
-
-  let studentAnswer;
-  
-  if (existingPausedSession) {
-    // Update existing paused session
-    // First, delete existing answers
-    await prisma.studentAnswerQuestion.deleteMany({
-      where: {
-        studentAnswerId: existingPausedSession.id,
-      },
-    });
-
-    // Update the session
-    studentAnswer = await prisma.studentAnswer.update({
-      where: {
-        id: existingPausedSession.id,
-      },
-      data: {
-        answers: {
-          create: processedAnswersForUpdate,
-        },
-        totalQuestions,
-        correctAnswers,
-        incorrectAnswers,
-        score,
-        percentage,
-        timeTaken: timeTaken || null,
-        status: 'paused',
-        updatedAt: new Date(),
-      },
-      include: {
-        exam: true,
-        subject: true,
-        topic: true,
-        answers: {
-          include: {
-            question: true,
-          },
-        },
-      },
-    });
-  } else {
-    // Create new paused session
-    studentAnswer = await StudentAnswer.create({
-      student: studentId,
-      mode: mode,
-      exam: examIdString,
-      subject: subjectId || null,
-      topic: topicId || null,
-      answers: processedAnswersForCreate,
-      totalQuestions,
-      correctAnswers,
-      incorrectAnswers,
-      score,
-      percentage,
-      timeTaken: timeTaken || null,
-      status: 'paused', // Mark as paused
-    });
-  }
 
   // Store additional pause metadata in a JSON field if needed
   // For now, we'll use the currentIndex from the questions array structure
@@ -2143,6 +2097,8 @@ const pauseSession = async (studentId, sessionData) => {
     mode,
     currentIndex: currentIndex || 0,
     timerEndTime: timerEndTime || null,
+    remainingTime: remainingTime || null, // Remaining time in milliseconds for test mode
+    timeLimit: timeLimit || null, // Store time limit for reference
     summary: {
       totalQuestions,
       correctAnswers,
@@ -2151,8 +2107,8 @@ const pauseSession = async (studentId, sessionData) => {
       percentage,
       timeTaken: timeTaken || null,
     },
-    pausedAt: existingPausedSession ? studentAnswer.updatedAt : studentAnswer.createdAt,
-    updated: !!existingPausedSession, // Indicate if this was an update
+    pausedAt: studentAnswer.createdAt,
+    updated: false, // Always creating a new session now
   };
 };
 
@@ -2215,7 +2171,8 @@ const completePausedSession = async (studentId, sessionId, sessionData) => {
       }
     } else {
       // For study mode: use the isCorrect value from frontend (already calculated)
-      isCorrect = hasAnswer ? (q.isCorrect ?? null) : null;
+      // isCorrect must always be a boolean (not null) per Prisma schema
+      isCorrect = hasAnswer ? (q.isCorrect === true ? true : false) : false;
     }
     
     return {
@@ -2223,7 +2180,7 @@ const completePausedSession = async (studentId, sessionId, sessionData) => {
         connect: { id: q.questionId },
       },
       selectedAnswer: q.selectedAnswer || '',
-      isCorrect: isCorrect ?? false,
+      isCorrect: isCorrect,
     };
   });
 
