@@ -46,6 +46,7 @@ const QuestionSessionPage = () => {
   const sessionInfoRef = useRef({ examId: null, subjectId: null, topicId: null });
   const pausedSessionIdRef = useRef(null); // Store paused session ID for updating on completion
   const pausedTimeTakenRef = useRef(0); // Store original paused time for calculating total time
+  const resumeStartTimeRef = useRef(null); // Store when the session was resumed (for calculating resumed time)
   const hasInteractedAfterResumeRef = useRef(false); // Track if user has interacted after resuming paused session
   const timeLimitRef = useRef(null); // Store time limit in minutes from API response
 
@@ -196,17 +197,49 @@ const QuestionSessionPage = () => {
                 );
               }
               
-              // Restore session start time (use paused time as base, but reset for new session)
-              sessionStartTime.current = Date.now();
+              // Restore session start time: set it so that elapsed time calculation shows paused time initially
+              // We set it to (current time - paused time) so that Date.now() - sessionStartTime.current = pausedTime
+              // This way, when we resume, the timer shows the paused time and continues counting from there
+              const pausedTime = pausedData.timeTaken || 0;
+              sessionStartTime.current = Date.now() - pausedTime;
+              // Store the resume start time for calculating total time later
+              resumeStartTimeRef.current = Date.now();
               
-              // Restore timer for test mode (recalculate remaining time)
+              // Restore timer for test mode (use stored remaining time from pause)
               if (pausedData.mode === 'test' && pausedData.questions?.length > 0) {
-                const elapsedTime = pausedData.timeTaken || 0;
-                // Use stored timeLimit if available, otherwise default to 1 minute per question
-                const timeLimitMinutes = pausedData.timeLimit || pausedData.questions.length;
-                const totalTimeMs = timeLimitMinutes * 60 * 1000;
-                const remaining = Math.max(0, totalTimeMs - elapsedTime);
+                // Try to get remaining time from sessionStorage first (most accurate, stored when pausing)
+                let remaining = null;
+                const pauseDataKey = `pause_data_${pausedSessionId}`;
+                try {
+                  const storedPauseData = sessionStorage.getItem(pauseDataKey);
+                  if (storedPauseData) {
+                    const pauseData = JSON.parse(storedPauseData);
+                    remaining = pauseData.remainingTime;
+                    // Also restore timeLimit if available
+                    if (pauseData.timeLimit) {
+                      timeLimitRef.current = pauseData.timeLimit;
+                    }
+                  }
+                } catch (e) {
+                  // Ignore parse errors
+                }
+                
+                // Fallback: use remainingTime from API response or recalculate
+                if (remaining === null || remaining === undefined) {
+                  if (pausedData.remainingTime !== null && pausedData.remainingTime !== undefined) {
+                    remaining = pausedData.remainingTime;
+                  } else {
+                    // Last resort: recalculate (less accurate if timeLimit wasn't stored)
+                    const elapsedTime = pausedData.timeTaken || 0;
+                    const timeLimitMinutes = pausedData.timeLimit || pausedData.questions.length;
+                    const totalTimeMs = timeLimitMinutes * 60 * 1000;
+                    remaining = Math.max(0, totalTimeMs - elapsedTime);
+                  }
+                }
+                
                 if (remaining > 0) {
+                  // Set timer end time to current time + remaining time
+                  // This ensures the timer continues from where it was paused
                   timerEndTimeRef.current = Date.now() + remaining;
                   setTimeRemaining(remaining);
                 } else {
@@ -561,7 +594,14 @@ const QuestionSessionPage = () => {
       // Submit answers after state update
       (async () => {
     try {
-      const totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+      // If resuming from paused session, add paused time + resumed time
+      let totalTime;
+      if (pausedSessionIdRef.current) {
+        const resumedTime = resumeStartTimeRef.current ? Date.now() - resumeStartTimeRef.current : 0;
+        totalTime = pausedTimeTakenRef.current + resumedTime;
+      } else {
+        totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+      }
       const timeTakenMs = totalTime;
       
       if (sessionInfoRef.current.examId) {
@@ -681,11 +721,17 @@ const QuestionSessionPage = () => {
       }
 
       try {
-        const resumedTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
-        // If resuming from paused session, add the original paused time
-        const totalTimeTakenMs = pausedSessionIdRef.current 
-          ? pausedTimeTakenRef.current + resumedTime 
-          : resumedTime;
+        // Calculate total time: if resuming from paused session, add paused time + resumed time
+        // Otherwise, calculate from session start time
+        let totalTimeTakenMs;
+        if (pausedSessionIdRef.current) {
+          // For resumed sessions: total time = paused time + resumed time
+          const resumedTime = resumeStartTimeRef.current ? Date.now() - resumeStartTimeRef.current : 0;
+          totalTimeTakenMs = pausedTimeTakenRef.current + resumedTime;
+        } else {
+          // For normal sessions: total time = current time - session start time
+          totalTimeTakenMs = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+        }
 
         // Check if we're completing a paused session
         if (pausedSessionIdRef.current) {
@@ -1154,7 +1200,14 @@ const QuestionSessionPage = () => {
     }
 
     try {
-      const totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+      // If resuming from paused session, add paused time + resumed time
+      let totalTime;
+      if (pausedSessionIdRef.current) {
+        const resumedTime = resumeStartTimeRef.current ? Date.now() - resumeStartTimeRef.current : 0;
+        totalTime = pausedTimeTakenRef.current + resumedTime;
+      } else {
+        totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+      }
       const timeTakenMs = totalTime;
 
       // Prepare questions data for pausing
@@ -1188,6 +1241,15 @@ const QuestionSessionPage = () => {
       });
 
       if (response.success) {
+        // Store remaining time and timeLimit for test mode (to restore timer correctly on resume)
+        if (mode === 'test' && response.data?.remainingTime !== null && response.data?.remainingTime !== undefined) {
+          const pauseDataKey = `pause_data_${response.data.sessionId}`;
+          sessionStorage.setItem(pauseDataKey, JSON.stringify({
+            remainingTime: response.data.remainingTime,
+            timeLimit: response.data.timeLimit,
+          }));
+        }
+        
         // Clear session storage (don't save paused sessions in session storage)
         if (sessionIdRef.current) {
       clearSession(sessionIdRef.current);
@@ -1228,7 +1290,14 @@ const QuestionSessionPage = () => {
 
   const handleViewSummary = async () => {
     // Calculate session statistics
-    const totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+    // If resuming from paused session, add paused time + resumed time
+    let totalTime;
+    if (pausedSessionIdRef.current) {
+      const resumedTime = resumeStartTimeRef.current ? Date.now() - resumeStartTimeRef.current : 0;
+      totalTime = pausedTimeTakenRef.current + resumedTime;
+    } else {
+      totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+    }
     const timeTakenMs = totalTime; // Time in milliseconds for database
     const totalSeconds = Math.floor(totalTime / 1000);
     const totalMinutes = Math.floor(totalSeconds / 60);
@@ -1440,7 +1509,14 @@ const QuestionSessionPage = () => {
       } else if (!alreadySaved && sessionInfoRef.current.examId) {
         // Not saved yet, submit and get results
         try {
-          const totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+          // If resuming from paused session, add paused time + resumed time
+          let totalTime;
+          if (pausedSessionIdRef.current) {
+            const resumedTime = resumeStartTimeRef.current ? Date.now() - resumeStartTimeRef.current : 0;
+            totalTime = pausedTimeTakenRef.current + resumedTime;
+          } else {
+            totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+          }
           const timeTakenMs = totalTime;
           
           const answers = questions.map((q, idx) => ({
