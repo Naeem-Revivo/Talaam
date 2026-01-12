@@ -3,6 +3,7 @@ import { LineChart } from "@mui/x-charts/LineChart";
 import { accuracy, time, target } from "../../assets/svg/dashboard";
 import { useLanguage } from "../../context/LanguageContext";
 import studentQuestionsAPI from "../../api/studentQuestions";
+import { Loader } from "../../components/common/Loader";
 
 const AnalyticsPage = () => {
   const { t } = useLanguage();
@@ -110,7 +111,7 @@ const AnalyticsPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
         {/* Overall Accuracy Card */}
         <div
-          className="bg-white border border-[#E5E7EB] rounded-[8px] p-4 md:p-6 relative w-full min-h-[120px] md:min-h-[133.6px]"
+          className="bg-white border border-[#E5E7EB] rounded-[8px] p-4 md:p-6 relative w-full min-h-[120px] md:min-h-[133.6px] flex flex-col"
           style={{ borderWidth: "1px" }}
         >
           <div className="absolute top-4 right-4">
@@ -123,14 +124,20 @@ const AnalyticsPage = () => {
           <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[20px] tracking-[0%] pt-2 md:pt-0 mb-2">
             {t("dashboard.analytics.metrics.overallAccuracy")}
           </p>
-          <p className="text-[24px] md:text-[30px] font-bold text-oxford-blue font-archivo leading-[20px] md:leading-[36px] pt-2 md:pt-0 tracking-[0%]">
-            {loading ? "..." : testSummary?.accuracy ? `${testSummary.accuracy.toFixed(0)}%` : "0%"}
-          </p>
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <Loader size="md" />
+            </div>
+          ) : (
+            <p className="text-[24px] md:text-[30px] font-bold text-oxford-blue font-archivo leading-[20px] md:leading-[36px] pt-2 md:pt-0 tracking-[0%]">
+              {testSummary?.accuracy ? `${testSummary.accuracy.toFixed(0)}%` : "0%"}
+            </p>
+          )}
         </div>
 
         {/* Avg Time / Question Card */}
         <div
-          className="bg-white border border-[#E5E7EB] rounded-[8px] p-4 md:p-6 relative w-full min-h-[120px] md:min-h-[133.6px]"
+          className="bg-white border border-[#E5E7EB] rounded-[8px] p-4 md:p-6 relative w-full min-h-[120px] md:min-h-[133.6px] flex flex-col"
           style={{ borderWidth: "1px" }}
         >
           <div className="absolute top-4 right-4">
@@ -139,17 +146,25 @@ const AnalyticsPage = () => {
           <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[20px] tracking-[0%] mb-2">
             {t("dashboard.analytics.metrics.avgTimePerQuestion")}
           </p>
-          <p className="text-[24px] md:text-[30px] font-bold text-oxford-blue font-archivo leading-[20px] md:leading-[36px] tracking-[0%] pt-2 md:pt-0">
-            {loading ? "..." : testSummary?.averageTimePerQuestion ? `${testSummary.averageTimePerQuestion}s` : "0s"}
-          </p>
-          <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[18px] md:leading-[20px] tracking-[0%] pt-2 md:pt-0">
-            {t("dashboard.analytics.metrics.perQuestion")}
-          </p>
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <Loader size="md" />
+            </div>
+          ) : (
+            <>
+              <p className="text-[24px] md:text-[30px] font-bold text-oxford-blue font-archivo leading-[20px] md:leading-[36px] tracking-[0%] pt-2 md:pt-0">
+                {testSummary?.averageTimePerQuestion ? `${testSummary.averageTimePerQuestion}s` : "0s"}
+              </p>
+              <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[18px] md:leading-[20px] tracking-[0%] pt-2 md:pt-0">
+                {t("dashboard.analytics.metrics.perQuestion")}
+              </p>
+            </>
+          )}
         </div>
 
         {/* Questions Completed Card */}
         <div
-          className="bg-white border border-[#E5E7EB] rounded-[8px] p-4 md:p-6 relative w-full min-h-[120px] md:min-h-[133.6px]"
+          className="bg-white border border-[#E5E7EB] rounded-[8px] p-4 md:p-6 relative w-full min-h-[120px] md:min-h-[133.6px] flex flex-col"
           style={{ borderWidth: "1px" }}
         >
           <div className="absolute top-4 right-4">
@@ -158,21 +173,29 @@ const AnalyticsPage = () => {
           <p className="text-[14px] font-normal text-dark-gray font-roboto leading-[20px] tracking-[0%] pt-2 md:pt-0 mb-2">
             {t("dashboard.analytics.metrics.questionsCompleted")}
           </p>
-          <p className="text-[24px] md:text-[30px] font-bold text-oxford-blue font-archivo leading-[20px] md:leading-[36px] tracking-[0%] py-2 md:py-0 mb-2">
-            {loading ? "..." : testSummary 
-              ? `${testSummary.totalCorrectAnswers || 0}/${testSummary.totalQuestionsAttempted || 0}`
-              : "0/0"}
-          </p>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-[#6CA6C1] h-2 rounded-full"
-              style={{ 
-                width: loading || !testSummary || !testSummary.totalQuestionsAttempted
-                  ? "0%"
-                  : `${Math.min((testSummary.totalCorrectAnswers || 0) / (testSummary.totalQuestionsAttempted || 1) * 100, 100)}%`
-              }}
-            ></div>
-          </div>
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <Loader size="md" />
+            </div>
+          ) : (
+            <>
+              <p className="text-[24px] md:text-[30px] font-bold text-oxford-blue font-archivo leading-[20px] md:leading-[36px] tracking-[0%] py-2 md:py-0 mb-2">
+                {testSummary 
+                  ? `${testSummary.totalCorrectAnswers || 0}/${testSummary.totalQuestionsAttempted || 0}`
+                  : "0/0"}
+              </p>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-[#6CA6C1] h-2 rounded-full"
+                  style={{ 
+                    width: !testSummary || !testSummary.totalQuestionsAttempted
+                      ? "0%"
+                      : `${Math.min((testSummary.totalCorrectAnswers || 0) / (testSummary.totalQuestionsAttempted || 1) * 100, 100)}%`
+                  }}
+                ></div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -235,10 +258,10 @@ const AnalyticsPage = () => {
             </button>
           </div>
         </div>
-        <div className="h-[250px] md:h-[280px] w-full max-w-[650px] mx-auto overflow-x-auto">
+        <div className="h-[250px] md:h-[280px] w-full max-w-[650px] mx-auto overflow-x-auto relative">
           {trendLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <p className="text-dark-gray font-roboto">Loading...</p>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader size="lg" />
             </div>
           ) : accuracyData.length > 0 ? (
             <LineChart
@@ -325,9 +348,11 @@ const AnalyticsPage = () => {
 
            {/* Semi-circular gauge */}
            <div className="flex flex-col items-center justify-center">
-             <div className="relative flex items-center justify-center w-full overflow-x-auto">
+             <div className="relative flex items-center justify-center w-full overflow-x-auto min-h-[160px]">
                {loading ? (
-                 <div className="text-gray-400 font-roboto">Loading...</div>
+                 <div className="flex items-center justify-center">
+                   <Loader size="lg" />
+                 </div>
                ) : (
                  <svg
                    width="280"
@@ -455,7 +480,7 @@ const AnalyticsPage = () => {
           </h2>
           {loading ? (
             <div className="flex items-center justify-center h-[200px]">
-              <p className="text-dark-gray font-roboto">Loading...</p>
+              <Loader size="lg" />
             </div>
           ) : subjectAccuracyData.length > 0 ? (
             <div className="space-y-4">

@@ -692,9 +692,11 @@ const PracticePage = () => {
             <h3 className="font-archivo font-semibold text-[16px] leading-[24px] tracking-[0%] text-oxford-blue mb-3">
               {t('dashboard.practice.questionPool.subjects')}
             </h3>
-            <div className="space-y-2">
+            <div className={loadingSubjects ? "min-h-[200px] flex flex-col" : "space-y-2"}>
               {loadingSubjects ? (
-                <div className="text-center py-4 text-oxford-blue">Loading subjects...</div>
+                <div className="flex-1 flex items-center justify-center py-4">
+                  <Loader size="lg" />
+                </div>
               ) : subjects.length === 0 ? (
                 <div className="text-center py-4 text-oxford-blue">No subjects available</div>
               ) : (
@@ -825,9 +827,11 @@ const PracticePage = () => {
             <h3 className="font-archivo font-semibold text-[16px] leading-[24px] tracking-[0%] text-oxford-blue mb-3">
               {t('dashboard.practice.questionPool.topic')}
             </h3>
-            <div className="space-y-2">
+            <div className={loadingTopics ? "min-h-[200px] flex flex-col" : "space-y-2"}>
               {loadingTopics ? (
-                <div className="text-center py-4 text-oxford-blue">Loading topics...</div>
+                <div className="flex-1 flex items-center justify-center py-4">
+                  <Loader size="sm" text="Loading topics..." />
+                </div>
               ) : topics.length === 0 ? (
                 <div className="text-center py-4 text-oxford-blue">
                   {selectedSubjectId ? 'No topics available for this subject' : 'Select a subject to view topics'}

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLanguage } from "../../context/LanguageContext";
 import { getUserAnnouncements, deleteAnnouncementForUser, markAnnouncementAsRead } from "../../api/announcements";
 import { ConfirmationModal } from "../../components/common/ConfirmationModal";
+import { Loader } from "../../components/common/Loader";
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -118,8 +119,8 @@ const StudentAnnouncements = () => {
         {/* Table */}
         <div className="bg-white rounded-lg border border-[#E5E7EB] shadow-sm">
           {loading ? (
-            <div className="p-8 text-center">
-              <p className="text-dark-gray font-roboto">{t('dashboard.announcements.loading') || 'Loading...'}</p>
+            <div className="flex items-center justify-center min-h-[400px]">
+              <Loader size="lg" />
             </div>
           ) : announcements.length === 0 ? (
             <div className="p-8 text-center">

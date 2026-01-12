@@ -1,6 +1,7 @@
 import React from "react";
 import { useLanguage } from "../../context/LanguageContext";
 import { cleanHtmlForDisplay } from "../../utils/textUtils";
+import { Loader } from "./Loader";
 
 // ============= REUSABLE TABLE COMPONENTS =============
 
@@ -719,7 +720,54 @@ const Pagination = ({ page, pageSize, total, onPageChange, t, dir }) => {
     if (page < safeTotalPages) onPageChange?.(page + 1);
   };
 
-  const pages = Array.from({ length: safeTotalPages }, (_, index) => index + 1);
+  // Calculate which pages to show with ellipsis
+  const getVisiblePages = () => {
+    if (safeTotalPages <= 7) {
+      // If total pages is 7 or less, show all pages
+      return Array.from({ length: safeTotalPages }, (_, index) => index + 1);
+    }
+
+    const pages = [];
+    const showEllipsis = safeTotalPages > 7;
+
+    // Always show first page
+    pages.push(1);
+
+    if (page <= 4) {
+      // Near the beginning: show 1, 2, 3, 4, 5, ..., last
+      for (let i = 2; i <= 5; i++) {
+        pages.push(i);
+      }
+      if (showEllipsis) {
+        pages.push('ellipsis');
+      }
+      pages.push(safeTotalPages);
+    } else if (page >= safeTotalPages - 3) {
+      // Near the end: show 1, ..., last-4, last-3, last-2, last-1, last
+      if (showEllipsis) {
+        pages.push('ellipsis');
+      }
+      for (let i = safeTotalPages - 4; i <= safeTotalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // In the middle: show 1, ..., current-1, current, current+1, ..., last
+      if (showEllipsis) {
+        pages.push('ellipsis');
+      }
+      for (let i = page - 1; i <= page + 1; i++) {
+        pages.push(i);
+      }
+      if (showEllipsis) {
+        pages.push('ellipsis');
+      }
+      pages.push(safeTotalPages);
+    }
+
+    return pages;
+  };
+
+  const pages = getVisiblePages();
 
   return (
     <div
@@ -749,20 +797,32 @@ const Pagination = ({ page, pageSize, total, onPageChange, t, dir }) => {
         >
           {t("admin.questionBank.table.pagination.previous")}
         </button>
-        {pages.map((pageNumber) => (
-          <button
-            key={pageNumber}
-            type="button"
-            onClick={() => onPageChange?.(pageNumber)}
-            className={`flex h-[30px] w-8 items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${
-              pageNumber === page
-                ? "border-[#ED4122] bg-[#ED4122] text-white"
-                : "border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
-            }`}
-          >
-            {pageNumber}
-          </button>
-        ))}
+        {pages.map((pageNumber, index) => {
+          if (pageNumber === 'ellipsis') {
+            return (
+              <span
+                key={`ellipsis-${index}`}
+                className="flex h-[30px] w-8 items-center justify-center text-[14px] font-archivo font-medium leading-[16px] text-oxford-blue md:text-white"
+              >
+                ...
+              </span>
+            );
+          }
+          return (
+            <button
+              key={pageNumber}
+              type="button"
+              onClick={() => onPageChange?.(pageNumber)}
+              className={`flex h-[30px] w-8 items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${
+                pageNumber === page
+                  ? "border-[#ED4122] bg-[#ED4122] text-white"
+                  : "border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
+              }`}
+            >
+              {pageNumber}
+            </button>
+          );
+        })}
         <button
           type="button"
           onClick={handleNext}
@@ -814,10 +874,10 @@ export const Table = ({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-6 py-10 text-center text-sm text-dark-gray h-full"
+                  className="px-6 py-10 text-center text-sm text-dark-gray"
                 >
                   <div className="flex items-center justify-center min-h-[200px]">
-                    {loadingComponent || <div className="text-oxford-blue">Loading...</div>}
+                    {loadingComponent || <Loader size="lg" />}
                   </div>
                 </td>
               </tr>
@@ -852,7 +912,7 @@ export const Table = ({
       <div className={`flex flex-col gap-4 p-2 md:hidden ${items.length > 0 || loading ? "" : "min-h-[300px] flex items-center justify-center"}`}>
         {loading ? (
           <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-dark-gray shadow-empty min-h-[200px] flex items-center justify-center w-full">
-            {loadingComponent || <div className="text-oxford-blue">Loading...</div>}
+            {loadingComponent || <Loader size="lg" />}
           </div>
         ) : items.length ? (
           items.map((item) => (
@@ -873,7 +933,7 @@ export const Table = ({
           </div>
         )}
       </div>
-      {showPagination && !loading && (
+      {showPagination && (
         <Pagination
           page={page}
           pageSize={pageSize}
