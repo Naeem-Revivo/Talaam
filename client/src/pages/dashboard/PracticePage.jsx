@@ -704,6 +704,31 @@ const PracticePage = () => {
                   const subjectId = subject.id || subject._id;
                   const isExpanded = expandedDomains[subjectId];
                   const isSelected = selectedSubjects[subjectId] || false;
+                  
+                  // Check if any subtopics of this subject are selected
+                  const subjectIdStr = String(subjectId);
+                  const hasSelectedSubtopics = allTopics.some(topic => {
+                    const topicId = topic.id || topic._id;
+                    if (!topicId || !selectedSubtopics[topicId]) return false;
+                    
+                    // Check if this topic belongs to the current subject
+                    let topicSubjectId = null;
+                    if (topic.parentSubject) {
+                      if (typeof topic.parentSubject === 'object' && topic.parentSubject.id) {
+                        topicSubjectId = topic.parentSubject.id;
+                      } else {
+                        topicSubjectId = topic.parentSubject;
+                      }
+                    } else {
+                      topicSubjectId = topic.subjectId || topic.subject?.id || topic.subject?._id || topic.subject;
+                    }
+                    
+                    return topicSubjectId ? String(topicSubjectId) === subjectIdStr : false;
+                  });
+                  
+                  // Highlight border if subject is selected OR any of its subtopics are selected
+                  const shouldHighlight = isSelected || hasSelectedSubtopics;
+                  
                   return (
                 <button
                     key={subjectId}
@@ -713,21 +738,30 @@ const PracticePage = () => {
                         return; // Let checkbox handle its own click
                       }
                       // Toggle expansion only
-                      if (isExpanded) {
-                        if (selectedSubjectId === subjectId) {
-                          setSelectedSubjectId(null);
-                          setTopics([]);
-                        }
+                      if (selectedSubjectId === subjectId) {
+                        // Closing this subject's subtopics
+                        setSelectedSubjectId(null);
+                        setTopics([]);
+                        setExpandedDomains(prev => ({
+                          ...prev,
+                          [subjectId]: false,
+                        }));
                       } else {
+                        // Opening this subject's subtopics - close all others first
                         setSelectedSubjectId(subjectId);
+                        setExpandedDomains(prev => {
+                          // Close all other subjects and open this one
+                          const newState = {};
+                          Object.keys(prev).forEach(id => {
+                            newState[id] = false;
+                          });
+                          newState[subjectId] = true;
+                          return newState;
+                        });
                       }
-                      setExpandedDomains(prev => ({
-                        ...prev,
-                        [subjectId]: !prev[subjectId],
-                      }));
                     }}
                   className={`w-full flex items-center justify-between rounded-lg transition-colors h-[44px] px-4 py-3 bg-white border ${
-                    isExpanded ? 'border-cinnebar-red border-2' : 'border-[#E5E7EB]'
+                    shouldHighlight ? 'border-cinnebar-red border-2' : 'border-[#E5E7EB]'
                   }`}
                 >
                   <div className="flex items-center gap-3 flex-1">
@@ -807,7 +841,7 @@ const PracticePage = () => {
                   </div>
                   <svg
                     className={`w-5 h-5 text-oxford-blue transition-transform flex-shrink-0 ${
-                      isExpanded ? 'rotate-90' : ''
+                      selectedSubjectId === subjectId ? 'rotate-90' : ''
                     }`}
                     fill="none"
                     stroke="currentColor"
