@@ -31,6 +31,16 @@ const StudentAnswer = {
       prismaData.timeTaken = data.timeTaken;
     }
 
+    // Only include remainingTime if it's provided (not undefined)
+    if (data.remainingTime !== undefined && data.remainingTime !== null) {
+      prismaData.remainingTime = data.remainingTime;
+    }
+
+    // Only include timeLimit if it's provided (not undefined)
+    if (data.timeLimit !== undefined && data.timeLimit !== null) {
+      prismaData.timeLimit = data.timeLimit;
+    }
+
     // Remove undefined values
     Object.keys(prismaData).forEach(key => {
       if (prismaData[key] === undefined) {

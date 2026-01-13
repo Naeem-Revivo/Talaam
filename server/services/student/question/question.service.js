@@ -2078,6 +2078,8 @@ const pauseSession = async (studentId, sessionData) => {
     score,
     percentage,
     timeTaken: timeTaken || null,
+    remainingTime: remainingTime || null, // Save remaining time to database
+    timeLimit: timeLimit || null, // Save time limit to database
     status: 'paused', // Mark as paused
   });
 
@@ -2429,6 +2431,8 @@ const getPausedSession = async (studentId, sessionId) => {
     currentIndex,
     sessionStartTime: session.createdAt.getTime(),
     timeTaken: session.timeTaken || 0,
+    remainingTime: session.remainingTime || null, // Get remaining time from database
+    timeLimit: session.timeLimit || null, // Get time limit from database
     timerEndTime: null, // Will be recalculated when resuming test mode
   };
 };

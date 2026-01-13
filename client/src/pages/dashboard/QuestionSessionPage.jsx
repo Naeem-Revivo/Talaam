@@ -206,44 +206,24 @@ const QuestionSessionPage = () => {
               // Store the resume start time for calculating total time later
               resumeStartTimeRef.current = Date.now();
               
-              // Restore timer for test mode (use stored remaining time from pause)
+              // Restore timer for test mode (use remaining time from database)
               if (pausedData.mode === 'test' && pausedData.questions?.length > 0) {
-                // Try to get remaining time from sessionStorage first (most accurate, stored when pausing)
-                let remaining = null;
-                const pauseDataKey = `pause_data_${pausedSessionId}`;
-                try {
-                  const storedPauseData = sessionStorage.getItem(pauseDataKey);
-                  if (storedPauseData) {
-                    const pauseData = JSON.parse(storedPauseData);
-                    remaining = pauseData.remainingTime;
-                    // Also restore timeLimit if available
-                    if (pauseData.timeLimit) {
-                      timeLimitRef.current = pauseData.timeLimit;
-                    }
-                  }
-                } catch (e) {
-                  // Ignore parse errors
+                // Use remainingTime and timeLimit directly from database (most reliable)
+                const remaining = pausedData.remainingTime;
+                const timeLimit = pausedData.timeLimit;
+                
+                // Store timeLimit if available
+                if (timeLimit) {
+                  timeLimitRef.current = timeLimit;
                 }
                 
-                // Fallback: use remainingTime from API response or recalculate
-                if (remaining === null || remaining === undefined) {
-                  if (pausedData.remainingTime !== null && pausedData.remainingTime !== undefined) {
-                    remaining = pausedData.remainingTime;
-                  } else {
-                    // Last resort: recalculate (less accurate if timeLimit wasn't stored)
-                    const elapsedTime = pausedData.timeTaken || 0;
-                    const timeLimitMinutes = pausedData.timeLimit || pausedData.questions.length;
-                    const totalTimeMs = timeLimitMinutes * 60 * 1000;
-                    remaining = Math.max(0, totalTimeMs - elapsedTime);
-                  }
-                }
-                
-                if (remaining > 0) {
+                if (remaining !== null && remaining !== undefined && remaining > 0) {
                   // Set timer end time to current time + remaining time
                   // This ensures the timer continues from where it was paused
                   timerEndTimeRef.current = Date.now() + remaining;
                   setTimeRemaining(remaining);
                 } else {
+                  // Timer expired or no remaining time
                   timerEndTimeRef.current = null;
                   setTimeRemaining(0);
                 }
@@ -1234,15 +1214,7 @@ const QuestionSessionPage = () => {
       });
 
       if (response.success) {
-        // Store remaining time and timeLimit for test mode (to restore timer correctly on resume)
-        if (mode === 'test' && response.data?.remainingTime !== null && response.data?.remainingTime !== undefined) {
-          const pauseDataKey = `pause_data_${response.data.sessionId}`;
-          sessionStorage.setItem(pauseDataKey, JSON.stringify({
-            remainingTime: response.data.remainingTime,
-            timeLimit: response.data.timeLimit,
-          }));
-        }
-        
+        // Remaining time and timeLimit are now stored in database, no need for sessionStorage
         // Clear session storage (don't save paused sessions in session storage)
         if (sessionIdRef.current) {
       clearSession(sessionIdRef.current);
