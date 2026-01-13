@@ -288,6 +288,8 @@ model StudentAnswer {
   score           Float    @default(0)
   percentage      Float    @default(0)
   timeTaken       Int?     @map("time_taken") // Time taken in milliseconds
+  remainingTime   Int?     @map("remaining_time") // Remaining time in milliseconds (for test mode paused sessions)
+  timeLimit       Int?     @map("time_limit") // Time limit in minutes (for test mode)
   status          String   @default("completed") // in_progress, completed
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
