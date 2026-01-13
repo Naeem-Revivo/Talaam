@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import StudyModeLayout from '../../components/dashboard/questionSession/StudyModeLayout';
 import TestModeLayout from '../../components/dashboard/questionSession/TestModeLayout';
 import SessionCompletionModal from '../../components/dashboard/questionSession/SessionCompletionModal';
+import Loader from '../../components/common/Loader';
 import studentQuestionsAPI from '../../api/studentQuestions';
 import subscriptionAPI from '../../api/subscription';
 import { showErrorToast, showSuccessToast } from '../../utils/toastConfig';
@@ -871,20 +872,12 @@ const QuestionSessionPage = () => {
 
   // Show loading state while checking subscription
   if (checkingSubscription) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-oxford-blue text-lg">Checking subscription...</div>
-      </div>
-    );
+    return <Loader fullScreen={true} text="Checking subscription..." size="lg" />;
   }
 
   // Show loading state
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-oxford-blue text-lg">Loading questions...</div>
-      </div>
-    );
+    return <Loader fullScreen={true} text="Loading questions..." size="lg" />;
   }
 
   // If no active subscription, show message (will redirect)
