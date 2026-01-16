@@ -514,49 +514,6 @@ const AnalyticsPage = () => {
           )}
         </div>
       </div>
-
-      {/* Focus Areas Section */}
-      <div
-        className="bg-white border border-[#E5E7EB] rounded-[8px] p-4 md:p-6 w-full max-w-[1120px] min-h-[200px] md:min-h-[236px]"
-        style={{ borderWidth: "1px" }}
-      >
-        <div className="flex items-center gap-2 mb-4 md:mb-6">
-          <h2 className="text-[16px] md:text-[18px] font-semibold text-gray-800 font-archivo">
-            {t("dashboard.analytics.focusAreas.title")}
-          </h2>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="8" cy="8" r="7" stroke="#9CA3AF" strokeWidth="1.5" />
-            <path
-              d="M8 5V8L10 10"
-              stroke="#9CA3AF"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-          {focusAreas.map((area, index) => (
-            <div
-              key={index}
-              className="bg-[#FDF0D5] rounded-full p-3 md:p-4 flex items-center justify-between w-full min-h-[50px] md:min-h-[57.6px] border border-[#FFE5B0]"
-              style={{ borderWidth: "1px", borderRadius: "9999px" }}
-            >
-              <span className="text-[14px] md:text-[16px] font-normal text-oxford-blue font-archivo leading-[20px] md:leading-[24px] tracking-[0%]">
-                {area.name}
-              </span>
-              <span className="text-[12px] md:text-[14px] font-normal text-[#4B5563] font-roboto leading-[18px] md:leading-[20px] tracking-[0%]">
-                {area.accuracy}%
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
       </div>
     </div>
   );

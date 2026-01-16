@@ -444,11 +444,7 @@ const QuestionBankPage = () => {
     setSearch("");
     setPage(1);
   };
-
-  const handleImport = () => {
-    // TODO: integrate import flow
-  };
-
+  
   const handleExport = () => {
     // TODO: integrate export flow
   };
