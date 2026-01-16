@@ -264,11 +264,6 @@ const GathererAddNewQuestionPage = () => {
     }
   };
 
-  const _handleSaveDraft = () => {
-    // TODO: Implement save draft functionality
-    console.log("Save draft");
-  };
-
   const handleSubmit = async () => {
     // Validation
     if (!questionText.trim()) {
