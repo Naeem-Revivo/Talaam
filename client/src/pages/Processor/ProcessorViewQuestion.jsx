@@ -1,97 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
-import { OutlineButton, PrimaryButton } from "../../components/common/Button";
-import ProfileDropdown from "../../components/common/ProfileDropdown";
 import questionsAPI from "../../api/questions";
 import usersAPI from "../../api/users";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig.jsx";
 import Loader from "../../components/common/Loader";
-
-const Attachments = ({ files, t }) => {
-  return (
-    <div className="bg-white border border-[#BCBCBD] rounded-lg p-5">
-      <h3 className="text-blue-dark font-bold text-[20px] leading-[32px] font-archivo mb-5">
-        {t("processor.viewQuestion.attachments")}
-      </h3>
-      <div className="flex flex-wrap gap-2">
-        {files.map((file, index) => (
-          <div
-            key={index}
-            className="inline-flex items-center gap-2 px-6 py-2 bg-[#F6F7F8] border border-[#BCBCBD] rounded-lg font-normal text-[16px] leading-[100%] font-roboto text-blue-dark"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <span>{file.name}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// Question History Component
-const QuestionHistory = ({ historyItems, t }) => {
-  return (
-    <div className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full h-auto">
-      <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[28px] text-oxford-blue">
-        {t("admin.questionDetails.sections.activityLog")}
-      </h2>
-      <div className="space-y-4 overflow-y-auto">
-        {historyItems && historyItems.length > 0 ? (
-          historyItems.map((activity, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-3 rounded-[8px] border border-[#E5E7EB] bg-white p-4 w-full max-w-full h-auto"
-              dir="ltr"
-            >
-              <div className="flex-shrink-0">
-                <svg
-                  width="30"
-                  height="30"
-                  viewBox="0 0 30 30"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle cx="15" cy="15" r="15" fill="#ED4122" />
-                  <path
-                    d="M21.125 14.125H15.875V8.875C15.875 8.392 15.483 8 15 8C14.517 8 14.125 8.392 14.125 8.875V14.125H8.875C8.392 14.125 8 14.517 8 15C8 15.483 8.392 15.875 8.875 15.875H14.125V21.125C14.125 21.608 14.517 22 15 22C15.483 22 15.875 21.608 15.875 21.125V15.875H21.125C21.608 15.875 22 15.483 22 15C22 14.517 21.608 14.125 21.125 14.125Z"
-                    fill="white"
-                    stroke="white"
-                    strokeWidth="0.5"
-                  />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="font-roboto text-[16px] font-normal leading-[20px] text-oxford-blue">
-                  {activity.notes || activity.action || activity.description || "Activity"}
-                </p>
-                <p className="font-roboto text-[12px] font-normal leading-[20px] text-dark-gray">
-                  {activity.performedBy?.name || activity.performedBy?.username || activity.createdBy?.name || "Unknown"} - {activity.timestamp ? new Date(activity.timestamp).toLocaleDateString() : "No date"}
-                </p>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className="font-roboto text-[14px] text-gray-500">
-            No activity log available
-          </p>
-        )}
-      </div>
-    </div>
-  );
-};
+import Attachments from "../../components/Processor/Attachments";
+import QuestionHistory from "../../components/Processor/QuestionHistory";
+import ProcessorHeader from "../../components/Processor/ProcessorHeader";
+import ParentQuestionReference from "../../components/Processor/ParentQuestionReference";
+import QuestionInfoCard from "../../components/Processor/QuestionInfoCard";
+import QuestionOptionsCard from "../../components/Processor/QuestionOptionsCard";
+import FlagReasonSection from "../../components/Processor/FlagReasonSection";
+import GathererFlagRejectionSection from "../../components/Processor/GathererFlagRejectionSection";
+import ExplanationSection from "../../components/Processor/ExplanationSection";
+import ClassificationCard from "../../components/Processor/ClassificationCard";
+import CreatorGathererNotesCard from "../../components/Processor/CreatorGathererNotesCard";
+import RejectModal from "../../components/Processor/modals/RejectModal";
+import RejectFlagModal from "../../components/Processor/modals/RejectFlagModal";
+import SelectCreatorModal from "../../components/Processor/modals/SelectCreatorModal";
+import SelectExplainerModal from "../../components/Processor/modals/SelectExplainerModal";
 
 const ProcessorViewQuestion = () => {
   const navigate = useNavigate();
@@ -191,9 +119,6 @@ const ProcessorViewQuestion = () => {
 
   // Determine flag type
   const flagType = question?.flagType || null;
-
-  console.log("flagType", flagType);
-  console.log("isFlagged", isFlagged);
 
   const getFormattedHistory = () => {
     if (!question || !question.history) return [];
@@ -945,37 +870,6 @@ const ProcessorViewQuestion = () => {
     return tmp.textContent || tmp.innerText || "—";
   };
 
-  // Build history from question data
-  const getHistory = () => {
-    if (!question) return [];
-    const history = [];
-
-    if (question.createdAt) {
-      // Determine creator role from history or createdBy
-      const creationHistory = question.history?.find(
-        (h) => h.action === "created"
-      );
-      const creatorRole =
-        creationHistory?.role || question.createdBy?.adminRole;
-      const roleLabel = creatorRole === "admin" ? "admin" : "Gatherer";
-      history.push({
-        text: `Submitted by ${question.createdBy?.name || roleLabel}`,
-        date: formatDate(question.createdAt),
-      });
-    }
-
-    if (question.history && Array.isArray(question.history)) {
-      question.history.forEach((item) => {
-        history.push({
-          text: item.action || item.description || "Status updated",
-          date: formatDate(item.timestamp || item.createdAt),
-        });
-      });
-    }
-
-    return history;
-  };
-
   if (loading) {
     return (
       <Loader
@@ -1012,93 +906,20 @@ const ProcessorViewQuestion = () => {
       >
         <div className="mx-auto flex max-w-[1200px] flex-col gap-6">
           {/* Header */}
-          <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
-              {t("processor.viewQuestion.title")}
-            </h1>
-            <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
-              <OutlineButton
-                text={t("processor.viewQuestion.close")}
-                onClick={handleClose}
-                className="py-[10px] px-[14px]"
-                disabled={processing}
-              />
-              {/* Only show approve/reject buttons if question can still be processed */}
-              {canProcessQuestion && (
-                <>
-                  {/* Show different buttons for flagged questions OR gatherer rejected flag */}
-                  {isFlagged ? (
-                    <>
-                      <OutlineButton
-                        text={
-                          t("processor.viewQuestion.rejectReasonButton") ||
-                          "Reject Reason"
-                        }
-                        onClick={() => setShowRejectFlagModal(true)}
-                        className="py-[10px] px-[14px]"
-                        disabled={processing}
-                      />
-                      <PrimaryButton
-                        text={
-                          t("processor.viewQuestion.approveReason") ||
-                          "Approve Reason"
-                        }
-                        className="py-[10px] px-5"
-                        onClick={handleApproveFlagReason}
-                        disabled={processing}
-                      />
-                    </>
-                  ) : gathererRejectedFlag ? (
-                    <>
-                      <OutlineButton
-                        text={
-                          t("processor.viewQuestion.rejectGathererRejection") ||
-                          "Reject Gatherer's Rejection"
-                        }
-                        onClick={() => setShowRejectFlagModal(true)}
-                        className="py-[10px] px-[14px]"
-                        disabled={processing}
-                      />
-                      <PrimaryButton
-                        text={
-                          t("processor.viewQuestion.acceptGathererRejection") ||
-                          "Accept Gatherer's Rejection"
-                        }
-                        className="py-[10px] px-5"
-                        onClick={handleAcceptGathererRejection}
-                        disabled={processing}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <OutlineButton
-                        text={t("processor.viewQuestion.reject")}
-                        onClick={() => setShowRejectModal(true)}
-                        className="py-[10px] px-[14px]"
-                        disabled={processing}
-                      />
-                      <PrimaryButton
-                        text={
-                          nextDestination === "completed"
-                            ? t("processor.viewQuestion.approveQuestion")
-                            : nextDestination === "explainer"
-                            ? t(
-                                "processor.viewQuestion.acceptAndSendToExplainer"
-                              )
-                            : nextDestination === "creator"
-                            ? t("processor.viewQuestion.acceptAndSendToCreator")
-                            : t("processor.viewQuestion.acceptAndSend")
-                        }
-                        className="py-[10px] px-5"
-                        onClick={handleAcceptClick}
-                        disabled={processing}
-                      />
-                    </>
-                  )}
-                </>
-              )}
-            </div>
-          </header>
+          <ProcessorHeader
+            t={t}
+            handleClose={handleClose}
+            processing={processing}
+            canProcessQuestion={canProcessQuestion}
+            isFlagged={isFlagged}
+            gathererRejectedFlag={gathererRejectedFlag}
+            nextDestination={nextDestination}
+            setShowRejectModal={setShowRejectModal}
+            setShowRejectFlagModal={setShowRejectFlagModal}
+            handleApproveFlagReason={handleApproveFlagReason}
+            handleAcceptGathererRejection={handleAcceptGathererRejection}
+            handleAcceptClick={handleAcceptClick}
+          />
 
           {/* Main Content - Two Columns */}
           <div className="flex flex-col gap-6 lg:flex-row">
@@ -1108,274 +929,46 @@ const ProcessorViewQuestion = () => {
               {question.isVariant &&
                 (isFromCreatorSubmission || isFromExplainerSubmission) &&
                 parentQuestion && (
-                  <div className="rounded-[12px] border border-[#03274633] bg-white pt-[20px] px-[30px] pb-[30px] w-full">
-                    <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[32px] text-oxford-blue">
-                      {t("processor.viewQuestion.parentQuestionReference")}
-                    </h2>
-                    <p className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280] mb-4">
-                      {t("processor.viewQuestion.parentQuestionDescription")}
-                    </p>
-                    <div className="bg-[#F6F7F8] rounded-lg p-4 border border-[#E5E7EB]">
-                      <div className="mb-3">
-                        <span className="font-roboto text-[14px] font-semibold text-oxford-blue">
-                          {t("processor.viewQuestion.parentQuestionLabel")}:
-                        </span>
-                        <p
-                          className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue mt-2"
-                          dir="ltr"
-                        >
-                          {stripHtmlTags(parentQuestion.questionText)}
-                        </p>
-                      </div>
-
-                      {parentQuestion.questionType === "MCQ" &&
-                        parentQuestion.options && (
-                          <>
-                            <div className="mt-4 mb-3">
-                              <span className="font-roboto text-[14px] font-semibold text-oxford-blue">
-                                {t("processor.viewQuestion.parentOptionsLabel")}
-                                :
-                              </span>
-                              <div className="space-y-2 mt-2" dir="ltr">
-                                {Object.entries(parentQuestion.options).map(
-                                  ([key, value]) => (
-                                    <div
-                                      key={key}
-                                      className="flex items-center gap-2"
-                                    >
-                                      <span className="font-roboto text-[14px] font-normal text-dark-gray min-w-[20px]">
-                                        {key}.
-                                      </span>
-                                      <span className="font-roboto text-[14px] font-normal text-dark-gray">
-                                        {value}
-                                      </span>
-                                    </div>
-                                  )
-                                )}
-                              </div>
-                            </div>
-
-                            {parentQuestion.correctAnswer && (
-                              <div className="mt-4 pt-3 border-t border-[#E5E7EB]">
-                                <span className="font-roboto text-[14px] font-semibold text-oxford-blue">
-                                  {t(
-                                    "processor.viewQuestion.parentCorrectAnswerLabel"
-                                  )}
-                                  :{" "}
-                                </span>
-                                <span className="font-roboto text-[14px] font-normal text-[#ED4122]">
-                                  {parentQuestion.correctAnswer}.{" "}
-                                  {
-                                    parentQuestion.options[
-                                      parentQuestion.correctAnswer
-                                    ]
-                                  }
-                                </span>
-                              </div>
-                            )}
-                          </>
-                        )}
-                    </div>
-                  </div>
+                  <ParentQuestionReference
+                    parentQuestion={parentQuestion}
+                    t={t}
+                    stripHtmlTags={stripHtmlTags}
+                  />
                 )}
 
               {/* Question Info Card */}
-              <div
-                className="rounded-[12px] border border-[#03274633] bg-white pt-[20px] px-[30px] pb-[67px] w-full"
-                style={{}}
-              >
-                <h2 className="mb-2 font-archivo text-[20px] font-bold leading-[32px] text-oxford-blue">
-                  {t("processor.viewQuestion.questionInfo")}
-                </h2>
-                <p
-                  className="font-roboto text-[16px] font-normal leading-[100%] text-oxford-blue pt-[30px]"
-                  dir="ltr"
-                >
-                  {stripHtmlTags(question.questionText)}
-                </p>
-              </div>
-              <div
-                className="rounded-[12px] border border-[#03274633] bg-white p-4 md:p-6 w-full"
-                style={{}}
-              >
-                <div>
-                  <div className="text-[16px] leading-[100%] font-normal font-roboto mb-[30px]">
-                    {t("processor.viewQuestion.options")}
-                  </div>
-                  {/* Options */}
-                  {(question.questionType === "MCQ" ||
-                    question.questionType === "TRUE_FALSE") &&
-                  question.options ? (
-                    <>
-                      <div className="space-y-5" dir="ltr">
-                        {question.questionType === "TRUE_FALSE" ? (
-                          // True/False specific display
-                          <>
-                            <label className="flex items-center gap-3 cursor-pointer">
-                              <input
-                                type="radio"
-                                name="option"
-                                value="A"
-                                checked={question.correctAnswer === "A"}
-                                className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
-                                disabled
-                              />
-                              <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                                True
-                              </span>
-                            </label>
-                            <label className="flex items-center gap-3 cursor-pointer">
-                              <input
-                                type="radio"
-                                name="option"
-                                value="B"
-                                checked={question.correctAnswer === "B"}
-                                className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
-                                disabled
-                              />
-                              <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                                False
-                              </span>
-                            </label>
-                          </>
-                        ) : (
-                          // MCQ display
-                          Object.entries(question.options).map(
-                            ([key, value]) => (
-                              <label
-                                key={key}
-                                className="flex items-center gap-3 cursor-pointer"
-                              >
-                                <input
-                                  type="radio"
-                                  name="option"
-                                  value={key}
-                                  checked={key === question.correctAnswer}
-                                  className="w-4 h-4 text-[#ED4122] border-[#03274633] focus:ring-[#ED4122] focus:ring-2"
-                                  disabled
-                                />
-                                <span className="font-roboto text-[16px] font-normal leading-[20px] text-dark-gray">
-                                  {key}. {value}
-                                </span>
-                              </label>
-                            )
-                          )
-                        )}
-                      </div>
+              <QuestionInfoCard
+                question={question}
+                t={t}
+                stripHtmlTags={stripHtmlTags}
+              />
 
-                      <div className="border-t border-[#E5E7EB] mt-10 pt-4">
-                        <p className="font-archivo text-[20px] font-bold leading-[20px] text-oxford-blue mb-2">
-                          {t("admin.questionDetails.fields.correctAnswer")}
-                        </p>
-                        <label
-                          className="flex items-center gap-3 pt-2 cursor-pointer"
-                          dir="ltr"
-                        >
-                          <input
-                            type="radio"
-                            name="correctAnswer"
-                            value={question.correctAnswer}
-                            checked
-                            className="w-4 h-4 text-[#ED4122] border-[#03274633]"
-                            disabled
-                          />
-                          <span className="font-roboto text-[16px] font-normal leading-[20px] text-[#ED4122]">
-                            {question.questionType === "TRUE_FALSE"
-                              ? question.correctAnswer === "A"
-                                ? "True"
-                                : "False"
-                              : `${question.correctAnswer}. ${
-                                  question.options[question.correctAnswer]
-                                }`}
-                          </span>
-                        </label>
-                      </div>
-                    </>
-                  ) : (
-                    <p className="text-dark-gray font-roboto text-[16px]">
-                      {t("processor.viewQuestion.noOptions") ||
-                        "No options available for this question type."}
-                    </p>
-                  )}
-                </div>
-              </div>
+              {/* Question Options Card */}
+              <QuestionOptionsCard question={question} t={t} />
 
-              {/* Original Flag Reason Section - Show when there's an original flag (even if gatherer rejected it) */}
-              {/* For student flags from admin submission, show flag reason even if approved */}
-              {question.flagReason &&
-                (isFlagged ||
-                  gathererRejectedFlag ||
-                  (isFromAdminSubmission &&
-                    flagType === "student" &&
-                    question.isFlagged)) && (
-                  <div className="rounded-[12px] border-2 border-orange-dark bg-orange-50 pt-[20px] px-[30px] pb-[30px] w-full">
-                    <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[32px] text-orange-dark">
-                      {t("processor.viewQuestion.flagReason") ||
-                        "Original Flag Reason"}
-                    </h2>
-                    <div className="mb-2">
-                      <p className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280] mb-2">
-                        {flagType === "student"
-                          ? t(
-                              "processor.viewQuestion.flagReasonDescriptionStudent"
-                            ) ||
-                            "The student has flagged this question with the following reason:"
-                          : flagType === "explainer"
-                          ? t(
-                              "processor.viewQuestion.flagReasonDescriptionExplainer"
-                            ) ||
-                            "The explainer has flagged this question with the following reason:"
-                          : t("processor.viewQuestion.flagReasonDescription") ||
-                            "The creator has flagged this question with the following reason:"}
-                      </p>
-                    </div>
-                    <div
-                      className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue whitespace-pre-wrap bg-white p-4 rounded-lg border border-orange-200"
-                      dir="ltr"
-                    >
-                      {question.flagReason}
-                    </div>
-                  </div>
-                )}
+              {/* Original Flag Reason Section */}
+              <FlagReasonSection
+                question={question}
+                isFlagged={isFlagged}
+                gathererRejectedFlag={gathererRejectedFlag}
+                isFromAdminSubmission={isFromAdminSubmission}
+                flagType={flagType}
+                t={t}
+              />
 
-              {/* Gatherer Flag Rejection Section - Show when gatherer rejected a flag */}
-              {gathererRejectedFlag && question.flagRejectionReason && (
-                <div className="rounded-[12px] border-2 border-blue-500 bg-blue-50 pt-[20px] px-[30px] pb-[30px] w-full">
-                  <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[32px] text-blue-700">
-                    {t("processor.viewQuestion.gathererFlagRejection") ||
-                      "Gatherer's Flag Rejection"}
-                  </h2>
-                  <div className="mb-2">
-                    <p className="font-roboto text-[14px] font-normal leading-[20px] text-[#6B7280] mb-2">
-                      {t(
-                        "processor.viewQuestion.gathererFlagRejectionDescription"
-                      ) ||
-                        "The gatherer has rejected the flag with the following reason:"}
-                    </p>
-                  </div>
-                  <div
-                    className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue whitespace-pre-wrap bg-white p-4 rounded-lg border border-blue-200"
-                    dir="ltr"
-                  >
-                    {question.flagRejectionReason}
-                  </div>
-                </div>
-              )}
+              {/* Gatherer Flag Rejection Section */}
+              <GathererFlagRejectionSection
+                gathererRejectedFlag={gathererRejectedFlag}
+                question={question}
+                t={t}
+              />
 
-              {/* Explanation Section - Show for explainer submissions */}
-              {isFromExplainerSubmission && question.explanation && (
-                <div className="rounded-[12px] border border-[#03274633] bg-white pt-[20px] px-[30px] pb-[30px] w-full">
-                  <h2 className="mb-4 font-archivo text-[20px] font-bold leading-[32px] text-oxford-blue">
-                    {t("processor.viewQuestion.explanation") || "Explanation"}
-                  </h2>
-                  <div
-                    className="font-roboto text-[16px] font-normal leading-[24px] text-oxford-blue whitespace-pre-wrap"
-                    dir="ltr"
-                  >
-                    {question.explanation}
-                  </div>
-                </div>
-              )}
+              {/* Explanation Section */}
+              <ExplanationSection
+                isFromExplainerSubmission={isFromExplainerSubmission}
+                question={question}
+                t={t}
+              />
 
               {question.attachments && question.attachments.length > 0 && (
                 <Attachments files={question.attachments} t={t} />
@@ -1387,329 +980,83 @@ const ProcessorViewQuestion = () => {
 
             <div className="flex flex-col gap-4 lg:w-[376px]">
               {/* Classification Card */}
-              <div className="rounded-lg border border-[#CDD4DA] bg-white">
-                <div className="pt-10 px-6 pb-6 border-b border-[#CDD4DA]">
-                  <h2 className="text-[20px] leading-[100%] font-bold font-archivo text-blue-dark">
-                    {t("processor.viewQuestion.classification")}
-                  </h2>
-                </div>
-                <div className="space-y-5 text-[18px] leading-[100%] font-normal text-blue-dark pt-10 px-6 pb-6">
-                  {question.difficulty && (
-                    <div>
-                      <span className="">Difficulty: </span>
-                      <span className="">{question.difficulty}</span>
-                    </div>
-                  )}
-                  <div>
-                    <span className="">Subject: </span>
-                    <span className="">{question.subject?.name || "—"}</span>
-                  </div>
-                  <div>
-                    <span className="">Topic: </span>
-                    <span className="">{question.topic?.name || "—"}</span>
-                  </div>
-                  {question.subtopic && (
-                    <div>
-                      <span className="">Subtopic: </span>
-                      <span className="">
-                        {question.subtopic.name || question.subtopic || "—"}
-                      </span>
-                    </div>
-                  )}
-                  {question.isVariant && (
-                    <div>
-                      <span className="">Variant: </span>
-                      <span className="">
-                        {question.variantNumber || "Yes"}
-                      </span>
-                    </div>
-                  )}
-                  <div>
-                    <span className="">Status: </span>
-                    <span className="text-orange-dark">
-                      {(() => {
-                        if (wasUpdatedAfterFlag && question.flagType) {
-                          // Determine updater role from history
-                          const updateHistory = question.history?.find(
-                            (h) =>
-                              (h.action === "updated" ||
-                                h.action === "update") &&
-                              (h.role === "gatherer" || h.role === "admin")
-                          );
-                          const updaterRole =
-                            updateHistory?.role === "admin"
-                              ? "admin"
-                              : "gatherer";
-                          if (question.flagType === "creator") {
-                            return `Updated by ${updaterRole} (flagged by creator)`;
-                          } else if (question.flagType === "explainer") {
-                            return `Updated by ${updaterRole} (flagged by explainer)`;
-                          } else if (question.flagType === "student") {
-                            return `Updated by ${updaterRole} (flagged by student)`;
-                          }
-                        }
-                        if (isFlagged) {
-                          if (flagType === "student") {
-                            return "Flagged by student";
-                          } else if (flagType === "explainer") {
-                            return "Flagged by explainer";
-                          } else {
-                            return "Flagged by creator";
-                          }
-                        }
-                        if (question.status === "pending_processor") {
-                          if (isFromExplainerSubmission) {
-                            return "Submitted by explainer";
-                          } else if (isFromCreatorSubmission) {
-                            return "Submitted by creator";
-                          } else {
-                            // Determine creator role from history or createdBy
-                            const creationHistory = question.history?.find(
-                              (h) => h.action === "created"
-                            );
-                            const creatorRole =
-                              creationHistory?.role ||
-                              question.createdBy?.adminRole;
-                            const roleLabel =
-                              creatorRole === "admin" ? "admin" : "gatherer";
-                            return `Submitted by ${roleLabel}`;
-                          }
-                        }
-                        return question.status || "—";
-                      })()}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <ClassificationCard
+                question={question}
+                wasUpdatedAfterFlag={wasUpdatedAfterFlag}
+                isFlagged={isFlagged}
+                flagType={flagType}
+                isFromExplainerSubmission={isFromExplainerSubmission}
+                isFromCreatorSubmission={isFromCreatorSubmission}
+                t={t}
+              />
 
               {/* Creator / Gatherer Notes Card */}
-              <div className="rounded-lg border border-[#CDD4DA] bg-white">
-                <div className="border-b border-[#CDD4DA] pt-10 px-6 pb-6 ">
-                  <h2 className="text-[20px] leading-[100%] font-bold font-archivo text-blue-dark">
-                    {t("processor.viewQuestion.creatorGathererNotes")}
-                  </h2>
-                </div>
-                <p className="text-[16px] leading-[100%] font-normal font-roboto text-[#6B7280] pb-[60px] pt-[30px] px-6">
-                  {question.notes ||
-                    question.gathererNotes ||
-                    question.creatorNotes ||
-                    "No notes available"}
-                </p>
-              </div>
+              <CreatorGathererNotesCard question={question} t={t} />
             </div>
           </div>
         </div>
 
         {/* Reject Modal */}
-        {showRejectModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-xl font-bold text-oxford-blue mb-4">
-                {t("processor.viewQuestion.rejectQuestion")}
-              </h3>
-              <p className="text-dark-gray mb-4">
-                {t("processor.viewQuestion.rejectReason")}
-              </p>
-              <textarea
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                className="w-full border border-[#E5E7EB] rounded-lg p-3 min-h-[100px] font-roboto text-[16px]"
-                placeholder={t(
-                  "processor.viewQuestion.rejectReasonPlaceholder"
-                )}
-              />
-              <div className="flex gap-4 mt-6">
-                <OutlineButton
-                  text={t("processor.viewQuestion.cancel")}
-                  onClick={() => {
-                    setShowRejectModal(false);
-                    setRejectionReason("");
-                  }}
-                  className="flex-1"
-                  disabled={processing}
-                />
-                <PrimaryButton
-                  text={t("processor.viewQuestion.confirmReject")}
-                  onClick={handleReject}
-                  className="flex-1"
-                  disabled={processing || !rejectionReason.trim()}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        <RejectModal
+          isOpen={showRejectModal}
+          rejectionReason={rejectionReason}
+          setRejectionReason={setRejectionReason}
+          onClose={() => {
+            setShowRejectModal(false);
+            setRejectionReason("");
+          }}
+          onConfirm={handleReject}
+          processing={processing}
+          t={t}
+        />
 
         {/* Reject Flag Reason Modal */}
-        {showRejectFlagModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-xl font-bold text-oxford-blue mb-4">
-                {t("processor.viewQuestion.rejectFlagReason") ||
-                  "Reject Flag Reason"}
-              </h3>
-              <p className="text-dark-gray mb-4">
-                {gathererRejectedFlag
-                  ? t(
-                      "processor.viewQuestion.rejectGathererRejectionDescription"
-                    ) ||
-                    "Please provide a reason for rejecting the gatherer's flag rejection. The flag will be restored and the question will be sent back to the gatherer."
-                  : flagType === "student"
-                  ? t(
-                      "processor.viewQuestion.rejectFlagReasonDescriptionStudent"
-                    ) ||
-                    "Please provide a reason for rejecting the student's flag. The flag will be cleared."
-                  : flagType === "explainer"
-                  ? t(
-                      "processor.viewQuestion.rejectFlagReasonDescriptionExplainer"
-                    ) ||
-                    "Please provide a reason for rejecting the explainer's flag. The question will be sent back to the explainer."
-                  : t("processor.viewQuestion.rejectFlagReasonDescription") ||
-                    "Please provide a reason for rejecting the creator's flag. The question will be sent back to the creator."}
-              </p>
-              <textarea
-                value={flagRejectionReason}
-                onChange={(e) => setFlagRejectionReason(e.target.value)}
-                className="w-full border border-[#E5E7EB] rounded-lg p-3 min-h-[100px] font-roboto text-[16px]"
-                placeholder={
-                  t("processor.viewQuestion.rejectFlagReasonPlaceholder") ||
-                  "Enter reason for rejecting the flag..."
-                }
-              />
-              <div className="flex gap-4 mt-6">
-                <OutlineButton
-                  text={t("processor.viewQuestion.cancel")}
-                  onClick={() => {
-                    setShowRejectFlagModal(false);
-                    setFlagRejectionReason("");
-                  }}
-                  className="flex-1"
-                  disabled={processing}
-                />
-                <PrimaryButton
-                  text={
-                    t("processor.viewQuestion.confirmRejectFlag") ||
-                    "Reject Flag Reason"
-                  }
-                  onClick={handleRejectFlagReason}
-                  className="flex-1"
-                  disabled={processing || !flagRejectionReason.trim()}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        <RejectFlagModal
+          isOpen={showRejectFlagModal}
+          flagRejectionReason={flagRejectionReason}
+          setFlagRejectionReason={setFlagRejectionReason}
+          onClose={() => {
+            setShowRejectFlagModal(false);
+            setFlagRejectionReason("");
+          }}
+          onConfirm={handleRejectFlagReason}
+          processing={processing}
+          gathererRejectedFlag={gathererRejectedFlag}
+          flagType={flagType}
+          t={t}
+        />
 
         {/* Select Creator Modal */}
-        {showCreatorModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-[12px] shadow-xl p-6 max-w-md w-full">
-              <h3 className="text-[24px] font-bold font-archivo text-oxford-blue mb-2">
-                Select Creator
-              </h3>
-              <p className="text-[16px] font-roboto text-dark-gray mb-6">
-                Please select a creator to assign this question to:
-              </p>
-              {loadingUsers ? (
-                <Loader
-                  size="md"
-                  color="oxford-blue"
-                  text="Loading creators..."
-                  className="py-4"
-                />
-              ) : creators.length === 0 ? (
-                <div className="text-center py-4">
-                  <p className="text-dark-gray">No creators available</p>
-                </div>
-              ) : (
-                <div className="mb-4">
-                  <ProfileDropdown
-                    value={selectedCreator}
-                    options={creators.map((creator) => ({
-                      value: creator.id,
-                      label: creator.name,
-                    }))}
-                    onChange={(value) => setSelectedCreator(value)}
-                    placeholder="Select a creator..."
-                    className="w-full"
-                  />
-                </div>
-              )}
-              <div className="flex gap-4 mt-6">
-                <OutlineButton
-                  text={t("processor.viewQuestion.cancel")}
-                  onClick={() => {
-                    setShowCreatorModal(false);
-                    setSelectedCreator("");
-                  }}
-                  className="flex-1"
-                  disabled={processing}
-                />
-                <PrimaryButton
-                  text="Confirm"
-                  onClick={handleCreatorSelect}
-                  className="flex-1"
-                  disabled={processing || !selectedCreator || loadingUsers}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        <SelectCreatorModal
+          isOpen={showCreatorModal}
+          selectedCreator={selectedCreator}
+          setSelectedCreator={setSelectedCreator}
+          creators={creators}
+          loadingUsers={loadingUsers}
+          onClose={() => {
+            setShowCreatorModal(false);
+            setSelectedCreator("");
+          }}
+          onConfirm={handleCreatorSelect}
+          processing={processing}
+          t={t}
+        />
 
         {/* Select Explainer Modal */}
-        {showExplainerModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-[12px] shadow-xl p-6 max-w-md w-full">
-              <h3 className="text-[24px] font-bold font-archivo text-oxford-blue mb-2">
-                Select Explainer
-              </h3>
-              <p className="text-[16px] font-roboto text-dark-gray mb-6">
-                Please select an explainer to assign this question to:
-              </p>
-              {loadingUsers ? (
-                <Loader
-                  size="md"
-                  color="oxford-blue"
-                  text="Loading explainers..."
-                  className="py-4"
-                />
-              ) : explainers.length === 0 ? (
-                <div className="text-center py-4">
-                  <p className="text-dark-gray">No explainers available</p>
-                </div>
-              ) : (
-                <div className="mb-4">
-                  <ProfileDropdown
-                    value={selectedExplainer}
-                    options={explainers.map((explainer) => ({
-                      value: explainer.id,
-                      label: explainer.name,
-                    }))}
-                    onChange={(value) => setSelectedExplainer(value)}
-                    placeholder="Select an explainer..."
-                    className="w-full"
-                  />
-                </div>
-              )}
-              <div className="flex gap-4 mt-6">
-                <OutlineButton
-                  text={t("processor.viewQuestion.cancel")}
-                  onClick={() => {
-                    setShowExplainerModal(false);
-                    setSelectedExplainer("");
-                  }}
-                  className="flex-1"
-                  disabled={processing}
-                />
-                <PrimaryButton
-                  text="Confirm"
-                  onClick={handleExplainerSelect}
-                  className="flex-1"
-                  disabled={processing || !selectedExplainer || loadingUsers}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        <SelectExplainerModal
+          isOpen={showExplainerModal}
+          selectedExplainer={selectedExplainer}
+          setSelectedExplainer={setSelectedExplainer}
+          explainers={explainers}
+          loadingUsers={loadingUsers}
+          onClose={() => {
+            setShowExplainerModal(false);
+            setSelectedExplainer("");
+          }}
+          onConfirm={handleExplainerSelect}
+          processing={processing}
+          t={t}
+        />
       </div>
     </>
   );
