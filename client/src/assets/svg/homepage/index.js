@@ -1,5 +1,5 @@
 import buttonvedio from './homepage-buttonvedio.svg';
-import heropagelogo from './homepage-heropagelogo.svg';
+import heropagelogo from './homepage-hero1.svg';
 import herocardimg1 from './homepage-herocardimg1.svg';
 import herocardimg2 from './homepage-herocardimg2.svg';
 import herocardimg3 from './homepage-herocardimg3.svg';
@@ -10,6 +10,16 @@ import boxcard from './homepage-boxcard.svg';
 import applecard from './homepage-applecard.svg';
 import applecards2 from './homepage-applecards2.svg';
 import aboutherologo from './homepage-aboutherologo.svg';
+import orangebook from './homepage-orangebookicon.svg';
+import orangeaim from './homepage-orangeaim.svg';
+import orangesmart from './homepage-orangesmart.svg';
+import teamicon from './homepage-teamicon.svg';
+import bookicon from './homepage-bookicon.svg';
+import progressicon from './homepage-progressicon.svg';
+import flaskicon from './homepage-flaskicon.svg';
+import bookicon2 from './homepage-bookicon2.svg';
+import brainicon from './homepage-brainicon.svg';
+import hearticon from './homepage-hearticon.svg';
 
 export {
   buttonvedio,
@@ -23,5 +33,15 @@ export {
   boxcard,
   applecard,
   applecards2,
-  aboutherologo
+  aboutherologo,
+  orangebook,
+  orangeaim,
+  orangesmart,
+  teamicon,
+  bookicon,
+  progressicon,
+  flaskicon,
+  bookicon2,
+  brainicon,
+  hearticon
 };

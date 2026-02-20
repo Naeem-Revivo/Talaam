@@ -5,16 +5,18 @@ import { resendOTP, verifyOTP } from '../../store/slices/authSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { showErrorToast, showSuccessToast } from '../../utils/toastConfig'
 import { getTranslatedAuthMessage } from '../../utils/authMessages'
+import AuthCard from './AuthCard'
+import AuthButton from './AuthButton'
+import { shield } from '../../assets/svg'
 
 const VerifyEmail = () => {
-  const { language, t } = useLanguage()
+  const { t } = useLanguage()
   const navigate = useNavigate()
-  const dir = language === 'ar' ? 'rtl' : 'ltr'
   const dispatch = useDispatch()
   const { user, loading } = useSelector((state) => state.auth)
-
+  
   const [code, setCode] = useState(['', '', '', '', '', ''])
-  const [timer, setTimer] = useState(60)
+  const [timer, setTimer] = useState(60) // 60 seconds
   const [canResend, setCanResend] = useState(false)
   const [codeError, setCodeError] = useState('')
   const inputRefs = useRef([])
@@ -100,7 +102,10 @@ const VerifyEmail = () => {
   const handleResend = async () => {
     if (!canResend) return
 
-    if (!user?.email) {
+    // Get email from user state or localStorage (for signup flow)
+    const emailToUse = user?.email || localStorage.getItem('signupEmail');
+    
+    if (!emailToUse) {
       showErrorToast(
         t('verifyEmail.errors.missingEmail') || 'Missing email for verification.',
         { title: 'Verification Error', isAuth: true }
@@ -109,10 +114,10 @@ const VerifyEmail = () => {
     }
 
     setCanResend(false)
-    setTimer(60)
+    setTimer(60) // Reset to 60 seconds
 
     try {
-      const resultAction = await dispatch(resendOTP({ email: user.email }))
+      const resultAction = await dispatch(resendOTP({ email: emailToUse }))
       if (resendOTP.fulfilled.match(resultAction)) {
         const backendMessage = resultAction.payload?.message || 'OTP resent to your email'
         const msg = getTranslatedAuthMessage(backendMessage, t, 'verifyEmail.resendSuccess') || t('verifyEmail.resendSuccess') || 'Verification code has been resent to your email.'
@@ -143,7 +148,10 @@ const VerifyEmail = () => {
       return
     }
 
-    if (!user?.email) {
+    // Get email from user state or localStorage (for signup flow)
+    const emailToUse = user?.email || localStorage.getItem('signupEmail');
+    
+    if (!emailToUse) {
       showErrorToast(
         t('verifyEmail.errors.missingEmail') || 'Missing email for verification.',
         { title: 'Verification Error', isAuth: true }
@@ -153,14 +161,14 @@ const VerifyEmail = () => {
 
     try {
       const resultAction = await dispatch(
-        verifyOTP({ email: user.email, otp: code.join('') })
+        verifyOTP({ email: emailToUse, otp: code.join('') })
       )
 
       if (verifyOTP.fulfilled.match(resultAction)) {
         const backendMessage = resultAction.payload?.message || 'Email verified successfully'
         const msg = getTranslatedAuthMessage(backendMessage, t, 'verifyEmail.success') || t('verifyEmail.success') || 'Email verified successfully.'
         showSuccessToast(msg, { title: t('verifyEmail.successTitle') || 'Email Verified', isAuth: true })
-        navigate('/profile', { replace: true })
+        navigate('/complete-profile', { replace: true })
       } else {
         // Extract error message from API response
         const backendMessage = 
@@ -197,67 +205,97 @@ const VerifyEmail = () => {
   }
 
   const handleSkip = () => {
-    // Navigate to profile page when skipping verification
-    navigate('/profile')
+    // Navigate to complete profile page when skipping verification
+    navigate('/complete-profile')
   }
 
+  const emailToDisplay = user?.email || localStorage.getItem('signupEmail') || 'your.email@xyz.com'
+  const instructionText = t('verifyEmail.instructions.text') || 'Please enter the 6-digit code we sent to'
+
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4" dir={dir}>
-      <div className="bg-white rounded-[14px] border border-[#03274633] shadow-lg p-4 lg:p-8 w-[382px] min-h-[486px] lg:w-[505px] lg:min-h-[486px] flex flex-col">
-        <div className="w-full lg:w-[425px] pt-10 lg:pt-3 flex flex-col mx-auto flex-1">
-          {/* Main Heading */}
-          <h1 className="font-archivo font-semibold mb-6 lg:mb-6 text-[18px] lg:text-[30px] leading-none tracking-normal text-oxford-blue">
-            {t('verifyEmail.title')}
-          </h1>
-
-          {/* Instructions */}
-          <p className="font-roboto font-normal text-[16px] leading-[22px] tracking-normal text-dark-gray mb-7 lg:mb-8">
-            {t('verifyEmail.instructions.text')}{' '}
-            <span className="font-roboto font-medium text-[16px] leading-[22px] tracking-normal">
-              {user?.email || 'email@xyz.com'}
+    <AuthCard
+      icon={shield}
+      title={t('verifyEmail.title')}
+      description={instructionText}
+      showBackToLogin={true}
+      customBackHandler={() => navigate('/create-account')}
+      customBackText={t('common.back') || 'Back'}
+      showTips={true}
+      tipText={t('verifyEmail.tip') || "Tip: Check your spam folder if you don't see the email in your inbox."}
+    >
+      <p className="font-roboto font-semibold text-[16px] leading-[26px] tracking-[0px] text-oxford-blue text-center mb-3">
+          {emailToDisplay}
+        </p>
+      <div className="w-full flex flex-col gap-6">
+        {/* Email Display */}
+        {/* Timer Badge */}
+        <div className="flex justify-center">
+          <div className="bg-[#FEF2F2] rounded-[10px] px-4 py-2 flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8" cy="8" r="7" stroke="#ED4122" strokeWidth="1.5"/>
+              <path d="M8 4V8L10.5 10.5" stroke="#ED4122" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            <span className="font-roboto font-semibold text-[12px] leading-[16px] tracking-[0px] text-cinnebar-red">
+              {t('verifyEmail.codeExpires')}
             </span>
-            {'. '}{t('verifyEmail.instructions.expiry')}
-          </p>
-
-          {/* Code Input Section */}
-          <div className="flex flex-col gap-4 lg:gap-6 mb-2">
-            <label className="block font-roboto font-normal text-[16px] leading-none tracking-normal text-oxford-blue ">
-              {t('verifyEmail.enterCode')}
-            </label>
-            
-            {/* 6 Input Boxes */}
-            <div className="flex gap-2 lg:gap-3 justify-between">
-              {code.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={(el) => (inputRefs.current[index] = el)}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength="1"
-                  value={digit}
-                  onChange={(e) => handleInputChange(index, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  onPaste={handlePaste}
-                  className={`w-12 lg:w-14 h-12 lg:h-14 border ${
-                    codeError ? 'border-red-500' : 'border-[#03274633]'
-                  } rounded-lg text-center text-xl lg:text-2xl font-semibold focus:outline-none focus:border-cinnebar-red focus:ring-2 focus:ring-cinnebar-red/20 shadow-input`}
-                />
-              ))}
-            </div>
-            
-            {/* Code Error Message */}
-            {codeError && (
-              <p className="mt-1 text-sm text-red-500 font-roboto">
-                {codeError}
-              </p>
-            )}
           </div>
+        </div>
 
-          {/* Resend Code Section */}
-          <div className="flex justify-between sm:flex-row sm:justify-between items-start sm:items-center gap-3 mb-6 lg:mb-8">
-            <span className="font-roboto font-normal text-[16px] leading-none tracking-normal text-dark-gray">
-              {t('verifyEmail.dontReceive')}
-            </span>
+        {/* Code Input Section */}
+        <div className="flex flex-col gap-4">
+          <label className="block font-roboto font-semibold text-[14px] leading-[20px] tracking-[0px] text-oxford-blue text-center">
+            {t('verifyEmail.enterCode')}
+          </label>
+          
+          {/* 6 Input Boxes */}
+          <div className="flex gap-2 justify-between mx-auto w-full">
+            {code.map((digit, index) => (
+              <input
+                key={index}
+                ref={(el) => (inputRefs.current[index] = el)}
+                type="text"
+                inputMode="numeric"
+                maxLength="1"
+                value={digit}
+                onChange={(e) => handleInputChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                onPaste={handlePaste}
+                className={`w-12 lg:w-14 h-12 lg:h-14 border-2 rounded-[14px] ${
+                  codeError ? 'border-[#6CA6C1]' : 'border-[#E5E7EB]'
+                } rounded-[14px] text-center text-xl lg:text-2xl font-semibold focus:outline-none focus:border-[#6CA6C1] focus:ring-2 focus:ring-[#6CA6C1]/20`}
+              />
+            ))}
+          </div>
+          
+          {/* Code Error Message */}
+          {codeError && (
+            <p className="mt-1 text-xs font-normal text-[#6CA6C1] font-roboto text-center">
+              {codeError}
+            </p>
+          )}
+        </div>
+
+        {/* Verify Account Button */}
+        <AuthButton
+          onClick={handleVerify}
+          disabled={loading}
+          className="w-full"
+        >
+          {loading ? t('verifyEmail.verifying') || 'Verifying...' : t('verifyEmail.verifyAccount') || 'Verify & Continue'}
+        </AuthButton>
+
+        {/* Resend Code Section */}
+        <div className="flex flex-col items-center gap-2">
+          <span className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0px] text-[#6CA6C1]">
+            {t('verifyEmail.dontReceive') || "Don't receive the code?"}
+          </span>
+          <div className="flex gap-4">
+            <button
+              onClick={handleSkip}
+              className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0px] text-[#6CA6C1] hover:text-gray-700 hover:underline"
+            >
+              {t('verifyEmail.skipForNow') || 'Skip for now'}
+            </button>
             <button
               onClick={handleResend}
               disabled={!canResend}
@@ -268,39 +306,20 @@ const VerifyEmail = () => {
               }`}
             >
               {canResend ? (
-                t('verifyEmail.resendCode')
+                t('verifyEmail.resendCode') || 'Resend code'
               ) : (
                 <>
-                  <span className="text-gray-400">{t('verifyEmail.resendCodeIn')} </span>
+                  <span className="text-gray-400">{t('verifyEmail.resendCodeIn') || 'Resend code in'} </span>
                   <span className="text-gray-600">{timer}s</span>
                 </>
               )}
             </button>
-          </div>
 
-          {/* Verify Account Button */}
-          <button
-            onClick={handleVerify}
-            disabled={loading}
-            className={`bg-cinnebar-red text-white font-roboto font-semibold text-base leading-none tracking-normal rounded-lg transition-colors duration-200 py-5 w-full lg:w-[423px] h-[57px] mb-4 lg:mb-6 hover:bg-cinnebar-red/90 ${
-              loading ? 'opacity-70 cursor-not-allowed' : ''
-            }`}
-          >
-            {loading ? t('verifyEmail.verifying') || 'Verifying...' : t('verifyEmail.verifyAccount')}
-          </button>
-
-          {/* Skip for now */}
-          <div className="text-center mt-auto">
-            <button 
-              onClick={handleSkip}
-              className="inline-block font-roboto font-normal text-[16px] leading-normal tracking-normal text-dark-gray hover:text-gray-700 hover:underline px-0 py-0 border-0 bg-transparent cursor-pointer"
-            >
-              {t('verifyEmail.skipForNow')}
-            </button>
           </div>
+            <div className="w-full h-[2px] bg-[#F3F4F6] mt-6 mb-6"></div>
         </div>
       </div>
-    </div>
+    </AuthCard>
   )
 }
 

@@ -32,50 +32,78 @@ const Pagination = ({ pagination, onPageChange, className = '' }) => {
   }
 
   return (
-    <div className={`flex bg-oxford-blue text-white rounded-lg ${className} px-4 md:px-6 items-center justify-between gap-2 md:gap-4 w-full max-w-[1120px] min-h-[46.8px] flex-col md:flex-row py-3 md:py-0`}>
-      <div className="text-[12px] font-medium font-roboto text-white leading-[18px] tracking-[3%] whitespace-nowrap mb-2 md:mb-0">
-        {t('dashboard.review.pagination.showing')
-          .replace('{{from}}', ((page - 1) * limit + 1).toString())
-          .replace('{{to}}', Math.min(page * limit, totalItems).toString())
-          .replace('{{total}}', totalItems.toString())}
-      </div>
-      <div className="flex items-center gap-2 flex-wrap justify-center">
-        <button
-          onClick={() => onPageChange(Math.max(1, page - 1))}
-          disabled={!hasPreviousPage}
-          className={`w-[78px] h-[27.16px] rounded text-[14px] font-medium font-roboto leading-[16px] tracking-[0%] transition-colors border flex items-center justify-center ${
-            !hasPreviousPage
-              ? 'bg-white/20 text-white/70 cursor-not-allowed border-transparent'
-              : 'bg-white text-oxford-blue border-[#032746] hover:opacity-90'
-          }`}
+    <div className={`flex items-center justify-center gap-2 ${className}`}>
+      {/* Left Arrow Button */}
+      <button
+        onClick={() => onPageChange(Math.max(1, page - 1))}
+        disabled={!hasPreviousPage}
+        className={`w-10 h-10 rounded-[14px] border transition-colors flex items-center justify-center shadow-sm ${
+          !hasPreviousPage
+            ? 'bg-[#F3F4F6] border-none cursor-not-allowed'
+            : 'bg-white border-[#E5E7EB] hover:bg-gray-50'
+        }`}
+        aria-label="Previous page"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          {t('dashboard.review.pagination.previous')}
-        </button>
-        {pagesToShow.map((pageNum) => (
-          <button
-            key={pageNum}
-            onClick={() => onPageChange(pageNum)}
-            className={`w-[32px] h-[32px] rounded text-[14px] font-medium font-roboto leading-[16px] tracking-[0%] transition-colors border flex items-center justify-center ${
-              page === pageNum
-                ? 'bg-[#EF4444] text-white border-[#EF4444]'
-                : 'bg-white text-oxford-blue border-[#032746] hover:opacity-90'
-            }`}
-          >
-            {pageNum}
-          </button>
-        ))}
+          <path
+            d="M10 12L6 8L10 4"
+            stroke={!hasPreviousPage ? '#99A1AF' : '#364153'}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+
+      {/* Page Number Buttons */}
+      {pagesToShow.map((pageNum) => (
         <button
-          onClick={() => onPageChange(Math.min(totalPages, page + 1))}
-          disabled={!hasNextPage}
-          className={`w-[78px] h-[27.16px] rounded text-[14px] font-medium font-roboto leading-[16px] tracking-[0%] transition-colors border flex items-center justify-center ${
-            !hasNextPage
-              ? 'bg-white/20 text-white/70 cursor-not-allowed border-transparent'
-              : 'bg-white text-oxford-blue border-[#032746] hover:opacity-90'
+          key={pageNum}
+          onClick={() => onPageChange(pageNum)}
+          className={`w-10 h-10 rounded-[14px] border text-[14px] font-medium font-roboto leading-[20px] tracking-[0%] transition-colors flex items-center justify-center shadow-sm ${
+            page === pageNum
+              ? 'bg-gradient-to-r from-[#F54900] to-[#ED4122] shadow-sm shadow-[#ED412233]  text-white border-[#EF4444]'
+              : 'bg-white border-[#E5E7EB] text-[#364153] hover:bg-gray-50'
           }`}
+          aria-label={`Page ${pageNum}`}
         >
-          {t('dashboard.review.pagination.next')}
+          {pageNum}
         </button>
-      </div>
+      ))}
+
+      {/* Right Arrow Button */}
+      <button
+        onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+        disabled={!hasNextPage}
+        className={`w-10 h-10 rounded-[14px] border transition-colors flex items-center justify-center shadow-sm ${
+          !hasNextPage
+            ? 'bg-[#F3F4F6] border-none cursor-not-allowed'
+            : 'bg-white border-[#E5E7EB] hover:bg-gray-50'
+        }`}
+        aria-label="Next page"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M6 4L10 8L6 12"
+            stroke={!hasNextPage ? '#99A1AF' : '#364153'}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
     </div>
   );
 };

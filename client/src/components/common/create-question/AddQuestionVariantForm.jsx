@@ -1,6 +1,6 @@
 import React from "react";
-import RichTextEditor from "../../common/RichTextEditor";
-import Dropdown from "../../common/Dropdown";
+import RichTextEditor from "../RichTextEditor";
+import Dropdown from "../Dropdown";
 
 const AddQuestionVariantForm = ({
   variant,

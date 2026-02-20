@@ -7,11 +7,11 @@ import subjectsAPI from "../../api/subjects";
 import usersAPI from "../../api/users";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
 import Loader from "../../components/common/Loader";
-import AddQuestionHeader from "../../components/admin/question/AddQuestionHeader";
-import AddQuestionDetailsSection from "../../components/admin/question/AddQuestionDetailsSection";
-import AddQuestionClassificationSection from "../../components/admin/question/AddQuestionClassificationSection";
-import AddQuestionExplanationSection from "../../components/admin/question/AddQuestionExplanationSection";
-import AddQuestionVariantsSection from "../../components/admin/question/AddQuestionVariantsSection";
+import AddQuestionHeader from "../../components/common/create-question/AddQuestionHeader";
+import AddQuestionDetailsSection from "../../components/common/create-question/AddQuestionDetailsSection";
+import AddQuestionClassificationSection from "../../components/common/create-question/AddQuestionClassificationSection";
+import AddQuestionExplanationSection from "../../components/common/create-question/AddQuestionExplanationSection";
+import AddQuestionVariantsSection from "../../components/common/create-question/AddQuestionVariantsSection";
 
 
 const AddNewQuestionPage = () => {

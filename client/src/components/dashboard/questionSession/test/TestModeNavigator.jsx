@@ -70,8 +70,8 @@ const TestQuestionNavigator = ({
         </>
       )}
 
-      <div className="hidden lg:flex w-[110px] h-full bg-white overflow-y-auto flex-col border-r border-[#E5E7EB]">
-        <div className="flex-1 py-2">
+      <div className="hidden lg:flex w-[72px] h-full bg-white flex-col border-r border-[#E5E7EB]">
+        <div className="flex-1 overflow-y-auto py-3 px-[12px] space-y-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {questions.map((_, index) => {
             const isSubmitted = isQuestionSubmitted(index);
             const isDisabled = isSubmitted;
@@ -82,22 +82,33 @@ const TestQuestionNavigator = ({
               key={index}
                 onClick={() => !isDisabled && onGoToIndex(index)}
                 disabled={isDisabled}
-              className={`w-full py-2 text-[14px] font-medium font-roboto transition-colors text-center border border-[#B9C9C5] ${
+              className={`w-[46px] h-[46px] gap-2 rounded-[10px] pt-3 pr-4 pb-3 pl-4 border text-[20px] leading-none font-semibold font-roboto transition-colors flex items-center justify-center mx-auto ${
                 index === currentIndex
                   ? 'bg-[#EF4444] text-white border-[#EF4444]'
                     : isSubmittedAnywhere
                     ? isDisabled
-                      ? 'bg-[#9BB5AD] text-oxford-blue border-[#9BB5AD] cursor-not-allowed opacity-80'
-                      : 'bg-[#9BB5AD] text-oxford-blue hover:opacity-90'
+                      ? 'bg-[#C6D8D3] text-oxford-blue border-[#B9C9C5] cursor-not-allowed opacity-80'
+                      : 'bg-[#C6D8D3] text-oxford-blue border-[#B9C9C5] hover:opacity-90'
                     : isVisited
-                  ? 'bg-[#C6D8D3] text-oxford-blue hover:opacity-80'
-                  : 'bg-white text-oxford-blue hover:opacity-80'
+                  ? 'bg-[#ECF4FA] text-[#4285B5] border-[#75A9CC] hover:opacity-80'
+                  : 'bg-white text-[#9CA3AF] border-[#D1D5DB] hover:opacity-80'
               }`}
             >
               {index + 1}
             </button>
             );
           })}
+        </div>
+
+        <div className="px-[12px] pt-3 pb-4 border-t border-[#E5E7EB] bg-white">
+          <div className="flex items-center gap-2 font-roboto">
+            <span className="w-2 h-2 rounded-full bg-[#EAB308]" />
+            <span className="text-[12px] leading-[12px] text-[#94A3B8]">Flag</span>
+          </div>
+          <div className="mt-2 flex items-center gap-2 font-roboto">
+            <span className="w-2 h-2 rounded-full border border-[#B7C2CF]" />
+            <span className="text-[12px] leading-[12px] text-[#94A3B8]">N/A</span>
+          </div>
         </div>
       </div>
     </>

@@ -93,17 +93,60 @@
     "products": "Products",
     "about": "About",
     "contact": "Contact",
-    "signUp": "SIGN UP",
-    "logIn": "LOG IN",
+    "signUp": "Get Started",
+    "logIn": "Log in",
     "logout": "Logout"
   },
   "homepage": {
     "hero": {
+      "badge": "Premium Learning Platform",
+      "headline": {
+        "line1": "Excel in Your",
+        "highlightLine1": "Qudurat &",
+        "highlightLine2": "Tahseely",
+        "line2": "Exams"
+      },
       "title": "Study Smart. ",
       "titleHighlight": "Ace Any Exam.",
       "subtitle": "Master Qudurat and Tahseely with science-backed techniques like active recall, spaced repetition, and deliberate practice.",
       "getStarted": "Get Started",
       "exploreMore": "EXPLORE MORE",
+      "primaryCta": "Start Free Today",
+      "secondaryCta": "Explore More",
+      "features": {
+        "feature1": "Evidence-based methods",
+        "feature2": "High-yield questions",
+        "feature3": "Free to start"
+      },
+      "featuresSection": {
+        "learnMore": "Learn more",
+        "cards": {
+          "evidence": {
+            "title": "Evidence-Based Methods",
+            "description": "Built on proven science-backed techniques like active recall and spaced repetition to produce the best results."
+          },
+          "laser": {
+            "title": "Laser-Focused Content",
+            "description": "No fluff — just high-yield Qudurat and Tahseely questions that lift your score and boost your confidence."
+          },
+          "learn": {
+            "title": "Learn Smarter",
+            "description": "Forget endless video courses — jump in and start solving real questions to learn by doing and see quick progress."
+          }
+        }
+      },
+      "rightImages": {
+        "mainAlt": "Practice dashboard preview",
+        "card1": {
+          "value": "+38%",
+          "label": "Session Improvement",
+          "footer": "Your Progress"
+        },
+        "card2": {
+          "value": "12K+",
+          "label": "Active Learners"
+        }
+      },
       "cards": {
         "learnSmarter": {
           "title": "Learn Smarter",
@@ -120,54 +163,67 @@
       }
     },
     "howItWorks": {
-      "title": "How Taalam Works",
-      "subtitle": "Simple steps to exam success",
+      "title": "Get Started in 3 Steps",
+      "subtitle": "Simple steps to score smarter in minutes. Here's how it works:",
       "step1": {
-        "number": "Step 1",
-        "title": "Make an Account",
-        "description": "That's it — just sign up."
+        "number": "1",
+        "title": "Create Your Account",
+        "description": "Free to try — just sign up."
       },
       "step2": {
-        "number": "Step 2",
+        "number": "2",
         "title": "Solve Questions",
-        "description": "Learn by doing questions and reading explanations."
+        "description": "Learning by doing and evidence-based techniques."
+      },
+      "step3": {
+        "number": "3",
+        "title": "Track Your Progress",
+        "description": "See real results and improve over time."
       }
     },
     "values": {
-      "title": "Our Values",
-      "subtitle": "At Taalam, our core values guide everything we do. They reflect who we are and what we stand for as a brand",
+      "title": "What We Stand For",
+      "subtitle": "At Taalam, our core values guide everything we do. They reflect who we are and what we stand for as a brand.",
       "evidenceBasedLearning": {
+        "pill": "Science-backed",
         "title": "Evidence-Based Learning",
-        "description": "We build on active recall, spaced repetition, and deliberate practice, and are trying to incorporate more science proven strategy.",
+        "description": "We build our platform around the latest cognitive research and proven study techniques.",
         "action": "Start Quiz"
       },
       "effortOverHacks": {
+        "pill": "No shortcuts",
         "title": "Effort Over Hacks",
-        "description": "There's no 'infinite knowledge glitch.' Mastery comes from work, we make that work count more per minute.",
+        "description": "There's no \"miracle knowledge pills.\" Mastery comes from work, not shortcuts.",
         "action": "Explore"
       },
       "learnHowToLearn": {
+        "pill": "Lifetime",
         "title": "Learn How to Learn",
-        "description": "Beyond answers, we teach the science of learning so students become better learners for life.",
+        "description": "Beyond answers, we teach the core of learning so studying becomes easier over time.",
         "action": "Learn more"
       },
       "valueFirstAlways": {
-        "title": "Value-First, Always",
-        "description": "For every decision, our intent is to create real value for students -otherwise we don't do it.",
+        "pill": "Always",
+        "title": "Student-First, Always",
+        "description": "For every decision, we start here: should provide real value for students — always not just $$.",
         "action": "Learn more"
       }
     },
     "cta": {
-      "title": "Ready to study smarter?",
-      "subtitle": "Make an account and start practicing now it's free to try.",
-      "button": "START STUDYING"
+      "badge": "Start Your Journey Today",
+      "title": "Ready to Ace Your Exams?",
+      "subtitle": "Join 12,000+ students who transformed their exam prep with science-backed learning. Start practicing now — completely free.",
+      "button": "Get Started Free",
+      "feature1": "No credit card required",
+      "feature2": "Free to start",
+      "feature3": "Cancel anytime"
     }
   },
   "footer": {
-    "mission": "Empowering students to achieve their academic goals through smart learning.",
+    "mission": "Empowering students to achieve academic excellence through evidence-based learning and smart study strategies.",
     "company": {
       "title": "Company",
-      "about": "About",
+      "about": "About Us",
       "contact": "Contact",
       "howItWorks": "How It Works"
     },
@@ -183,17 +239,18 @@
     },
     "social": "Social",
     "subscribe": {
-      "title": "Subscribe",
-      "description": "Join our community to receive updates",
-      "placeholder": "Enter your email",
-      "button": "SUBSCRIBE",
+      "title": "Stay Updated",
+      "description": "Join 5,000+ students getting weekly study tips",
+      "placeholder": "your@email.com",
+      "button": "Subscribe",
       "consent": "By subscribing, you agree to our Privacy Policy"
     },
-    "copyright": "© 2025 Taalam. All rights reserved."
+    "copyright": "© 2023 Taalam. All rights reserved."
   },
   "howItWorks": {
     "hero": {
-      "title": "How Taalam ",
+      "badge": "Evidence-Based Learning",
+      "title": "How Taalam",
       "titleHighlight": "Works",
       "subtitle": "Discover the science behind effective learning and how Taalam helps you master exams through principles that actually work.",
       "getStarted": "Get Started",
@@ -201,7 +258,7 @@
     },
     "learningLoop": {
       "title": "The Learning Loop",
-      "subtitle": "Understanding how your brain processes and retains information.",
+      "subtitle": "Our approach follows a continuous cycle of effective learning.",
       "steps": {
         "attention": {
           "title": "Attention",
@@ -226,7 +283,9 @@
       }
     },
     "scienceStrategies": {
-      "title": "Science-Backed Strategies",
+      "title": "Science-Backed Methods",
+      "subtitle": "Every feature is designed around proven learning science.",
+      "learnMore": "Learn more",
       "strategies": {
         "activeRecall": {
           "title": "Active Recall",
@@ -234,7 +293,7 @@
         },
         "interleaving": {
           "title": "Interleaving",
-          "description": "Mixing different topics or problems within a single study session."
+          "description": "Mixing different topics or problems within a single study session for better learning."
         }
       }
     },
@@ -257,21 +316,40 @@
         },
         "deliberatePractice": {
           "title": "Deliberate Practice",
-          "description": "Focused practice on specific areas of weakness with immediate feedback."
+          "description": "Focused practice on specific skills with immediate feedback to maximize improvement."
         }
       }
     },
     "questionBank": {
       "title": "Why Our Question Bank Works",
-      "subtitle": "Taalam's question bank naturally incorporates all these science-backed techniques.",
+      "subtitle": "Every feature is designed around evidence-based learning principles",
       "features": {
-        "activeRecall": "Active recall through practice questions.",
-        "desirableDifficulty": "Desirable difficulty: questions are calibrated to be \"just the right level of tricky.\"",
-        "spacedRepetition": "Spaced repetition: our algorithm spaces reviews and resurfaces questions with similar subjects at the right time.",
-        "interleaving": "Interleaving by solving questions from several topics within the same practice session.",
-        "deliberatePractice": "Deliberate practice: after every question, you get immediate feedback and a targeted explanation."
+        "activeRecall": {
+          "title": "Active recall during practice",
+          "description": "Every question requires you to retrieve information from memory"
+        },
+        "immediateFeedback": {
+          "title": "Immediate feedback",
+          "description": "Get instant feedback both when you're right and when you need more work"
+        },
+        "interleaving": {
+          "title": "Interleaving questions",
+          "description": "Questions are shuffled so you can't rely on rote patterns"
+        },
+        "adaptiveDifficulty": {
+          "title": "Adaptive difficulty",
+          "description": "Questions become more challenging as you progress"
+        },
+        "spacedRepetition": {
+          "title": "Spaced repetition algorithm",
+          "description": "spaces reviews and resurfaces questions with similar subjects at the right time."
+        },
+        "desirableDifficulty": {
+          "title": "Desirable difficulty",
+          "description": "Struggling helps you learn more than being shown the answer"
+        }
       },
-      "conclusion": "This comprehensive approach is why we believe our product provides true value."
+      "conclusion": "This comprehensive approach is why we believe our product is provides true value"
     },
     "wantToGoDeeper": {
       "title": "Want to Go Deeper?",
@@ -280,15 +358,33 @@
   },
   "products": {
     "hero": {
-      "title1": "Master the Tahseely",
-      "title2": "Exam with",
-      "titleHighlight": "Confidence",
-      "subtitle": "Master Qudurat and Tahseely with science-backed techniques like active recall, spaced repetition, and deliberate practice.",
+      "badge": "Achievement Test Preparation",
+      "title1": "Master the",
+      "titleHighlight": "Tahseely",
+      "title2": "Exam with Confidence",
+      "subtitle": "Prepare smarter, not harder. Get Tahseely-aligned practice questions and expert strategies that help you achieve your target score.",
       "getStarted": "Get Started",
-      "exploreMore": "EXPLORE MORE"
+      "startFree": "Start Free",
+      "seeHowItWorks": "See How It Works",
+      "exploreMore": "EXPLORE MORE",
+      "stats": {
+        "questions": {
+          "value": "1,000+",
+          "label": "Questions"
+        },
+        "successRate": {
+          "value": "95%",
+          "label": "Success Rate"
+        },
+        "students": {
+          "value": "5K+",
+          "label": "Students"
+        }
+      }
     },
     "whatYouGet": {
       "title": "What You Get",
+      "subtitle": "Everything you need to excel in the Tahseely exam",
       "tryItFree": "Try It Free Today",
       "tryItFreeDesc": "Start with 50 free questions and experience the difference",
       "getStartedFree": "GET STARTED FREE",
@@ -297,34 +393,43 @@
           "title": "1,000+ High-Yield Practice Questions",
           "description": "Practice with exam-focused questions designed to sharpen your skills and boost confidence."
         },
+        "explanations": {
+          "title": "Explanations That Teach",
+          "description": "Learn faster with detailed explanations that clarify concepts, not just provide answers."
+        },
         "performanceTracking": {
           "title": "Performance Tracking",
           "description": "Monitor your progress with smart analytics that highlight strengths and areas to improve."
+        },
+        "scienceBacked": {
+          "title": "Science-Backed Methods",
+          "description": "Built with proven learning strategies like active recall and spaced repetition."
         },
         "studyPlanTools": {
           "title": "Study Plan Tools",
           "description": "Stay organized with personalized study plans tailored to your exam timeline."
         },
-        "explanations": {
-          "title": "Explanations That Teach",
-          "description": "Learn faster with detailed explanations that clarify concepts, not just provide answers."
-        },
-        "scienceBacked": {
-          "title": "Science-Backed Methods",
-          "description": "Built with proven learning strategies like active recall and spaced repetition."
+        "customizedExams": {
+          "title": "Customized Mini-exams for Each Topic",
+          "description": "Create focused practice sessions targeting specific topics and difficulty levels to master your weak areas."
         }
       }
     },
     "philosophy": {
       "title": "Our Philosophy: Learn by Doing",
-      "point1": "At Taalam, we believe in learning through action. Our approach is simple but powerful: Start a block, answer a question, read the explanation, and move on. This cycle helps you learn faster – and more importantly, retain what you've learned.",
-      "point2": "Every question is designed to teach, not just test. We focus on the core concepts most commonly seen on the Qudurat exam, so your effort goes where it matters most.",
-      "point3": "Our platform also uses spaced repetition algorithms to automatically revisit key concepts just before you forget them – improving retention and making sure knowledge sticks."
+      "subtitle": "We believe the best way to learn is through active practice, not passive review",
+      "point1": "At Taalam, we believe in learning through action. Our approach is simple but powerful: Start a block, answer a  question, read the explanation, and move on. This cycle helps you learn faster — and more importantly, retain  what you've learned.",
+      "point2": "Every question is designed to teach, not just test. We focus on the core concepts most commonly seen on the  Qudurat exam, so your effort goes where it matters most.",
+      "point3": "Our platform also uses spaced repetition algorithms to automatically revisit key concepts just before you forget  them — improving retention and making sure knowledge sticks."
     },
     "choosePlan": {
       "title": "Choose Your Plan",
+      "subtitle": "Simple, transparent pricing for Tahseely preparation",
+      "badge": "MOST POPULAR",
       "planName": "Taalam Qudurat Access",
-      "price": "99 SAR",
+      "price": "99",
+      "currency": "SAR",
+      "paymentNote": "One-time payment • Lifetime access",
       "features": {
         "feature1": "Full QBank access (1,000+ questions)",
         "feature2": "Smart study plan",
@@ -333,25 +438,29 @@
         "feature5": "Explanations that actually teach",
         "feature6": "30-day access from subscription date"
       },
-      "subscribe": "SUBSCRIBE NOW"
+      "subscribe": "Subscribe Now"
     },
     "howItWorks": {
       "title": "How It Works: 2 Simple Steps",
-      "subtitle": "Simple steps to exam success",
+      "subtitle": "Getting started is quick and easy",
       "step1": {
         "title": "Sign Up",
-        "description": "Create your account and unlock your tools."
+        "description": "Create your account and choose your study goals. No credit card required to start."
       },
       "step2": {
         "title": "Start Practicing",
-        "description": "Solve questions, learn from explanations, and track your progress."
+        "description": "Jump right into practice sessions with immediate feedback and personalized insights."
       }
     }
   },
   "questionBanks": {
+    "header": {
+      "title": "QBank Access"
+    },
     "hero": {
-      "title": "Your Question Banks",
-      "subtitle": "Unlock access to comprehensive question banks featuring 1,000+ high-yield practice questions, detailed explanations that teach, performance tracking, and personalized study plans. Master Qudurat and Tahseely exams with proven learning techniques like active recall and spaced repetition."
+      "title": "Your Question",
+      "titleHighlight": "Banks",
+      "subtitle": "Access the exams you're subscribed to, or upgrade to unlock more."
     },
     "exams": {
       "subscribed": "Subscribed",
@@ -365,9 +474,10 @@
   },
   "about": {
     "hero": {
+      "badge": "Our Story",
       "title1": "About",
       "title2": "Us",
-      "subtitle": "Learn about our curriculum and the people behind Taalam.",
+      "subtitle": "Learn more about our mission and the people behind Taalam.",
       "getStarted": "Get Started",
       "exploreMore": "Explore More"
     },
@@ -391,7 +501,9 @@
     "whyWeStarted": {
       "title": "Why We Started Taalam",
       "subtitle": "Our Story",
-      "description": "Taalam was born from a simple yet powerful observation: traditional education wasn't meeting the diverse needs of modern students. Our founders, experienced educators and technologists, witnessed countless bright minds struggling not because they lacked ability, but because they weren't learning in ways that worked for them. In 2020, during a time when education was being reimagined globally, we decided to take action. We started with a vision: to create an educational platform that truly understands each student as an individual. Through extensive research, collaboration with educators, and countless hours of development, Taalam emerged as a comprehensive solution. Today, we're proud to serve thousands of students, helping them discover their potential and achieve their academic goals. Our journey is just beginning, and we remain committed to evolving and improving to better serve the next generation of learners."
+      "paragraph1": "Taalam was born from a simple yet powerful observation: traditional education  wasn't meeting the diverse needs of modern students. Our founders,  experienced educators and technologists, witnessed countless bright  minds struggling not because they lacked ability.",
+      "paragraph2": "In 2020, during a time when education was being reimagined globally, we  decided to take action. We started with a vision: to create an  educational platform that truly understands each student as an  individual. Through extensive research, collaboration with educators,  and countless hours of development, Taalam emerged as a comprehensive  solution.",
+      "paragraph3": "Today, we're proud to serve thousands of students, helping them discover their potential and achieve their academic goals. Our journey is just  beginning, and we remain committed to evolving and improving to better  serve the next generation of learners."
     },
     "joinUs": {
       "title": "Help us grow",
@@ -406,27 +518,66 @@
   },
   "contact": {
     "hero": {
+      "badge": "We're Here to Help",
       "title1": "Get in",
       "title2": "Touch",
-      "subtitle": "Have a question, suggestion, or need support? We'd love to hear from you."
+      "subtitle": "Have a question, suggestion, or need support? Just text or how can we help you? Feel free to reach out to us."
     },
     "contactOptions": {
+      "title": "Choose Your Preferred Contact Method",
+      "subtitle": "We're available through multiple channels",
       "email": "Email",
+      "emailDescription": "Send us an email anytime",
       "emailValue": "contact@yourdomain.com",
       "whatsapp": "WhatsApp",
-      "whatsappValue": "+98 901 123 4567"
+      "whatsappDescription": "Chat with us instantly",
+      "whatsappValue": "+966 50 123 4567"
     },
     "contactForm": {
       "title": "Send us a Message",
+      "subtitle": "Fill out the form below and we'll get back to you as soon as possible",
       "name": "Name",
+      "namePlaceholder": "Enter your full name",
       "email": "Email",
+      "emailPlaceholder": "Enter your email address",
       "message": "Message",
-      "button": "SUBMIT MESSAGE",
-      "successAlert": "Thank you for your message! We will get back to you soon."
+      "messagePlaceholder": "How can we help you?",
+      "button": "Submit Message",
+      "successAlert": "Thank you for your message! We will get back to you soon.",
+      "additionalInfo": {
+        "title": "Additional Information",
+        "responseTime": {
+          "title": "Response Time",
+          "description": "We typically respond within 24 hours during business days"
+        },
+        "businessHours": {
+          "title": "Business Hours",
+          "description": "Sunday - Thursday: 9:00 AM - 6:00 PM (AST)"
+        },
+        "location": {
+          "title": "Location",
+          "description": "Riyadh, Saudi Arabia"
+        },
+        "qualitySupport": {
+          "title": "Quality Support",
+          "description": "Every inquiry is handled by our dedicated support team"
+        },
+        "privacyNote": "We don't share your information with anyone. Your data is safe with us and used only to respond to your inquiry."
+      }
     },
     "followUs": {
       "title": "Follow us",
-      "description": "An easy to use, powerful and secure solution for your business."
+      "description": "We don't share your information with anyone"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Find quick answers to common questions",
+      "questions": {
+        "q1": "How quickly will I receive a response?",
+        "q2": "What information should I include in my message?",
+        "q3": "Do you offer phone support?",
+        "q4": "Can I get support in Arabic?"
+      }
     }
   },
   "signUpFree": {
@@ -445,13 +596,20 @@
     }
   },
   "createAccount": {
-    "title": "Create account",
-    "email": "Email",
+    "title": "Create Your Account",
+    "subtitle": "Create an account to access thousands of questions and unlock your potential.",
+    "roleLabel": "I am a",
+    "roleStudent": "Student",
+    "roleStudentDesc": "Learn & Practice",
+    "roleAdmin": "Admin",
+    "roleAdminDesc": "Manage & Monitor",
+    "email": "Email Address",
     "emailPlaceholder": "Enter your email",
     "password": "Password",
-    "passwordPlaceholder": "Enter your password",
+    "passwordPlaceholder": "Create a strong password",
+    "passwordHint": "Must be at least 8 characters with letters and numbers",
     "confirmPassword": "Confirm Password",
-    "confirmPasswordPlaceholder": "Confirm your password",
+    "confirmPasswordPlaceholder": "Confirm password",
     "passwordRequirements": {
       "8chars": "8+ characters",
       "1uppercase": "1 uppercase",
@@ -491,24 +649,28 @@
     "continueWithGoogle": "Continue with Google",
     "continueWithLinkedIn": "Continue with LinkedIn",
     "terms": {
-      "text": "By signing up, you agree to our",
-      "terms": "Terms",
-      "and": "&",
-      "privacy": "Privacy"
-    }
+      "text": "By continuing you agree to our",
+      "terms": "Terms & Privacy Policy",
+      "and": "and",
+      "privacy": "Privacy Policy"
+    },
+    "alreadyHaveAccount": "Already have an account?",
+    "login": "Log in"
   },
   "verifyEmail": {
-    "title": "Verify your email",
+    "title": "Verify Your Email",
     "instructions": {
-      "text": "Please enter the 6-digit code we sent to your",
-      "expiry": "This code will expire in 10 minutes."
+      "text": "Please enter the 6-digit code we sent to",
+      "expiry": "Code expires in 10 minutes"
     },
+    "codeExpires": "Code expires in 10 minutes",
     "enterCode": "Enter Code",
     "dontReceive": "Don't receive the code?",
     "resendCode": "Resend code",
     "resendCodeIn": "Resend code in",
-    "verifyAccount": "Verify Account",
+    "verifyAccount": "Verify & Continue",
     "skipForNow": "Skip for now",
+    "tip": "Tip: Check your spam folder if you don't see the email in your inbox.",
     "validation": {
       "codeRequired": "Please enter the complete 6-digit verification code"
     },
@@ -534,17 +696,25 @@
     }
   },
   "profile": {
-    "title": "Complete your profile",
-    "subtitle": "Find interesting stuff across the web.",
+    "title": "Complete Your Profile",
+    "subtitle": "Find interesting stuff across the web",
+    "completion": "Profile Completion",
+    "optional": "Optional",
     "fullName": "Full Name",
     "fullNamePlaceholder": "Enter your full name",
-    "dateOfBirth": "Date of Birth (Optional)",
+    "dateOfBirth": "Date of Birth",
+    "dateOfBirthPlaceholder": "Enter your date of birth",
     "country": "Country",
+    "countryPlaceholder": "Select your country",
     "timeZone": "Time Zone",
+    "timeZonePlaceholder": "(GMT-08:00) Pacific Time",
     "language": "Language",
+    "languagePlaceholder": "English",
+    "quickTip": "Quick Tip: Completing your profile helps us personalize your learning experience!",
     "validation": {
       "fullNameRequired": "Full name is required",
-      "fullNameMinLength": "Full name must be at least 2 characters"
+      "fullNameMinLength": "Full name must be at least 2 characters",
+      "dateOfBirthFuture": "Date of birth cannot be in the future"
     },
     "finishSetup": "Finish Setup",
     "buttonLoading": "Saving...",
@@ -555,15 +725,31 @@
       "generic": "Failed to complete profile. Please try again."
     }
   },
+  "authSidePanel": {
+    "welcomeBack": "Welcome Back! 👋",
+    "title": "Continue Your Learning Journey",
+    "subtitle": "Access your personal dashboard and pick up right where you left off.",
+    "trackProgress": "Track Progress",
+    "trackProgressDesc": "Monitor performance metrics",
+    "earnAchievements": "Earn Achievements",
+    "earnAchievementsDesc": "Unlock badges and rewards",
+    "activeStudents": "Active Students",
+    "courseRate": "Course Rate",
+    "userRating": "User Rating"
+  },
   "login": {
     "welcome": "Welcome!",
     "title": "Sign In",
+    "subtitle": "Sign into your account to access thousands of questions and unlock your potential.",
     "email": "Email",
+    "emailLabel": "Email Address",
     "emailPlaceholder": "Enter your email",
     "password": "Password",
+    "passwordLabel": "Password",
     "passwordPlaceholder": "Enter your password",
     "rememberMe": "Remember me",
     "forgotPassword": "Forgot Password?",
+    "createNewAccount": "Create new account",
     "validation": {
       "emailRequired": "Email is required",
       "emailInvalid": "Please enter a valid email address",
@@ -572,8 +758,8 @@
     "buttonText": "Sign In",
     "buttonLoading": "Signing in...",
     "orContinueWith": "or continue with",
-    "continueWithGoogle": "Continue with Google",
-    "continueWithLinkedIn": "Continue with LinkedIn",
+    "continueWithGoogle": "Google",
+    "continueWithLinkedIn": "LinkedIn",
     "noAccount": "Don't have an Account?",
     "signUp": "Sign Up",
     "success": "Login successful! Welcome back.",
@@ -716,12 +902,16 @@
       "endDate": "End Date",
       "createdAt": "Created At"
     },
+    "welcome": {
+      "title": "Welcome back, {{name}}!",
+      "subtitle": "Your QBank progress at a glance."
+    },
     "overview": {
       "title": "Overview",
       "subtitle": "Your QBank progress at a glance.",
-      "progress": "Progress",
-      "accuracy": "Accuracy",
-      "overall": "Overall",
+      "progress": "Overall Progress",
+      "accuracy": "Overall Accuracy",
+      "overall": "Based on all answered questions",
       "questionsCompleted": "Questions Completed",
       "sectionBreakdown": "Section Breakdown",
       "sectionNames": {
@@ -738,12 +928,29 @@
       }
     },
     "performance": {
-      "title": "Performance - Last 10 Sessions"
+      "title": "Performance",
+      "subtitle": "Last 10 Sessions",
+      "totalAnswered": "Total Answered Questions"
+    },
+    "practiceAreas": {
+      "title": "Areas That Need Practice",
+      "subtitle": "Focus on these topics to improve your score",
+      "practiceNow": "Practice Now",
+      "needsSignificantImprovement": "Needs significant improvement",
+      "couldUseMorePractice": "Could use more practice"
     },
     "quickActions": {
-      "title": "Quick Actions",
-      "startNewSession": "Start New Session",
+      "title": "What Would You Like to Do?",
+      "subtitle": "Smart recommendations based on your performance",
+      "startNewSession": "Start New Practice Session",
+      "performanceAnalytics": "Performance Analytics",
       "reviewSessions": "Review Previous Sessions"
+    },
+    "metrics": {
+      "scoreImprovement": "Score Improvement",
+      "questionsSolved": "Questions Solved",
+      "studyStreak": "Study Streak",
+      "sessionsCompleted": "Sessions Completed"
     },
     "practice": {
       "hero": {
@@ -752,11 +959,18 @@
       },
       "sessionMode": {
         "title": "Session Mode",
+        "subtitle": "Pick your mode, choose topics, and begin.",
         "testMode": "Test Mode",
         "testModeDescription": "Timed practice scoring",
+        "testModeFullDescription": "Timed, no explanations until the end",
         "studyMode": "Study Mode",
         "studyModeDescription": "Learn with explanations",
-        "timeLimitNote": "Time limits are available in Test Mode"
+        "studyModeFullDescription": "Learn with explanations. Untimed (or soft timer)",
+        "timeLimit": "Time Limit",
+        "timeLimitNote": "Time limits are available in Test Mode",
+        "showExplanationAfterSubmit": "Show Explanation After Submit",
+        "subscriptionRequired": "Subscription required to access study mode and test mode.",
+        "subscribeNow": "Subscribe now"
       },
       "questionStatus": {
         "title": "Question Status",
@@ -804,7 +1018,7 @@
         "subtitle": "Manage Your Plan, payment methods, and view your billing history"
       },
       "currentPlan": {
-        "title": "Your Current Plan",
+        "title": "Current Plan",
         "planName": "Professional Plan",
         "statusActive": "Active",
         "statusPending": "Pending",
@@ -814,9 +1028,11 @@
         "upgradePlan": "Upgrade Plan",
         "renewPlan": "Renew Plan",
         "plan": "Plan:",
-        "renewsOn": "Renews on:",
+        "planType": "Plan Type",
+        "renewsOn": "Renews On",
         "access": "Access:",
-        "autoRenew": "Auto-Renew:",
+        "accessLevel": "Access Level",
+        "autoRenew": "Auto-Renew",
         "monthly": "Monthly",
         "quarterly": "Quarterly",
         "semiAnnual": "Semi-Annual",
@@ -824,6 +1040,8 @@
         "questionBankAccess": "Question Bank Access",
         "on": "On",
         "off": "Off",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
         "cancelModalTitle": "Cancel Subscription",
         "cancelModalMessage": "Are you sure you want to cancel your subscription?",
         "cancelModalSubMessage": "This action cannot be undone. Your subscription will remain active until the end of the current billing period.",
@@ -876,15 +1094,17 @@
         "title": "Billing History",
         "emptyMessage": "No billing history found",
         "columns": {
-          "invoice": "INVOICE",
-          "amount": "AMOUNT",
-          "date": "DATE",
-          "status": "STATUS",
-          "actions": "ACTIONS"
+          "invoice": "Invoice",
+          "amount": "Amount",
+          "date": "Date",
+          "status": "Status",
+          "actions": "Action"
         },
         "status": {
           "paid": "Paid",
-          "failed": "Failed"
+          "failed": "Failed",
+          "refunded": "Refunded",
+          "pending": "Pending"
         }
       }
     },
@@ -894,13 +1114,40 @@
         "subtitle": "Manage your profile, password, and application settings."
       },
       "profileInformation": {
-        "title": "Profile Information",
+        "title": "Profile",
         "name": "Name",
+        "fullName": "Full Name",
+        "namePlaceholder": "John Doe",
         "currentPlan": "Current Plan",
-        "email": "Email",
-        "phone": "Phone",
+        "email": "Email Address",
+        "emailPlaceholder": "johndoe@gmail.com",
+        "phone": "Phone Number",
+        "phonePlaceholder": "+1 (555) 123-4567",
         "professionalPlan": "Professional Plan",
-        "saveChanges": "Save Changes"
+        "saveChanges": "Save Changes",
+        "password": "Password",
+        "passwordLastUpdated": "Last updated",
+        "changePassword": "Change Password",
+        "upgrade": "Upgrade",
+        "renewalDate": "Renewal date",
+        "success": {
+          "profileUpdated": "Profile updated successfully"
+        },
+        "errors": {
+          "nameAndEmailRequired": "Name and email are required",
+          "updateFailed": "Failed to update profile"
+        }
+      },
+      "preferences": {
+        "title": "Preferences",
+        "language": {
+          "label": "Language"
+        },
+        "notifications": {
+          "label": "Notifications",
+          "emailNotifications": "Email Notifications",
+          "description": "Enable or disable email notifications for important updates."
+        }
       },
       "changePassword": {
         "title": "Change Password",
@@ -931,6 +1178,67 @@
       "languageOptions": {
         "english": "English (US)",
         "arabic": "Arabic"
+      },
+      "preferences": {
+        "title": "Preferences",
+        "language": {
+          "label": "Language"
+        },
+        "notifications": {
+          "label": "Notifications",
+          "emailNotifications": "Email Notifications",
+          "description": "Enable or disable email notifications for important updates."
+        }
+      }
+    },
+    "changePassword": {
+      "title": "Change Password",
+      "setNewPassword": {
+        "title": "Set New Password",
+        "infoMessage": "Your new password must be different from previous used password.",
+        "button": "Set New Password"
+      },
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "Create a strong password",
+      "newPasswordHint": "Must be at least 8 characters with letters and numbers",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm password",
+      "confirmPasswordHint": "Must Match Password",
+      "errors": {
+        "currentPasswordRequired": "Current password is required",
+        "newPasswordRequired": "New password is required",
+        "passwordLength": "Password must be at least 8 characters",
+        "passwordFormat": "Password must contain letters and numbers",
+        "passwordsDoNotMatch": "Passwords do not match",
+        "samePassword": "New password must be different from current password",
+        "updateFailed": "Failed to proceed"
+      }
+    },
+    "verifyIdentity": {
+      "title": "Verify your identity",
+      "instructions": "Please enter the 6-digit code we sent to",
+      "codeExpires": "Code expires in",
+      "codeExpiresMessage": "Code expires in 10 minutes",
+      "enterCode": "Enter Code",
+      "verifyButton": "Verify",
+      "dontReceiveCode": "Don't receive the code?",
+      "resend": "Resend",
+      "resendIn": "Resend code in",
+      "notification": {
+        "codeSent": {
+          "title": "Code Sent",
+          "message": "Verification code sent to your email. Please check your inbox."
+        }
+      },
+      "success": {
+        "passwordUpdated": "Password updated successfully"
+      },
+      "errors": {
+        "emailRequired": "Email is required",
+        "incompleteCode": "Please enter the complete 6-digit code",
+        "sendCodeFailed": "Failed to send verification code",
+        "verificationFailed": "Verification failed"
       }
     },
     "analytics": {
@@ -978,7 +1286,7 @@
           "number": "#",
           "date": "DATE",
           "mode": "MODE",
-          "questions": "#QS",
+          "questions": "Questions",
           "correct": "% CORRECT",
           "avgTime": "AVG TIME",
           "actions": "ACTIONS"
@@ -1082,13 +1390,17 @@
       "questions": "Questions"
     },
     "questionSession": {
+      "studyMode": "Study Mode",
+      "testMode": "Test Mode",
       "item": "Item {{current}} of {{total}}",
+      "questionProgress": "Question {{current}} of {{total}}",
       "questionId": "Question Id:",
       "timeStart": "Time Start",
       "timeRunning": "Time Running",
       "formulaSheet": "Formula Sheet",
       "timeRemaining": "Time Remaining",
       "mark": "Mark",
+      "markForReview": "Mark for Review",
       "questions": "Questions",
       "title": "Question Solving Page",
       "submitAnswer": "Submit Answer",
@@ -1109,6 +1421,8 @@
       "actions": {
         "previous": "< Previous",
         "next": "Next >",
+        "previousQuestion": "Previous Question",
+        "nextQuestion": "Next Question",
         "submit": "Submit",
         "exit": "Exit",
         "exitSession": "Exit Session",
@@ -3988,6 +4302,17 @@
   },
   "common": {
     "loading": "Loading...",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "updating": "Updating...",
+    "sending": "Sending...",
+    "verifying": "Verifying...",
+    "breadcrumb": {
+      "dashboard": "Dashboard",
+      "settings": "Settings"
+    },
     "months": {
       "january": "January",
       "february": "February",

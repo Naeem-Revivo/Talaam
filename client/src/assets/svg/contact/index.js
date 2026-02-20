@@ -6,6 +6,7 @@ import instagrams from './contact-instagrams.svg';
 import linkedins from './contact-linkedins.svg';
 import youtubes from './contact-youtubes.svg';
 import tiktoks from './contact-tiktoks.svg';
+import heroimage from './contact-hero.svg';
 
 export {
   contactherologo,
@@ -15,5 +16,6 @@ export {
   instagrams,
   linkedins,
   youtubes,
-  tiktoks
+  tiktoks,
+  heroimage
 };

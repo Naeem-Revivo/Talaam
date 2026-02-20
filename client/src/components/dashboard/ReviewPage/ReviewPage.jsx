@@ -5,9 +5,7 @@ import studentQuestionsAPI from '../../../api/studentQuestions';
 import { showErrorToast } from '../../../utils/toastConfig';
 import { Loader } from '../../../components/common/Loader';
 import ReviewPageHeader from './components/ReviewPageHeader';
-import FilterButtons from './components/FilterButtons';
 import SessionCard from './components/SessionCard';
-import MarkedQuestionCard from './components/MarkedQuestionCard';
 import ReviewTable from './components/ReviewTable';
 import Pagination from './components/Pagination';
 
@@ -19,27 +17,17 @@ const ReviewPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [markedQuestions, setMarkedQuestions] = useState([]);
-  const [loadingMarked, setLoadingMarked] = useState(true);
-  const [markedQuestionsPage, setMarkedQuestionsPage] = useState(1);
+  const [viewType, setViewType] = useState('list'); // 'grid' or 'list'
+  const [searchQuery, setSearchQuery] = useState('');
   const [pagination, setPagination] = useState({
     totalItems: 0,
     page: 1,
-    limit: 3,
+    limit: 6,
     totalPages: 0,
     hasNextPage: false,
     hasPreviousPage: false,
   });
-  const [markedQuestionsPagination, setMarkedQuestionsPagination] = useState({
-    totalItems: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 0,
-    hasNextPage: false,
-    hasPreviousPage: false,
-  });
-  const itemsPerPage = 3;
-  const markedQuestionsPerPage = 10;
+  const itemsPerPage = 6;
   const hasMountedRef = useRef(false);
   const previousPathnameRef = useRef('');
   const isNavigatingRef = useRef(false);
@@ -126,76 +114,6 @@ const ReviewPage = () => {
     }
   }, [activeFilter, currentPage, itemsPerPage]);
 
-  // Fetch marked questions with pagination
-  const fetchMarkedQuestions = useCallback(async () => {
-    try {
-      setLoadingMarked(true);
-      const response = await studentQuestionsAPI.getStudentMarkedQuestions({
-        page: markedQuestionsPage,
-        limit: markedQuestionsPerPage,
-      });
-
-      if (response.success && response.data) {
-        const formattedQuestions = response.data.questions.map((question) => {
-          // Format date
-          const date = new Date(question.markedAt);
-          const formattedDate = date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          });
-
-          return {
-            id: question.id,
-            shortId: question.shortId || question.id.slice(0, 8),
-            questionText: question.questionText || '',
-            exam: question.exam?.name || 'N/A',
-            subject: question.subject?.name || 'N/A',
-            topic: question.topic?.name || 'N/A',
-            markedDate: formattedDate,
-          };
-        });
-
-        setMarkedQuestions(formattedQuestions);
-        
-        // Update pagination state
-        if (response.data.pagination) {
-          setMarkedQuestionsPagination({
-            totalItems: response.data.pagination.totalItems || 0,
-            page: response.data.pagination.page || markedQuestionsPage,
-            limit: response.data.pagination.limit || markedQuestionsPerPage,
-            totalPages: response.data.pagination.totalPages || 0,
-            hasNextPage: response.data.pagination.hasNextPage || false,
-            hasPreviousPage: response.data.pagination.hasPreviousPage || false,
-          });
-        }
-      } else {
-        setMarkedQuestions([]);
-        setMarkedQuestionsPagination({
-          totalItems: 0,
-          page: 1,
-          limit: markedQuestionsPerPage,
-          totalPages: 0,
-          hasNextPage: false,
-          hasPreviousPage: false,
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching marked questions:', error);
-      showErrorToast(error.message || 'Failed to load marked questions');
-      setMarkedQuestions([]);
-      setMarkedQuestionsPagination({
-        totalItems: 0,
-        page: 1,
-        limit: markedQuestionsPerPage,
-        totalPages: 0,
-        hasNextPage: false,
-        hasPreviousPage: false,
-      });
-    } finally {
-      setLoadingMarked(false);
-    }
-  }, [markedQuestionsPage, markedQuestionsPerPage]);
 
   // Fetch sessions when filter or page changes
   useEffect(() => {
@@ -206,11 +124,6 @@ const ReviewPage = () => {
     }
     fetchSessions();
   }, [fetchSessions]);
-
-  // Fetch marked questions when page changes
-  useEffect(() => {
-    fetchMarkedQuestions();
-  }, [fetchMarkedQuestions]);
 
   // Initial fetch on mount
   useEffect(() => {
@@ -246,10 +159,7 @@ const ReviewPage = () => {
     
     // Only refresh if we're navigating TO the review page from another page
     if (currentPath === '/dashboard/review' && previousPath !== currentPath) {
-      // Only refresh marked questions when coming back from review-marked page
-      if (previousPath.startsWith('/dashboard/review-marked')) {
-        fetchMarkedQuestions();
-      }
+      fetchSessions();
     }
     
     // Update previous pathname after processing
@@ -263,59 +173,68 @@ const ReviewPage = () => {
     setCurrentPage(1);
   };
 
-  // Handle review button click - navigate immediately without triggering re-renders
-  const handleReviewClick = useCallback((questionId, e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    // Set flag to prevent unnecessary fetches during navigation
-    isNavigatingRef.current = true;
-    // Navigate immediately - React Router handles this efficiently
-    navigate(`/dashboard/review-marked?questionId=${questionId}`);
-  }, [navigate]);
 
-  const getCorrectColor = (percentage) => {
-    return percentage >= 80 ? 'text-[#EF4444]' : 'text-oxford-blue';
+  const handleFilterClick = () => {
+    // Filter functionality can be extended here
+    console.log('Filter clicked');
   };
 
   // Render function for sessions table rows
-  const renderSessionRow = (session, index, navigate, t, getCorrectColor) => {
+  const renderSessionRow = (session, index, navigate, t) => {
+    // Color based on test mode instead of accuracy
+    const progressColor = session.mode === 'Test' ? '#F79683' : '#6697B7';
+    
     return (
       <>
-        <td className="px-4 md:px-6 py-3 md:py-4 text-[14px] font-roboto font-normal leading-[100%] tracking-[0%] text-center text-oxford-blue">
-          {session.sessionCode || session.id}
+        <td className="px-4 md:px-6 py-3 md:py-4 text-start">
+          <div className="bg-oxford-blue text-white p-2 rounded-[10px] text-[12px] leading-[18px] font-roboto font-bold inline-block">
+            {session.sessionCode ? `#${session.sessionCode}` : `#${String(session.id).slice(-3).padStart(3, '0')}`}
+          </div>
         </td>
-        <td className="px-4 md:px-6 py-3 md:py-4 text-[14px] font-roboto font-normal leading-[100%] tracking-[0%] text-center text-oxford-blue">
+        <td className="px-4 md:px-6 py-3 md:py-4 text-[14px] font-roboto font-normal leading-[21px] tracking-[0%] text-start text-oxford-blue">
           {session.date}
         </td>
         <td className="px-4 md:px-6 py-3 md:py-4">
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-start">
             <span
-              className={`px-[10px] py-[5px] rounded-[6px] text-[14px] font-normal font-roboto whitespace-nowrap leading-[100%] tracking-[0%] text-center ${
+              className={`px-4 py-1 rounded-full text-[12px] font-medium font-roboto whitespace-nowrap leading-[18px] tracking-[0%] text-center ${
                 session.mode === 'Test'
-                  ? 'bg-[#FEEBC8] text-[#ED4122]'
-                  : 'bg-[#C6D8D3] text-oxford-blue'
+                  ? 'bg-[#FEF2F0] text-[#ED4122]'
+                  : 'bg-[#E6EEF3] text-[#33749F]'
               }`}
             >
               {session.mode}
             </span>
           </div>
         </td>
-        <td className="px-4 md:px-6 py-3 md:py-4 text-[14px] font-roboto font-normal leading-[100%] tracking-[0%] text-center text-oxford-blue">
+        <td className="px-4 md:px-6 py-3 md:py-4 text-base font-roboto font-medium tracking-[0%] text-start text-[#171717]">
           {session.questions}
         </td>
-        <td className={`px-4 md:px-6 py-3 md:py-4 text-[14px] font-roboto font-normal leading-[100%] tracking-[0%] text-center ${getCorrectColor(session.correct)}`}>
-          {session.correct}%
+        <td className="px-4 md:px-6 py-3 md:py-4">
+          <div className="flex flex-col items-start gap-[6px]">
+            <div className="text-[14px] flex items-center w-full justify-between font-roboto font-normal text-oxford-blue">
+              <span className="text-[#A3A3A3] text-[12px] leading-[16px] font-normal">Score </span>
+              <div className="text-[12px] leading-[18px] font-bold" style={{ color: progressColor }}>{session.correct}%</div>
+            </div>
+            <div className="w-full max-w-[100px] h-2 bg-[#E5E5E5] rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-300"
+                style={{
+                  width: `${session.correct}%`,
+                  backgroundColor: progressColor,
+                }}
+              />
+            </div>
+          </div>
         </td>
-        <td className="px-4 md:px-6 py-3 md:py-4 text-[14px] font-roboto font-normal leading-[100%] tracking-[0%] text-center text-oxford-blue">
-          {session.avgTime}
+        <td className="px-4 md:px-6 py-3 md:py-4 text-start text-[14px] font-roboto font-normal leading-[21px] tracking-[0%] text-oxford-blue">
+          {session.avgTime}<span className='text-[#99A1AF] text-[12px] leading-[16px] font-normal'>/question</span>
         </td>
         <td className="px-4 md:px-6 py-3 md:py-4">
-          <div className="flex items-center gap-[10px] flex-wrap justify-center">
+          <div className="flex items-center justify-start gap-[10px] flex-wrap">
             {session.status === 'paused' ? (
               <button
-                className="px-[10px] py-[5px] bg-[#EF4444] text-[#FFFFFF] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
+                className="px-3 py-2 bg-[#EF4444] text-[#FFFFFF] rounded-[8px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
                 onClick={() => navigate(`/dashboard/session?mode=${session.mode === 'Test' ? 'test' : 'study'}&resume=${session.id}`, {
                   state: { pausedSessionId: session.id }
                 })}
@@ -325,16 +244,16 @@ const ReviewPage = () => {
             ) : (
               <>
                 <button
-                  className="px-[10px] py-[5px] bg-[#ED4122] text-[#FFFFFF] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
-                  onClick={() => navigate(`/dashboard/review-all?sessionId=${session.id}`)}
-                >
-                  {t('dashboard.review.table.actions.reviewAll')}
-                </button>
-                <button
-                  className="px-[10px] py-[5px] bg-[#C6D8D3] text-oxford-blue rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
+                  className="px-3 py-2 bg-gradient-to-b from-[#032746] to-[#173B50] text-white rounded-[8px] text-[12px] font-medium font-roboto leading-[18px] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
                   onClick={() => navigate(`/dashboard/review-incorrect?sessionId=${session.id}`)}
                 >
-                  {t('dashboard.review.table.actions.reviewIncorrect')}
+                  {t('dashboard.review.table.actions.reviewIncorrect') || 'Review Incorrect'}
+                </button>
+                <button
+                  className="px-3 py-2 bg-white border border-orange-dark text-orange-dark rounded-[8px] text-[12px] font-medium font-roboto leading-[18px] tracking-[0%] text-center hover:bg-red-50 transition-colors whitespace-nowrap"
+                  onClick={() => navigate(`/dashboard/review-all?sessionId=${session.id}`)}
+                >
+                  {t('dashboard.review.table.actions.reviewAll') || 'Review All'}
                 </button>
               </>
             )}
@@ -344,68 +263,30 @@ const ReviewPage = () => {
     );
   };
 
-  // Render function for marked questions table rows
-  const renderMarkedQuestionRow = (question, index, navigate, t) => {
+  // Filter sessions based on search query
+  const filteredSessions = sessions.filter((session) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
     return (
-      <>
-        <td className="px-4 md:px-6 py-3 md:py-4 text-[14px] font-roboto font-normal leading-[100%] tracking-[0%] text-center text-oxford-blue">
-          {question.shortId}
-        </td>
-        <td className="px-4 md:px-6 py-3 md:py-4 text-[14px] font-roboto font-normal leading-[100%] tracking-[0%] text-oxford-blue">
-          <div className="line-clamp-2">{question.questionText}</div>
-        </td>
-        <td className="px-4 md:px-6 py-3 md:py-4 text-[14px] font-roboto font-normal leading-[100%] tracking-[0%] text-center text-oxford-blue">
-          {question.exam}
-        </td>
-        <td className="px-4 md:px-6 py-3 md:py-4 text-[14px] font-roboto font-normal leading-[100%] tracking-[0%] text-center text-oxford-blue">
-          {question.subject}
-        </td>
-        <td className="px-4 md:px-6 py-3 md:py-4 text-[14px] font-roboto font-normal leading-[100%] tracking-[0%] text-center text-oxford-blue">
-          {question.topic}
-        </td>
-        <td className="px-4 md:px-6 py-3 md:py-4 text-[14px] font-roboto font-normal leading-[100%] tracking-[0%] text-center text-oxford-blue">
-          {question.markedDate}
-        </td>
-        <td className="px-4 md:px-6 py-3 md:py-4">
-          <div className="flex items-center gap-[10px] flex-wrap justify-center">
-            <button
-              type="button"
-              className="px-[10px] py-[5px] bg-[#ED4122] text-[#FFFFFF] rounded-[6px] text-[14px] font-normal font-roboto leading-[100%] tracking-[0%] text-center hover:opacity-90 transition-opacity whitespace-nowrap"
-              onClick={(e) => handleReviewClick(question.id, e)}
-            >
-              {t('dashboard.review.markedQuestions.review')}
-            </button>
-          </div>
-        </td>
-      </>
+      session.mode.toLowerCase().includes(query) ||
+      session.date.toLowerCase().includes(query) ||
+      (session.sessionCode || session.id).toLowerCase().includes(query)
     );
-  };
+  });
 
   return (
-    <div className="bg-white min-h-screen">
-      <div className='p-4 md:p-6 lg:p-8 2xl:px-6 max-w-[1200px] mx-auto'>
-        <ReviewPageHeader />
-
-        <FilterButtons activeFilter={activeFilter} onFilterChange={handleFilterChange} />
-
-        {/* Mobile/Tablet Card Layout for Sessions */}
-        {!loading && (
-          <div className="lg:hidden space-y-4 mb-4">
-            {sessions.length === 0 ? (
-              <div className="p-8 text-center text-oxford-blue">
-                {t('dashboard.review.noSessions')}
-              </div>
-            ) : (
-              sessions.map((session) => (
-                <SessionCard
-                  key={session.id}
-                  session={session}
-                  getCorrectColor={getCorrectColor}
-                />
-              ))
-            )}
-          </div>
-        )}
+    <div className="bg-white px-8 pt-6 pb-[60px]">
+      <div className=''>
+        <ReviewPageHeader
+          activeFilter={activeFilter}
+          onFilterChange={handleFilterChange}
+          viewType={viewType}
+          onViewChange={setViewType}
+          pagination={pagination}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onFilterClick={handleFilterClick}
+        />
 
         {/* Loading State */}
         {loading && (
@@ -414,85 +295,55 @@ const ReviewPage = () => {
           </div>
         )}
 
-        {/* Desktop Table Layout for Sessions */}
-        {!loading && (
-          <ReviewTable
-            columns={[
-              t('dashboard.review.table.columns.number'),
-              t('dashboard.review.table.columns.date'),
-              t('dashboard.review.table.columns.mode'),
-              t('dashboard.review.table.columns.questions'),
-              t('dashboard.review.table.columns.correct'),
-              t('dashboard.review.table.columns.avgTime'),
-              t('dashboard.review.table.columns.actions'),
-            ]}
-            data={sessions}
-            emptyMessage={t('dashboard.review.noSessions') || 'No sessions found'}
-            renderRow={renderSessionRow}
-            getCorrectColor={getCorrectColor}
-          />
+        {/* Grid View */}
+        {!loading && viewType === 'grid' && (
+          <div className="mb-6">
+            {filteredSessions.length === 0 ? (
+              <div className="p-8 text-center text-oxford-blue bg-white rounded-lg border border-[#E5E7EB]">
+                {t('dashboard.review.noSessions') || 'No sessions found'}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredSessions.map((session) => (
+                  <SessionCard
+                    key={session.id}
+                    session={session}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
-        {/* Pagination */}
-        <Pagination
-          pagination={pagination}
-          onPageChange={setCurrentPage}
-        />
+        {/* List/Table View */}
+        {!loading && viewType === 'list' && (
+          <div className="mb-6">
+            <ReviewTable
+              columns={[
+                t('dashboard.review.table.columns.number') || '#',
+                t('dashboard.review.table.columns.date') || 'Date',
+                t('dashboard.review.table.columns.mode') || 'Mode',
+                t('dashboard.review.table.columns.questions') || 'Questions',
+                t('dashboard.review.table.columns.correct') || 'Accuracy',
+                t('dashboard.review.table.columns.avgTime') || 'Avg. Time',
+                t('dashboard.review.table.columns.actions') || 'Action',
+              ]}
+              data={filteredSessions}
+              emptyMessage={t('dashboard.review.noSessions') || 'No sessions found'}
+              renderRow={renderSessionRow}
+            />
+          </div>
+        )}
 
-        {/* Marked Questions Section */}
-        <div className="mb-8 mt-8">
-          <h2 className="font-archivo font-bold text-[24px] md:text-[28px] leading-[32px] text-oxford-blue mb-4">
-            {t('dashboard.review.markedQuestions.title')}
-          </h2>
-          
-          {loadingMarked ? (
-            <div className="flex items-center justify-center min-h-[200px]">
-              <Loader size="lg" />
-            </div>
-          ) : (
-            <>
-              {/* Mobile/Tablet Card Layout for Marked Questions */}
-              <div className="lg:hidden space-y-4 mb-4">
-                {markedQuestions.length === 0 ? (
-                  <div className="p-8 text-center text-oxford-blue">
-                    {t('dashboard.review.markedQuestions.noQuestions')}
-                  </div>
-                ) : (
-                  markedQuestions.map((question) => (
-                    <MarkedQuestionCard
-                      key={question.id}
-                      question={question}
-                      onReviewClick={handleReviewClick}
-                    />
-                  ))
-                )}
-              </div>
-
-              {/* Desktop Table Layout for Marked Questions */}
-              <ReviewTable
-                columns={[
-                  t('dashboard.review.markedQuestions.table.questionId'),
-                  t('dashboard.review.markedQuestions.table.question'),
-                  t('dashboard.review.markedQuestions.table.exam'),
-                  t('dashboard.review.markedQuestions.table.subject'),
-                  t('dashboard.review.markedQuestions.table.topic'),
-                  t('dashboard.review.markedQuestions.table.markedDate'),
-                  t('dashboard.review.markedQuestions.table.actions'),
-                ]}
-                data={markedQuestions}
-                emptyMessage={t('dashboard.review.markedQuestions.noQuestions')}
-                renderRow={renderMarkedQuestionRow}
-              />
-
-              {/* Pagination for Marked Questions */}
-              <Pagination
-                pagination={markedQuestionsPagination}
-                onPageChange={setMarkedQuestionsPage}
-                className="rounded-t-none"
-              />
-            </>
-          )}
-        </div>
+        {/* Pagination - Always at bottom */}
+        {!loading && pagination.totalPages > 0 && (
+          <div className="mt-8">
+            <Pagination
+              pagination={pagination}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

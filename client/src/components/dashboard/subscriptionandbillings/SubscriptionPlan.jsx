@@ -9,6 +9,7 @@ import paymentAPI from "../../../api/payment";
 import { showSuccessToast, showErrorToast, showLogoutToast } from "../../../utils/toastConfig";
 import { logout as logoutAction } from "../../../store/slices/authSlice";
 import Loader from "../../common/Loader";
+import { access, calender, document, renew } from "../../../assets/svg";
 
 export default function SubscriptionPlan({ onSubscriptionChange }) {
   const { t } = useLanguage();
@@ -72,7 +73,7 @@ export default function SubscriptionPlan({ onSubscriptionChange }) {
     try {
       setIsCancelling(true);
       const response = await subscriptionAPI.cancelSubscription(subscription.id);
-      
+
       if (response.success) {
         showSuccessToast('Subscription cancelled successfully');
         // Update subscription state immediately with cancelled status
@@ -91,7 +92,7 @@ export default function SubscriptionPlan({ onSubscriptionChange }) {
         }
         // Also refresh subscription data to ensure consistency
         await fetchSubscription();
-        
+
         // Logout user after successful cancellation
         dispatch(logoutAction());
         showLogoutToast(t('toast.message.logoutSuccess') || 'You have been logged out successfully.', {
@@ -125,13 +126,13 @@ export default function SubscriptionPlan({ onSubscriptionChange }) {
     try {
       setIsRenewing(true);
       const response = await subscriptionAPI.renewSubscription(subscription.id);
-      
+
       if (response.success && response.data?.subscription) {
         showSuccessToast('Renewal subscription created. Redirecting to payment...');
         // Initiate payment for the renewal
         const renewalSubscriptionId = response.data.subscription.id;
         const paymentResponse = await paymentAPI.initiateMoyassarPayment(renewalSubscriptionId);
-        
+
         if (paymentResponse.success && paymentResponse.data?.paymentUrl) {
           // Redirect to payment page
           window.location.href = paymentResponse.data.paymentUrl;
@@ -177,7 +178,7 @@ export default function SubscriptionPlan({ onSubscriptionChange }) {
         return t("dashboard.subscriptionBilling.currentPlan.monthly") || "Monthly";
       }
     }
-    
+
     // Fallback: Try to infer from plan name
     if (subscription?.planName) {
       const planName = subscription.planName.toLowerCase();
@@ -189,14 +190,14 @@ export default function SubscriptionPlan({ onSubscriptionChange }) {
         return t("dashboard.subscriptionBilling.currentPlan.semiAnnual") || "Semi-Annual";
       }
     }
-    
+
     return t("dashboard.subscriptionBilling.currentPlan.monthly") || "Monthly";
   };
 
   // Get status badge color based on subscription status
   const getStatusBadge = () => {
     if (!subscription) return null;
-    
+
     // Check cancelled status first (highest priority)
     if (subscription.paymentStatus === 'Cancelled') {
       return {
@@ -205,16 +206,16 @@ export default function SubscriptionPlan({ onSubscriptionChange }) {
         label: t("dashboard.subscriptionBilling.currentPlan.statusCancelled") || "Cancelled"
       };
     }
-    
-    // Check active paid subscription
+
+    // Check active paid subscription - light green background with dark green text
     if (subscription.paymentStatus === 'Paid' && subscription.isActive) {
       return {
-        bg: "bg-[#FDF0D5]",
-        text: "text-orange-dark",
+        bg: "bg-[#DCFCE7]",
+        text: "text-[#16A34A]",
         label: t("dashboard.subscriptionBilling.currentPlan.statusActive") || "Active"
       };
     }
-    
+
     // Check pending status
     if (subscription.paymentStatus === 'Pending') {
       return {
@@ -223,7 +224,7 @@ export default function SubscriptionPlan({ onSubscriptionChange }) {
         label: t("dashboard.subscriptionBilling.currentPlan.statusPending") || "Pending"
       };
     }
-    
+
     // Default to inactive
     return {
       bg: "bg-[#F3F4F6]",
@@ -235,11 +236,13 @@ export default function SubscriptionPlan({ onSubscriptionChange }) {
   if (loading) {
     return (
       <div className="w-full">
-        <h2 className="text-[24px] leading-7 font-semibold text-oxford-blue font-archivo mb-7">
-          {t("dashboard.subscriptionBilling.currentPlan.title")}
-        </h2>
-        <div className="flex items-center justify-center py-12">
-          <Loader size="md" color="oxford-blue" />
+        <div className="bg-[#032746] rounded-[12px] px-6 py-8">
+          <h2 className="text-[24px] leading-7 font-semibold text-white font-archivo mb-7">
+            {t("dashboard.subscriptionBilling.currentPlan.title")}
+          </h2>
+          <div className="flex items-center justify-center py-12">
+            <Loader size="md" color="white" />
+          </div>
         </div>
       </div>
     );
@@ -249,12 +252,12 @@ export default function SubscriptionPlan({ onSubscriptionChange }) {
   if (!subscription) {
     return (
       <div className="w-full">
-        <h2 className="text-[24px] leading-7 font-semibold text-oxford-blue font-archivo mb-7">
-          {t("dashboard.subscriptionBilling.currentPlan.title")}
-        </h2>
-        <div className="border-[0.5px] border-[#D2D2D2] bg-white shadow-[0px_2px_10px_0px_#0327461A] rounded-[12px] px-4 sm:px-6 pt-6 sm:pt-8 pb-6 sm:pb-[30px]">
+        <div className="bg-[#032746] rounded-[12px] px-6 py-8">
+          <h2 className="text-[24px] leading-7 font-semibold text-white font-archivo mb-7">
+            {t("dashboard.subscriptionBilling.currentPlan.title")}
+          </h2>
           <div className="flex items-center justify-center py-12">
-            <p className="text-[16px] leading-[100%] font-normal font-roboto text-[#6B7280] text-center">
+            <p className="text-[16px] leading-[100%] font-normal font-roboto text-white/80 text-center">
               {t("dashboard.subscriptionBilling.currentPlan.noPlanAvailable") || "No subscription plan available"}
             </p>
           </div>
@@ -269,66 +272,108 @@ export default function SubscriptionPlan({ onSubscriptionChange }) {
 
   return (
     <div className="w-full">
-      <h2 className="text-[24px] leading-7 font-semibold text-oxford-blue font-archivo mb-7">
-        {t("dashboard.subscriptionBilling.currentPlan.title")}
-      </h2>
-      
-      <div className="border-[0.5px] border-[#D2D2D2] bg-white shadow-[0px_2px_10px_0px_#0327461A] rounded-[12px] px-4 sm:px-6 pt-6 sm:pt-8 pb-6 sm:pb-[30px]">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 lg:gap-0 mb-6">
-          <div className="flex items-center gap-3">
-            <h3 className="text-[24px] leading-[100%] font-archivo font-semibold text-oxford-blue">
-              {subscription.planName || t("dashboard.subscriptionBilling.currentPlan.planName")}
-            </h3>
-            {statusBadge && (
-              <span className={`px-[10px] py-[5px] ${statusBadge.bg} ${statusBadge.text} text-[14px] leading-[100%] font-normal font-roboto rounded-md`}>
-                {statusBadge.label}
+      <div className="bg-gradient-to-br from-[#032746] via-[#0A4B6E] to-[#173B50] rounded-[24px] px-10 py-8">
+        {/* Header with title and status badge */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div>
+            <h2 className="text-[14px] leading-[21px] font-normal text-white font-roboto">
+              {t("dashboard.subscriptionBilling.currentPlan.title")}
+            </h2>
+            <div className="flex items-center gap-1">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 21.0007H19M11.562 3.26666C11.6052 3.18826 11.6686 3.12289 11.7456 3.07736C11.8227 3.03183 11.9105 3.00781 12 3.00781C12.0895 3.00781 12.1773 3.03183 12.2544 3.07736C12.3314 3.12289 12.3948 3.18826 12.438 3.26666L15.39 8.87066C15.4604 9.00042 15.5586 9.11299 15.6777 9.20028C15.7968 9.28756 15.9337 9.34741 16.0786 9.37552C16.2235 9.40362 16.3729 9.39929 16.5159 9.36283C16.659 9.32638 16.7922 9.2587 16.906 9.16466L21.183 5.50066C21.2651 5.43388 21.3663 5.39487 21.472 5.38926C21.5776 5.38364 21.6824 5.4117 21.7711 5.4694C21.8598 5.5271 21.9279 5.61147 21.9657 5.71035C22.0034 5.80923 22.0087 5.91753 21.981 6.01966L19.147 16.2657C19.0891 16.4753 18.9645 16.6604 18.792 16.7929C18.6195 16.9253 18.4085 16.9979 18.191 16.9997H5.81C5.59233 16.9981 5.38111 16.9256 5.20839 16.7932C5.03567 16.6607 4.91089 16.4755 4.853 16.2657L2.02 6.02066C1.99225 5.91853 1.99762 5.81023 2.03534 5.71135C2.07306 5.61247 2.14118 5.5281 2.2299 5.4704C2.31862 5.4127 2.42335 5.38464 2.52904 5.39026C2.63472 5.39587 2.73589 5.43488 2.818 5.50166L7.094 9.16566C7.2078 9.2597 7.341 9.32738 7.48406 9.36383C7.62712 9.40029 7.77647 9.40462 7.9214 9.37652C8.06632 9.34841 8.20323 9.28856 8.32229 9.20127C8.44135 9.11399 8.5396 9.00142 8.61 8.87166L11.562 3.26666Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+
+              <h3 className="text-[20px] leading-[28px] font-bold font-archivo text-white">
+                {subscription.planName || t("dashboard.subscriptionBilling.currentPlan.planName")}
+              </h3>
+            </div>
+
+          </div>
+          {statusBadge && (
+            <span className={`px-[10px] py-[5px] ${statusBadge.bg} ${statusBadge.text} text-[14px] leading-[100%] font-normal font-roboto rounded-full w-fit`}>
+              {statusBadge.label}
             </span>
-            )}
-          </div>
-          
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <OutlineButton 
-              text={t("dashboard.subscriptionBilling.currentPlan.cancelSubscription")} 
-              className="py-[10px] px-7 text-nowrap"
-              onClick={handleCancelClick}
-              disabled={!canCancel || isCancelling}
-            />
-            <PrimaryButton 
-              text={t("dashboard.subscriptionBilling.currentPlan.renewPlan") || t("dashboard.subscriptionBilling.currentPlan.upgradePlan")} 
-              className="py-[10px] px-7 text-nowrap"
-              onClick={handleRenew}
-              disabled={!canRenew || isRenewing}
-            />
-          </div>
+          )}
         </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-          <div className="space-y-5">
-            <div className="flex items-center text-[16px] leading-[100%] font-normal font-roboto">
-              <span className="text-oxford-blue">{t("dashboard.subscriptionBilling.currentPlan.plan")}</span>
-              <span className="ml-2 text-[#6B7280]">{getPlanDuration()}</span>
-            </div>
-            <div className="flex items-center text-[16px] leading-[100%] font-normal font-roboto">
-              <span className="text-oxford-blue">{t("dashboard.subscriptionBilling.currentPlan.renewsOn")}</span>
-              <span className="ml-2 text-[#6B7280]">{formatDate(subscription.expiryDate)}</span>
+
+        {/* Plan Details - Horizontal Layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Plan Type */}
+          <div className="flex items-center gap-3">
+            <img src={document} alt="access" className="w-10 h-10" />
+            <div className="flex flex-col">
+              <span className="text-[14px] leading-[21px] font-normal font-roboto text-[#E5E5E5]">
+                {t("dashboard.subscriptionBilling.currentPlan.planType") || "Plan Type"}
+              </span>
+              <span className="text-[16px] leading-[24px] font-medium font-roboto text-white mt-1">
+                {getPlanDuration()}
+              </span>
             </div>
           </div>
-          
-          <div className="space-y-5">
-            <div className="flex items-center text-[16px] leading-[100%] font-normal font-roboto">
-              <span className="text-oxford-blue">{t("dashboard.subscriptionBilling.currentPlan.access")}</span>
-              <span className="ml-2 text-[#6B7280]">{t("dashboard.subscriptionBilling.currentPlan.questionBankAccess")}</span>
+
+          {/* Renews On */}
+          <div className="flex items-center gap-3">
+            <img src={calender} alt="access" className="w-10 h-10" /> 
+            <div className="flex flex-col">
+              <span className="text-[14px] leading-[21px] font-normal font-roboto text-[#E5E5E5]">
+                {t("dashboard.subscriptionBilling.currentPlan.renewsOn") || "Renews On"}
+              </span>
+              <span className="text-[16px] leading-[24px] font-medium font-roboto text-white mt-1">
+                {formatDate(subscription.expiryDate)}
+              </span>
             </div>
-            <div className="flex items-center text-[16px] leading-[100%] font-normal font-roboto">
-              <span className="text-oxford-blue">{t("dashboard.subscriptionBilling.currentPlan.autoRenew")}</span>
-              <span className="ml-2 text-[#6B7280]">
-                {subscription.paymentStatus === 'Paid' && subscription.isActive 
-                  ? (t("dashboard.subscriptionBilling.currentPlan.on") || "On")
-                  : (t("dashboard.subscriptionBilling.currentPlan.off") || "Off")
+          </div>
+
+          {/* Access Level */}
+          <div className="flex items-center gap-3">
+            <img src={access} alt="access" className="w-10 h-10" />
+            <div className="flex flex-col">
+              <span className="text-[14px] leading-[21px] font-normal font-roboto text-[#E5E5E5]">
+                {t("dashboard.subscriptionBilling.currentPlan.accessLevel") || "Access Level"}
+              </span>
+              <span className="text-[16px] leading-[24px] font-medium font-roboto text-white mt-1">
+                {t("dashboard.subscriptionBilling.currentPlan.questionBankAccess") || "Question Bank Access"}
+              </span>
+            </div>
+          </div>
+
+          {/* Auto-Renew */}
+          <div className="flex items-center gap-3">
+            <img src={renew} alt="access" className="w-10 h-10" />
+            <div className="flex flex-col">
+              <span className="text-[14px] leading-[21px] font-normal font-roboto text-[#E5E5E5]">
+                {t("dashboard.subscriptionBilling.currentPlan.autoRenew") || "Auto-Renew"}
+              </span>
+              <span className={`text-[16px] leading-[24px] font-medium font-roboto mt-1 ${subscription.paymentStatus === 'Paid' && subscription.isActive
+                  ? "text-[#10B981]"
+                  : "text-white"
+                }`}>
+                {subscription.paymentStatus === 'Paid' && subscription.isActive
+                  ? (t("dashboard.subscriptionBilling.currentPlan.enabled") || "Enabled")
+                  : (t("dashboard.subscriptionBilling.currentPlan.disabled") || "Disabled")
                 }
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-4">
+          <button
+            onClick={handleRenew}
+            disabled={!canRenew || isRenewing}
+            className="bg-gradient-to-l from-[#DC2626] to-[#ED4122] w-[320px] text-white px-6 py-3 rounded-md text-[16px] font-roboto font-medium leading-[16px] transition hover:bg-[#d43a1f] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {t("dashboard.subscriptionBilling.currentPlan.upgradePlan") || "Upgrade Plan"}
+          </button>
+          <button
+            onClick={handleCancelClick}
+            disabled={!canCancel || isCancelling}
+            className="text-white text-[16px] font-roboto font-normal leading-[16px] hover:underline transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {t("dashboard.subscriptionBilling.currentPlan.cancelSubscription") || "Cancel Subscription"}
+          </button>
         </div>
       </div>
 

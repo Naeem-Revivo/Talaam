@@ -9,13 +9,25 @@ import { useNavigate } from 'react-router-dom'
 import ProfileDropdown from '../common/ProfileDropdown'
 import { getTranslatedAuthMessage } from '../../utils/authMessages'
 import languagesAPI from '../../api/languages'
+import AuthCard from './AuthCard'
+import AuthButton from './AuthButton'
+import Input from '../common/Input'
 
 const Profile = () => {
-  const { language, t } = useLanguage()
-  const dir = language === 'ar' ? 'rtl' : 'ltr'
+  const { t } = useLanguage()
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { user, loading } = useSelector((state) => state.auth)
+  
+  // Profile icon component
+  const ProfileIcon = () => (
+    <div className="w-[80px] h-[80px] bg-cinnebar-red rounded-[14px] flex items-center justify-center">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <circle cx="12" cy="7" r="4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </div>
+  )
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -179,7 +191,7 @@ const Profile = () => {
         await dispatch(fetchCurrentUser())
         
         // Redirect to subscription bridge - it will check subscription and route accordingly
-        navigate('/subscription-bridge', { replace: true })
+        navigate('/question-banks', { replace: true })
       } else {
         // Extract error message from API response
         const errorMessage = 
@@ -237,111 +249,159 @@ const Profile = () => {
     fetchActiveLanguages()
   }, [])
 
+  // Calculate profile completion percentage
+  const calculateProgress = () => {
+    let completed = 0;
+    const total = 5; // fullName, dateOfBirth, country, timeZone, language
+    
+    if (formData.fullName.trim()) completed++;
+    if (formData.dateOfBirth) completed++;
+    if (formData.country) completed++;
+    if (formData.timeZone) completed++;
+    if (formData.language) completed++;
+    
+    return Math.round((completed / total) * 100);
+  };
+
+  const progressPercentage = calculateProgress();
+
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4" dir={dir}>
-      <div className="bg-white rounded-lg border border-[#03274633] shadow-lg p-4 lg:p-8 w-full lg:h-[922px] lg:w-[505px] flex flex-col">
-        <div className="w-full lg:w-[430px] pt-8 lg:pt-14 lg:h-[770px] flex flex-col mx-auto">
-          {/* Main Heading */}
-          <h1 className="font-archivo font-semibold mb-2 lg:mb-4 text-[18px] lg:text-[30px] lg:leading-none tracking-normal text-oxford-blue">
-            {t('profile.title')}
-          </h1>
+    <AuthCard
+      icon={<ProfileIcon />}
+      title={t('profile.title') || 'Complete Your Profile'}
+      description={t('profile.subtitle') || 'Find interesting stuff across the web'}
+      showBackToLogin={false}
+      showTips={true}
+      tipText={t('profile.quickTip') || 'Quick Tip: Completing your profile helps us to personalize your learning experience!'}
+      className="lg:max-w-2xl"
+    >
+      <div className="w-full flex flex-col gap-6">
+        {/* Profile Completion Progress */}
+        <div className="mb-2 mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <label className="block font-roboto font-normal text-[14px] leading-[100%] tracking-[0] text-oxford-blue">
+              {t('profile.completion') || 'Profile Completion'}
+            </label>
+            <span className="font-roboto font-normal text-[14px] leading-[100%] tracking-[0] text-oxford-blue">
+              {progressPercentage}%
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-oxford-blue h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progressPercentage}%` }}
+            ></div>
+          </div>
+        </div>
 
-          {/* Subtitle */}
-          <p className="font-roboto font-normal text-[16px] leading-none tracking-normal text-gray-500 mb-6 pt-2 lg:mb-8">
-            {t('profile.subtitle')}
-          </p>
+        <div className="flex flex-col gap-6 lg:gap-8">
+          {/* Full Name Field */}
+          <Input
+            type="text"
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleInputChange}
+            onBlur={handleBlur}
+            placeholder={t('profile.fullNamePlaceholder') || 'Enter your full name'}
+            label={t('profile.fullName')}
+            error={errors.fullName}
+            icon="person"
+            className="w-full"
+            required
+          />
 
-          <div className="flex flex-col gap-6 lg:gap-8">
-            {/* Full Name Field */}
-            <div className="flex flex-col gap-1">
-              <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
-                {t('profile.fullName')}
-              </label>
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                onBlur={handleBlur}
-                placeholder={t('profile.fullNamePlaceholder')}
-                className={`px-4 py-3 border ${errors.fullName ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input`}
-              />
-              {errors.fullName && (
-                <p className="mt-1 text-sm text-red-500 font-roboto">
-                  {errors.fullName}
-                </p>
-              )}
-            </div>
-
-            {/* Date of Birth Field */}
-            <div className="flex flex-col gap-1">
-              <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
-                {t('profile.dateOfBirth')}
-              </label>
+          {/* Date of Birth Field */}
+          <div className="flex flex-col gap-1">
+            <label className="block font-roboto font-medium text-[14px] leading-[21px] text-text-dark mb-2">
+              {t('profile.dateOfBirth')} ({t('profile.optional') || 'Optional'})
+            </label>
+            <div className="relative">
               <input
                 type="date"
                 name="dateOfBirth"
                 value={formData.dateOfBirth}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                max={new Date().toISOString().split('T')[0]} // Prevent future dates in date picker
-                className={`px-4 py-3 border ${errors.dateOfBirth ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input`}
+                max={new Date().toISOString().split('T')[0]}
+                placeholder={t('profile.dateOfBirthPlaceholder') || 'Enter your date of birth'}
+                className={`px-4 py-3 pl-12 border-2 ${errors.dateOfBirth ? 'border-[red-500]' : 'border-[#E5E7EB]'} rounded-[14px] outline-none w-full h-[56px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray focus:border-[#6CA6C1] transition-colors`}
               />
-              {errors.dateOfBirth && (
-                <p className="mt-1 text-sm text-red-500 font-roboto">
-                  {errors.dateOfBirth}
-                </p>
-              )}
-            </div>
+              <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 1.5V4.5" stroke="#6CA6C1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12 1.5V4.5" stroke="#6CA6C1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M14.25 3H3.75C2.92157 3 2.25 3.67157 2.25 4.5V15C2.25 15.8284 2.92157 16.5 3.75 16.5H14.25C15.0784 16.5 15.75 15.8284 15.75 15V4.5C15.75 3.67157 15.0784 3 14.25 3Z" stroke="#6CA6C1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M2.25 7.5H15.75" stroke="#6CA6C1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
 
+              </div>
+            </div>
+            {errors.dateOfBirth && (
+              <p className="mt-1 text-xs font-normal text-[#6CA6C1] font-roboto">
+                {errors.dateOfBirth}
+              </p>
+            )}
+          </div>
+
+          {/* Country and Time Zone in Same Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Country Dropdown */}
             <div className="flex flex-col gap-1">
-              <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
-                {t('profile.country')}
+              <label className="block font-roboto font-medium text-[14px] leading-[21px] text-text-dark mb-2">
+                {t('profile.country')} <span className="text-cinnebar-red">*</span>
               </label>
               <ProfileDropdown
                 value={formData.country}
                 options={countries}
                 onChange={(value) => setFormData({ ...formData, country: value })}
+                placeholder={t('profile.countryPlaceholder') || 'Select your country'}
+                icon="location"
+                className="w-full"
               />
             </div>
 
             {/* Time Zone Dropdown */}
             <div className="flex flex-col gap-1">
-              <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
-                {t('profile.timeZone')}
+              <label className="block font-roboto font-medium text-[14px] leading-[21px] text-text-dark mb-2">
+                {t('profile.timeZone')} <span className="text-cinnebar-red">*</span>
               </label>
               <ProfileDropdown
                 value={formData.timeZone}
                 options={timeZones}
                 onChange={(value) => setFormData({ ...formData, timeZone: value })}
+                placeholder={t('profile.timeZonePlaceholder') || '(GMT-08:00) Pacific Time'}
+                icon="clock"
+                className="w-full"
               />
             </div>
+          </div>
 
-            {/* Language Dropdown */}
-            <div className="flex flex-col gap-1">
-              <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
-                {t('profile.language')}
-              </label>
-              <ProfileDropdown
-                value={formData.language}
-                options={languages}
-                onChange={(value) => setFormData({ ...formData, language: value })}
-              />
-            </div>
-
-            {/* Finish Setup Button */}
-            <button
-              onClick={handleFinishSetup}
-              disabled={loading}
-              className={`bg-cinnebar-red text-white font-archivo font-semibold text-[20px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
-            >
-              {loading ? t('profile.buttonLoading') || 'Saving...' : t('profile.finishSetup')}
-            </button>
+          {/* Language Dropdown */}
+          <div className="flex flex-col gap-1">
+            <label className="block font-roboto font-medium text-[14px] leading-[21px] text-text-dark mb-2">
+              {t('profile.language')} <span className="text-cinnebar-red">*</span>
+            </label>
+            <ProfileDropdown
+              value={formData.language}
+              options={languages}
+              onChange={(value) => setFormData({ ...formData, language: value })}
+              placeholder={t('profile.languagePlaceholder') || 'English'}
+              icon="globe"
+              className="w-full"
+            />
           </div>
         </div>
+
+        {/* Finish Setup Button */}
+        <AuthButton
+          onClick={handleFinishSetup}
+          disabled={loading}
+          className="w-full mb-6"
+        >
+          {loading ? t('profile.buttonLoading') || 'Saving...' : t('profile.finishSetup') || 'Finish Setup'}
+        </AuthButton>
       </div>
-    </div>
+    </AuthCard>
   )
 }
 
