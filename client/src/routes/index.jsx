@@ -135,7 +135,6 @@ export const AppRoutes = () => {
       <Route path="/products" element={<ProductsPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
-      <Route path="/question-banks" element={<QuestionBankPage />} />
       {/* Public Auth Routes - Redirect authenticated users to dashboard */}
       <Route element={<PublicRoute />}>
         <Route element={<AuthLayout />}>
@@ -156,6 +155,7 @@ export const AppRoutes = () => {
       
       {/* Complete Profile page - protected route for authenticated users (especially students) */}
       <Route element={<ProtectedRoute />}>
+      <Route path="/question-banks" element={<QuestionBankPage />} />
         <Route path="/complete-profile" element={<CompleteProfilePage />} />
         <Route path="/subscription-bridge" element={<SubscriptionBridgePage />} />
       </Route>
