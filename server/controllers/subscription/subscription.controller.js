@@ -139,13 +139,6 @@ const getMySubscription = async (req, res, next) => {
     const subscription = await subscriptionService.getMySubscription(userId);
 
     console.log('✅ Subscription found, returning response');
-    // Prevent cache revalidation responses (304) for subscription state.
-    res.set({
-      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-      Pragma: 'no-cache',
-      Expires: '0',
-      'Surrogate-Control': 'no-store',
-    });
     res.status(200).json({
       success: true,
       data: {
