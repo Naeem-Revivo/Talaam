@@ -32,7 +32,7 @@ export const PublicRoute = () => {
         return <Navigate to="/admin" replace />;
       }
     } else if (role === 'student' || role === 'user') {
-      // Route through the subscription bridge so active users can continue to dashboard.
+      // Always route through subscription bridge to avoid stale client-side subscription redirects.
       return <Navigate to="/subscription-bridge" replace />;
     } else if (role === 'gatherer') {
       return <Navigate to="/gatherer" replace />;
