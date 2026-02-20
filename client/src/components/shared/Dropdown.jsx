@@ -73,7 +73,7 @@ const Dropdown = ({
     : (showDefaultOnEmpty && normalizedOptions.length > 0 ? normalizedOptions[0].value : null);
 
   return (
-    <div className={`w-full lg:w-[180px] ${className}`} ref={dropdownRef}>
+    <div className={`w-full ${className}`} ref={dropdownRef}>
       {/* Label only on small screens */}
       {label && (
         <p className="text-[16px] leading-[100%] font-archivo font-semibold text-oxford-blue mb-3 block lg:hidden">

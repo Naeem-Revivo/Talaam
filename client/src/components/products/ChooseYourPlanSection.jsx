@@ -1,86 +1,117 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { tick } from '../../assets/svg';
 import { useLanguage } from '../../context/LanguageContext';
 
 const ChooseYourPlanSection = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
-  
+  const isArabic = language === 'ar';
+
   const features = [
     t('products.choosePlan.features.feature1'),
     t('products.choosePlan.features.feature2'),
     t('products.choosePlan.features.feature3'),
     t('products.choosePlan.features.feature4'),
     t('products.choosePlan.features.feature5'),
-    t('products.choosePlan.features.feature6')
+    t('products.choosePlan.features.feature6'),
   ];
 
   const handleSubscribe = () => {
-    // Check if user is logged in
     const token = localStorage.getItem('authToken');
     const user = localStorage.getItem('user');
-    
+
     if (!token || !user) {
-      // Store the intended destination in localStorage
       localStorage.setItem('redirectAfterLogin', '/moyassar-payment');
-      // Navigate to login
       navigate('/login');
     } else {
-      // User is logged in, navigate to Moyassar payment page
       navigate('/moyassar-payment');
     }
   };
 
   return (
-    <section className="py-10 md:py-20 bg-soft-blue-green">
-      <div className="max-w-[1400px] mx-auto w-full">
-        <div className="flex flex-col items-center justify-center gap-10 md:gap-12 lg:gap-14 pt-5 px-5 md:px-0">
-        {/* Main Title */}
-        <h2 className="font-archivo text-oxford-blue font-bold text-[32px] md:text-[60px] leading-[100%] md:leading-[62.4px] align-middle tracking-[0]">
-          {t('products.choosePlan.title')}
-        </h2>
+    <section className="w-full bg-white py-12 md:py-16 lg:py-20">
+      <div className="max-w-[1180px] mx-auto w-full px-4 md:px-8 lg:px-12 2xl:px-0">
+        {/* Header */}
+        <div className="text-center mb-10 md:mb-[64px]">
+          <h2 className="font-archivo font-bold text-text-dark text-[32px] md:text-[44px] lg:text-[48px] leading-[48px] tracking-[-0.96px] italic">
+            {t('products.choosePlan.title')}
+          </h2>
+          <p className="mt-3 md:mt-4 font-roboto font-normal text-text-gray text-[14px] md:text-[20px] leading-[28px]">
+            {t('products.choosePlan.subtitle')}
+          </p>
+        </div>
 
         {/* Pricing Card */}
-        <div className="bg-white rounded-3xl border border-orange-dark-2 w-[302px] h-[696px] md:w-[490px]  md:h-auto lg:h-[780px]">
-          {/* Card Header */}
-          <div className="px-6 md:px-8 py-4 md:py-6">
-            
-            
-            {/* Price */}
-            <div className="py-6 md:py-8 lg:py-10 flex flex-col items-center pt-16 md:pt-16 laptop:pt-24  justify-center gap-3 md:gap-4 lg:gap-5">
-            <h3 className="font-archivo font-semibold text-[23px] md:text-[30px] leading-[100%] tracking-[0] align-middle text-center w-[306px] md:w-auto">
+        <div className="max-w-[480px] mx-auto relative">
+          {/* "MOST POPULAR" Badge - overlapping top center */}
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+            <span className="inline-block bg-[#ED4122] text-white font-archivo font-bold text-[11px] md:text-[12px] tracking-[0.5px] uppercase px-5 py-2 rounded-full shadow-[0_4px_12px_rgba(237,65,34,0.3)]">
+              {t('products.choosePlan.badge')}
+            </span>
+          </div>
+
+          {/* Card */}
+          <div className="bg-white rounded-2xl border border-[#ED4122] shadow-[0_8px_30px_rgba(237,65,34,0.08)] pt-10 pb-8 px-6 md:px-10">
+            {/* Plan Name */}
+            <h3 className="font-archivo font-bold text-[#0F172A] text-[22px] md:text-[26px] leading-[130%] text-center">
               {t('products.choosePlan.planName')}
             </h3>
-              <p className="font-archivo font-semibold text-[25px] md:text-[40px] leading-[100%] tracking-[0] align-middle text-orange-dark-2">
+
+            {/* Price */}
+            <div className="text-center mt-4 md:mt-5">
+              <span className="font-archivo font-bold text-[#ED4122] text-[48px] md:text-[56px] leading-[100%]">
                 {t('products.choosePlan.price')}
-              </p>
+              </span>
+              <span className="font-roboto font-medium text-[#6CA6C1] text-[18px] md:text-[20px] ml-2">
+                {t('products.choosePlan.currency')}
+              </span>
             </div>
+
+            {/* Payment Note */}
+            <p className="text-center mb-4 font-roboto font-normal text-[#6CA6C1] text-[12px] md:text-[13px] leading-[155%] mt-2">
+              {t('products.choosePlan.paymentNote')}
+            </p>
 
             {/* Features List */}
-            <div className="space-y-10 lg:space-y-9 mt-6 md:mt-3 lg:mt-6 px-2 md:px-3 ">
+            <div className="flex flex-col gap-4 md:gap-5">
               {features.map((feature, index) => (
-                <div key={index} className="flex items-center space-x-2 md:space-x-3 lg:space-x-4">
-                  <div className="flex-shrink-0">
-                   <img src={tick} alt="" className="w-5 h-5 md:w-auto md:h-auto" />
-                  </div>
-                  <span className="font-roboto font-normal text-[14px] md:text-[20px] leading-[21px] md:leading-[25.6px] tracking-[0] text-left md:text-left text-oxford-blue">{feature}</span>
+                <div
+                  key={index}
+                  className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse text-right' : ''}`}
+                >
+                  {/* Checkmark */}
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="flex-shrink-0"
+                  >
+                    <path
+                      d="M16.6667 5L7.50004 14.1667L3.33337 10"
+                      stroke="#ED4122"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span className="font-roboto font-normal text-[#0F172A] text-[14px] md:text-[15px] leading-[140%]">
+                    {feature}
+                  </span>
                 </div>
-              ))} 
+              ))}
             </div>
 
-            {/* CTA Button */}
-            <div className="text-center mt-10 md:mt-0 md:my-7 lg:mt-16 px-2">
-              <button 
-                onClick={handleSubscribe}
-                className="font-archivo w-full md:w-[390px] h-[50px] bg-orange-gradient rounded-[8px] text-white font-bold text-[12px] leading-[100%] tracking-[0] align-middle uppercase hover:opacity-90 transition-opacity"
-              >
-                {t('products.choosePlan.subscribe')}
-              </button>
-            </div>
+            {/* Subscribe Button */}
+            <button
+              onClick={handleSubscribe}
+              className="w-full mt-8 md:mt-10 bg-gradient-to-b from-[#ED4122] to-[#FF8B67] hover:opacity-90 transition-opacity text-white rounded-xl h-[50px] md:h-[54px] font-archivo font-bold text-[15px] md:text-[16px] tracking-[-0.2px] shadow-[0_8px_24px_rgba(237,65,34,0.25)]"
+            >
+              {t('products.choosePlan.subscribe')}
+            </button>
           </div>
         </div>
-      </div>
       </div>
     </section>
   );

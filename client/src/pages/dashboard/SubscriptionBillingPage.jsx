@@ -40,24 +40,14 @@ const SubscriptionBillingPage = () => {
     subscription.isActive;
 
   return (
-    <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-8 py-6 2xl:px-8">
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-10">
-        <header className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
-          <div className="space-y-6">
-            <h1 className="font-archivo text-[36px] leading-[40px] font-bold text-oxford-blue">
-              {t("dashboard.subscriptionBilling.hero.title")}
-            </h1>
-            <p className="font-roboto text-[18px] leading-[28px] text-dark-gray">
-              {t("dashboard.subscriptionBilling.hero.subtitle")}
-            </p>
-          </div>
-        </header>
+    <div className="min-h-screen bg-white px-[32px] pt-6 pb-[60px]">
+      <div className="mx-auto flex flex-col gap-10">
         {/* Show SubscriptionPlan only when user has an active subscription */}
         {hasActiveSubscription && <SubscriptionPlan onSubscriptionChange={fetchSubscription} />}
         {/* Show PricingPlans only when user does NOT have an active subscription */}
         {!hasActiveSubscription && !loading && <PricingPlans />}
-        <div>
-          <h2 className="text-[24px] leading-7 font-semibold text-oxford-blue font-archivo mb-7">
+        <div className="mt-4">
+          <h2 className="text-[20px] leading-7 font-bold text-oxford-blue font-archivo mb-5">
             {t("dashboard.subscriptionBilling.billingHistory.title")}
           </h2>
           <BillingHistoryTable />

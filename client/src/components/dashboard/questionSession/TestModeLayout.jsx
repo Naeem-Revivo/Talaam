@@ -44,7 +44,7 @@ const TestModeLayout = ({
         onExit={onExit}
       />
 
-      <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-180px)] pb-[180px] md:pb-0">
+      <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-170px)] pb-[180px] md:pb-0">
         <TestQuestionNavigator
           questions={questions}
           currentIndex={currentIndex}
@@ -67,6 +67,10 @@ const TestModeLayout = ({
       </div>
 
       <TestModeFooter
+        currentIndex={currentIndex}
+        totalQuestions={totalQuestions}
+        onNavigate={onNavigate}
+        onExit={onExit}
         onPause={onPause}
         isPauseDisabled={isPauseDisabled}
       />

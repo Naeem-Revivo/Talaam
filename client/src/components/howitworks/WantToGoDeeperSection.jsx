@@ -5,7 +5,7 @@ import { useLanguage } from '../../context/LanguageContext';
 const WantToGoDeeperSection = () => {
   const { t } = useLanguage();
   return (
-    <section className="bg-soft-blue-green w-full py-10 md:h-[813px] md:flex md:items-center md:justify-center">
+    <section className=" w-full py-10 md:h-[813px] md:flex md:items-center md:justify-center">
       <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 lg:px-12">
         <div className="flex flex-col items-center justify-center gap-8 md:gap-12">
           <div className="text-center px-5">

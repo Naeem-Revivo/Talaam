@@ -4,38 +4,27 @@ import { useLanguage } from '../../../../context/LanguageContext';
 const FilterButtons = ({ activeFilter, onFilterChange }) => {
   const { t } = useLanguage();
 
+  const options = [
+    { value: 'all', label: t('dashboard.review.filters.all') },
+    { value: 'test', label: t('dashboard.review.filters.testMode') },
+    { value: 'study', label: t('dashboard.review.filters.studyMode') },
+  ];
+
   return (
-    <div className="flex flex-wrap gap-2 mb-4 md:mb-6 lg:mb-8 pt-2 md:pt-4">
-      <button
-        onClick={() => onFilterChange('all')}
-        className={`px-4 md:px-6 py-2 rounded-full font-roboto font-normal text-[16px] leading-[24px] transition-colors text-center flex items-center justify-center ${
-          activeFilter === 'all'
-            ? 'bg-[#EF4444] text-white'
-            : 'bg-white border border-[#E5E7EB] text-blue-dark'
-        }`}
-      >
-        {t('dashboard.review.filters.all')}
-      </button>
-      <button
-        onClick={() => onFilterChange('test')}
-        className={`px-4 md:px-6 py-2 rounded-full font-roboto font-normal text-[16px] leading-[24px] transition-colors text-center flex items-center justify-center ${
-          activeFilter === 'test'
-            ? 'bg-[#EF4444] text-white'
-            : 'bg-white border border-[#E5E7EB] text-blue-dark'
-        }`}
-      >
-        {t('dashboard.review.filters.testMode')}
-      </button>
-      <button
-        onClick={() => onFilterChange('study')}
-        className={`px-4 md:px-6 py-2 rounded-full font-roboto font-normal text-[16px] leading-[24px] transition-colors text-center flex items-center justify-center ${
-          activeFilter === 'study'
-            ? 'bg-[#EF4444] text-white'
-            : 'bg-white border border-[#E5E7EB] text-blue-dark'
-        }`}
-      >
-        {t('dashboard.review.filters.studyMode')}
-      </button>
+    <div className="flex gap-2 py-[6px] px-2  bg-white border border-[#E5E7EB] shadow-md shadow-[#0000001A] rounded-[14px]">
+      {options.map((option) => (
+        <button
+          key={option.value}
+          onClick={() => onFilterChange(option.value)}
+          className={`px-[30px] py-[10px] rounded-[10px] text-[14px] font-medium transition-colors font-roboto leading-[21px] tracking-[0%] text-center ${
+            activeFilter === option.value
+              ? 'bg-gradient-to-b from-[#032746] to-[#173B50] text-white'
+              : 'text-[#6A7282]'
+          }`}
+        >
+          {option.label}
+        </button>
+      ))}
     </div>
   );
 };

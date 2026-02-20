@@ -1,32 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "../../context/LanguageContext";
-import { BarChart } from "@mui/x-charts/BarChart";
-import { vedio, timer } from "../../assets/svg/dashboard";
 import { useNavigate } from "react-router-dom";
 import studentQuestionsAPI from "../../api/studentQuestions";
 import { Loader } from "../../components/common/Loader";
+import WelcomeHeader from "../../components/dashboard/WelcomeHeader";
+import MetricCards from "../../components/dashboard/MetricCards";
+import PracticeAreas from "../../components/dashboard/PracticeAreas";
+import QuickActions from "../../components/dashboard/QuickActions";
+import PerformanceChart from "../../components/dashboard/PerformanceChart";
+import { progress, statsprogress } from "../../assets/svg";
 
 const DashboardPage = () => {
   const { t } = useLanguage();
-  const [chartWidth, setChartWidth] = useState(1070);
   const navigate = useNavigate();
   const [testSummary, setTestSummary] = useState(null);
   const [performanceData, setPerformanceData] = useState([]);
+  const [practiceAreas, setPracticeAreas] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const updateChartWidth = () => {
-      if (window.innerWidth < 768) {
-        setChartWidth(650); // Minimum width for mobile scrolling to show all labels
-      } else {
-        setChartWidth(1070); // Desktop width
-      }
-    };
-
-    updateChartWidth();
-    window.addEventListener("resize", updateChartWidth);
-    return () => window.removeEventListener("resize", updateChartWidth);
-  }, []);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -44,6 +34,10 @@ const DashboardPage = () => {
         if (performanceResponse.success) {
           setPerformanceData(performanceResponse.data);
         }
+
+        // TODO: Replace with actual API call when available
+        // For now, calculate practice areas from performance data
+        calculatePracticeAreas(performanceResponse.data || []);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -54,16 +48,43 @@ const DashboardPage = () => {
     fetchDashboardData();
   }, []);
 
+  // Calculate practice areas from performance data
+  const calculatePracticeAreas = (data) => {
+    // TODO: Replace with actual API endpoint when available
+    // Mock data for now based on image structure
+    const mockPracticeAreas = [
+      {
+        topic: "Algebraic Equations",
+        accuracy: 62,
+        correct: 28,
+        total: 45,
+      },
+      {
+        topic: "Reading Comprehension",
+        accuracy: 58,
+        correct: 22,
+        total: 38,
+      },
+      {
+        topic: "Geometry Problems",
+        accuracy: 71,
+        correct: 37,
+        total: 52,
+      },
+    ];
+    setPracticeAreas(mockPracticeAreas);
+  };
+
   // Calculate progress percentage based on test mode data
   const getProgressData = () => {
     if (!testSummary) {
-      return { percentage: 0, completed: 0, total: 0 };
+      return { percentage: 0, completed: 0, total: 1000 }; // Default total to 1000 as per image
     }
 
     // Progress = (Total correct answers) / (Total questions attempted across all test sessions) * 100
     // In test mode, total includes all attempts (e.g., 3 tests × 10 questions = 30 total)
     const completed = testSummary.totalCorrectAnswers || 0;
-    const total = testSummary.totalQuestionsAttempted || 0; // Total questions attempted across all test sessions
+    const total = testSummary.totalQuestionsAttempted || 1000; // Default to 1000 as per image
     const percentage = total > 0 ? (completed / total) * 100 : 0;
 
     return {
@@ -88,57 +109,75 @@ const DashboardPage = () => {
     } else if (mode === "study") {
       return "#20B2AA"; // Milestone/teal color for study mode
     }
-    return "#6CA6C1"; // Default fallback
+    return "#FF6B35"; // Default to orange as per image
   };
 
-  // Prepare performance data for chart (ensure we have 10 items)
-  const chartPerformanceData = () => {
-    const data = performanceData || [];
-    // If we have less than 10 sessions, pad with empty data
-    const paddedData = [...data];
-    while (paddedData.length < 10) {
-      paddedData.push({
-        session: `S${paddedData.length + 1}`,
-        accuracy: 0,
-        mode: null,
-      });
-    }
-    return paddedData.slice(0, 10); // Ensure exactly 10 items
-  };
+  // Calculate metrics from available data
+  const metrics = useMemo(() => {
+    const progressData = getProgressData();
+    const accuracy = getAccuracy();
+    
+    // Calculate score improvement (compare current accuracy with previous)
+    // TODO: Replace with actual API data when available
+    const scoreImprovement = 4; // Mock data from image
+    
+    // Calculate study streak
+    // TODO: Replace with actual API data when available
+    const studyStreak = 5; // Mock data from image
+    
+    // Get sessions completed from performance data
+    const sessionsCompleted = performanceData.length || 0;
+
+    return {
+      scoreImprovement,
+      questionsSolved: progressData.completed,
+      studyStreak,
+      sessionsCompleted,
+    };
+  }, [testSummary, performanceData]);
+
 
   const startNewSession = () => {
-      navigate("/dashboard/practice")
-  }
+    navigate("/dashboard/practice");
+  };
+
+  const handleAnalytics = () => {
+    navigate("/dashboard/analytics");
+  };
 
   const reviewSessions = () => {
-      navigate("/dashboard/review")
-  }
+    navigate("/dashboard/review");
+  };
+
+  const handlePracticeAreaClick = (area) => {
+    // Navigate to practice page with the specific topic
+    navigate("/dashboard/practice", { state: { topic: area.topic } });
+  };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 bg-gray-50 min-h-screen 2xl:px-6 max-w-[1200px] mx-auto">
-      {/* Overview Section */}
-      <div className="mb-8 md:mb-12 w-full">
-        <h2 className="font-archivo font-bold text-2xl md:text-3xl lg:text-[36px] leading-tight md:leading-[40px] text-oxford-blue mb-2">
-          {t("dashboard.overview.title")}
-        </h2>
-        <p className="font-roboto font-normal text-base md:text-[18px] leading-6 md:leading-7 text-gray-500 mb-4 md:mb-6">
-          {t("dashboard.overview.subtitle")}
-        </p>
+    <div className="px-8 pt-6 pb-[60px] min-h-screen space-y-6 sm:space-y-8 mx-auto">
+      {/* Welcome Header */}
+      <WelcomeHeader t={t} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 pt-4">
+      {/* Overview Section - Progress and Accuracy */}
+      <div className=" w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Progress Card */}
-          <div className="rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full h-auto min-h-[200px] md:min-h-[251px] flex flex-col">
-            <h3 className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue mb-3 md:mb-4">
-              {t("dashboard.overview.progress")}
-            </h3>
+          <div className="bg-white rounded-[24px] border border-[#E5E5E5] shadow-dashboard p-4 md:p-8 w-full h-auto min-h-[200px] md:min-h-[304px] flex flex-col">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h3 className="font-archivo font-bold text-[18px] leading-[27px] text-dashboard-dark">
+                {t("dashboard.overview.progress") || "Overall Progress"}
+              </h3>
+              <img src={progress} alt="progress" className="w-10 h-10" />
+            </div>
             {loading ? (
               <div className="flex-1 flex items-center justify-center">
                 <Loader size="lg" />
               </div>
             ) : (
               <>
-                <div className="flex items-center justify-center">
-                  <div className="relative w-[90px] h-[90px] md:w-[115px] md:h-[115px]">
+                <div className="flex items-center justify-center flex-1">
+                  <div className="relative w-[128px] h-[128px]">
                     <svg
                       className="transform -rotate-90 w-full h-full"
                       viewBox="0 0 192 192"
@@ -162,7 +201,7 @@ const DashboardPage = () => {
                         strokeDasharray={`${2 * Math.PI * 84 * (getProgressData().percentage / 100)} ${
                           2 * Math.PI * 84
                         }`}
-                        className="text-moonstone-blue"
+                        className="text-cinnebar-red"
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -174,213 +213,69 @@ const DashboardPage = () => {
                     </div>
                   </div>
                 </div>
-                <p className="text-center font-roboto font-normal text-sm md:text-[16px] leading-5 md:leading-6 text-gray-500 mt-3 md:mt-4">
-                  {`${getProgressData().completed}/${getProgressData().total} ${t("dashboard.overview.questionsCompleted")}`}
+                <p className="text-center font-roboto font-normal text-base text-dashboard-gray mt-4 md:mt-6">
+                  {`${getProgressData().completed}/${getProgressData().total} ${t("dashboard.overview.questionsCompleted") || "Questions Completed"}`}
                 </p>
               </>
             )}
           </div>
 
-          {/* Accuracy Card */}
-          <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full h-auto min-h-[200px] md:min-h-[251px] flex flex-col">
-            <h3 className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue mb-3 md:mb-10">
-              {t("dashboard.overview.accuracy")}
-            </h3>
+          {/* Accuracy Card with Dark Blue Gradient */}
+          <div className="bg-gradient-to-br from-[#032746] via-[#0A4B6E] to-[#173B50] rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full h-auto min-h-[200px] md:min-h-[251px] flex flex-col">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h3 className="font-archivo font-bold text-[18px] leading-[27px] text-white">
+                {t("dashboard.overview.accuracy") || "Overall Accuracy"}
+              </h3>
+              <img src={statsprogress} alt="accuracy" className="w-10 h-10" />
+            </div>
             {loading ? (
               <div className="flex-1 mb-6 flex items-center justify-center">
                 <Loader size="lg" />
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full">
+              <div className="flex flex-col items-center justify-center h-full">
                 <div className="text-center">
-                  <p className="font-archivo font-bold text-[36px] leading-[40px] text-cinnebar-red">
+                  <p className="font-roboto font-bold text-[72px] leading-[72px] text-white tracking-[0.12px]">
                     {getAccuracy().toFixed(0)}%
                   </p>
-                  <p className="font-roboto font-normal text-sm md:text-base leading-5 md:leading-6 tracking-normal text-center align-middle text-gray-500">
-                    {t("dashboard.overview.overall")}
-                  </p>
                 </div>
+                  <p className="font-roboto font-normal text-center text-base text-[#F5F5F5]">
+                    {t("dashboard.overview.overall") || "Based on all answered questions"}
+                  </p>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Performance Chart */}
-      <div className="bg-white my-20 border border-[#E5E7EB] shadow-dashboard w-full h-auto md:h-auto rounded-[12px] overflow-x-hidden overflow-y-visible pb-8">
-        <h2 className="font-archivo font-semibold pl-4 md:pl-6 lg:pl-10 pb-4 md:pb-5 pt-6 md:pt-10 text-[20px] leading-[28px] text-oxford-blue">
-          {t("dashboard.performance.title")}
-        </h2>
-        <div className="rounded-xl flex flex-col items-center justify-center p-3 md:p-6 overflow-x-auto md:overflow-x-visible scroll-smooth">
-          <div className="min-w-[650px] md:min-w-0 w-full md:w-[1070px] h-[320px] relative">
-            {loading ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Loader size="lg" />
-              </div>
-            ) : (
-              <BarChart
-                width={chartWidth}
-                height={320}
-                margin={{ left: 70, right: 30, top: 30, bottom: 80 }}
-                series={[
-                  {
-                    data: chartPerformanceData().map((data) => data.accuracy),
-                    borderRadius: 4,
-                  },
-                ]}
-                xAxis={[
-                  {
-                    id: "sessions",
-                    data: chartPerformanceData().map((data) => data.session),
-                    scaleType: "band",
-                    label: "Sessions",
-                    labelStyle: {
-                      fontFamily: "Roboto",
-                      fontSize: 12,
-                      fill: "#6B7280",
-                    },
-                    tickLabelStyle: {
-                      fontFamily: "Roboto",
-                      fontSize: 12,
-                      fill: "#6B7280",
-                    },
-                    colorMap: {
-                      type: "ordinal",
-                      values: chartPerformanceData().map((data) => data.session),
-                      colors: chartPerformanceData().map((data) =>
-                        getBarColor(data.mode)
-                      ),
-                    },
-                  },
-                ]}
-              yAxis={[
-                {
-                  id: "accuracy",
-                  min: 0,
-                  max: 100,
-                  label: "Accuracy (%)",
-                  labelStyle: {
-                    fontFamily: "Roboto",
-                    fontSize: 12,
-                    fill: "#6B7280",
-                  },
-                  tickLabelStyle: {
-                    fontFamily: "Roboto",
-                    fontSize: 12,
-                    fill: "#6B7280",
-                  },
-                  tickNumber: 6,
-                },
-              ]}
-              grid={{ horizontal: true }}
-              sx={{
-                "& .MuiChartsAxis-directionY .MuiChartsAxis-line": {
-                  stroke: "transparent",
-                },
-                "& .MuiChartsGrid-horizontal .MuiChartsGrid-line": {
-                  strokeDasharray: "4 4",
-                  stroke: "#E5E7EB",
-                },
-                "& .MuiChartsAxis-tickLabel": {
-                  fill: "#6B7280 !important",
-                  fontFamily: "Roboto !important",
-                  fontSize: "12px !important",
-                },
-                "& .MuiChartsAxis-label": {
-                  fill: "#6B7280 !important",
-                  fontFamily: "Roboto !important",
-                  fontSize: "12px !important",
-                },
-                "& .MuiChartsAxis-root": {
-                  overflow: "visible",
-                },
-                "& .MuiChartsAxisBottom .MuiChartsAxis-tickLabel": {
-                  fill: "#6B7280 !important",
-                  fontFamily: "Roboto !important",
-                  fontSize: "12px !important",
-                },
-                "& .MuiChartsAxisBottom .MuiChartsAxis-label": {
-                  fill: "#6B7280 !important",
-                  fontFamily: "Roboto !important",
-                  fontSize: "12px !important",
-                },
-                "& .MuiChartsAxisLeft .MuiChartsAxis-tickLabel": {
-                  fill: "#6B7280 !important",
-                  fontFamily: "Roboto !important",
-                  fontSize: "12px !important",
-                },
-                "& .MuiChartsAxisLeft .MuiChartsAxis-label": {
-                  fill: "#6B7280 !important",
-                  fontFamily: "Roboto !important",
-                  fontSize: "12px !important",
-                },
-              }}
-              slotProps={{
-                legend: {
-                  hidden: true,
-                },
-                bar: {
-                  width: 35,
-                },
-              }}
-              />
-            )}
-          </div>
+      {/* Metric Cards */}
+      <MetricCards metrics={metrics} loading={loading} t={t} />
 
-          {/* Footer with legend */}
-          <div className="flex items-center justify-center mt-1 flex-wrap gap-3 md:gap-4">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-4 h-4 rounded"
-                  style={{ backgroundColor: "#FF6B35" }}
-                />
-                <span className="font-roboto text-[14px] leading-[20px] font-normal text-[#6B7280]">
-                  Test Mode
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-4 h-4 rounded"
-                  style={{ backgroundColor: "#20B2AA" }}
-                />
-                <span className="font-roboto text-[14px] leading-[20px] font-normal text-[#6B7280]">
-                  Study Mode
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Performance Chart and Practice Areas Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Performance Chart */}
+        <PerformanceChart 
+          performanceData={performanceData}
+          loading={loading}
+          t={t}
+        />
+
+        {/* Practice Areas */}
+        <PracticeAreas
+          practiceAreas={practiceAreas}
+          loading={loading}
+          onPracticeClick={handlePracticeAreaClick}
+          t={t}
+        />
       </div>
 
       {/* Quick Actions */}
-      <div>
-        <h2 className="font-archivo font-bold text-[24px] leading-[32px] text-oxford-blue mb-4 md:mb-6">
-          {t("dashboard.quickActions.title")}
-        </h2>
-        <div className="flex flex-col sm:flex-row gap-4 md:gap-8 lg:gap-16">
-          <button onClick={startNewSession} className="flex items-center justify-center gap-3 bg-cinnebar-red text-white w-full sm:w-auto sm:flex-1 max-w-full lg:max-w-[548px] h-[60px] md:h-[79.2px] rounded-lg transition-colors shadow-lg hover:opacity-90">
-            <img
-              src={vedio}
-              alt="video icon"
-              className="w-5 h-5 md:w-6 md:h-6"
-            />
-            <span className="font-archivo font-semibold text-[18px] leading-[28px] text-white">
-              {t("dashboard.quickActions.startNewSession")}
-            </span>
-          </button>
-          <button onClick={reviewSessions} className="flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-oxford-blue border border-gray-300 w-full sm:w-auto sm:flex-1 max-w-full lg:max-w-[548px] h-[60px] md:h-[79.2px] rounded-lg transition-colors shadow-sm">
-            <img
-              src={timer}
-              alt="timer icon"
-              className="w-5 h-5 md:w-6 md:h-6"
-            />
-            <span className="font-archivo font-semibold text-[18px] leading-[28px] text-oxford-blue">
-              {t("dashboard.quickActions.reviewSessions")}
-            </span>
-          </button>
-        </div>
-      </div>
+      <QuickActions
+        onStartSession={startNewSession}
+        onAnalytics={handleAnalytics}
+        onReviewSessions={reviewSessions}
+        t={t}
+      />
     </div>
   );
 };

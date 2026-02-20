@@ -1,10 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { flag } from '../../assets/svg/dashboard';
+import { flag, setting, watch, analytics } from '../../assets/svg/dashboard';
 import { useLanguage } from '../../context/LanguageContext';
 import studentQuestionsAPI from '../../api/studentQuestions';
 import { showErrorToast } from '../../utils/toastConfig';
 import ReportIssueModal, { FlagReasonModal } from '../../components/common/ReportIssueModal';
+
+// SVG Icons
+const HomeIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+  </svg>
+);
+
+const BookmarkIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+  </svg>
+);
+
+const DocumentIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+);
+
+const ClockIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
 
 const ReviewAllPage = () => {
   const { t } = useLanguage();
@@ -19,6 +44,9 @@ const ReviewAllPage = () => {
   const [showQuestionNav, setShowQuestionNav] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showReasonModal, setShowReasonModal] = useState(false);
+  const [timeSpent, setTimeSpent] = useState('0:01');
+  const [answeredCorrectly, setAnsweredCorrectly] = useState(77);
+  const [overallProgress, setOverallProgress] = useState(33);
 
   // Fetch session data
   useEffect(() => {
@@ -129,6 +157,11 @@ const ReviewAllPage = () => {
     }
   };
 
+  // Check if question is answered based on API response
+  const isQuestionAnswered = (question) => {
+    return question && question.selectedAnswer && question.selectedAnswer.trim() !== '';
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -152,318 +185,284 @@ const ReviewAllPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F5F7FA]">
       {/* Top Header Bar */}
-      <div className="bg-white border-b border-[#E5E7EB] px-4 md:px-6 py-3 md:py-4">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-          {/* Top Row - Mobile: Item Info and Menu */}
-          <div className="flex items-center justify-between gap-4 w-full lg:w-auto">
-            <div className="text-[20px] font-bold text-oxford-blue font-archivo leading-[28px] tracking-[0%]">
-              {t('dashboard.reviewAll.item').replace('{{current}}', (currentQuestionIndex + 1).toString()).replace('{{total}}', totalQuestions.toString())}
-            </div>
-            <div className="hidden lg:block text-[14px] md:text-[16px] leading-[100%] font-normal text-blue-dark font-roboto">
-              {t('dashboard.reviewAll.questionId')} {currentQuestion.shortId || currentQuestion.id || currentQuestionIndex + 1}
-            </div>
-            <div className="hidden lg:flex items-center gap-2">
-              <button 
-                onClick={() => setShowReportModal(true)}
-                className="flex items-center justify-center gap-1 border-[0.5px] border-[#032746] rounded-[4px] px-3 h-[35px] hover:bg-[#F3F4F6] transition"
-              >
-                <p className='text-[10px] leading-[100%] font-normal font-archivo'>Report Issue</p>
-              </button>
-              {(currentQuestion?.isFlagged || currentQuestion?.flagStatus) && (
-                <button 
-                  onClick={() => setShowReasonModal(true)}
-                  className="flex items-center justify-center gap-1 border-[0.5px] border-[#ED4122] rounded-[4px] px-2 h-[35px] hover:bg-[#FEF2F2] transition"
-                >
-                  <p className='text-[10px] leading-[100%] font-normal font-archivo text-[#ED4122]'>{t('dashboard.questionSession.reason') || 'Reason'}</p>
-                </button>
-              )}
-            </div>
-            {/* Mobile Menu Button */}
+      <div className="sticky top-0 z-40 bg-white border-b border-[#D4D4D4] px-4 md:px-[89px] py-3 md:py-6">
+        <div className="flex items-center justify-between gap-4">
+          {/* Left: Home + Divider + Text */}
+          <div className="flex items-center min-w-0">
             <button
-              onClick={() => setShowQuestionNav(!showQuestionNav)}
-              className="lg:hidden text-oxford-blue hover:opacity-70"
+              onClick={() => navigate('/dashboard/review')}
+              className="text-oxford-blue hover:opacity-70 transition-opacity pr-6 border-r border-[#D4D4D4]"
+              aria-label="Home"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <HomeIcon />
             </button>
-          </div>
-
-          {/* Mobile: Report Issue, Formula Sheet, and Time Remaining */}
-          <div className="lg:hidden flex items-center gap-2 w-full justify-between">
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setShowReportModal(true)}
-                className="px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:opacity-70 flex items-center gap-2"
-              >
-                <span>Report Issue</span>
-              </button>
-              {(currentQuestion?.isFlagged || currentQuestion?.flagStatus) && (
-                <button 
-                  onClick={() => setShowReasonModal(true)}
-                  className="px-3 py-1.5 bg-[#FEF2F2] text-[#ED4122] border border-[#ED4122] rounded text-[14px] font-normal font-roboto hover:opacity-70"
-                >
-                  {t('dashboard.questionSession.reason') || 'Reason'}
-                </button>
-              )}
-            </div>
-            {/* <button className="px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:opacity-70 flex items-center gap-2">
-              {t('dashboard.reviewAll.formulaSheet')}
-            </button> */}
-            <div className="flex items-center gap-2">
-              <span className="text-[14px] font-normal text-oxford-blue font-roboto">
-                {t('dashboard.reviewAll.timeRemaining')} <span className="font-bold">12:45</span>
-              </span>
-              <button
-                onClick={() => navigate('/dashboard/review')}
-                className="px-3 py-1.5 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] font-normal font-roboto hover:opacity-90 transition-opacity"
-              >
-                {t('dashboard.reviewAll.actions.exitSession')}
-              </button>
+            <div className="min-w-0 pl-6">
+              <div className="text-[20px] font-bold text-[#171717] font-archivo leading-[28px] tracking-[-0.45%]">
+                {t('dashboard.reviewAll.title') || 'Review All'}
+              </div>
+              <div className="text-[14px] leading-[20px] font-normal text-[#525252] font-roboto tracking-[-0.15%]">
+                Question {currentQuestionIndex + 1} of {totalQuestions}
+              </div>
             </div>
           </div>
 
-          {/* Center: Navigation Info - Hidden on mobile, shown on larger screens */}
-          <div className="hidden md:flex items-center gap-4 flex-wrap flex-1 justify-center">
-            {/* Navigation Controls */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handlePrevious}
-                disabled={currentQuestionIndex === 0}
-                className={`px-3 py-1 rounded text-[14px] font-normal font-roboto transition-colors ${
-                  currentQuestionIndex === 0
-                    ? 'text-[#9CA3AF] cursor-not-allowed'
-                    : 'text-oxford-blue hover:bg-[#F3F4F6]'
-                }`}
-              >
-                {t('dashboard.reviewAll.actions.previous')}
-              </button>
-              <button
-                onClick={handleNext}
-                disabled={currentQuestionIndex === totalQuestions - 1}
-                className={`px-3 py-1 rounded text-[14px] font-normal font-roboto transition-colors ${
-                  currentQuestionIndex === totalQuestions - 1
-                    ? 'text-[#9CA3AF] cursor-not-allowed'
-                    : 'text-oxford-blue hover:bg-[#F3F4F6]'
-                }`}
-              >
-                {t('dashboard.reviewAll.actions.next')}
-              </button>
+          {/* Right: Action Buttons */}
+          <div className="flex items-center gap-4">
+            <button className="flex items-center gap-2 px-5 py-2 bg-white border border-[#D4D4D4] text-[#525252] rounded-[14px] text-[14px] font-medium font-roboto hover:bg-[#F3F4F6] transition-colors">
+              <DocumentIcon />
+              <span>Formula Sheet</span>
+            </button>
+            <div className="flex items-center gap-2.5 px-4 h-[64px] bg-gradient-to-r from-[#032746] to-[#173B50] text-white rounded-[14px] shadow-sm shadow-[#0000000D]">
+              <ClockIcon />
+              <div className="flex flex-col leading-none">
+                <span className="text-xs font-normal font-roboto text-white">Time Remaining</span>
+                <span className="text-[24px] font-bold font-roboto leading-[32px] tracking-[0.07px]">42:50</span>
+              </div>
             </div>
-          </div>
-
-          {/* Right: Formula Sheet and Time */}
-          <div className="hidden lg:flex items-center gap-2 md:gap-4 w-full lg:w-auto justify-between lg:justify-end">
-            {/* <button className="hidden lg:block px-2 md:px-3 py-1.5 bg-[#F3F4F6] text-oxford-blue rounded text-[12px] md:text-[14px] font-normal font-roboto hover:opacity-70">
-              <span className="hidden sm:inline">{t('dashboard.reviewAll.formulaSheet')}</span>
-              <span className="sm:hidden">{t('dashboard.reviewAll.formulaSheet')}</span>
-            </button> */}
-            <div className="hidden lg:flex items-center gap-2">
-              <span className="text-[12px] md:text-[14px] font-normal text-oxford-blue font-roboto">
-                <span className="hidden sm:inline">{t('dashboard.reviewAll.timeRemaining')} </span>12:45
-              </span>
-              <button
-                onClick={() => navigate('/dashboard/review')}
-                className="px-4 py-2 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity"
-              >
-                {t('dashboard.reviewAll.actions.exitSession')}
-              </button>
-            </div>
+            <button
+              onClick={() => navigate('/dashboard/review')}
+              className="text-oxford-blue hover:opacity-70 transition-opacity"
+              aria-label="Settings"
+            >
+              <img src={setting} alt="Settings" className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-120px)] pb-[180px] md:pb-0">
-        {/* Mobile Question Navigation Overlay */}
-        {showQuestionNav && (
-          <>
-            <div
-              className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-              onClick={() => setShowQuestionNav(false)}
-            />
-            <div className="fixed left-0 top-0 bottom-0 w-[280px] bg-white overflow-y-auto z-50 lg:hidden shadow-lg">
-              <div className="p-4 border-b border-[#E5E7EB] flex items-center justify-between">
-                <h3 className="text-[18px] font-bold text-oxford-blue font-archivo">{t('dashboard.reviewAll.questions')}</h3>
-                <button
-                  onClick={() => setShowQuestionNav(false)}
-                  className="text-oxford-blue hover:opacity-70"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <div className="p-2">
-                <div className="grid grid-cols-3 gap-2">
-                  {Array.from({ length: totalQuestions }, (_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => {
-                        handleQuestionClick(i);
-                        setShowQuestionNav(false);
-                      }}
-                      className={`py-2 px-3 text-[14px] font-medium font-roboto transition-colors text-center border border-[#B9C9C5] rounded ${
-                        i === currentQuestionIndex
-                          ? 'bg-[#EF4444] text-white border-[#EF4444]'
-                          : visitedQuestions.has(i)
-                          ? 'bg-[#C6D8D3] text-oxford-blue hover:opacity-80'
-                          : 'bg-white text-oxford-blue hover:opacity-80'
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+      <div className="px-4 md:px-[89px] pt-6 pb-32">
+      <div className="flex items-start gap-4">
+        {/* Left: Question Content */}
+        <div className="flex-1 min-w-0">
+          <div className="">
+            <div className="mb-5 border border-[#E6EEF3] shadow-sm shadow-[#0000000D] bg-white rounded-[16px] p-8">
+              {/* Question Number and Title */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 rounded-[11px] bg-gradient-to-r from-[#032746] to-[#173B50] flex items-center justify-center text-white font-medium text-[14px] leading-[21px] font-roboto">
+                  {currentQuestionIndex + 1}
                 </div>
+                <span className="text-[14px] font-normal text-[#525252] font-roboto">Question {currentQuestionIndex + 1}</span>
               </div>
-            </div>
-          </>
-        )}
 
-        {/* Left Question Navigation Pane - Desktop */}
-        <div className="hidden lg:flex w-[110px] h-full bg-white overflow-y-auto flex-col border-r border-[#E5E7EB]">
-          {/* Question Numbers */}
-          <div className="flex-1 py-2">
-            {Array.from({ length: totalQuestions }, (_, i) => (
-              <button
-                key={i}
-                onClick={() => handleQuestionClick(i)}
-                className={`w-full py-2 text-[14px] font-medium font-roboto transition-colors text-center border border-[#B9C9C5] ${
-                  i === currentQuestionIndex
-                    ? 'bg-[#EF4444] text-white border-[#EF4444]'
-                    : visitedQuestions.has(i)
-                    ? 'bg-[#C6D8D3] text-oxford-blue hover:opacity-80'
-                    : 'bg-white text-oxford-blue hover:opacity-80'
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Central Content Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-          <div className="max-w-4xl mx-auto lg:ml-5">
-            {/* Question Id - Mobile */}
-            <div className="lg:hidden text-[14px] font-normal text-dark-gray font-roboto mb-2">
-              {t('dashboard.reviewAll.questionId')} {currentQuestion.shortId || currentQuestion.id || currentQuestionIndex + 1}
-            </div>
-
-            {/* Title */}
-            <h2 className="text-[24px] md:text-[32px] lg:text-[36px] font-bold text-oxford-blue mb-2 md:mb-4 font-archivo leading-tight tracking-[0%]">
-              {t('dashboard.reviewAll.title')}
-            </h2>
-
-            {/* Subtitle */}
-            <p className="text-[14px] md:text-[16px] font-normal text-dark-gray font-roboto mb-6 md:mb-10 leading-[24px] tracking-[0%]">
-              {t('dashboard.reviewAll.subtitle')}
-            </p>
-
-            {/* Question Prompt */}
-            <div className="mb-4 md:mb-6">
-              <div 
-                className="text-[16px] md:text-[18px] font-normal text-oxford-blue font-roboto leading-[24px] tracking-[0%]"
-                dangerouslySetInnerHTML={{ 
-                  __html: currentQuestion.question 
-                    ? currentQuestion.question.replace(/<code[^>]*data-start[^>]*>(.*?)<\/code>/gi, '$1')
-                    : '' 
-                }}
-              />
+              {/* Question Text */}
+              <div>
+                <div
+                  className="text-[18px] font-normal text-[#0A0A0A] font-archivo leading-[27px]"
+                  dangerouslySetInnerHTML={{
+                    __html: currentQuestion.question
+                      ? currentQuestion.question.replace(/<code[^>]*data-start[^>]*>(.*?)<\/code>/gi, '$1')
+                      : ''
+                  }}
+                />
+              </div>
             </div>
 
             {/* Answer Options */}
-            <div className="mb-4 md:mb-6">
-              <div className="space-y-3 mb-6 md:mb-10 w-full min-h-[300px] md:min-h-[400px] flex flex-col items-start justify-center p-4 md:pl-8 bg-white shadow-content rounded-lg">
-                {currentQuestion.options.map((option) => {
-                  const isSelected = option.id === currentQuestion.selectedAnswer;
-                  const isCorrect = option.id === currentQuestion.correctAnswer;
-                  
-                  return (
-                    <div
-                      key={option.id}
-                      className={`w-full min-h-[50px] rounded-lg border-2 flex items-center px-3 md:px-4 py-2 ${
-                        isSelected
-                          ? 'border-[#ED4122] bg-white'
-                          : 'border-[#E5E7EB] bg-white'
-                      }`}
-                    >
-                      <label className="flex items-center gap-2 md:gap-3 cursor-pointer w-full">
-                        <input
-                          type="radio"
-                          name="answer"
-                          value={option.id}
-                          checked={isSelected}
-                          readOnly
-                          className="w-4 h-4 md:w-5 md:h-5 text-[#EF4444] border-[#EF4444] focus:ring-[#EF4444] flex-shrink-0"
-                        />
-                        <span className="text-[14px] md:text-[16px] font-normal text-oxford-blue font-roboto flex-1">
-                          <span className="font-medium">{option.id}.</span> {option.text}
-                        </span>
-                      </label>
+            <div className="space-y-3 mb-8">
+              {currentQuestion.options.map((option) => {
+                const isSelected = option.id === currentQuestion.selectedAnswer;
+                
+                return (
+                  <div
+                    key={option.id}
+                    className={`w-full min-h-[62px] rounded-[12px] border-[1.5px] flex items-center px-6 py-3 ${
+                      isSelected
+                        ? 'border-[#032746]'
+                        : 'border-[#D4D4D4] bg-white border-[1px]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 w-full">
+                      <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-medium font-roboto ${
+                        isSelected ? 'bg-[#0B4A73] text-white' : 'bg-[#F5F5F5] border border-[#E6EEF3] text-[#737373]'
+                      }`}>
+                        {option.id}
+                      </span>
+                      <span className={`text-base font-normal font-roboto flex-1 ${
+                        isSelected ? 'text-[#032746]' : 'text-[#0A0A0A]'
+                      }`}>
+                        {option.text}
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
-              
-              {/* Next Question Button */}
-              {currentQuestionIndex < totalQuestions - 1 && (
-                <button 
-                  onClick={handleNextQuestion}
-                  className="w-full md:w-[316px] mb-6 md:mb-10 h-[50px] md:h-[60px] bg-[#ED4122] text-white rounded-[8px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] flex items-center justify-center hover:opacity-90 transition-opacity"
-                >
-                  <span className="hidden md:inline">{t('dashboard.reviewAll.nextQuestion')}</span>
-                  <span className="md:hidden">{t('dashboard.reviewAll.newQuestion')}</span>
-                </button>
-              )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
+
+        {/* Right: Sidebar */}
+        <div className="w-[320px] shrink-0 self-start">
+          {/* Performance Metrics */}
+          <div className="mb-4 border border-[#D4D4D4] rounded-[14px] bg-white p-4">
+            <div className="mb-3">
+              <div className="flex items-center justify-between text-[14px] font-normal text-oxford-blue font-roboto">
+                <span className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-oxford-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Time spent
+                </span>
+                <span className="font-semibold">{timeSpent}</span>
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-[14px] font-normal text-oxford-blue font-roboto">
+                <span className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-oxford-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20V10m5 10V4m5 16v-6M4 20h16" />
+                  </svg>
+                  Answered correctly
+                </span>
+                <span className="font-semibold">{answeredCorrectly}%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* All Questions Navigation */}
+          <div className="mb-4 border border-[#D4D4D4] shadow-sm shadow-[#0000000D] rounded-[14px] bg-white p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[18px] leading-[27px] font-medium text-[#171717] font-roboto tracking-[-0.44px]">All Questions</h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePrevious}
+                  disabled={currentQuestionIndex === 0}
+                  className="text-[#7A9EB5] hover:opacity-70 disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.5 15L7.5 10L12.5 5" stroke="#6697B7" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                <button
+                  onClick={handleNext}
+                  disabled={currentQuestionIndex === totalQuestions - 1}
+                  className="text-[#7A9EB5] hover:opacity-70 disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7.5 15L12.5 10L7.5 5" stroke="#6697B7" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-6 gap-2 mb-3">
+              {Array.from({ length: totalQuestions }, (_, i) => {
+                const question = questions[i];
+                const isAnswered = isQuestionAnswered(question);
+                const isCurrent = i === currentQuestionIndex;
+                const isMarkedForReview = Boolean(
+                  question?.isMarked ||
+                  question?.markedForReview ||
+                  question?.isFlagged ||
+                  question?.flagged
+                );
+                
+                // Determine styling based on priority: Current > Answered > Unanswered
+                let buttonClass = '';
+                if (isCurrent) {
+                  // Currently Selected/Active: Light blue background, blue border, dark blue text
+                  buttonClass = 'bg-[#E0F2F7] text-[#1F4E79] border-[#007BFF]';
+                } else if (isMarkedForReview) {
+                  // Marked for Review: Light yellow background, yellow border, amber text
+                  buttonClass = 'bg-[#FEFCE8] text-[#B45309] border-[#EAB308]';
+                } else if (isAnswered) {
+                  // Answered: Dark blue background, white text, no visible border (border same as bg)
+                  buttonClass = 'bg-gradient-to-r from-[#032746] to-[#0A4B6E] text-white border-[#1F4E79]';
+                } else {
+                  // Unanswered: White background, light gray border, dark gray text
+                  buttonClass = 'bg-[#E6EEF3] text-[#6697B7] border-[#6697B7]';
+                }
+                
+                return (
+                  <button
+                    key={i}
+                    onClick={() => handleQuestionClick(i)}
+                    className={`h-10 min-w-[40px] px-0 text-[14px] font-medium font-roboto transition-colors text-center border rounded-[8px] ${buttonClass} hover:opacity-80`}
+                  >
+                    {i + 1}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Legend */}
+            <div className="border-t border-[#E5E7EB] pt-3 space-y-1 text-[12px] font-normal text-[#525252] font-roboto">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-gradient-to-r from-[#032746] to-[#0A4B6E] border border-[#1F4E79] rounded"></div>
+                <span>Answered</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-[#FEFCE8] border border-[#EAB308] rounded"></div>
+                <span>Marked for Review</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-[#F8FAFC] border border-[#D4D4D4] rounded"></div>
+                <span>Unanswered</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            {sessionId && (
+              <button
+                onClick={() => navigate(`/dashboard/review-incorrect?sessionId=${sessionId}`)}
+                className="w-full px-4 py-3 bg-gradient-to-r from-[#032746] to-[#173B50] text-white rounded-[14px] text-base font-medium font-roboto hover:opacity-90 transition-opacity"
+              >
+                Review Incorrect
+              </button>
+            )}
+            <button
+              onClick={() => navigate('/dashboard/review')}
+              className="w-full px-4 py-2 bg-transparent text-[#A3A3A3] rounded-[12px] text-base font-medium font-roboto hover:text-[#737373] transition-colors"
+            >
+              Exit Session
+            </button>
+          </div>
+        </div>
+      </div>
       </div>
 
       {/* Bottom Footer Bar */}
-      <div className="fixed md:relative bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] px-4 md:px-6 py-3 md:py-4 z-30 shadow-footer md:shadow-none">
-        {/* Mobile: Previous and Next Buttons */}
-        <div className="md:hidden flex items-center justify-between gap-2 mb-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] px-4 md:px-[89px] py-3 md:py-6 z-30 shadow-footer">
+        <div className="flex items-center justify-between">
+          {/* Previous Button */}
           <button
             onClick={handlePrevious}
             disabled={currentQuestionIndex === 0}
-            className={`flex-1 px-3 py-2 rounded text-[14px] font-normal font-roboto transition-colors ${
+            className={`px-8 h-12 py-2 rounded-[14px] flex gap-2 items-center text-base font-bold tracking-[-0.31px] font-roboto transition-colors shadow-sm shadow-[#0000000D] ${
               currentQuestionIndex === 0
-                ? 'text-[#9CA3AF] cursor-not-allowed bg-[#F3F4F6]'
+                ? 'text-[#A3A3A3] cursor-not-allowed bg-[#F8FAFC]'
                 : 'text-oxford-blue bg-[#F3F4F6] hover:bg-[#E5E7EB]'
             }`}
           >
-            {t('dashboard.reviewAll.actions.previous')}
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span>Previous Question</span>
           </button>
+
+          {/* Overall Progress */}
+          <div className="text-[14px] leading-[21px] font-normal text-[#525252] font-roboto flex flex-col items-center justify-center gap-1">
+            Overall Progress
+            <span className="text-[24px] leading-[32px] text-[#171717] font-bold tracking-[0.07px] font-roboto">{overallProgress}%</span>
+          </div>
+
+          {/* Next Button */}
           <button
             onClick={handleNext}
             disabled={currentQuestionIndex === totalQuestions - 1}
-            className={`flex-1 px-3 py-2 rounded text-[14px] font-normal font-roboto transition-colors ${
+            className={`px-8 h-12 py-2 rounded-[14px] flex gap-2 items-center text-base font-bold tracking-[-0.31px] font-roboto transition-colors shadow-sm shadow-[#0000000D] ${
               currentQuestionIndex === totalQuestions - 1
-                ? 'text-[#9CA3AF] cursor-not-allowed bg-[#F3F4F6]'
-                : 'text-oxford-blue bg-[#F3F4F6] hover:bg-[#E5E7EB]'
+                ? 'text-[#A3A3A3] cursor-not-allowed bg-[#F8FAFC]'
+                : 'bg-[#EF4444] text-white hover:opacity-90'
             }`}
           >
-            {t('dashboard.reviewAll.actions.next')}
+            Next Question
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
-        </div>
-
-        {/* Footer Buttons */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 md:gap-10">
-          <button className="w-full sm:w-auto px-4 py-2 bg-white border border-[#E5E7EB] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity">
-            {t('dashboard.reviewAll.actions.studyMode')}
-          </button>
-          {sessionId && (
-            <button 
-              onClick={() => navigate(`/dashboard/review-incorrect?sessionId=${sessionId}`)}
-              className="w-full sm:w-auto px-4 py-2 bg-[#C6D8D3] text-oxford-blue rounded-lg text-[14px] md:text-[16px] font-normal font-roboto hover:opacity-90 transition-opacity"
-            >
-              {t('dashboard.reviewAll.actions.reviewIncorrect')}
-            </button>
-          )}
         </div>
       </div>
 

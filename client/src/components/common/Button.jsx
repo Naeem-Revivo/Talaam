@@ -30,15 +30,18 @@ export const PrimaryButton = ({
     text,
     onClick,
     width = "",
-    className = ""
+    className = "",
+    disabled = false
 }) => {
     return (
         <button
             type="button"
             onClick={onClick}
+            disabled={disabled}
             className={`
-                h-[36px] rounded-md bg-[#ED4122] text-[16px] font-archivo 
-                font-semibold leading-[16px] text-white transition hover:bg-[#d43a1f]
+                h-12 rounded-[12px] bg-[#ED4122] text-[16px] font-archivo 
+                font-medium leading-[16px] text-white transition hover:bg-[#d43a1f]
+                disabled:opacity-50 disabled:cursor-not-allowed
                 ${className}
             `}
             style={{ width }}

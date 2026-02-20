@@ -23,26 +23,26 @@ const JoinUsForm = () => {
   };
 
   return (
-    <section className="py-10 md:py-16 lg:py-20 h-auto lg:h-[1130px] bg-soft-blue-green">
+    <section className="py-10 md:py-16 lg:py-20 h-auto lg:h-[1130px] bg-gradient-to-l from-[#FFFFFF] to-[#F0F9FF]">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8 lg:px-12">
-        <div className="text-center mb-8 md:mb-12 lg:mb-16 flex flex-col gap-3 md:gap-4 lg:gap-6 pt-4 md:pt-6 lg:pt-8 pb-4 md:pb-6 lg:pb-10">
-          <h2 className="font-archivo font-bold text-[28px] md:text-[38px] lg:text-[50px] leading-[110%] md:leading-[100%] lg:leading-[100%] tracking-[0] text-oxford-blue px-4">
+        <div className="text-center mb-[64px] flex flex-col gap-3 md:gap-4 lg:gap-6 pt-4 md:pt-6 lg:pt-8 pb-4 md:pb-6 lg:pb-10">
+          <h2 className="font-archivo font-bold text-text-dark text-[32px] md:text-[48px] leading-[48px] tracking-[-0.96px] px-4">
             {t('about.joinUs.title')}
           </h2>
-          <p className="font-roboto font-normal text-[16px] md:text-[18px] lg:text-[20px] leading-[130%] md:leading-[120%] lg:leading-[100%] tracking-[0] text-center text-oxford-blue px-4 md:px-8">
+          <p className="font-roboto max-w-[700px] mx-auto font-normal text-text-gray text-[14px] md:text-[20px] leading-[28px] text-center px-4 md:px-8">
             {t('about.joinUs.subtitle')}
           </p>
         </div>
       </div>
-      <div className="max-w-full md:max-w-[600px] lg:max-w-[684px] mx-auto h-auto lg:h-[711px] shadow-[0px_2px_25px_0px_#0000001A] px-4 md:px-0 lg:px-0">
+      <div className="max-w-full md:max-w-[600px] lg:max-w-[684px] mx-auto h-auto lg:h-[711px] px-4 md:px-0 lg:px-0">
         <div className="flex justify-center h-full">
-          <div className="bg-[#FEFEFC] rounded-lg shadow-xl p-6 md:p-7 lg:p-8 w-full h-full flex flex-col gap-8 md:gap-12 lg:gap-16">
-            <h3 className="font-archivo pt-4 md:pt-5 lg:pt-7 font-bold text-[24px] md:text-[28px] lg:text-[30px] leading-[100%] tracking-[0] text-center text-oxford-blue">
+          <div className="bg-white rounded-[24px] border-2 overflow-hidden border-[#F3F4F6] shadow-lg shadow-text-dark/50 p-6 md:p-7 lg:p-8 w-full h-full flex flex-col gap-8 md:gap-12 lg:gap-16">
+            <h3 className="font-archivo pt-4 md:pt-5 lg:pt-7 font-bold text-[24px] md:text-[28px] lg:text-[30px] leading-[36px] tracking-[0] text-center text-oxford-blue">
               {t('about.joinUs.formTitle')}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-6 md:space-y-7 lg:space-y-9">
               <div className="space-y-2">
-                <label className="font-archivo font-normal text-[18px] md:text-[20px] lg:text-[22px] leading-[100%] tracking-[0] text-oxford-blue">
+                <label className="font-archivo font-normal text-base tracking-[0] text-text-dark">
                   {t('about.joinUs.name')}
                 </label>
                 <input
@@ -55,7 +55,7 @@ const JoinUsForm = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="font-archivo font-normal text-[18px] md:text-[20px] lg:text-[22px] leading-[100%] tracking-[0] text-oxford-blue">
+                <label className="font-archivo font-normal text-base tracking-[0] text-text-dark">
                   {t('about.joinUs.email')}
                 </label>
                 <input
@@ -68,7 +68,7 @@ const JoinUsForm = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="font-archivo font-normal text-[18px] md:text-[20px] lg:text-[22px] leading-[100%] tracking-[0] text-oxford-blue">
+                <label className="font-archivo font-normal text-base tracking-[0] text-text-dark">
                   {t('about.joinUs.message')}
                 </label>
                 <textarea

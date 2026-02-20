@@ -4,11 +4,27 @@ import { markAnnouncementAsRead } from '../../api/announcements';
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  const now = new Date();
+  const diffInMs = now - date;
+  const diffInMins = Math.floor(diffInMs / 60000);
+  const diffInHours = Math.floor(diffInMins / 60);
+  const diffInDays = Math.floor(diffInHours / 24);
+
+  if (diffInMins < 1) {
+    return 'Just now';
+  } else if (diffInMins < 60) {
+    return `${diffInMins} min ago`;
+  } else if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+  } else if (diffInDays < 7) {
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  } else {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  }
 };
 
-const AnnouncementDropdown = ({ announcements, isOpen, onClose, onAnnouncementRead, className = '', unreadCount = 0 }) => {
+const AnnouncementDropdown = ({ announcements, isOpen, onClose, onAnnouncementRead, onMarkAllRead, className = '', unreadCount = 0 }) => {
   const { t } = useLanguage();
   const dropdownRef = useRef(null);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
@@ -65,62 +81,65 @@ const AnnouncementDropdown = ({ announcements, isOpen, onClose, onAnnouncementRe
 
   if (!isOpen) return null;
 
-  // Filter to show only unread announcements with "exam" in the title (case-insensitive)
-  // This filter must match the count calculation in Header.jsx exactly
-  const examAnnouncements = announcements.filter((announcement) => {
-    if (!announcement.title) return false;
-    const titleLower = announcement.title.toLowerCase();
-    const isExam = titleLower.includes('exam');
-    const isUnread = announcement.isRead === false || announcement.isRead === undefined;
-    return isExam && isUnread;
-  });
+  // Show all announcements (not just exam-related)
+  const displayAnnouncements = announcements || [];
+
+  const handleMarkAllRead = async () => {
+    if (onMarkAllRead) {
+      await onMarkAllRead();
+    }
+  };
 
   return (
     <div
       ref={dropdownRef}
-      className={`absolute top-full right-0 mt-2 w-[380px] max-h-[500px] bg-white border border-[#E5E7EB] rounded-lg shadow-lg z-50 ${className}`}
+      className={`absolute top-full right-0 mt-2 w-[380px] max-h-[500px] bg-white rounded-lg shadow-lg z-50 ${className}`}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header */}
-      <div className="px-4 py-3 border-b border-[#E5E7EB] flex items-center justify-between">
-        <h3 className="text-[16px] font-archivo font-semibold text-oxford-blue">
+      <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+        <h3 className="text-[16px] font-roboto font-semibold text-oxford-blue">
           {t('notifications.title') || 'Notifications'}
         </h3>
         {unreadCount > 0 && (
-          <span className="bg-[#ED4122] text-white text-[12px] font-bold rounded-full min-w-[24px] h-6 flex items-center justify-center px-2">
-            {unreadCount > 99 ? '99+' : unreadCount}
-          </span>
+          <button
+            onClick={handleMarkAllRead}
+            className="text-[14px] font-roboto font-normal text-blue-600 hover:text-blue-700 hover:underline"
+          >
+            {t('notifications.markAllRead') || 'Mark all read'}
+          </button>
         )}
       </div>
 
       {/* Announcements List */}
       <div className="max-h-[400px] overflow-y-auto">
-        {examAnnouncements.length === 0 ? (
+        {displayAnnouncements.length === 0 ? (
           <div className="px-4 py-8 text-center">
             <p className="text-[14px] text-dark-gray font-roboto">
-              {t('notifications.noAnnouncements') || 'No announcements'}
+              {t('notifications.noAnnouncements') || 'No notifications'}
             </p>
           </div>
         ) : (
-          examAnnouncements.map((announcement) => (
+          displayAnnouncements.map((announcement, index) => (
             <button
               key={announcement.id}
               onClick={() => handleAnnouncementClick(announcement)}
-              className="w-full px-4 py-3 text-left border-b border-[#E5E7EB] bg-gray-100 hover:bg-gray-200 transition-colors"
+              className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
+                index < displayAnnouncements.length - 1 ? 'border-b border-gray-200' : ''
+              }`}
             >
-              <div className="flex items-center justify-between gap-2 w-full">
-                <h4 className={`text-[14px] font-roboto font-semibold ${
-                  !announcement.isRead ? 'text-oxford-blue' : 'text-dark-gray'
-                }`}>
-                  {announcement.title}
-                </h4>
-                <div className="flex items-center gap-2">
-                  {!announcement.isRead && (
-                    <span className="w-2 h-2 bg-[#ED4122] rounded-full"></span>
-                  )}
-                  <span className="px-2 py-0.5 rounded text-[10px] font-medium font-roboto bg-red-100 text-red-800">
-                    ALERT
-                  </span>
+              <div className="flex items-start gap-3">
+                {/* Blue dot indicator for unread */}
+                {(!announcement.isRead || announcement.isRead === false || announcement.isRead === undefined) && (
+                  <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-[14px] font-roboto font-normal text-oxford-blue mb-1">
+                    {announcement.title}
+                  </h4>
+                  <p className="text-[12px] font-roboto font-normal text-gray-500">
+                    {formatDate(announcement.createdAt || announcement.startDate)}
+                  </p>
                 </div>
               </div>
             </button>

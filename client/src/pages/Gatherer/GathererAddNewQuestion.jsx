@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import questionsAPI from "../../api/questions";
@@ -6,9 +6,10 @@ import examsAPI from "../../api/exams";
 import subjectsAPI from "../../api/subjects";
 import usersAPI from "../../api/users";
 import { showSuccessToast, showErrorToast } from "../../utils/toastConfig";
-import RichTextEditor from "../../components/common/RichTextEditor";
 import Loader from "../../components/common/Loader";
-import Dropdown from "../../components/common/Dropdown";
+import AddQuestionHeader from "../../components/common/create-question/AddQuestionHeader";
+import AddQuestionDetailsSection from "../../components/common/create-question/AddQuestionDetailsSection";
+import AddQuestionClassificationSection from "../../components/common/create-question/AddQuestionClassificationSection";
 
 
 const GathererAddNewQuestionPage = () => {
@@ -170,12 +171,10 @@ const GathererAddNewQuestionPage = () => {
         if (response.success && response.data?.users) {
           const loadedProcessors = response.data.users;
           setProcessors(loadedProcessors);
-          console.log('Processors loaded:', loadedProcessors);
         } else if (response.success && response.data?.admins) {
           // Fallback to admins if users is not available
           const loadedProcessors = response.data.admins;
           setProcessors(loadedProcessors);
-          console.log('Processors loaded (from admins):', loadedProcessors);
         }
       } catch (error) {
         showErrorToast(
@@ -246,19 +245,7 @@ const GathererAddNewQuestionPage = () => {
     if (selectedProcessor && selectedProcessor.id) {
       setProcessorId(selectedProcessor.id);
       setProcessorName(selectedProcessorName);
-      console.log('Processor selected:', { 
-        id: selectedProcessor.id, 
-        name: selectedProcessorName,
-        processor: selectedProcessor 
-      });
     } else {
-      console.warn('Processor not found for:', selectedProcessorName);
-      console.warn('Available processors:', processors.map(p => ({
-        id: p.id,
-        name: p.name,
-        fullName: p.fullName,
-        username: p.username
-      })));
       setProcessorId("");
       setProcessorName("");
     }
@@ -348,14 +335,12 @@ const GathererAddNewQuestionPage = () => {
       };
 
       // Add processor assignment (required)
-      console.log('Before submission - processorId:', processorId, 'processorName:', processorName);
       if (!processorId || processorId.trim() === "") {
         showErrorToast("Please select a processor", { title: "Validation Error" });
         setSubmitting(false);
         return;
       }
       questionData.assignedProcessor = processorId;
-      console.log('Question data with processor:', questionData);
 
       // Add MCQ-specific fields
       if (apiQuestionType === "MCQ") {
@@ -413,13 +398,6 @@ const GathererAddNewQuestionPage = () => {
     navigate("/gatherer/question-bank");
   };
 
-  const _handleSaveQuestion = () => {
-    // TODO: Implement save question functionality
-    console.log("Save question");
-    // Navigate to question details page after saving
-    navigate("/admin/question-details");
-  };
-
   return (
     <>
       {submitting && (
@@ -437,291 +415,61 @@ const GathererAddNewQuestionPage = () => {
       <div className="min-h-full bg-[#F5F7FB] px-4 py-6 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-[1200px]">
           {/* Header */}
-          <header className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center mb-10">
-            <h1 className="font-archivo text-[24px] md:text-[36px] font-bold leading-[28px] md:leading-[40px] text-oxford-blue">
-              {t('gatherer.addNewQuestion.title')}
-            </h1>
-            <div className="flex flex-wrap gap-2 md:gap-4 w-full md:w-auto">
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="flex h-[36px] items-center justify-center rounded-[8px] border border-[#E5E7EB] bg-white px-3 md:px-5 text-[14px] md:text-[16px] font-roboto font-medium leading-[16px] text-[#374151] transition hover:bg-[#F9FAFB]"
-              >
-                {t('gatherer.addNewQuestion.cancel')}
-              </button>
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={submitting}
-                className={`flex h-[36px] items-center justify-center rounded-[8px] bg-[#ED4122] px-4 md:px-6 text-[14px] md:text-[16px] font-archivo font-medium leading-[16px] text-white transition hover:bg-[#d43a1f] ${
-                  submitting ? "opacity-70 cursor-not-allowed" : ""
-                }`}
-              >
-                {submitting ? "Submitting..." : t('gatherer.addNewQuestion.submit')}
-              </button>
-            </div>
-          </header>
+          <AddQuestionHeader
+            t={t}
+            onCancel={handleCancel}
+            onSubmit={handleSubmit}
+            submitting={submitting}
+            titleKey="gatherer.addNewQuestion.title"
+            cancelKey="gatherer.addNewQuestion.cancel"
+            submitKey="gatherer.addNewQuestion.submit"
+          />
 
           {/* Main Content - Two Columns */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
             {/* Left Column - Question Details (2/3 width on xl screens) */}
-            <div className="xl:col-span-2 bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
-              <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark mb-[30px]">
-                {t('gatherer.addNewQuestion.questionText')}
-              </h2>
-
-              <div className="space-y-6">
-                {/* Question Text */}
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-5">
-                    {t('gatherer.addNewQuestion.questionText')}
-                  </label>
-                  <RichTextEditor
-                    value={questionText}
-                    onChange={setQuestionText}
-                    placeholder={t('gatherer.addNewQuestion.placeholders.questionText')}
-                    minHeight="200px"
-                  />
-                </div>
-
-                {/* Question Type */}
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.questionType')}
-                  </label>
-                  <Dropdown
-                    value={questionType}
-                    onChange={handleQuestionTypeChange}
-                    placeholder="Select question type"
-                    options={[
-                      t('admin.addNewQuestion.questionTypes.multipleChoice'),
-                      t('admin.addNewQuestion.questionTypes.trueFalse')
-                    ]}
-                  />
-                </div>
-
-                {/* Options Grid - Show 4 options for MCQ, 2 options for True/False */}
-                {questionType === "True/False" ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        True
-                      </label>
-                      <input
-                        type="text"
-                        value={options.A}
-                        disabled
-                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-gray-100 px-4 py-3 text-blue-dark cursor-not-allowed"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                        False
-                      </label>
-                      <input
-                        type="text"
-                        value={options.B}
-                        disabled
-                        className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-gray-100 px-4 py-3 text-blue-dark cursor-not-allowed"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                          {t('gatherer.addNewQuestion.options.optionA')}
-                        </label>
-                        <input
-                          type="text"
-                          value={options.A}
-                          onChange={(e) => handleOptionChange("A", e.target.value)}
-                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                          {t('gatherer.addNewQuestion.options.optionC')}
-                        </label>
-                        <input
-                          type="text"
-                          value={options.C}
-                          onChange={(e) => handleOptionChange("C", e.target.value)}
-                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                          {t('gatherer.addNewQuestion.options.optionB')}
-                        </label>
-                        <input
-                          type="text"
-                          value={options.B}
-                          onChange={(e) => handleOptionChange("B", e.target.value)}
-                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                          {t('gatherer.addNewQuestion.options.optionD')}
-                        </label>
-                        <input
-                          type="text"
-                          value={options.D}
-                          onChange={(e) => handleOptionChange("D", e.target.value)}
-                          className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Correct Answer */}
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.correctAnswer')}
-                  </label>
-                  {questionType === "True/False" ? (
-                    <Dropdown
-                      value={correctAnswer}
-                      onChange={setCorrectAnswer}
-                      placeholder="Select correct answer"
-                      options={["True", "False"]}
-                    />
-                  ) : (
-                    <Dropdown
-                      value={correctAnswer}
-                      onChange={setCorrectAnswer}
-                      placeholder="Select correct answer"
-                      options={[
-                        t('admin.addNewQuestion.correctAnswerOptions.optionA'),
-                        t('admin.addNewQuestion.correctAnswerOptions.optionB'),
-                        t('admin.addNewQuestion.correctAnswerOptions.optionC'),
-                        t('admin.addNewQuestion.correctAnswerOptions.optionD')
-                      ]}
-                    />
-                  )}
-                </div>
-
-                {/* Explanation (Optional) */}
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.explanation')} <span className="text-gray-500 text-sm">({t('gatherer.addNewQuestion.optional')})</span>
-                  </label>
-                  <RichTextEditor
-                    value={explanation}
-                    onChange={setExplanation}
-                    placeholder={t('gatherer.addNewQuestion.placeholders.explanation')}
-                    minHeight="150px"
-                  />
-                </div>
-              </div>
-            </div>
+            <AddQuestionDetailsSection
+              questionText={questionText}
+              setQuestionText={setQuestionText}
+              questionType={questionType}
+              handleQuestionTypeChange={handleQuestionTypeChange}
+              options={options}
+              handleOptionChange={handleOptionChange}
+              correctAnswer={correctAnswer}
+              setCorrectAnswer={setCorrectAnswer}
+              explanation={explanation}
+              setExplanation={setExplanation}
+              showExplanation={true}
+              translationPrefix="gatherer"
+              t={t}
+            />
 
             {/* Right Column - Classification (1/3 width on xl screens) */}
-            <div className="bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10 h-[725px]">
-              <h2 className="text-[20px] leading-[100%] font-bold font-archivo text-blue-dark mb-6">
-                {t('gatherer.addNewQuestion.classification.title')}
-              </h2>
-
-              <div className="space-y-6">
-                {/* Exam */}
-                <div>
-                  <Dropdown
-                    label={t('gatherer.addNewQuestion.classification.exam')}
-                    value={examName}
-                    onChange={handleExamChange}
-                    placeholder="Select exam"
-                    options={
-                      loadingExams
-                        ? [t('gatherer.addNewQuestion.messages.loading')]
-                        : exams.length > 0
-                        ? exams.map((exam) => exam.name || "Unnamed Exam").filter(Boolean)
-                        : [t('gatherer.addNewQuestion.messages.noExamsAvailable')]
-                    }
-                  />
-                </div>
-
-                {/* Subject */}
-                <div>
-                  <Dropdown
-                    label={t('gatherer.addNewQuestion.classification.subject')}
-                    value={subjectName}
-                    onChange={handleSubjectChange}
-                    placeholder="Select subject"
-                    options={
-                      !examId
-                        ? [t('gatherer.addNewQuestion.messages.selectExamFirst')]
-                        : loadingSubjects
-                        ? [t('gatherer.addNewQuestion.messages.loading')]
-                        : subjects.length > 0
-                        ? subjects.map((subject) => subject.name || "Unnamed Subject").filter(Boolean)
-                        : [t('gatherer.addNewQuestion.messages.noSubjectsAvailable')]
-                    }
-                  />
-                </div>
-
-                {/* Topic */}
-                <div>
-                  <Dropdown
-                    label={t('gatherer.addNewQuestion.classification.topic')}
-                    value={topicName}
-                    onChange={handleTopicChange}
-                    placeholder="Select topic"
-                    options={
-                      !subjectId
-                        ? [t('gatherer.addNewQuestion.messages.selectSubjectFirst')]
-                        : loadingTopics
-                        ? [t('gatherer.addNewQuestion.messages.loading')]
-                        : topics.length > 0
-                        ? topics.map((topic) => topic.name || "Unnamed Topic").filter(Boolean)
-                        : [t('gatherer.addNewQuestion.messages.noTopicsAvailable')]
-                    }
-                  />
-                </div>
-
-                {/* Reference */}
-                <div>
-                  <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                    {t('gatherer.addNewQuestion.classification.reference')}
-                  </label>
-                  <input
-                    type="text"
-                    value={source}
-                    onChange={(e) => setSource(e.target.value)}
-                    className="w-full h-[50px] rounded-[12px] border border-[#03274633] bg-white px-4 py-3 text-blue-dark focus:border-blue-dark outline-none"
-                    placeholder={t('gatherer.addNewQuestion.placeholders.reference')}
-                  />
-                </div>
-
-                {/* Processor Assignment */}
-                <div>
-                  <Dropdown
-                    label={
-                      <>
-                        {t('gatherer.addNewQuestion.classification.processor')} <span className="text-red-500 text-sm">*</span>
-                      </>
-                    }
-                    value={processorName}
-                    onChange={handleProcessorChange}
-                    placeholder="Select processor"
-                    options={
-                      loadingProcessors
-                        ? [t('gatherer.addNewQuestion.messages.loading')]
-                        : processors.length > 0
-                        ? processors.map((processor) => {
-                            const displayName = processor.name || processor.fullName || processor.username || "Unnamed Processor";
-                            return displayName;
-                          }).filter(Boolean)
-                        : [t('gatherer.addNewQuestion.messages.noProcessorsAvailable')]
-                    }
-                  />
-                </div>
-              </div>
-            </div>
+            <AddQuestionClassificationSection
+              examName={examName}
+              handleExamChange={handleExamChange}
+              subjectName={subjectName}
+              handleSubjectChange={handleSubjectChange}
+              topicName={topicName}
+              handleTopicChange={handleTopicChange}
+              source={source}
+              setSource={setSource}
+              processorName={processorName}
+              handleProcessorChange={handleProcessorChange}
+              exams={exams}
+              subjects={subjects}
+              topics={topics}
+              processors={processors}
+              examId={examId}
+              subjectId={subjectId}
+              loadingExams={loadingExams}
+              loadingSubjects={loadingSubjects}
+              loadingTopics={loadingTopics}
+              loadingProcessors={loadingProcessors}
+              showAssignedToMe={false}
+              translationPrefix="gatherer"
+              t={t}
+            />
           </div>
         </div>
       </div>

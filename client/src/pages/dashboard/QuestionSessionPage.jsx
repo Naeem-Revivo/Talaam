@@ -1659,6 +1659,7 @@ const QuestionSessionPage = () => {
           questions={questions}
           currentIndex={currentIndex}
           currentState={currentState}
+          questionState={questionState}
           visitedIndices={visitedIndices}
           showQuestionNav={showQuestionNav}
           showExplanation={showExplanation}
@@ -1685,7 +1686,7 @@ const QuestionSessionPage = () => {
           mode={mode}
           onViewSummary={handleViewSummary}
           onReviewAnswers={handleReviewAnswers}
-          onExit={handleExit}
+          onExit={handleExitClick}
         />
       )}
 

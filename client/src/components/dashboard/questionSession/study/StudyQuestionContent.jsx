@@ -1,104 +1,74 @@
 import React, { useState } from 'react';
-import { analytics, watch, tick, cross } from '../icons';
 import { useLanguage } from '../../../../context/LanguageContext';
 import studentQuestionsAPI from '../../../../api/studentQuestions';
 import { showSuccessToast, showErrorToast } from '../../../../utils/toastConfig';
 import { cleanHtmlForDisplay } from '../../../../utils/textUtils';
 
-const OptionCard = ({ option, groupName, isSelected, disabled, onOptionChange, highlight }) => {
-  const language = useLanguage();
-  const dir = language === 'ar' ? 'rtl' : 'ltr'
-  const baseClass = 'w-full min-h-[50px] rounded-lg flex items-center px-3 md:px-4 py-2 border bg-white';
-  const borderClass = highlight
-    ? 'border-[#ED4122]'
-    : isSelected
-      ? 'border-[#ED4122]'
-      : 'border-[#E5E7EB]';
+const OptionCard = ({ option, isSelected, disabled, onOptionChange }) => {
+  const { language } = useLanguage();
+  const dir = language === 'ar' ? 'rtl' : 'ltr';
+  const cardClass = isSelected
+    ? 'border-[#75A9CC] bg-[#ECF4FA]'
+    : 'border-[#D4D4D4] bg-white';
 
   return (
-    <div className={`${baseClass} ${borderClass}`} dir={dir}>
-      <label className="flex items-center gap-2 md:gap-3 cursor-pointer w-full" dir="ltr">
-        <input
-          type="radio"
-          name={groupName}
-          value={option.id}
-          checked={isSelected}
-          onChange={() => onOptionChange(option.id)}
-          className="w-3 h-3 checked:w-2 checked:h-2 flex-shrink-0 appearance-none rounded-full border border-[#767676] checked:border-[#ED4122] checked:bg-[#ED4122] cursor-pointer checked:outline-none checked:ring-[1px] checked:ring-[#ED4122] checked:ring-offset-2"
-          disabled={disabled}
-        />
-        <span className="text-[14px] md:text-[16px] font-normal text-oxford-blue font-roboto flex-1">
-          <span className="font-medium">{option.id}.</span> {option.text}
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={() => onOptionChange(option.id)}
+      className={`w-full min-h-[62px] rounded-[12px] border-[1.5px] flex items-center px-6 py-3 text-left transition-colors ${cardClass} ${disabled ? 'cursor-default' : 'hover:bg-[#F8FAFC]'}`}
+      dir={dir}
+    >
+      <div className="flex items-center gap-3 w-full" dir="ltr">
+        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[12px] leading-[28px] font-medium font-roboto ${
+          isSelected ? 'bg-[#0B4A73] text-white border border-[#0B4A73]' : 'bg-white border border-[#E6EEF3] text-[#737373]'
+        }`}>
+          {option.id}
         </span>
-      </label>
-    </div>
+        <span className={`text-base font-normal font-roboto flex-1 ${
+          isSelected ? 'text-[#1F4E79]' : 'text-dashboard-dark'
+        }`}>
+          {option.text}
+        </span>
+      </div>
+    </button>
   );
 };
-const ReviewOptionCard = ({ option, groupName, isCorrect, isUserAnswer, userAnswerIsCorrect }) => {
-  const isChecked = isCorrect; // ONLY correct answer gets full checked look
-  // Only show incorrect styling if user selected this option AND their overall answer was incorrect
+const ReviewOptionCard = ({ option, isCorrect, isUserAnswer, userAnswerIsCorrect }) => {
   const isWrong = isUserAnswer && !isCorrect && !userAnswerIsCorrect;
 
-  // Card background + border
   const cardClass = isCorrect
-    ? "border border-[#ED4122] bg-[#C6D8D3]" // correct card style from screenshot
+    ? 'border-[#16A34A] bg-[#F0FDF4]'
     : isWrong
-      ? "border border-[#ED4122] bg-[#FDF0D5]" // wrong card style from screenshot
-      : "border border-[#E5E7EB] bg-white";
+      ? 'border-[#EF4444] bg-[#FEF2F2]'
+      : 'border-[#D4D4D4] bg-white';
 
   return (
-    <div
-      className={`w-full rounded-lg px-3 py-2 md:px-4 min-h-[50px] flex items-center ${cardClass}`}
-    >
-      <label className="flex items-center gap-3 w-full cursor-default">
-
-        {/* ====================== RADIO ====================== */}
-        <span
-          className={`
-            relative flex items-center justify-center
-            w-4 h-4 rounded-full border
-            ${isChecked ? "border-[#ED4122]" : isWrong ? "border-[#ED4122]" : "border-[#767676]"}
-            pointer-events-none
-          `}
-        >
-
-          {/* INNER DOT only for correct */}
-          {isChecked && (
-            <span className="w-2 h-2 bg-[#ED4122] rounded-full" />
-          )}
+    <div className={`w-full min-h-[62px] rounded-[12px] border-[1.5px] flex items-center px-6 py-3 ${cardClass}`}>
+      <div className="flex items-center gap-3 w-full">
+        <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-[#E6EEF3] text-[12px] leading-[28px] font-medium text-[#737373] font-roboto">
+          {option.id}
         </span>
-
-        {/* ====================== TEXT ====================== */}
-        <span className="text-[14px] md:text-[16px] font-normal text-oxford-blue flex-1">
-          <span className="font-medium">{option.id}.</span> {option.text}
+        <span className="text-base font-normal text-dashboard-dark font-roboto flex-1">
+          {option.text}
         </span>
-
-        {/* ====================== ICONS ====================== */}
         {isCorrect ? (
-          <img src={tick} alt="Correct" className="text-white bg-cinnebar-red rounded-full p-1" />
+          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border-2 border-[#15803D] text-[#15803D]">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+          </span>
         ) : isWrong ? (
-          <div>
-            <img src={cross} alt="Incorrect" className="text-white bg-cinnebar-red rounded-full p-1" />
-          </div>
+          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border-2 border-[#EF4444] text-[#EF4444]">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </span>
         ) : null}
-      </label>
+      </div>
     </div>
   );
 };
-
-
-
-const StatusPill = ({ isCorrect, label }) => (
-  <div className={`${isCorrect ? 'bg-[#ECFDF5]' : 'bg-[#FDF0D5]'} rounded-lg px-3 md:px-4 py-2 flex items-center gap-2`}>
-    <div className={`w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center flex-shrink-0 p-[6px] ${isCorrect ? 'bg-[#10B981]' : 'bg-[#ED4122]'}`}>
-      <img src={isCorrect ? tick : cross} alt={isCorrect ? 'Correct' : 'Incorrect'} className="w-3 h-3 md:w-4 md:h-4" />
-    </div>
-    <span className={`text-[12px] md:text-[16px] leading-[100%] font-normal font-roboto ${isCorrect ? 'text-[#047857]' : 'text-[#ED4122]'}`}>
-      {label}
-    </span>
-  </div>
-);
-
 const StudyQuestionContent = ({
   currentQuestion,
   currentState,
@@ -118,128 +88,110 @@ const StudyQuestionContent = ({
   const [showFlagModal, setShowFlagModal] = useState(false);
   const [flagReason, setFlagReason] = useState('');
   const [isFlagging, setIsFlagging] = useState(false);
-  const statusButtonClass = isCorrect ? 'bg-[#10B981] text-white' : 'bg-[#ED4122] text-white';
-  const statusButtonLabel = isCorrect ? t('dashboard.questionSession.correctAnswer') : t('dashboard.questionSession.incorrectAnswer');
-  const infoContainerClass = isCorrect ? 'bg-[#ECFDF5] border-l-4 border-[#10B981]' : 'bg-[#FDF0D5] border-l-4 border-[#ED4122]';
-  const infoTitleClass = isCorrect ? 'text-[#047857]' : 'text-[#ED4122]';
-
-  const optionGroupName = `answer-${currentQuestion.id}`;
-  const reviewGroupName = `answer-review-${currentQuestion.id}`;
+  const promptHtml = cleanHtmlForDisplay(currentQuestion.prompt || '');
+  const firstInlineImageMatch = promptHtml.match(/<img[^>]+src=["']([^"']+)["'][^>]*>/i);
+  const inlineImageSrc = firstInlineImageMatch?.[1] || '';
+  const questionImageSrc = (
+    currentQuestion?.image ||
+    currentQuestion?.imageUrl ||
+    currentQuestion?.questionImage ||
+    inlineImageSrc ||
+    ''
+  ).trim();
+  const promptWithoutInlineImages = promptHtml.replace(/<img[^>]*>/gi, '').trim();
+  const isMarkedForReview = Boolean(
+    currentState?.isMarked ||
+    currentQuestion?.isMarked ||
+    currentQuestion?.markedForReview ||
+    currentQuestion?.isFlagged
+  );
+  const explanationText =
+    currentState?.explanation ||
+    currentQuestion?.explanation ||
+    (correctOption && correctOption.explanation) ||
+    'This answer choice aligns with the underlying concept tested in the question.';
 
   return (
-    <div className="max-w-4xl mx-auto lg:ml-5" dir={dir}>
-      <div className="mb-4">
-        <div
-          dir="ltr"
-          className="text-[16px] md:text-[18px] font-normal text-oxford-blue font-roboto leading-[24px] tracking-[0%] text-left"
-          dangerouslySetInnerHTML={{ 
-            __html: cleanHtmlForDisplay(currentQuestion.prompt || '')
-          }}
-        />
-      </div>
-
-      <div className="mb-4">
-        <div className="space-y-3 mb-6 w-full flex flex-col items-start justify-center p-4 md:pl-8 bg-white shadow-content rounded-lg">
-          {currentQuestion.options.map((option) => {
-            const isSelected = option.id === currentState?.selectedOption;
-            const selectedForReview = showReview && option.id === selectedOption?.id;
-
-            return (
-              <OptionCard
-                key={option.id}
-                option={option}
-                groupName={optionGroupName}
-                isSelected={isSelected}
-                disabled={showReview}
-                onOptionChange={onOptionChange}
-                highlight={selectedForReview}
-              />
-            );
-          })}
-        </div>
-      </div>
-
-      {!showReview && (
-        <div className="flex justify-center md:justify-start mb-4">
-          <button
-            onClick={onSubmit}
-            disabled={!hasSelectedOption}
-            className={`w-full md:w-[316px] h-[50px] md:h-[60px] rounded-[8px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] transition ${hasSelectedOption ? 'bg-[#ED4122] text-white hover:opacity-90' : 'bg-[#F3F4F6] text-[#9CA3AF] cursor-not-allowed'
-              }`}
-          >
-            {t('dashboard.questionSession.submitAnswer')}
-          </button>
-        </div>
-      )}
-
-      {showReview && isCorrect && (
-        <div className="w-full md:w-[316px] mb-6 md:mb-10 h-[50px] md:h-[60px] rounded-[8px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] flex items-center justify-center text-center transition-colors shadow-button">
-          <span className="w-full h-full flex items-center justify-center gap-2 rounded-[8px] bg-[#10B981] text-white">
-            <img src={tick} alt="Correct" className="h-4 w-4" />
-            {t('dashboard.questionSession.correctAnswer')}
-          </span>
-        </div>
-      )}
-
-      {showReview && !isCorrect && (
-        <>
-          <div className="w-full md:w-[316px] mb-6 md:mb-10 h-[50px] md:h-[60px] rounded-[8px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] flex items-center justify-center text-center transition-colors shadow-button">
-            <span className={`w-full h-full flex items-center justify-center gap-2 rounded-[8px] ${statusButtonClass}`}>
-              <img src={cross} alt="Incorrect" className="h-4 w-4" />
-              {statusButtonLabel}
+    <div className="" dir={dir}>
+      <div className="mb-6 border bg-white border-[#E6EEF3] rounded-[16px] p-8">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-[30px]">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-[11px] bg-gradient-to-r from-[#032746] to-[#173B50] flex items-center justify-center text-white font-medium text-[14px] leading-[21px] font-roboto">
+              {currentQuestion.itemNumber}
+            </div>
+            <span className="text-[14px] font-normal text-[#525252] font-roboto">
+              Question {currentQuestion.itemNumber}
             </span>
           </div>
 
-          <div className={`mb-4 md:mb-6 w-full min-h-[110px] rounded-[14px] shadow-small justify-around flex flex-col md:flex-row items-start md:items-center ${infoContainerClass} p-4 md:p-0`}>
-            <div className="flex flex-col justify-center items-start md:items-center gap-2">
-              <div className={`text-[14px] md:text-[20px] leading-[25px] font-medium font-roboto ${infoTitleClass}`}>{statusButtonLabel}</div>
-              <div className="text-[12px] md:text-[18px] leading-[25px] font-normal text-oxford-blue font-roboto">{t('dashboard.questionSession.correctAnswerLabel')} {currentQuestion.correctAnswer}</div>
-            </div>
-
-            <div className="flex flex-col justify-center items-start md:items-center gap-2">
-              <div className="flex items-center gap-2">
-                <img src={analytics} alt="Analytics" className="w-4 h-4 md:w-5 md:h-5" />
-                <div className="text-[14px] md:text-[20px] leading-[25px] font-medium text-oxford-blue font-roboto">{currentQuestion.percentageCorrect ?? '--'}%</div>
-              </div>
-              <div className="text-[12px] md:text-[18px] leading-[25px] font-normal font-roboto">{t('dashboard.questionSession.answeredCorrectly')}</div>
-            </div>
-
-            <div className="flex flex-col justify-center items-start md:items-center gap-2">
-              <div className="flex items-center gap-2">
-                <img src={watch} alt="Time" className="w-4 h-4 md:w-5 md:h-5" />
-                <div className="text-[14px] md:text-[20px] leading-[25px] font-medium text-oxford-blue font-roboto">{currentQuestion.timeSpent || '--:--'}</div>
-              </div>
-              <div className="text-[12px]  md:text-[18px] leading-[25px] font-normal font-roboto">{t('dashboard.questionSession.timeSpent')}</div>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4 md:mb-6">
-            <StatusPill isCorrect={isCorrect} label={statusButtonLabel} />
-            <div>
-              <span className="text-[12px] md:text-[18px] leading-[24px] font-normal text-oxford-blue font-roboto">
-                {t('dashboard.questionSession.correctAnswerLabel')} {currentQuestion.correctAnswer}
-              </span>
-            </div>
-          </div>
-
-          <div className="mb-4 md:mb-6">
-            <div className="space-y-3 mb-4 w-full min-h-[300px] md:min-h-[400px] flex flex-col items-start justify-center p-4 md:pl-8 bg-white shadow-content rounded-lg">
-              {currentQuestion.options.map((option) => (
-                <ReviewOptionCard
-                  key={option.id}
-                  option={option}
-                  groupName={reviewGroupName}
-                  isCorrect={option.id === currentQuestion.correctAnswer}
-                  isUserAnswer={option.id === selectedOption?.id}
-                  userAnswerIsCorrect={isCorrect}
+          {isMarkedForReview && (
+            <div className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[10px] bg-[#FEF3C7] text-[#D97706]">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M7.44434 0.5L6.86719 1.29395L5.59863 3.03613L6.86719 4.7793L7.44434 5.57422H2.05566V7.65137C2.05566 8.07935 1.70533 8.42969 1.27734 8.42969C0.849549 8.42946 0.5 8.07921 0.5 7.65137V2.11133C0.5 1.6639 0.611812 1.23584 0.923828 0.923828C1.23584 0.611812 1.6639 0.5 2.11133 0.5H7.44434Z"
+                  fill="currentColor"
                 />
-              ))}
+              </svg>
+              <span className="text-[14px] leading-[21px] font-medium font-roboto">Marked for Review</span>
             </div>
-          </div>
+          )}
+        </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 mb-6" />
-        </>
-      )}
+        <div className={`grid gap-4 ${questionImageSrc ? 'grid-cols-1 md:grid-cols-[1fr_230px]' : 'grid-cols-1'}`}>
+          <div
+            dir="ltr"
+            className="text-[18px] font-normal text-[#0A0A0A] font-archivo leading-[27px] text-left"
+            dangerouslySetInnerHTML={{ __html: promptWithoutInlineImages || promptHtml }}
+          />
+          {questionImageSrc && (
+            <img
+              src={questionImageSrc}
+              alt="Question visual"
+              className="w-full h-[155px] object-cover rounded-[10px] border border-[#D4D4D4]"
+            />
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-3 mb-8">
+        {currentQuestion.options.map((option) => {
+          const isSelected = option.id === currentState?.selectedOption;
+
+          return (
+            showReview ? (
+              <ReviewOptionCard
+                key={option.id}
+                option={option}
+                isCorrect={option.id === currentQuestion.correctAnswer}
+                isUserAnswer={option.id === selectedOption?.id}
+                userAnswerIsCorrect={isCorrect}
+              />
+            ) : (
+              <OptionCard
+                key={option.id}
+                option={option}
+                isSelected={isSelected}
+                disabled={false}
+                onOptionChange={onOptionChange}
+              />
+            )
+          );
+        })}
+      </div>
+
+      <div className="flex justify-center md:justify-start mb-4">
+        <button
+          onClick={onSubmit}
+          disabled={!hasSelectedOption || showReview}
+          className={`w-full h-[48px] md:h-[60px] rounded-[10px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] transition ${
+            hasSelectedOption && !showReview
+              ? 'bg-gradient-to-r from-[#032746] to-[#0B4A73] text-white hover:opacity-90'
+              : 'bg-[#E5E7EB] text-[#A3A3A3] cursor-not-allowed'
+          }`}
+        >
+          {t('dashboard.questionSession.submitAnswer')}
+        </button>
+      </div>
 
       {showReview && (
         <>
@@ -254,64 +206,67 @@ const StudyQuestionContent = ({
       </button>
 
       {showExplanationPanel && (
-        <div className="lg:hidden mb-4 p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB]">
-            <div className="space-y-6">
-              <div>
-                <h4 className="text-[14px] md:text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-3">
-                  {t('dashboard.questionSession.explanation.correctAnswerExplanation')}
-                </h4>
-                <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%] mb-2">
-                  {t('dashboard.questionSession.explanation.answer')} {correctOption?.id}. {correctOption?.text}
-                </p>
-                <h5 className="text-[14px] md:text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-2">
-                  {t('dashboard.questionSession.explanation.explanationLabel')}
-                </h5>
-                <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
-                  {currentState?.explanation || currentQuestion?.explanation || (correctOption && correctOption.explanation) || 'This answer choice aligns with the underlying concept tested in the question.'}
-                </p>
-              </div>
+        <div className="lg:hidden mb-4 bg-[#F5F7FA] border border-[#D4D4D4] rounded-[12px] overflow-hidden">
+          <div className="px-4 py-3 border-b border-[#E5E7EB] bg-[#F3F4F6] flex items-center justify-between">
+            <h4 className="text-[24px] leading-[32px] font-bold text-oxford-blue font-archivo">
+              {t('dashboard.questionSession.explanation.title')}
+            </h4>
+            <div className="flex items-center gap-3">
+              <span className="text-[14px] font-medium text-[#16A34A] font-roboto">
+                Ans: {correctOption?.id || '--'}
+              </span>
+              <button onClick={onToggleExplanationPanel} className="text-[#94A3B8] hover:text-[#64748B]" aria-label="Close explanation">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
 
-              {selectedOption && selectedOption.id !== correctOption?.id && (
-                <div>
-                  <h4 className="text-[14px] md:text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-3">
-                    {t('dashboard.questionSession.yourAnswerExplanation')}
-                  </h4>
-                  <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%] mb-2">
-                    {t('dashboard.questionSession.explanation.answer')} {selectedOption.id}. {selectedOption.text}
+          <div className="p-4 space-y-3">
+            <div className="rounded-[12px] border border-[#A7F3D0] bg-[#ECFDF3] px-3 py-2.5">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#16A34A] text-white">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[10px] leading-[12px] tracking-[0.4px] uppercase font-bold text-[#16A34A] font-roboto">
+                    {t('dashboard.questionSession.explanation.correctAnswerExplanation')}
                   </p>
-                  <h5 className="text-[14px] md:text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%] mb-2">
-                    {t('dashboard.questionSession.consider')}
-                  </h5>
-                  <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
-                    Review why this option may not address the scenario described. Focus on differentiating the mechanisms.
+                  <p className="text-[24px] leading-[30px] text-[#14532D] font-normal font-roboto">
+                    {correctOption?.id}. {correctOption?.text}
                   </p>
                 </div>
-              )}
-
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-[14px] md:text-[16px] font-medium text-oxford-blue font-archivo leading-[24px] tracking-[0%]">
-                    {t('dashboard.questionSession.hints')}
-                  </h4>
-                  <button onClick={onToggleHint} className="text-[14px] font-roboto text-[#0369A1] hover:underline">
-                    {currentState.showHint ? t('dashboard.questionSession.hideHints') : t('dashboard.questionSession.showHints')}
-                  </button>
-                </div>
-                {currentState.showHint ? (
-                  <ul className="space-y-3">
-                    {currentQuestion.hints.map((hint, index) => (
-                      <li key={index} className="rounded-md bg-white p-3 text-[14px] text-[#4B5563] font-roboto border border-[#E5E7EB]">
-                        {hint}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto leading-[24px] tracking-[0%]">
-                    {t('dashboard.questionSession.revealHints')}
-                  </p>
-                )}
               </div>
             </div>
+
+            {selectedOption && selectedOption.id !== correctOption?.id && (
+              <div className="rounded-[12px] border border-[#FECACA] bg-[#FEF2F2] px-3 py-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#EF4444] text-white">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[10px] leading-[12px] tracking-[0.4px] uppercase font-bold text-[#EF4444] font-roboto">
+                      {t('dashboard.questionSession.yourAnswer')}
+                    </p>
+                    <p className="text-[24px] leading-[30px] text-[#B91C1C] font-normal font-roboto">
+                      {selectedOption.id}. {selectedOption.text}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div
+              className="text-[16px] leading-[29px] font-normal text-[#334155] font-roboto"
+              dangerouslySetInnerHTML={{ __html: cleanHtmlForDisplay(explanationText) }}
+            />
+          </div>
         </div>
           )}
         </>
@@ -335,17 +290,6 @@ const StudyQuestionContent = ({
                   </p>
                 </div>
               </div>
-            </div>
-          )}
-          {/* Show flag button only if not already flagged or if rejected */}
-          {(!currentQuestion.isFlagged || currentQuestion.flagStatus === 'rejected') && (
-            <div className="flex justify-end">
-              <button
-                onClick={() => setShowFlagModal(true)}
-                className="px-4 py-2 text-[14px] font-roboto text-[#ED4122] border border-[#ED4122] rounded-lg hover:bg-[#FEF2F2] transition"
-              >
-                {t('dashboard.questionSession.flagQuestion') || 'Flag Question'}
-              </button>
             </div>
           )}
           {/* Show pending status if flag is pending */}

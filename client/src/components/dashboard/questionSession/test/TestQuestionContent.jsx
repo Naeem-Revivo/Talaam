@@ -9,60 +9,86 @@ const TestQuestionContent = ({
   onOptionChange,
   onSubmit,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dir = language === 'ar' ? 'rtl' : 'ltr';
+  const promptHtml = cleanHtmlForDisplay(currentQuestion.prompt || '');
+  const firstInlineImageMatch = promptHtml.match(/<img[^>]+src=["']([^"']+)["'][^>]*>/i);
+  const inlineImageSrc = firstInlineImageMatch?.[1] || '';
+  const questionImageSrc = (
+    currentQuestion?.image ||
+    currentQuestion?.imageUrl ||
+    currentQuestion?.questionImage ||
+    inlineImageSrc ||
+    ''
+  ).trim();
+  const promptWithoutInlineImages = promptHtml.replace(/<img[^>]*>/gi, '').trim();
 
   return (
-    <div className="max-w-4xl mx-auto lg:ml-5">
-      <h2 className="text-[24px] md:text-[32px] lg:text-[36px] font-bold text-oxford-blue mb-6 font-archivo leading-tight tracking-[0%]">
-        {t('dashboard.questionSession.title')}
-      </h2>
+    <div dir={dir}>
+      <div className="mb-6 border bg-white border-[#E6EEF3] rounded-[16px] p-8">
+        <div className="flex items-start justify-between gap-3 mb-[30px]">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-[11px] bg-gradient-to-r from-[#032746] to-[#173B50] flex items-center justify-center text-white font-medium text-[14px] leading-[21px] font-roboto">
+              {currentQuestion.itemNumber}
+            </div>
+            <span className="text-[14px] font-normal text-[#525252] font-roboto">
+              Question {currentQuestion.itemNumber}
+            </span>
+          </div>
+        </div>
 
-      <div className="mb-4">
-        <div 
-          className="text-[16px] md:text-[18px] font-normal text-oxford-blue font-roboto leading-[24px] tracking-[0%]"
-          dangerouslySetInnerHTML={{ 
-            __html: cleanHtmlForDisplay(currentQuestion.prompt || '')
-          }}
-        />
+        <div className={`grid gap-4 ${questionImageSrc ? 'grid-cols-1 md:grid-cols-[1fr_230px]' : 'grid-cols-1'}`}>
+          <div
+            dir="ltr"
+            className="text-[18px] font-normal text-[#0A0A0A] font-archivo leading-[27px] text-left"
+            dangerouslySetInnerHTML={{ __html: promptWithoutInlineImages || promptHtml }}
+          />
+          {questionImageSrc && (
+            <img
+              src={questionImageSrc}
+              alt="Question visual"
+              className="w-full h-[155px] object-cover rounded-[10px] border border-[#D4D4D4]"
+            />
+          )}
+        </div>
       </div>
 
-      <div className="mb-4">
-        <div className="space-y-3 w-full flex flex-col items-start justify-center p-4 md:pl-8 bg-white shadow-content rounded-lg">
-          {currentQuestion.options.map((option) => {
-            const isSelected = option.id === currentState?.selectedOption;
+      <div className="space-y-3 mb-8">
+        {currentQuestion.options.map((option) => {
+          const isSelected = option.id === currentState?.selectedOption;
 
-            return (
-              <div
-                key={option.id}
-                className={`w-full min-h-[50px] rounded-lg border-2 flex items-center px-3 md:px-4 py-2 ${
-                  isSelected ? 'border-[#ED4122] bg-white' : 'border-[#E5E7EB] bg-white'
-                }`}
-              >
-                <label className="flex items-center gap-2 md:gap-3 cursor-pointer w-full">
-                  <input
-                    type="radio"
-                    name={`answer-${currentQuestion.id}`}
-                    value={option.id}
-                    checked={isSelected}
-                    onChange={() => onOptionChange(option.id)}
-                    className="w-4 h-4 md:w-5 md:h-5 text-[#EF4444] border-[#EF4444] focus:ring-[#EF4444] flex-shrink-0"
-                  />
-                  <span className="text-[14px] md:text-[16px] font-normal text-oxford-blue font-roboto flex-1">
-                    <span className="font-medium">{option.id}.</span> {option.text}
-                  </span>
-                </label>
+          return (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => onOptionChange(option.id)}
+              className={`w-full min-h-[62px] rounded-[12px] border-[1.5px] flex items-center px-6 py-3 text-left transition-colors ${
+                isSelected ? 'border-[#75A9CC] bg-[#ECF4FA]' : 'border-[#D4D4D4] bg-white hover:bg-[#F8FAFC]'
+              }`}
+            >
+              <div className="flex items-center gap-3 w-full" dir="ltr">
+                <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[12px] leading-[28px] font-medium font-roboto ${
+                  isSelected ? 'bg-[#0B4A73] text-white border border-[#0B4A73]' : 'bg-white border border-[#E6EEF3] text-[#737373]'
+                }`}>
+                  {option.id}
+                </span>
+                <span className={`text-base font-normal font-roboto flex-1 ${isSelected ? 'text-[#1F4E79]' : 'text-dashboard-dark'}`}>
+                  {option.text}
+                </span>
               </div>
-            );
-          })}
-        </div>
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex justify-center md:justify-start mb-4">
         <button
           onClick={onSubmit}
           disabled={!hasSelectedOption}
-          className={`w-full md:w-[316px] h-[50px] md:h-[60px] rounded-[8px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] transition ${
-            hasSelectedOption ? 'bg-[#ED4122] text-white hover:opacity-90' : 'bg-[#F3F4F6] text-[#9CA3AF] cursor-not-allowed'
+          className={`w-full h-[48px] md:h-[60px] rounded-[10px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] transition ${
+            hasSelectedOption
+              ? 'bg-gradient-to-r from-[#032746] to-[#0B4A73] text-white hover:opacity-90'
+              : 'bg-[#E5E7EB] text-[#A3A3A3] cursor-not-allowed'
           }`}
         >
           {t('dashboard.questionSession.submitAnswer')}

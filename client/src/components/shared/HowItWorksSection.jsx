@@ -1,59 +1,88 @@
 import React from 'react';
-import StepCard from './StepCard';
-import { addperson, bookcard } from '../../assets/svg';
+import { teamiconorange, playicon } from '../../assets/svg';
 
 const HowItWorksSection = ({ 
   title = "How It Works: 2 Simple Steps",
-  subtitle = "Simple steps to exam success",
+  subtitle = "Getting started is quick and easy",
   backgroundColor = "bg-light-gradient",
   steps = [
     {
-      stepNumber: "Step 1",
-      stepText: "text-orange-dark",
+      stepNumber: "1",
+      stepText: "text-white",
       title: "Sign Up",
-      description: "Create your account and unlock your tools.",
+      description: "Create your account and choose your study goals. No credit card required to start.",
       iconBgColor: "bg-orange-dark",
-      icon: <img src={addperson} alt="Sign Up" />
+      badgeColor: "bg-[#ED4122]",
+      icon: <img src={teamiconorange} alt="Sign Up" />
     },
     {
-      stepNumber: "Step 2",
-      stepText: "text-moonstone-blue", 
+      stepNumber: "2",
+      stepText: "text-white", 
       title: "Start Practicing",
-      description: "Solve questions, learn from explanations, and track your progress.",
+      description: "Jump right into practice sessions with immediate feedback and personalized insights.",
       iconBgColor: "bg-moonstone-blue",
-      icon: <img src={bookcard} alt="Start Practicing" />
+      badgeColor: "bg-[#0F2D46]",
+      icon: <img src={playicon} alt="Start Practicing" />
     }
   ]
 }) => {
   return (
-    <div className={`${backgroundColor} w-full mobile:h-auto tablet:h-auto laptop:h-[558px] mobile:py-12 tablet:py-16 laptop:py-0`}>
-      <div className="w-full mobile:h-auto tablet:h-auto laptop:h-full flex flex-col items-center justify-center mobile:gap-12 tablet:gap-16 laptop:gap-12 mobile:px-4 tablet:px-8 laptop:px-0">
+    <section className={`bg-[#F9FAFB] w-full py-12 md:py-16 lg:py-[96px]`}>
+      <div className="max-w-[1180px] mx-auto w-full px-4 md:px-8 lg:px-12 2xl:px-0">
         {/* Header */}
-        <div className="text-center flex flex-col items-center justify-center gap-6">
-          <h2 className="font-archivo font-bold text-oxford-blue mobile:text-[32px] mobile:leading-[120%] tablet:text-[44px] tablet:leading-[110%] laptop:text-[48px] laptop:leading-[100%] tracking-[0]">
+        <div className="text-center mb-10 md:mb-[64px]">
+          <h2 className="font-archivo font-bold text-text-dark text-[32px] md:text-[48px] leading-[48px] tracking-[-0.96px]">
             {title}
           </h2>
-          <p className="font-roboto text-oxford-blue font-normal mobile:text-[16px] mobile:leading-[140%] tablet:text-[18px] tablet:leading-[120%] laptop:text-[20px] laptop:leading-[100%] tracking-[0]">
+          <p className="mt-3 md:mt-4 font-roboto font-normal text-text-gray text-[14px] md:text-[20px] leading-[28px]">
             {subtitle}
           </p>
         </div>
-        
-        {/* Steps Cards */}
-        <div className="flex mobile:flex-col tablet:flex-col laptop:flex-row justify-center mobile:gap-8 tablet:gap-12 tablet:px-7 laptop:px-0 laptop:gap-[120px] laptop:pl-2 mobile:w-full tablet:w-full laptop:w-auto">
-          {steps.map((step, index) => (
-            <StepCard
-              key={index}
-              stepNumber={step.stepNumber}
-              stepText={step.stepText}
-              title={step.title}
-              description={step.description}
-              iconBgColor={step.iconBgColor}
-              icon={step.icon}
-            />
-          ))}
+
+        {/* Step Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 lg:gap-12">
+          {steps.map((step, index) => {
+            const badgeBg = step.badgeColor || (index === 0 ? 'bg-[#ED4122]' : 'bg-[#0F2D46]');
+            const iconBg = step.iconBgColor || (index === 0 ? 'bg-[#FFEEE8]' : 'bg-[#E5F0FF]');
+
+            return (
+              <div key={index} className="relative pt-5">
+                {/* Step Number Badge - overlapping top-left */}
+                <div
+                  className={`absolute -top-0 -left-6 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full ${badgeBg} flex items-center justify-center shadow-md`}
+                >
+                  <span className="font-archivo font-bold text-white text-[18px] md:text-[20px]">
+                    {step.stepNumber?.replace('Step ', '') || index + 1}
+                  </span>
+                </div>
+
+                {/* Card */}
+                <div className="bg-white border-[2px] border-[#F3F4F6] rounded-[16px] px-8 py-10 md:px-10 md:py-12 flex flex-col items-center text-center gap-4">
+                  {/* Icon */}
+                  <div
+                    className={`w-14 h-14 md:w-[64px] md:h-[64px] rounded-[16px] ${iconBg} flex items-center justify-center`}
+                  >
+                    <span>
+                      {step.icon}
+                    </span>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="font-archivo font-bold text-text-dark text-[22px] md:text-[26px] leading-[32px]">
+                    {step.title}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="font-roboto font-normal text-text-gray text-[13px] md:text-[16px] leading-[26px] max-w-[380px]">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

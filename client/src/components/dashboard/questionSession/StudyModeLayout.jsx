@@ -9,6 +9,7 @@ const StudyModeLayout = ({
   questions,
   currentIndex,
   currentState,
+  questionState,
   visitedIndices,
   showQuestionNav,
   showExplanation,
@@ -56,13 +57,14 @@ const StudyModeLayout = ({
         <StudyQuestionNavigator
           questions={questions}
           currentIndex={currentIndex}
+          questionState={questionState}
           showQuestionNav={showQuestionNav}
           visitedIndices={visitedIndices}
           onGoToIndex={onGoToIndex}
           onCloseQuestionNav={onCloseQuestionNav}
         />
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:pl-6 lg:pr-[89px] lg:py-4">
           <StudyQuestionContent
             currentQuestion={currentQuestion}
             currentState={currentState}
@@ -97,6 +99,7 @@ const StudyModeLayout = ({
         currentIndex={currentIndex}
         totalQuestions={totalQuestions}
         onNavigate={onNavigate}
+        onExit={onExit}
         onPause={onPause}
         isPauseDisabled={isPauseDisabled}
       />
