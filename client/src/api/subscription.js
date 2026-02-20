@@ -35,7 +35,12 @@ const subscriptionAPI = {
   // GET /api/subscription/me
   getMySubscription: async () => {
     try {
-      const response = await axiosClient.get('/subscription/me');
+      const response = await axiosClient.get('/subscription/me', {
+        headers: {
+          'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+        },
+      });
       return response.data;
     } catch (error) {
       // If 404 (not found), return a structured response instead of throwing

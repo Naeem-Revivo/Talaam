@@ -19,6 +19,19 @@ export const RoleRoute = ({ allow = [] }) => {
   const { isAuthenticated, user } = useSelector((state) => state.auth || {});
   const [checkingSubscription, setCheckingSubscription] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(null);
+  const getCachedSubscriptionStatus = () => {
+    const raw =
+      localStorage.getItem('hasActiveSubscription') ??
+      sessionStorage.getItem('hasActiveSubscription');
+    if (raw === 'true') return true;
+    if (raw === 'false') return false;
+    return null;
+  };
+  const cacheSubscriptionStatus = (isActive) => {
+    const value = isActive ? 'true' : 'false';
+    localStorage.setItem('hasActiveSubscription', value);
+    sessionStorage.setItem('hasActiveSubscription', value);
+  };
 
   // Normalize role from Redux user
   // Backend currently uses 'student' for regular users → map to 'user' to match existing routes
@@ -45,14 +58,17 @@ export const RoleRoute = ({ allow = [] }) => {
             sub.paymentStatus === 'Paid' &&
             new Date(sub.expiryDate) > new Date();
           setHasActiveSubscription(isActive);
+          cacheSubscriptionStatus(isActive);
         } else {
           setHasActiveSubscription(false);
+          cacheSubscriptionStatus(false);
         }
       } catch (error) {
         console.error('Error checking subscription:', error);
-        // Don't force a "not subscribed" redirect on transient API/network failures.
-        // Explicit negative responses are handled in the success branch above.
-        setHasActiveSubscription(null);
+        // Avoid false redirects on transient API/cache/network failures.
+        // Only trust cached "true"; otherwise keep guard neutral.
+        const cachedStatus = getCachedSubscriptionStatus();
+        setHasActiveSubscription(cachedStatus === true ? true : null);
       } finally {
         setCheckingSubscription(false);
       }
