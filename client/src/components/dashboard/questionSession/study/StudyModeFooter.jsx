@@ -1,98 +1,88 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useLanguage } from '../../../../context/LanguageContext';
 
-const StudyModeFooter = ({ currentIndex, totalQuestions, onNavigate, onExit, onPause, isPauseDisabled = false }) => {
+const StudyModeFooter = ({ currentIndex, totalQuestions, onNavigate, onExit }) => {
   const { t } = useLanguage();
-  const [studentEmail, setStudentEmail] = useState('');
-  const [studentId, setStudentId] = useState('');
-
-  // Load student email and ID from stored user object
-  useEffect(() => {
-    try {
-      const stored =
-        localStorage.getItem('user') || sessionStorage.getItem('user');
-      if (stored) {
-        const user = JSON.parse(stored);
-        const email = user?.email || '';
-        const id =
-          user?.shortId ||
-          user?.studentId ||
-          user?.studentID ||
-          user?.id ||
-          user?._id ||
-          '';
-        setStudentEmail(email);
-        setStudentId(id);
-      }
-    } catch (err) {
-      // Ignore parse errors
-      setStudentEmail('');
-      setStudentId('');
-    }
-  }, []);
-
-  // Format student ID as "fb4ef...174247" (first 5 chars + ... + last 6 chars)
-  const formatStudentId = (id) => {
-    if (!id || id.length <= 11) return id;
-    const firstPart = id.substring(0, 5);
-    const lastPart = id.substring(id.length - 6);
-    return `${firstPart}...${lastPart}`;
-  };
 
   return (
-    <div className="fixed md:relative bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] px-4 md:px-6 py-3 md:py-4 z-30 shadow-footer md:shadow-none">
-      <div className="md:hidden flex items-center justify-between gap-2 mb-4">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#D4D4D4] px-4 md:px-[89px] py-3 md:py-5 z-30 shadow-footer">
+      <div className="md:hidden flex items-center justify-between gap-2 mb-3">
         <button
           onClick={() => onNavigate(-1)}
           disabled={currentIndex === 0}
-          className={`flex-1 px-3 py-2 rounded text-[14px] font-normal font-roboto transition-colors ${
-            currentIndex === 0 ? 'text-[#9CA3AF] cursor-not-allowed bg-[#F3F4F6]' : 'text-oxford-blue bg-[#F3F4F6] hover:bg-[#E5E7EB]'
+          aria-label={t('dashboard.questionSession.actions.previousQuestion')}
+          className={`flex-1 h-12 rounded-[10px] flex items-center justify-center gap-2 text-[14px] font-bold font-roboto transition-colors ${
+            currentIndex === 0 ? 'text-[#A3A3A3] cursor-not-allowed bg-[#F8FAFC]' : 'text-oxford-blue bg-[#F3F4F6] hover:bg-[#E5E7EB]'
           }`}
         >
-          {t('dashboard.questionSession.actions.previous')}
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span>{t('dashboard.questionSession.actions.previousQuestion')}</span>
         </button>
         <button
           onClick={() => onNavigate(1)}
           disabled={currentIndex === totalQuestions - 1}
-          className={`flex-1 px-3 py-2 rounded text-[14px] font-normal font-roboto transition-colors ${
-            currentIndex === totalQuestions - 1 ? 'text-[#9CA3AF] cursor-not-allowed bg-[#F3F4F6]' : 'text-oxford-blue bg-[#F3F4F6] hover:bg-[#E5E7EB]'
+          aria-label={t('dashboard.questionSession.actions.nextQuestion')}
+          className={`flex-1 h-12 rounded-[10px] flex items-center justify-center gap-2 text-[14px] font-bold font-roboto transition-colors ${
+            currentIndex === totalQuestions - 1 ? 'text-[#A3A3A3] cursor-not-allowed bg-[#F8FAFC]' : 'text-oxford-blue bg-[#F3F4F6] hover:bg-[#E5E7EB]'
           }`}
         >
-          {t('dashboard.questionSession.actions.next')}
+          <span>{t('dashboard.questionSession.actions.nextQuestion')}</span>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </button>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 md:gap-10">
-        {/* Student Info - Left Corner */}
-        {(studentEmail || studentId) && (
-          <div className="hidden md:flex flex-col items-start">
-            {studentEmail && (
-              <span className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto">
-                {studentEmail}
-              </span>
-            )}
-            {studentId && (
-              <span className="text-[12px] md:text-[14px] font-normal text-dark-gray font-roboto">
-                Student ID: <span className="font-semibold text-oxford-blue">{formatStudentId(studentId)}</span>
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Action Buttons - Right Side */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 md:gap-10">
+      <div className="hidden md:flex items-center justify-between">
         <button
-          onClick={onPause}
-          disabled={isPauseDisabled}
-          className={`w-full sm:w-auto px-4 py-2 rounded-lg text-[14px] md:text-[16px] font-normal font-roboto transition-opacity ${
-            isPauseDisabled
-              ? 'bg-[#F3F4F6] text-[#9CA3AF] cursor-not-allowed'
-              : 'bg-[#C6D8D3] text-oxford-blue hover:opacity-90'
+          onClick={() => onNavigate(-1)}
+          disabled={currentIndex === 0}
+          aria-label={t('dashboard.questionSession.actions.previousQuestion')}
+          className={`px-8 h-12 py-2 rounded-[14px] flex gap-2 items-center text-base font-bold tracking-[-0.31px] font-roboto transition-colors shadow-sm shadow-[#0000000D] ${
+            currentIndex === 0
+              ? 'text-[#A3A3A3] cursor-not-allowed bg-[#F8FAFC]'
+              : 'text-oxford-blue bg-[#F3F4F6] hover:bg-[#E5E7EB]'
           }`}
         >
-          {t('dashboard.questionSession.actions.pauseSession') || 'Pause Session'}
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span>{t('dashboard.questionSession.actions.previousQuestion')}</span>
         </button>
-        </div>
+
+        <button
+          onClick={onExit}
+          className="text-[16px] leading-[24px] font-bold text-[#A3A3A3] font-roboto hover:text-[#737373] transition-colors"
+        >
+          {t('dashboard.questionSession.actions.exitSession')}
+        </button>
+
+        <button
+          onClick={() => onNavigate(1)}
+          disabled={currentIndex === totalQuestions - 1}
+          aria-label={t('dashboard.questionSession.actions.nextQuestion')}
+          className={`px-8 h-12 py-2 rounded-[14px] flex gap-2 items-center text-base font-bold tracking-[-0.31px] font-roboto transition-colors shadow-sm shadow-[#0000000D] ${
+            currentIndex === totalQuestions - 1
+              ? 'text-[#A3A3A3] cursor-not-allowed bg-[#F8FAFC]'
+              : 'bg-[#EF4444] text-white hover:opacity-90'
+          }`}
+        >
+          <span>{t('dashboard.questionSession.actions.nextQuestion')}</span>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="md:hidden flex justify-center mt-1">
+        <button
+          onClick={onExit}
+          className="text-[14px] leading-[21px] font-bold text-[#A3A3A3] font-roboto hover:text-[#737373] transition-colors"
+        >
+          {t('dashboard.questionSession.actions.exitSession')}
+        </button>
       </div>
     </div>
   );

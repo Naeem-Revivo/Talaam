@@ -5,7 +5,7 @@ import ProductsPage from '../pages/ProductsPage';
 import AboutPage from '../pages/AboutPage';
 import ContactPage from '../pages/ContactPage';
 import QuestionBankPage from '../pages/QuestionBankPage';
-import SignUpFreePage from '../pages/SignUpFreePage';
+
 import CreateAccountPage from '../pages/CreateAccountPage';
 import VerifyEmailPage from '../pages/VerifyEmailPage';
 import ProfilePage from '../pages/ProfilePage';
@@ -35,6 +35,7 @@ import EditUserPage from '../pages/admin/EditUserPage';
 import UserDetailPage from '../pages/admin/UserDetailPage';
 import { RoleRoute, ProtectedRoute } from './ProtectedRoute';
 import { PublicRoute } from './PublicRoute';
+import AuthLayout from '../components/auth/AuthLayout';
 import ClassificationManagement from '../pages/admin/ClassificationManagementPage';
 import AdminQuestionBankPage from '../pages/admin/QuestionBankPage';
 import QuestionManagementPage from '../pages/admin/QuestionManagementPage';
@@ -104,6 +105,8 @@ import DraftExplanationPage from '../pages/Explainer/DraftExplanation';
 import ExplainerAssignedQuestions from '../pages/Explainer/ExplainerAssignedQuestions';
 import ExplainerViewQuestion from '../pages/Explainer/ExplainerViewQuestion';
 import AccountSettingPage from '../pages/dashboard/AccountSettingPage';
+import ChangePasswordPage from '../pages/dashboard/ChangePasswordPage';
+import VerifyIdentityPage from '../pages/dashboard/VerifyIdentityPage';
 import ProcessorQuestionBank from '../pages/Processor/ProcessorQuestionBank';
 import SubscriptionBillingPage from '../pages/dashboard/SubscriptionBillingPage';
 import StudentAnnouncements from '../pages/dashboard/StudentAnnouncements';
@@ -134,10 +137,11 @@ export const AppRoutes = () => {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/question-banks" element={<QuestionBankPage />} />
       {/* Public Auth Routes - Redirect authenticated users to dashboard */}
-      <Route path="/create-account" element={<CreateAccountPage />} />
       <Route element={<PublicRoute />}>
-      <Route path="/signupfree" element={<SignUpFreePage />} />
+        <Route element={<AuthLayout />}>
+          <Route path="/create-account" element={<CreateAccountPage />} />
       <Route path="/login" element={<LoginPage />} />
+        </Route>
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/forgot-modal" element={<ForgotModalPage />} />
       <Route path="/set-new-password" element={<SetNewPasswordPage />} />
@@ -145,6 +149,7 @@ export const AppRoutes = () => {
       </Route>
       
       {/* Profile page - can be accessed by authenticated users or during signup flow */}
+      
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
@@ -161,6 +166,8 @@ export const AppRoutes = () => {
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="setting" element={<AccountSettingPage />} />
+          <Route path="settings/change-password" element={<ChangePasswordPage />} />
+          <Route path="settings/verify-identity" element={<VerifyIdentityPage />} />
           <Route path="practice" element={<PracticePage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="review" element={<ReviewPage />} />

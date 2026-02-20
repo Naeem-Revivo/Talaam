@@ -1,17 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { mind, book, add, feature, lock, arrowup, tick } from "../../assets/svg";
+import { useSelector, useDispatch } from "react-redux";
+import { book, add, lock, arrowup, tick, navlogo } from "../../assets/svg";
+import { user as userIcon } from "../../assets/svg/dashboard/header";
+import { setting as settings, logout as logoutIcon } from "../../assets/svg/dashboard";
 import { useLanguage } from "../../context/LanguageContext";
+import { logout as logoutAction } from "../../store/slices/authSlice";
+import { showLogoutToast } from "../../utils/toastConfig";
 import plansAPI from "../../api/plans";
 import subscriptionAPI from "../../api/subscription";
-import { showErrorToast } from "../../utils/toastConfig";
 import Loader from "../common/Loader";
-import Header from "../dashboard/Header";
+import Footer from "../Footer";
 
 const QuestionBankDashboard = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isArabic = language === "ar";
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const { isAuthenticated, user } = useSelector((state) => state.auth || {});
   const [plans, setPlans] = useState([]);
@@ -19,9 +24,43 @@ const QuestionBankDashboard = () => {
   const [error, setError] = useState(null);
   const [checkingSub, setCheckingSub] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
   // Check if user is a student/user
   const isStudent = isAuthenticated && (user?.role === 'user' || user?.role === 'student');
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Get display name
+  const getDisplayName = () => {
+    if (user?.name && user.name.trim()) return user.name.trim();
+    if (user?.fullName && user.fullName.trim()) return user.fullName.trim();
+    if (user?.email) {
+      const emailPart = user.email.split("@")[0];
+      return emailPart.replace(/[._-]/g, " ").split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+    }
+    return "User";
+  };
+
+  const handleLogout = () => {
+    dispatch(logoutAction());
+    setIsUserMenuOpen(false);
+    showLogoutToast(t("toast.message.logoutSuccess") || "You have been logged out successfully.", {
+      title: t("toast.title.logout") || "Logout Successful",
+      isAuth: true,
+    });
+    setTimeout(() => navigate("/login", { replace: true }), 1500);
+  };
 
   useEffect(() => {
     const loadPlans = async () => {
@@ -119,19 +158,22 @@ const QuestionBankDashboard = () => {
   const content = (
     <>
       {/* Title and Subtitle */}
-      <div className="w-full h-auto md:h-auto lg:h-[277px] bg-soft-orange-fade flex items-center justify-center py-8 md:py-10 lg:py-0">
-        <div className="text-center px-4 md:px-6 lg:px-0">
-          <h1 className="text-oxford-blue font-archivo font-bold text-[32px] md:text-[50px] lg:text-[70px] leading-[120%] md:leading-[105%] lg:leading-[91px] tracking-[0] align-middle">
-            {t("questionBanks.hero.title")}
+      <div className="w-full bg-gradient-to-b from-[#ED41220A] to-[#ED41220A] py-10 md:py-14 lg:py-[72px]">
+        <div className="max-w-[1180px] mx-auto px-4 md:px-8 lg:px-12 2xl:px-0">
+          <div className="flex flex-col justify-start w-fit mx-auto">
+          <h1 className="font-archivo font-black text-center text-[32px] md:text-[40px] lg:text-[72px] leading-[90px] tracking-[-2.96px]">
+            <span className="text-[#0F172A]">{t("questionBanks.hero.title")} </span>
+            <span className="text-[#ED4122]">{t("questionBanks.hero.titleHighlight")}</span>
           </h1>
-          <p className="font-roboto font-normal text-[14px] md:text-[15px] lg:text-[16px] leading-[140%] md:leading-[130%] lg:leading-[25.6px] tracking-[0] align-middle text-oxford-blue mt-2 px-4 md:px-8 lg:px-0 max-w-[800px] mx-auto">
+          <p className="font-roboto font-normal text-start text-[14px] md:text-[20px] leading-[32px] text-text-gray mt-3 max-w-[516px]">
             {t("questionBanks.hero.subtitle")}
           </p>
+          </div>
         </div>
       </div>
 
       {/* Plans and Exams Cards Grid */}
-      <div className="w-full min-h-[400px] bg-soft-blue-green flex flex-col items-center justify-center py-6 sm:py-8 md:py-10 lg:py-12 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12">
+      <div className="w-full min-h-[400px] flex flex-col items-center justify-center py-6 sm:py-8 md:py-10 lg:py-12 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12">
         <div className="w-full max-w-[1280px] grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-6 lg:gap-8 xl:gap-x-[145px] xl:gap-y-[30px]">
           {loading ? (
             <div className="col-span-full flex justify-center py-10">
@@ -192,8 +234,8 @@ const QuestionBankDashboard = () => {
                 >
                   <div className="w-full h-full p-4 sm:p-5 md:p-6 flex flex-col justify-between gap-4 sm:gap-6">
                     {/* Top Section - Icon, Title, Status */}
-                    <div className="flex items-start sm:items-center justify-between w-full gap-2 sm:gap-3 md:gap-4">
-                      <div className="flex items-center gap-2 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-7 flex-1 min-w-0">
+                    <div className="flex items-start justify-between w-full gap-2 sm:gap-3 md:gap-4">
+                      <div className="flex flex-col items-start gap-2 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-7 flex-1 min-w-0">
                         <div
                           className={`${iconBgColor} rounded-xl flex items-center justify-center flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-auto xl:h-auto p-2 sm:p-2.5 md:p-3 lg:p-0`}
                         >
@@ -203,11 +245,11 @@ const QuestionBankDashboard = () => {
                           <h3 className="text-oxford-blue font-bold text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl truncate leading-tight">
                             {item.name}
                           </h3>
-                          <span className="text-dark-gray font-roboto text-xs sm:text-sm md:text-base mt-0.5 sm:mt-1 break-words">
+                          {/* <span className="text-dark-gray font-roboto text-xs sm:text-sm md:text-base mt-0.5 sm:mt-1 break-words">
                             {item.price !== undefined && item.price !== null 
                               ? `SAR ${parseFloat(item.price).toFixed(2)} / ${item.duration || 'plan'}` 
                               : item.duration ? item.duration : ''}
-                          </span>
+                          </span> */}
                         </div>
                       </div>
                       <div
@@ -226,19 +268,19 @@ const QuestionBankDashboard = () => {
                     <div className="w-full flex flex-col sm:flex-row gap-2 sm:gap-3">
                       <button
                         onClick={() => handleSubscribe(item.id)}
-                        className="flex-1 min-h-[40px] sm:h-[44px] md:h-[48px] lg:h-[54px] rounded-lg bg-gradient-to-r from-orange-dark to-orange-light text-white hover:opacity-90 transition-opacity font-archivo font-semibold text-[10px] sm:text-xs md:text-sm lg:text-[14px] leading-tight tracking-[0] align-middle uppercase flex items-center justify-center gap-1.5"
+                        className="flex-1 min-h-[40px] sm:h-[44px] md:h-[48px] lg:h-[54px] rounded-[18px] bg-gradient-to-b from-orange-dark to-orange-light text-white hover:opacity-90 transition-opacity font-archivo font-semibold text-[10px] sm:text-xs md:text-sm lg:text-[14px] leading-tight tracking-[0] align-middle uppercase flex items-center justify-center gap-1.5"
                       >
                         {buttonText === t("questionBanks.exams.upgradeToAccess") && (
                           <img src={arrowup} alt="" className="w-[8px] h-[10px] sm:w-[9px] sm:h-[11px] md:w-[11px] md:h-[13px] lg:w-[12px] lg:h-[14px] flex-shrink-0" />
                         )}
                         <span className="truncate">{buttonText}</span>
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => navigate("/products")}
                         className="flex-1 min-h-[40px] sm:h-[44px] md:h-[48px] lg:h-[54px] rounded-lg bg-white border-2 border-orange-dark text-orange-dark hover:bg-orange-dark hover:text-white transition-colors font-archivo font-semibold text-[10px] sm:text-xs md:text-sm lg:text-[14px] leading-tight tracking-[0] align-middle uppercase"
                       >
                         {t("questionBanks.exams.moreDetail")}
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                 </div>
@@ -250,22 +292,83 @@ const QuestionBankDashboard = () => {
     </>
   );
 
-  // If student is logged in, show with dashboard header only (no sidebar)
+  // Custom QBank header for student view
+  const qbankHeader = (
+    <header className="bg-white sticky top-0 z-50 w-full h-[96px]">
+      <div className="w-full max-w-[1180px] mx-auto  px-4 md:px-8 lg:px-12 2xl:px-0">
+      {/* Top gradient line */}
+      {/* <div className="w-full h-[3px] bg-gradient-to-r from-[#3B82F6] via-[#6366F1] to-[#8B5CF6]" /> */}
+      <div className="flex items-center w-full justify-between">
+        {/* Left - Logo */}
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
+          <img src={navlogo} alt="Taalam" className="h-[80px] w-[97px]" />
+        </div>
+
+        {/* Center - Title */}
+        <h1 className="absolute left-1/2 -translate-x-1/2 font-archivo font-medium text-[#DC2626] text-base tracking-[-0.31px]">
+          {t("questionBanks.header.title")}
+        </h1>
+
+        {/* Right - User */}
+        <div className="flex items-center relative" ref={menuRef}>
+          <button
+            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+            className="flex items-center gap-2.5 border border-[#032746] rounded-[16px] px-4 h-[50px] hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-[#F1F5F9] flex items-center justify-center">
+              <img src={userIcon} alt="User" className="w-5 h-5" />
+            </div>
+            <span className="font-archivo font-semibold text-[#0F172A] text-[13px] md:text-[14px] leading-[100%] tracking-[0] hidden sm:inline uppercase">
+              {getDisplayName()}
+            </span>
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" className="ml-1 hidden sm:block">
+              <path d="M1 1L5 5L9 1" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+
+          {/* User Dropdown */}
+          {isUserMenuOpen && (
+            <div className="absolute top-full right-0 mt-2 w-[180px] bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+              <div className="p-2">
+                <button
+                  onClick={() => { navigate("/dashboard/setting"); setIsUserMenuOpen(false); }}
+                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-md transition-colors"
+                >
+                  <img src={settings} alt="Settings" className="w-5 h-5" />
+                  <span className="text-[14px] text-gray-700 font-roboto">{t("dashboard.header.settings") || "Settings"}</span>
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-md transition-colors"
+                >
+                  <img src={logoutIcon} alt="Logout" className="w-5 h-5" />
+                  <span className="text-[14px] text-[#EF4444] font-roboto">{t("dashboard.header.logout") || "Logout"}</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        </div>
+      </div>
+    </header>
+  );
+
+  // If student is logged in, show with custom QBank header
   if (isStudent) {
     return (
-      <div className="flex flex-col h-screen overflow-hidden">
-        {/* Header */}
-        <Header onToggleSidebar={() => {}} showSidebarToggle={false} />
+      <div className="flex flex-col min-h-screen">
+        {qbankHeader}
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50">
+        <main className="flex-1 bg-gray-50">
           {content}
         </main>
+
+        <Footer />
       </div>
     );
   }
 
-  // If not a student, show without dashboard header
+  // If not a student, show without header
   return content;
 };
 

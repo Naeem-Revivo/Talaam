@@ -14,7 +14,7 @@ const ReviewTable = ({
 
   if (data.length === 0) {
     return (
-      <div className="hidden lg:block bg-white rounded-lg overflow-hidden border border-[#E5E7EB] shadow-dashboard w-full max-w-[1120px]">
+      <div className="bg-white rounded-lg overflow-hidden border border-[#E5E7EB] shadow-dashboard w-full max-w-[1120px]">
         <div className="p-8 text-center text-oxford-blue">
           {emptyMessage}
         </div>
@@ -23,15 +23,15 @@ const ReviewTable = ({
   }
 
   return (
-    <div className="hidden lg:block bg-white rounded-lg overflow-hidden border border-[#E5E7EB] shadow-dashboard w-full max-w-[1120px]">
+    <div className="bg-white rounded-[24px] overflow-hidden border-2 border-[#E2E8F0] shadow-dashboard w-full">
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+        <table className="w-full">
           <thead>
-            <tr className="bg-oxford-blue text-center">
+            <tr className="bg-[#E6EEF3] text-start">
               {columns.map((column, index) => (
                 <th
                   key={index}
-                  className="px-4 md:px-6 py-3 md:py-4 text-[16px] font-archivo font-medium leading-[16px] text-white"
+                  className="py-3 md:py-4 px-4 md:px-6 text-[14px] font-roboto text-start font-bold leading-[21px] text-[#475569]"
                 >
                   {column}
                 </th>
@@ -56,7 +56,7 @@ const ReviewTable = ({
               return (
                 <tr
                   key={item.id || index}
-                  className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition last:border-b-0"
+                  className="border-b border-[#E5E5E5] hover:bg-[#F9FAFB] transition last:border-b-0"
                 >
                   <td className="px-4 md:px-6 py-3 md:py-4 text-[14px] font-roboto font-normal leading-[100%] tracking-[0%] text-center text-oxford-blue">
                     {item.shortId || item.id}

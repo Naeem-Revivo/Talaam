@@ -60,14 +60,14 @@ const Sidebar = ({ isOpen, onClose }) => {
     <>
       {/* Sidebar - Fixed on mobile, always visible on desktop */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 bg-oxford-blue h-screen overflow-y-auto transition-transform duration-300 ease-in-out lg:relative lg:z-auto lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 bg-oxford-blue rounded-r-[14px] h-screen overflow-y-auto transition-transform duration-300 ease-in-out lg:relative lg:z-auto lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        } w-64`}
+        } w-[312px]`}
       >
         <div className="">
           {/* Logo */}
-          <div className="mb-8 p-4 pt-4 flex justify-center flex-col items-start border-b border-white/10 pb-4">
-            <img src={logodash} alt="Logo" className="" />
+          <div className="p-4 flex justify-center flex-col items-start border-b h-[96px] border-white/10">
+            <img src={logodash} alt="Logo" className="h-[60px] w-[100px]" />
           </div>
           {/* Navigation Menu */}
           <nav className="space-y-2 p-3">
@@ -78,15 +78,16 @@ const Sidebar = ({ isOpen, onClose }) => {
                   key={item.path}
                   to={item.path}
                   onClick={handleLinkClick}
-                  className={`relative flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full max-w-[256px] h-[48px] ${
+                  className={`relative flex items-center justify-between gap-3 px-4 py-3 rounded-[14px] transition-all duration-200 w-full max-w-[280px] h-[56px] ${
                     active
                       ? 'bg-white text-oxford-blue'
                       : 'text-white hover:bg-blue-900'
                   }`}
                 >
-                  {active && (
+                  {/* {active && (
                     <div className="absolute left-0 top-0 h-full w-[5px] bg-orange-dark rounded-l-lg"></div>
-                  )}
+                  )} */}
+                  <div className="flex items-center gap-3">
                   {item.path === '/dashboard/announcements' ? (
                     <svg
                       width="24"
@@ -115,11 +116,19 @@ const Sidebar = ({ isOpen, onClose }) => {
                     <img 
                       src={active ? item.iconBlue : item.icon} 
                       alt={t(item.label)} 
-                      className="w-6 h-6" 
+                      className="w-4 h-4" 
                     />
                   )}
-                  <span className="font-medium">{t(item.label)}</span>
+                  <span className="text-base font-normal font-roboto">{t(item.label)}</span>
+                  </div>
+                  {
+                    active && (
+                      <div className="h-full w-[6px] bg-[#032746] rounded-full"></div>
+                    )
+                  }
                 </NavLink>
+
+                
               );
             })}
           </nav>

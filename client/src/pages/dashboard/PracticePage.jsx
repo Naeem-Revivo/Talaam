@@ -16,8 +16,9 @@ import BeginSessionButton from '../../components/dashboard/PracticePage/componen
 const PracticePage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [sessionMode, setSessionMode] = useState('study'); // 'test' or 'study'
-  const [questionStatus, setQuestionStatus] = useState('solved'); 
+  const [sessionMode, setSessionMode] = useState('test'); // 'test' or 'study'
+  const [questionStatus, setQuestionStatus] = useState('new'); // 'new' or 'solved'
+  const [showExplanationAfterSubmit, setShowExplanationAfterSubmit] = useState(true); 
   const [selectedStatuses, setSelectedStatuses] = useState({
     incorrect: false,
     flagged: false,
@@ -28,7 +29,7 @@ const PracticePage = () => {
   const [selectedSubtopics, setSelectedSubtopics] = useState({});
   const [allTopics, setAllTopics] = useState([]); // Store all topics for "select all" functionality
   const [sessionSize, setSessionSize] = useState('20');
-  const [timeLimit, setTimeLimit] = useState('30'); // Time limit in minutes for test mode
+  const [timeLimit, setTimeLimit] = useState('2'); // Time limit in minutes for test mode
   const [subjects, setSubjects] = useState([]);
   const [topics, setTopics] = useState([]);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
@@ -422,7 +423,50 @@ const PracticePage = () => {
     }));
   };
 
-  // Handle session mode selection - automatically set question status based on mode
+  const handleSelectAllTopics = () => {
+    if (topics.length === 0) return;
+    const newSubtopics = { ...selectedSubtopics };
+    topics.forEach(topic => {
+      const topicId = topic.id || topic._id;
+      if (topicId) {
+        newSubtopics[topicId] = true;
+        // Ensure subject is selected
+        let topicSubjectId = null;
+        if (topic.parentSubject) {
+          if (typeof topic.parentSubject === 'object' && topic.parentSubject.id) {
+            topicSubjectId = topic.parentSubject.id;
+          } else {
+            topicSubjectId = topic.parentSubject;
+          }
+        } else {
+          topicSubjectId = topic.subjectId || topic.subject?.id || topic.subject?._id || topic.subject;
+        }
+        if (topicSubjectId) {
+          setSelectedSubjects(prev => ({
+            ...prev,
+            [topicSubjectId]: true,
+          }));
+        }
+      }
+    });
+    setSelectedSubtopics(newSubtopics);
+    setSelectedAllQuestions(false);
+  };
+
+  const handleClearTopics = () => {
+    if (topics.length === 0) return;
+    const newSubtopics = { ...selectedSubtopics };
+    topics.forEach(topic => {
+      const topicId = topic.id || topic._id;
+      if (topicId && newSubtopics[topicId]) {
+        delete newSubtopics[topicId];
+      }
+    });
+    setSelectedSubtopics(newSubtopics);
+    setSelectedAllQuestions(false);
+  };
+
+  // Handle session mode selection
   const handleSessionModeChange = (mode) => {
     // Check subscription before allowing mode change
     if (!hasActiveSubscription) {
@@ -432,8 +476,6 @@ const PracticePage = () => {
     }
     
     setSessionMode(mode);
-    // Both modes use 'solved' status now
-    setQuestionStatus('solved');
   };
 
   const handleAllQuestionsChange = async (e) => {
@@ -531,54 +573,67 @@ const PracticePage = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 2xl:px-6 max-w-[1200px] mx-auto min-h-screen">
-      <PracticePageHeader />
+    <div className="bg-white px-[32px] pt-6 pb-[60px] min-h-screen">
 
-      {/* Session Mode and Question Status Cards - Flexed */}
-      <div className="flex flex-col xl:flex-row justify-start gap-2 mb-6">
-        <SessionModeCard
-          sessionMode={sessionMode}
-          hasActiveSubscription={hasActiveSubscription}
-          checkingSubscription={checkingSubscription}
-          onModeChange={handleSessionModeChange}
-        />
-        <QuestionStatusCard
-          questionStatus={questionStatus}
-          onStatusChange={handleStatusChange}
-          sessionMode={sessionMode}
-          testSummary={testSummary}
-          studySummary={studySummary}
-          loadingSummary={loadingSummary}
-        />
+      {/* Two-column layout: Left (Session Mode + Question Pool), Right (Question Status + Session Size) */}
+      <div className="flex w-full gap-6 mb-6">
+        {/* Left Column */}
+        <div className="flex flex-col gap-6 w-full">
+      {/* <PracticePageHeader /> */}
+          <SessionModeCard
+            sessionMode={sessionMode}
+            hasActiveSubscription={hasActiveSubscription}
+            checkingSubscription={checkingSubscription}
+            onModeChange={handleSessionModeChange}
+            timeLimit={timeLimit}
+            onTimeLimitChange={setTimeLimit}
+            showExplanationAfterSubmit={showExplanationAfterSubmit}
+            onShowExplanationAfterSubmitChange={setShowExplanationAfterSubmit}
+          />
+          <QuestionPoolSection
+            selectedAllQuestions={selectedAllQuestions}
+            onAllQuestionsChange={handleAllQuestionsChange}
+            subjects={subjects}
+            topics={topics}
+            loadingSubjects={loadingSubjects}
+            loadingTopics={loadingTopics}
+            expandedDomains={expandedDomains}
+            selectedSubjects={selectedSubjects}
+            selectedSubjectId={selectedSubjectId}
+            selectedSubtopics={selectedSubtopics}
+            allTopics={allTopics}
+            onSubjectToggle={() => {}}
+            onSubjectCheckboxChange={handleSubjectCheckboxChange}
+            onSubjectExpand={handleSubjectExpand}
+            onTopicToggle={toggleTopic}
+            totalAvailableQuestions={totalAvailableQuestions}
+            selectedSubtopicCount={selectedSubtopicCount}
+            onSelectAllTopics={handleSelectAllTopics}
+            onClearTopics={handleClearTopics}
+          />
+        </div>
+
+        {/* Right Column */}
+        <div className="flex flex-col w-full max-w-[317px] gap-6">
+          <QuestionStatusCard
+            questionStatus={questionStatus}
+            onStatusChange={setQuestionStatus}
+            sessionMode={sessionMode}
+            testSummary={testSummary}
+            studySummary={studySummary}
+            loadingSummary={loadingSummary}
+            selectedStatuses={selectedStatuses}
+            onSelectedStatusesChange={setSelectedStatuses}
+          />
+          <SessionSizeSection
+            sessionMode={sessionMode}
+            sessionSize={sessionSize}
+            onSessionSizeChange={setSessionSize}
+            selectedSubtopicCount={selectedSubtopicCount}
+            totalAvailableQuestions={totalAvailableQuestions}
+          />
+        </div>
       </div>
-
-      <QuestionPoolSection
-        selectedAllQuestions={selectedAllQuestions}
-        onAllQuestionsChange={handleAllQuestionsChange}
-        subjects={subjects}
-        topics={topics}
-        loadingSubjects={loadingSubjects}
-        loadingTopics={loadingTopics}
-        expandedDomains={expandedDomains}
-        selectedSubjects={selectedSubjects}
-        selectedSubjectId={selectedSubjectId}
-        selectedSubtopics={selectedSubtopics}
-        allTopics={allTopics}
-        onSubjectToggle={() => {}}
-        onSubjectCheckboxChange={handleSubjectCheckboxChange}
-        onSubjectExpand={handleSubjectExpand}
-        onTopicToggle={toggleTopic}
-      />
-
-      <SessionSizeSection
-        sessionMode={sessionMode}
-        sessionSize={sessionSize}
-        timeLimit={timeLimit}
-        onSessionSizeChange={setSessionSize}
-        onTimeLimitChange={setTimeLimit}
-        selectedSubtopicCount={selectedSubtopicCount}
-        totalAvailableQuestions={totalAvailableQuestions}
-      />
 
       <BeginSessionButton
         canStartSession={canStartSession}

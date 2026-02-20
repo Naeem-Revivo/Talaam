@@ -36,11 +36,9 @@ const SubjectsList = ({
             
             // Check if any subtopics of this subject are selected
             const subjectIdStr = String(subjectId);
-            const hasSelectedSubtopics = allTopics.some(topic => {
-              const topicId = topic.id || topic._id;
-              if (!topicId || !selectedSubtopics[topicId]) return false;
-              
-              // Check if this topic belongs to the current subject
+            
+            // Get all topics for this subject
+            const subjectTopics = allTopics.filter(topic => {
               let topicSubjectId = null;
               if (topic.parentSubject) {
                 if (typeof topic.parentSubject === 'object' && topic.parentSubject.id) {
@@ -51,9 +49,18 @@ const SubjectsList = ({
               } else {
                 topicSubjectId = topic.subjectId || topic.subject?.id || topic.subject?._id || topic.subject;
               }
-              
               return topicSubjectId ? String(topicSubjectId) === subjectIdStr : false;
             });
+            
+            // Count selected topics for this subject
+            const selectedCount = subjectTopics.filter(topic => {
+              const topicId = topic.id || topic._id;
+              return topicId && selectedSubtopics[topicId];
+            }).length;
+            
+            const totalCount = subjectTopics.length;
+            
+            const hasSelectedSubtopics = selectedCount > 0;
             
             // Highlight border if subject is selected OR any of its subtopics are selected
             const shouldHighlight = isSelected || hasSelectedSubtopics;
@@ -68,9 +75,7 @@ const SubjectsList = ({
                   }
                   onSubjectExpand(subjectId);
                 }}
-                className={`w-full flex items-center justify-between rounded-lg transition-colors h-[44px] px-4 py-3 bg-white border ${
-                  shouldHighlight ? 'border-cinnebar-red border-2' : 'border-[#E5E7EB]'
-                }`}
+                className="w-full flex items-center justify-between rounded-lg transition-colors h-[44px] px-4 py-3 bg-white border border-[#E5E7EB]"
               >
                 <div className="flex items-center gap-3 flex-1">
                   <input
@@ -81,22 +86,15 @@ const SubjectsList = ({
                       onSubjectCheckboxChange(subjectId, isSelected);
                     }}
                     onClick={(e) => e.stopPropagation()} // Prevent button click
-                    className="w-5 h-5 rounded border-gray-300 accent-cinnebar-red focus:ring-cinnebar-red flex-shrink-0"
+                    className="w-4 h-4 rounded border-2 border-[#D1D5DC] accent-cinnebar-red focus:ring-cinnebar-red flex-shrink-0"
                   />
                   <span className="font-archivo font-normal text-[16px] leading-[24px] tracking-[0%] text-oxford-blue">
-                    {subject.name} {isSelected && <span className="text-cinnebar-red font-semibold">(Selected)</span>}
+                    {subject.name}
+                  </span>
+                  <span className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-[#6697B7] ml-auto">
+                    {selectedCount}/{totalCount}
                   </span>
                 </div>
-                <svg
-                  className={`w-5 h-5 text-oxford-blue transition-transform flex-shrink-0 ${
-                    selectedSubjectId === subjectId ? 'rotate-90' : ''
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
               </button>
             );
           })

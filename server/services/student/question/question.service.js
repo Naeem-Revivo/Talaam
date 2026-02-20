@@ -1249,12 +1249,16 @@ const getTestModeAccuracyTrend = async (studentId, days = 30) => {
     },
   });
 
-  // Group sessions by date (YYYY-MM-DD)
+  // Group sessions by date (YYYY-MM-DD) using local timezone
   const sessionsByDate = {};
   
   sessions.forEach((session) => {
     const date = new Date(session.createdAt);
-    const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+    // Use local date instead of UTC to properly group by local day
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateKey = `${year}-${month}-${day}`; // YYYY-MM-DD in local timezone
     
     if (!sessionsByDate[dateKey]) {
       sessionsByDate[dateKey] = {

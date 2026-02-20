@@ -1,6 +1,6 @@
 import React from "react";
-import RichTextEditor from "../../common/RichTextEditor";
-import Dropdown from "../../common/Dropdown";
+import RichTextEditor from "../RichTextEditor";
+import Dropdown from "../Dropdown";
 
 const AddQuestionDetailsSection = ({
   questionText,
@@ -11,24 +11,58 @@ const AddQuestionDetailsSection = ({
   handleOptionChange,
   correctAnswer,
   setCorrectAnswer,
+  explanation,
+  setExplanation,
+  showExplanation = false,
+  translationPrefix = "admin",
   t,
 }) => {
+  const getTranslationKey = (key) => {
+    if (translationPrefix === "gatherer") {
+      // Gatherer uses different key structure
+      const keyMap = {
+        "sections.questionDetails": "questionText",
+        "fields.questionText": "questionText",
+        "fields.questionType": "questionType",
+        "fields.optionA": "options.optionA",
+        "fields.optionB": "options.optionB",
+        "fields.optionC": "options.optionC",
+        "fields.optionD": "options.optionD",
+        "fields.correctAnswer": "correctAnswer",
+        "fields.explanation": "explanation",
+        "placeholders.questionText": "placeholders.questionText",
+        "placeholders.explanation": "placeholders.explanation",
+        "questionTypes.multipleChoice": "admin.addNewQuestion.questionTypes.multipleChoice",
+        "questionTypes.trueFalse": "admin.addNewQuestion.questionTypes.trueFalse",
+        "correctAnswerOptions.optionA": "admin.addNewQuestion.correctAnswerOptions.optionA",
+        "correctAnswerOptions.optionB": "admin.addNewQuestion.correctAnswerOptions.optionB",
+        "correctAnswerOptions.optionC": "admin.addNewQuestion.correctAnswerOptions.optionC",
+        "correctAnswerOptions.optionD": "admin.addNewQuestion.correctAnswerOptions.optionD",
+      };
+      const mappedKey = keyMap[key] || key;
+      return mappedKey.startsWith("admin.") ? mappedKey : `gatherer.addNewQuestion.${mappedKey}`;
+    }
+    return `${translationPrefix}.addNewQuestion.${key}`;
+  };
+
   return (
     <div className="xl:col-span-2 bg-white rounded-[14px] border border-[#03274633] px-[30px] pt-[50px] pb-10">
       <h2 className="text-[20px] font-archivo leading-[32px] font-bold text-blue-dark mb-[30px]">
-        {t("admin.addNewQuestion.sections.questionDetails")}
+        {translationPrefix === "gatherer" 
+          ? t("gatherer.addNewQuestion.questionText")
+          : t("admin.addNewQuestion.sections.questionDetails")}
       </h2>
 
       <div className="space-y-6">
         {/* Question Text */}
         <div>
           <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-5">
-            {t("admin.addNewQuestion.fields.questionText")}
+            {t(getTranslationKey("fields.questionText"))}
           </label>
           <RichTextEditor
             value={questionText}
             onChange={setQuestionText}
-            placeholder={t("admin.addNewQuestion.placeholders.questionText")}
+            placeholder={t(getTranslationKey("placeholders.questionText"))}
             minHeight="200px"
           />
         </div>
@@ -36,7 +70,7 @@ const AddQuestionDetailsSection = ({
         {/* Question Type */}
         <div>
           <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-            {t("admin.addNewQuestion.fields.questionType")}
+            {t(getTranslationKey("fields.questionType"))}
           </label>
           <Dropdown
             value={questionType}
@@ -80,7 +114,7 @@ const AddQuestionDetailsSection = ({
             <div className="space-y-4">
               <div>
                 <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                  {t("admin.addNewQuestion.fields.optionA")}
+                  {t(getTranslationKey("fields.optionA"))}
                 </label>
                 <input
                   type="text"
@@ -91,7 +125,7 @@ const AddQuestionDetailsSection = ({
               </div>
               <div>
                 <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                  {t("admin.addNewQuestion.fields.optionC")}
+                  {t(getTranslationKey("fields.optionC"))}
                 </label>
                 <input
                   type="text"
@@ -104,7 +138,7 @@ const AddQuestionDetailsSection = ({
             <div className="space-y-4">
               <div>
                 <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                  {t("admin.addNewQuestion.fields.optionB")}
+                  {t(getTranslationKey("fields.optionB"))}
                 </label>
                 <input
                   type="text"
@@ -115,7 +149,7 @@ const AddQuestionDetailsSection = ({
               </div>
               <div>
                 <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-                  {t("admin.addNewQuestion.fields.optionD")}
+                  {t(getTranslationKey("fields.optionD"))}
                 </label>
                 <input
                   type="text"
@@ -131,7 +165,7 @@ const AddQuestionDetailsSection = ({
         {/* Correct Answer */}
         <div>
           <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
-            {t("admin.addNewQuestion.fields.correctAnswer")}
+            {t(getTranslationKey("fields.correctAnswer"))}
           </label>
           {questionType === "True/False" ? (
             <Dropdown
@@ -154,6 +188,23 @@ const AddQuestionDetailsSection = ({
             />
           )}
         </div>
+
+        {/* Explanation (Optional) - Only shown when showExplanation is true */}
+        {showExplanation && (
+          <div>
+            <label className="block text-[16px] leading-[100%] font-roboto font-normal text-blue-dark mb-[14px]">
+              {t(getTranslationKey("fields.explanation"))} {translationPrefix === "gatherer" && (
+                <span className="text-gray-500 text-sm">({t("gatherer.addNewQuestion.optional")})</span>
+              )}
+            </label>
+            <RichTextEditor
+              value={explanation}
+              onChange={setExplanation}
+              placeholder={t(getTranslationKey("placeholders.explanation"))}
+              minHeight="150px"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
