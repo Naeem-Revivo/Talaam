@@ -125,8 +125,9 @@ if (process.env.VERCEL !== '1') {
       // Sanitize HOST: remove protocol prefixes (http://, https://) and trailing slashes
       let HOST = process.env.HOST || '0.0.0.0';
       HOST = HOST.replace(/^https?:\/\//, '').replace(/\/$/, '');
-      app.listen(PORT, () => {
-        console.log(`Server running on http://localhost:${PORT}`);
+      app.listen(PORT, HOST, () => {
+        console.log(`Server running on http://${HOST}:${PORT}`);
+        console.log(`Server accessible on network at http://${HOST}:${PORT}`);
       });
     } catch (error) {
       console.error('Failed to start server:', error);
