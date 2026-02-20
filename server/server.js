@@ -117,7 +117,7 @@ if (process.env.VERCEL !== '1' && process.env.ENABLE_SUBSCRIPTION_CRON !== 'fals
 
 // Only start server if not in serverless environment (Vercel)
 if (process.env.VERCEL !== '1') {
-   const startServer = async () => {
+  const startServer = async () => {
     try {
       await connectDBOnce();
       
@@ -125,9 +125,8 @@ if (process.env.VERCEL !== '1') {
       // Sanitize HOST: remove protocol prefixes (http://, https://) and trailing slashes
       let HOST = process.env.HOST || '0.0.0.0';
       HOST = HOST.replace(/^https?:\/\//, '').replace(/\/$/, '');
-      app.listen(PORT, HOST, () => {
-        console.log(`Server running on http://${HOST}:${PORT}`);
-        console.log(`Server accessible on network at http://${HOST}:${PORT}`);
+      app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
       });
     } catch (error) {
       console.error('Failed to start server:', error);
