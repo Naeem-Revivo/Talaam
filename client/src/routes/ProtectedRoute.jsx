@@ -50,7 +50,9 @@ export const RoleRoute = ({ allow = [] }) => {
         }
       } catch (error) {
         console.error('Error checking subscription:', error);
-        setHasActiveSubscription(false);
+        // Don't force a "not subscribed" redirect on transient API/network failures.
+        // Explicit negative responses are handled in the success branch above.
+        setHasActiveSubscription(null);
       } finally {
         setCheckingSubscription(false);
       }
