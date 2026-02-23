@@ -115,7 +115,7 @@ const QuestionSessionSummaryPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F6F7] flex flex-col">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
       <header className="sticky top-0 z-40 bg-white border-b border-[#D4D4D4] px-4 md:px-[89px] py-3 md:py-5">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center min-w-0">
@@ -149,69 +149,74 @@ const QuestionSessionSummaryPage = () => {
       </header>
 
       <main className="flex-1 px-4 md:px-[89px] py-6 md:py-7 pb-36 md:pb-40">
-        <div className="space-y-5">
+        <div className="space-y-6">
           <section>
-            <h2 className="font-archivo text-[23px] leading-[44px] font-bold text-oxford-blue">{t('dashboard.sessionSummary.hero.title')}</h2>
-            <p className="font-roboto text-base font-normal text-[#737373] mt-1">{t('dashboard.sessionSummary.hero.subtitle')}</p>
+            <h2 className="font-archivo text-[32px] leading-[45px] font-bold text-oxford-blue">{t('dashboard.sessionSummary.hero.title')}</h2>
+            <p className="font-roboto text-base font-normal text-[#737373]">{t('dashboard.sessionSummary.hero.subtitle')}</p>
           </section>
 
-          <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-br from-[#0A3A5A] to-[#0B577F] rounded-[16px] p-8 text-white shadow-sm">
-              <p className="text-[12px] uppercase tracking-wide text-white/70 font-roboto">Your score</p>
-              <div className="font-archivo font-bold text-[52px] leading-[58px] mt-2">{summary.accuracyPercent}%</div>
-              <p className="text-[14px] text-white/90 font-roboto mt-2">Accuracy Rate</p>
+          <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <div className="bg-gradient-to-br from-[#0A3A5A] to-[#0B577F] rounded-[24px] p-8 text-white shadow-sm">
+              <p className="text-[12px] leading-4 uppercase tracking-[0.6] text-white/70 font-roboto">Your score</p>
+              <div className="font-archivo font-bold text-[62px] leading-[87px]">{summary.accuracyPercent}%</div>
+              <p className="text-sm font-medium text-white font-roboto">Accuracy Rate</p>
             </div>
 
-            <div className="bg-white rounded-[16px] p-5 border border-[#E5E7EB] shadow-sm min-h-[178px]">
+            <div className="bg-white rounded-[24px] p-8 border border-[#DCFCE7] shadow-sm min-h-[178px]">
               <div className="flex justify-between items-start">
-                <div className="w-8 h-8 rounded-full bg-[#DCFCE7] text-[#16A34A] flex items-center justify-center">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                <div className="w-12 h-12 rounded-[16px] bg-[#F0FDF4] text-[#16A34A] flex items-center justify-center">
+                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M23.3899 7.4099C23.6523 7.67244 23.7998 8.02847 23.7998 8.3997C23.7998 8.77093 23.6523 9.12696 23.3899 9.3895L12.1899 20.5895C11.9273 20.852 11.5713 20.9994 11.2001 20.9994C10.8289 20.9994 10.4728 20.852 10.2103 20.5895L4.61028 14.9895C4.35526 14.7255 4.21415 14.3718 4.21734 14.0047C4.22053 13.6377 4.36776 13.2865 4.62734 13.027C4.88691 12.7674 5.23804 12.6201 5.60512 12.617C5.9722 12.6138 6.32584 12.7549 6.58988 13.0099L11.2001 17.6201L21.4103 7.4099C21.6728 7.14744 22.0289 7 22.4001 7C22.7713 7 23.1273 7.14744 23.3899 7.4099Z" fill="#00A63E" />
                   </svg>
                 </div>
-                <span className="bg-[#DCFCE7] text-[#16A34A] text-[11px] px-2 py-0.5 rounded-full">{summary.accuracyPercent}%</span>
+                <span className="bg-[#F0FDF4] text-[#008236] text-xs font-semibold px-3 py-1 rounded-full">{summary.accuracyPercent}%</span>
               </div>
-              <p className="text-[#6B7280] text-[14px] mt-3">Correct Answers</p>
-              <p className="font-archivo text-[40px] leading-[44px] font-bold text-oxford-blue mt-1">{summary.correctCount}</p>
-              <p className="text-[#9CA3AF] text-[13px]">{`out of ${summary.questionsAnswered} questions`}</p>
+              <p className="text-[#6A7282] font-normal font-roboto text-sm mt-2">Correct Answers</p>
+              <p className="font-archivo text-[40px] leading-[56px] font-bold text-oxford-blue mt-2">{summary.correctCount}</p>
+              <p className="text-[#99A1AF] text-sm font-medium font-roboto">{`out of ${summary.questionsAnswered} questions`}</p>
             </div>
 
-            <div className="bg-white rounded-[16px] p-5 border border-[#FECACA] shadow-sm min-h-[178px]">
+            <div className="bg-white rounded-[24px] p-8 border border-[#FEE2E2] shadow-sm min-h-[178px]">
               <div className="flex justify-between items-start">
-                <div className="w-8 h-8 rounded-full bg-[#FEE2E2] text-[#EF4444] flex items-center justify-center">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                <div className="w-12 h-12 rounded-[16px] bg-[#FEE2E2] text-[#EF4444] flex items-center justify-center">
+                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.01 6.00943C6.27254 5.74698 6.62857 5.59953 6.9998 5.59953C7.37103 5.59953 7.72706 5.74698 7.9896 6.00943L13.9998 12.0196L20.01 6.00943C20.1391 5.87572 20.2936 5.76907 20.4644 5.69569C20.6352 5.62232 20.8189 5.5837 21.0048 5.58208C21.1907 5.58047 21.3751 5.61589 21.5471 5.68628C21.7192 5.75668 21.8755 5.86063 22.007 5.99208C22.1384 6.12353 22.2424 6.27984 22.3127 6.4519C22.3831 6.62395 22.4186 6.80831 22.417 6.9942C22.4153 7.18009 22.3767 7.3638 22.3033 7.5346C22.23 7.70541 22.1233 7.85989 21.9896 7.98903L15.9794 13.9992L21.9896 20.0094C22.2446 20.2735 22.3857 20.6271 22.3825 20.9942C22.3794 21.3613 22.2321 21.7124 21.9725 21.972C21.713 22.2316 21.3618 22.3788 20.9948 22.382C20.6277 22.3852 20.274 22.2441 20.01 21.989L13.9998 15.9788L7.9896 21.989C7.72556 22.2441 7.37191 22.3852 7.00484 22.382C6.63776 22.3788 6.28662 22.2316 6.02705 21.972C5.76748 21.7124 5.62024 21.3613 5.61705 20.9942C5.61386 20.6271 5.75498 20.2735 6.01 20.0094L12.0202 13.9992L6.01 7.98903C5.74754 7.7265 5.6001 7.37046 5.6001 6.99923C5.6001 6.628 5.74754 6.27197 6.01 6.00943Z" fill="#ED4122" />
                   </svg>
+
                 </div>
-                <span className="bg-[#FEE2E2] text-[#EF4444] text-[11px] px-2 py-0.5 rounded-full">{reviewPercent}%</span>
+                <span className="bg-[#FEF2F2] text-[#ED4122] text-xs font-semibold px-3 py-1 rounded-full">{reviewPercent}%</span>
               </div>
-              <p className="text-[#6B7280] text-[14px] mt-3">Need Review</p>
-              <p className="font-archivo text-[40px] leading-[44px] font-bold text-oxford-blue mt-1">{summary.incorrectCount}</p>
-              <p className="text-[#9CA3AF] text-[13px]">questions to improve</p>
+              <p className="text-[#6A7282] font-normal font-roboto text-sm mt-2">Need Review</p>
+              <p className="font-archivo text-[40px] leading-[56px] font-bold text-oxford-blue mt-2">{summary.incorrectCount}</p>
+              <p className="text-[#99A1AF] text-sm font-medium font-roboto mt-2">questions to improve</p>
             </div>
 
-            <div className="bg-white rounded-[16px] p-5 border border-[#E5E7EB] shadow-sm min-h-[178px]">
-              <div className="w-8 h-8 rounded-full bg-[#E0F2FE] text-[#0284C7] flex items-center justify-center">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <div className="bg-white rounded-[24px] p-8 border border-[#E5E7EB] shadow-sm min-h-[178px]">
+              <div className="w-12 h-12 rounded-[16px] bg-[#E0F2FE] text-[#0284C7] flex items-center justify-center">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14 24.5C19.799 24.5 24.5 19.799 24.5 14C24.5 8.20101 19.799 3.5 14 3.5C8.20101 3.5 3.5 8.20101 3.5 14C3.5 19.799 8.20101 24.5 14 24.5Z" stroke="#6CA6C1" stroke-width="2.33333" />
+                  <path d="M14 7V14L18.6667 16.3333" stroke="#6CA6C1" stroke-width="2.33333" stroke-linecap="round" />
                 </svg>
+
               </div>
-              <p className="text-[#6B7280] text-[14px] mt-3">Total Time</p>
-              <p className="font-archivo text-[40px] leading-[44px] font-bold text-oxford-blue mt-1">{summary.timeTaken}</p>
-              <p className="text-[#9CA3AF] text-[13px]">{avgPerQuestionLabel}</p>
+              <p className="text-[#6A7282] font-normal font-roboto text-sm mt-2">Total Time</p>
+              <p className="font-archivo text-[40px] leading-[56px] font-bold text-oxford-blue mt-2">{summary.timeTaken}</p>
+              <p className="text-[#99A1AF] text-sm font-medium font-roboto mt-2">{avgPerQuestionLabel}</p>
             </div>
           </section>
 
-          <section className="bg-white rounded-[16px] border border-[#E5E7EB] shadow-sm p-6">
+          <section className="bg-white rounded-[16px] border border-[#E5E7EB] shadow-sm p-8">
             <div className="flex justify-between items-start mb-5">
               <div>
-                <h3 className="font-archivo text-[33px] leading-[38px] font-semibold text-oxford-blue">Session Details</h3>
-                <p className="text-[#6B7280] text-[14px] mt-1">Complete overview of your practice session</p>
+                <h3 className="font-archivo text-[24px] leading-[32px] font-bold text-oxford-blue">Session Details</h3>
+                <p className="text-[#6A7282] text-sm font-normal font-roboto mt-2">Complete overview of your practice session</p>
               </div>
-              <div className="text-right">
-                <p className="text-[#9CA3AF] text-[12px]">Date</p>
-                <p className="font-archivo text-[18px] text-oxford-blue">{dateLabel}</p>
-                <span className="inline-flex mt-1 px-3 py-1 rounded-full text-[12px] bg-[#FEF3C7] text-[#B45309]">
+              <div className="text-right flex gap-2">
+                <div className="flex flex-col gap-1 border-r border-[#E5E7EB] pr-4">
+                  <p className="text-[#9CA3AF] text-xs font-normal font-roboto">Date</p>
+                  <p className="font-archivo text-[18px] leading-[28px] font-bold text-oxford-blue">{dateLabel}</p>
+                </div>
+                <span className="h-[36px] flex items-center justify-center mt-1 px-3 py-1 rounded-full text-sm font-semibold font-roboto bg-[#FDF0D5] text-[#ED4122]">
                   {summary.testMode ? 'Test Mode' : 'Study Mode'}
                 </span>
               </div>
@@ -219,11 +224,11 @@ const QuestionSessionSummaryPage = () => {
 
             <div className="space-y-4">
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[14px] text-[#374151]">Correct Responses</span>
-                  <span className="text-[14px] text-[#16A34A] font-medium">{`${summary.correctCount}/${summary.questionsAnswered}`}</span>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium font-roboto text-[#364153]">Correct Responses</span>
+                  <span className="text-sm text-[#00A63E] font-bold font-archivo">{`${summary.correctCount}/${summary.questionsAnswered}`}</span>
                 </div>
-                <div className="h-[8px] rounded-full bg-[#E5E7EB] overflow-hidden">
+                <div className="h-[12px] rounded-full bg-[#E5E7EB] overflow-hidden">
                   <div
                     className="h-full rounded-full bg-[#22C55E]"
                     style={{ width: `${summary.questionsAnswered ? (summary.correctCount / summary.questionsAnswered) * 100 : 0}%` }}
@@ -232,11 +237,11 @@ const QuestionSessionSummaryPage = () => {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[14px] text-[#374151]">Incorrect Responses</span>
-                  <span className="text-[14px] text-[#EF4444] font-medium">{`${summary.incorrectCount}/${summary.questionsAnswered}`}</span>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium font-roboto text-[#364153]">Incorrect Responses</span>
+                  <span className="text-sm text-[#ED4122] font-bold font-archivo">{`${summary.incorrectCount}/${summary.questionsAnswered}`}</span>
                 </div>
-                <div className="h-[8px] rounded-full bg-[#E5E7EB] overflow-hidden">
+                <div className="h-[12px] rounded-full bg-[#E5E7EB] overflow-hidden">
                   <div
                     className="h-full rounded-full bg-[#EF4444]"
                     style={{ width: `${summary.questionsAnswered ? (summary.incorrectCount / summary.questionsAnswered) * 100 : 0}%` }}
@@ -246,34 +251,33 @@ const QuestionSessionSummaryPage = () => {
             </div>
           </section>
 
-          <section className="bg-white rounded-[16px] border border-[#E5E7EB] shadow-sm p-6">
-            <div className="flex items-start justify-between gap-4 mb-4">
+          <section className="bg-white rounded-[24px] border border-[#E5E7EB] shadow-sm p-8">
+            <div className="flex items-start justify-between gap-4 mb-8">
               <div>
-                <h3 className="font-archivo text-[33px] leading-[38px] font-semibold text-oxford-blue">Question Map</h3>
-                <p className="text-[#6B7280] text-[14px] mt-1">Click any question to review your answer</p>
+                <h3 className="font-archivo text-[24px] leading-[32px] font-bold text-oxford-blue">Question Map</h3>
+                <p className="text-[#6A7282] text-sm font-normal font-roboto mt-2">Click any question to review your answer</p>
               </div>
-              <div className="flex items-center gap-4 text-[13px] text-[#6B7280]">
+              <div className="flex items-center gap-4 text-sm font-normal text-[#4A5565] font-roboto">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#22C55E]" />
+                  <span className="w-4 h-4 rounded-full bg-[#22C55E]" />
                   Correct
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
+                  <span className="w-4 h-4 rounded-full bg-[#EF4444]" />
                   Incorrect
                 </span>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-wrap gap-4">
               {questionTiles.map((question, index) => (
                 <div
                   key={question.id || index}
-                  className={`w-[74px] h-[74px] rounded-[10px] flex flex-col items-center justify-center text-white shadow-sm ${
-                    question.status === 'correct' ? 'bg-[#22C55E]' : 'bg-[#EF4444]'
-                  }`}
+                  className={`w-[74px] h-[74px] rounded-[10px] flex flex-col items-center justify-center text-white shadow-sm ${question.status === 'correct' ? 'bg-[#22C55E]' : 'bg-[#EF4444]'
+                    }`}
                 >
-                  <span className="font-semibold text-[14px] leading-[15px]">{index + 1}</span>
-                  <span className="text-[10px] opacity-90 leading-[12px]">{question.timeLabel}</span>
+                  <span className="font-bold text-[18px] leading-[28px] font-archivo text-white">{index + 1}</span>
+                  <span className="text-[10px] leading-[16px] font-bold font-roboto text-white">{question.timeLabel}</span>
                 </div>
               ))}
             </div>
@@ -285,21 +289,25 @@ const QuestionSessionSummaryPage = () => {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           <button
             onClick={handleGoToDashboard}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-lg border border-[#D1D5DB] text-[#374151] text-sm hover:bg-[#F9FAFB]"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-[12px] border border-[#D1D5DB] text-[#374151] text-base font-medium font-roboto hover:bg-[#F9FAFB]"
           >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12.5 15L7.5 10L12.5 5" stroke="#032746" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+
             {t('dashboard.sessionSummary.actions.goToDashboard')}
           </button>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
               onClick={handleReviewIncorrect}
-              className="flex-1 sm:flex-none min-w-[180px] px-5 py-2.5 rounded-lg bg-[#0E3B5A] text-white text-sm hover:opacity-90"
+              className="flex-1 sm:flex-none min-w-[180px] px-5 py-2.5 rounded-[14px] bg-gradient-to-r from-[#032746] to-[#173B50] text-white text-sm font-medium font-roboto hover:opacity-90"
             >
               {t('dashboard.review.table.actions.reviewIncorrect') || 'Review Incorrect'}
             </button>
             <button
               onClick={handleReviewAll}
-              className="flex-1 sm:flex-none min-w-[160px] px-5 py-2.5 rounded-lg border border-[#EF4444] text-[#EF4444] text-sm hover:bg-[#FEF2F2]"
+              className="flex-1 sm:flex-none min-w-[160px] px-5 py-2.5 rounded-[14px] border border-[#EF4444] text-[#EF4444] text-sm font-medium font-roboto hover:bg-[#FEF2F2]"
             >
               {t('dashboard.review.table.actions.reviewAll') || 'Review All'}
             </button>

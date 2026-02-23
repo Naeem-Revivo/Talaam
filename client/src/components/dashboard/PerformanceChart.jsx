@@ -123,7 +123,7 @@ const PerformanceChart = ({ performanceData = [], loading = false, t }) => {
                         {/* Orange Progress (accuracy percentage) - overlay on top when there's progress */}
                         {accuracy > 0 && (
                           <div 
-                            className="w-full bg-[#FF6B35] absolute bottom-0 left-0 right-0"
+                            className="w-full bg-[#ED4122] absolute bottom-0 left-0 right-0"
                             style={{ 
                               height: `${accuracy}%`,
                             }}

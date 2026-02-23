@@ -44,14 +44,14 @@ const BillingHistoryTable = () => {
 
     if (statusLower === 'paid') {
       return {
-        bg: 'bg-[#10B981]',
-        text: 'text-white',
+        bg: 'bg-[#DCFCE7]',
+        text: 'text-[#16A34A]',
         label: t("dashboard.subscriptionBilling.billingHistory.status.paid") || "Paid"
       };
     } else if (statusLower === 'failed') {
       return {
-        bg: 'bg-[#EF4444]',
-        text: 'text-white',
+        bg: 'bg-[#FEE2E2]',
+        text: 'text-[#DC2626]',
         label: t("dashboard.subscriptionBilling.billingHistory.status.failed") || "Failed"
       };
     } else if (statusLower === 'refunded') {
@@ -62,8 +62,8 @@ const BillingHistoryTable = () => {
       };
     } else {
       return {
-        bg: 'bg-[#6B7280]',
-        text: 'text-white',
+        bg: 'bg-[#FEF9C3]',
+        text: 'text-[#854D0E]',
         label: t("dashboard.subscriptionBilling.billingHistory.status.pending") || status || 'Pending'
       };
     }
@@ -115,81 +115,72 @@ const BillingHistoryTable = () => {
                 </tr>
               </thead>
               <tbody className="bg-white">
-              {billingHistoryData.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center">
-                    <p className="text-[16px] font-normal font-roboto text-[#6B7280]">
-                      {t("dashboard.subscriptionBilling.billingHistory.emptyMessage") || "No billing history available"}
-                    </p>
-                  </td>
-                </tr>
-              ) : (
-                billingHistoryData.map((item, index) => {
-                  const statusBadge = getStatusBadge(item.status);
-                  return (
-                    <tr
-                      key={item.id || index}
-                      className="bg-white border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition-colors last:border-b-0"
-                    >
-                      {/* Invoice */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <img src={invoice} alt="invoice" className="w-10 h-10" />
-                          <span className="text-[14px] font-normal font-roboto text-oxford-blue">
-                            {formatInvoice(item.invoice)}
+                {billingHistoryData.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="px-6 py-12 text-center">
+                      <p className="text-[16px] font-normal font-roboto text-[#6B7280]">
+                        {t("dashboard.subscriptionBilling.billingHistory.emptyMessage") || "No billing history available"}
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  billingHistoryData.map((item, index) => {
+                    const statusBadge = getStatusBadge(item.status);
+                    return (
+                      <tr
+                        key={item.id || index}
+                        className="bg-white border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition-colors last:border-b-0"
+                      >
+                        {/* Invoice */}
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <img src={invoice} alt="invoice" className="w-10 h-10" />
+                            <span className="text-base font-medium font-roboto text-[#171717]">
+                              {formatInvoice(item.invoice)}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Amount */}
+                        <td className="px-6 py-4">
+                          <span className="text-base font-medium font-roboto text-[#171717]">
+                            {item.amount || 'N/A'}
                           </span>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Amount */}
-                      <td className="px-6 py-4">
-                        <span className="text-[14px] font-normal font-roboto text-oxford-blue">
-                          {item.amount || 'N/A'}
-                        </span>
-                      </td>
+                        {/* Date */}
+                        <td className="px-6 py-4">
+                          <span className="text-base font-normal font-roboto text-[#737373]">
+                            {item.date || 'N/A'}
+                          </span>
+                        </td>
 
-                      {/* Date */}
-                      <td className="px-6 py-4">
-                        <span className="text-[14px] font-normal font-roboto text-oxford-blue">
-                          {item.date || 'N/A'}
-                        </span>
-                      </td>
+                        {/* Status */}
+                        <td className="px-6 py-4">
+                          <span className={`inline-block px-[10px] py-[5px] rounded-[13px] text-[12px] leading-[100%] font-medium font-roboto ${statusBadge.bg} ${statusBadge.text}`}>
+                            {statusBadge.label}
+                          </span>
+                        </td>
 
-                      {/* Status */}
-                      <td className="px-6 py-4">
-                        <span className={`inline-block px-[10px] py-[5px] rounded-md text-[12px] leading-[100%] font-normal font-roboto ${statusBadge.bg} ${statusBadge.text}`}>
-                          {statusBadge.label}
-                        </span>
-                      </td>
-
-                      {/* Action */}
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => handleDownload(item)}
-                          className="text-oxford-blue hover:text-[#ED4122] transition-colors p-1"
-                          aria-label="Download invoice"
-                        >
-                          <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 20 20"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
+                        {/* Action */}
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => handleDownload(item)}
+                            className="text-oxford-blue hover:text-[#ED4122] transition-colors p-1"
+                            aria-label="Download invoice"
                           >
-                            <path
-                              d="M17.5 12.5V16.25C17.5 17.0784 16.8284 17.75 16 17.75H4C3.17157 17.75 2.5 17.0784 2.5 16.25V12.5M14.1667 8.33333L10 12.5M10 12.5L5.83333 8.33333M10 12.5V2.5"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
+                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M15.75 11.25V14.25C15.75 14.6478 15.592 15.0294 15.3107 15.3107C15.0294 15.592 14.6478 15.75 14.25 15.75H3.75C3.35218 15.75 2.97064 15.592 2.68934 15.3107C2.40804 15.0294 2.25 14.6478 2.25 14.25V11.25" stroke="#737373" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                              <path d="M5.25 7.5L9 11.25L12.75 7.5" stroke="#737373" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                              <path d="M9 11.25V2.25" stroke="#737373" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -225,7 +216,7 @@ const BillingHistoryTable = () => {
                       {formatInvoice(item.invoice)}
                     </span>
                   </div>
-                  <span className={`px-[10px] py-[5px] rounded-md text-[12px] leading-[100%] font-normal font-roboto ${statusBadge.bg} ${statusBadge.text}`}>
+                  <span className={`px-[10px] py-[5px] rounded-[13px] text-[12px] leading-[100%] font-medium font-roboto ${statusBadge.bg} ${statusBadge.text}`}>
                     {statusBadge.label}
                   </span>
                 </div>
