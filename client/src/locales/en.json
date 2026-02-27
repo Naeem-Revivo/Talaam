@@ -462,6 +462,7 @@
       "titleHighlight": "Banks",
       "subtitle": "Access the exams you're subscribed to, or upgrade to unlock more."
     },
+    "loading": "Loading...",
     "exams": {
       "subscribed": "Subscribed",
       "notSubscribed": "Not Subscribed",

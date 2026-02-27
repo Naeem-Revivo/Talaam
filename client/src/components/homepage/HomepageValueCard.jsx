@@ -16,7 +16,7 @@ const HomepageValueCard = ({
   return (
     <div
       className="bg-white rounded-2xl border border-black/5 shadow-[0_12px_28px_rgba(16,24,40,0.08)]
-        px-[42px] py-9 w-full h-[230px]"
+        px-[42px] py-9 w-full"
     >
       <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse text-right' : ''}`}>
         <div
@@ -28,7 +28,7 @@ const HomepageValueCard = ({
         <div className="flex-1 min-w-0">
           <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
             <span
-              className={`inline-flex items-center px-3 py-[6px] rounded-full text-[12px] leading-none font-roboto font-medium ${pillClassName}`}
+              className={`inline-flex items-center px-3 py-[6px] rounded-full text-[12px] leading-none font-roboto font-bold ${pillClassName}`}
             >
               {pillText}
             </span>
