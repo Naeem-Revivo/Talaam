@@ -53,7 +53,7 @@ const LearningLoopSection = () => {
                   <img src={step.icon} alt={step.title} className="h-[80px] w-[80px] tablet:h-[64px] tablet:w-[64px] xl:h-[80px] xl:w-[80px] object-contain" />
                 </div>
                 {/* Title - single line */}
-                <h3 className="font-archivo font-semibold text-text-dark mobile:text-[16px] tablet:text-[16px] xl:text-[20px] leading-[24px] tracking-[0] whitespace-nowrap mb-2 flex-shrink-0">{step.title}</h3>
+                <h3 className="font-archivo font-bold text-text-dark mobile:text-[16px] tablet:text-[16px] xl:text-[20px] leading-[24px] tracking-[0] whitespace-nowrap mb-2 flex-shrink-0">{step.title}</h3>
                 {/* Description - flows naturally, doesn't affect above */}
                 <p className="text-text-gray font-roboto font-normal mobile:text-[12px] tablet:text-[13px] laptop:text-[14px] leading-[18px] tracking-[-0.15px] text-center flex-grow">{step.description}</p>
                 {index < steps.length - 1 && (

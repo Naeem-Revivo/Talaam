@@ -28,7 +28,7 @@ const CallToActionSection = () => {
               </defs>
             </svg>
 
-            <span className="font-roboto font-normal text-white text-sm">
+            <span className="font-roboto font-bold text-white text-sm">
               {t('homepage.cta.badge')}
             </span>
           </div>
@@ -47,7 +47,7 @@ const CallToActionSection = () => {
 
           {/* Call-to-Action Button */}
           <button
-            onClick={() => navigate("/question-banks")}
+            onClick={() => navigate("/create-account")}
             className="bg-gradient-to-r from-[#ED4122] to-[#DC2626] shadow-lg font-roboto font-semibold text-[20px] leading-[28px] tracking-[-0.45px] mobile:px-8 mobile:py-4 tablet:px-10 tablet:py-4 laptop:px-12 laptop:py-5 rounded-[16px] mobile:w-auto tablet:w-auto flex items-center gap-2 text-white hover:opacity-90 transition-opacity"
           >
             {t('homepage.cta.button')}

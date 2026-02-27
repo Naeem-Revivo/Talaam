@@ -31,7 +31,7 @@ const ContactHeroSection = () => {
       >
         {/* Left Content */}
         <div
-          className={`w-full lg:max-w-[500px] flex flex-col gap-5 ${isArabic ? "text-right items-end" : "text-left items-start"
+          className={`w-full lg:max-w-[516px] flex flex-col gap-5 ${isArabic ? "text-right items-end" : "text-left items-start"
             }`}
         >
           {/* Badge */}
@@ -51,15 +51,15 @@ const ContactHeroSection = () => {
               </defs>
             </svg>
 
-            <span className="font-roboto font-normal text-[12px] md:text-[14px] leading-[20px] text-[#0369A1]">
+            <span className="font-roboto font-semibold text-[12px] md:text-[14px] leading-[20px] text-[#0369A1]">
               {t("contact.hero.badge")}
             </span>
           </div>
 
           {/* Title */}
-          <h1 className="font-archivo font-bold text-[#0F172A] text-[44px] sm:text-[56px] lg:text-[72px] leading-[90px] tracking-[-2.96]">
+          <h1 className="font-archivo font-[800] text-[#0F172A] text-[44px] sm:text-[56px] lg:text-[72px] leading-[90px] tracking-[-2.96]">
             {t("contact.hero.title1")}{" "}
-            <span className="text-[#ED4122] italic">
+            <span className="text-[#ED4122]">
               {t("contact.hero.title2")}
             </span>
           </h1>

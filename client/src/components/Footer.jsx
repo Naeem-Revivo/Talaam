@@ -191,27 +191,27 @@ const Footer = () => {
             <div className="flex items-center gap-3">
               {language === 'en' ? (
                 <>
+                  <span className="text-[#FFFFFFB2] font-roboto font-medium text-base tracking-[-0.31px]">
+                    EN
+                  </span>
                   <button
                     onClick={toggleLanguage}
                     className="px-4 py-2 rounded-[10px] bg-[#FFFFFF1A] text-white font-roboto font-medium text-base tracking-[-0.31px] transition hover:opacity-80"
                   >
-                    EN
-                  </button>
-                  <span className="text-[#FFFFFFB2] font-roboto font-medium text-base tracking-[-0.31px]">
                     عربي
-                  </span>
+                  </button>
                 </>
               ) : (
                 <>
-                  <span className="text-[#FFFFFFB2] font-roboto font-medium text-base tracking-[-0.31px]">
-                    EN
-                  </span>
                   <button
                     onClick={toggleLanguage}
                     className="px-4 py-2 rounded-[10px] bg-[#FFFFFF1A] text-white font-roboto font-normal text-[14px] leading-[100%] transition hover:opacity-80"
                   >
-                    عربي
+                    EN
                   </button>
+                  <span className="text-[#FFFFFFB2] font-roboto font-medium text-base tracking-[-0.31px]">
+                    عربي
+                  </span>
                 </>
               )}
             </div>

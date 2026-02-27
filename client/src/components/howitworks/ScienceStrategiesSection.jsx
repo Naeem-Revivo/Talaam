@@ -1,8 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { brain, rightarrow, orangebrainicon, metericon, restoreicon, aimicon } from '../../assets/svg';
 import { useLanguage } from '../../context/LanguageContext';
 
 const ScienceStrategiesSection = () => {
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const isArabic = language === 'ar';
 
@@ -78,6 +80,7 @@ const ScienceStrategiesSection = () => {
                   {/* Learn more link */}
                   <button
                     type="button"
+                    onClick={() => navigate('/products')}
                     className={`mt-3 inline-flex items-center gap-1 font-roboto text-[13px] md:text-[14px] font-semibold text-orange-dark hover:opacity-80 transition ${
                       isArabic ? 'flex-row-reverse' : ''
                     }`}
