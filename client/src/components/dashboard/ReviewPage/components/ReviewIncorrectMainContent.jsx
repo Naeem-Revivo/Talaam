@@ -271,7 +271,7 @@ const ReviewIncorrectMainContent = ({
                                     <button
                                         key={i}
                                         onClick={() => onQuestionClick(i)}
-                                        className={`py-3 px-4 text-[14px] font-medium font-roboto transition-colors text-center border rounded-[8px] ${buttonClass} hover:opacity-80`}
+                                        className={`w-11 h-11 flex items-center justify-center text-[14px] font-medium font-roboto transition-colors text-center border rounded-[8px] ${buttonClass} hover:opacity-80`}
                                     >
                                         {i + 1}
                                     </button>
