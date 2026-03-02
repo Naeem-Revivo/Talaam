@@ -11,24 +11,9 @@ const login = async (email, password) => {
     throw new Error('Invalid email or password');
   }
 
-  // Ensure password exists and is valid (handle Prisma serialization issues in serverless)
-  if (!user.password) {
-    throw new Error('Invalid email or password');
-  }
-
-  // Ensure password is a string (handle cases where Prisma returns object)
-  const hashedPassword = typeof user.password === 'string' 
-    ? user.password 
-    : String(user.password || '');
-  
-  // Ensure candidate password is a string
-  const candidatePassword = typeof password === 'string' 
-    ? password 
-    : String(password || '');
-
   // Check password
   const UserModel = require('../../models/user');
-  const isPasswordValid = await UserModel.comparePassword(hashedPassword, candidatePassword);
+  const isPasswordValid = await UserModel.comparePassword(user.password, password);
   if (!isPasswordValid) {
     throw new Error('Invalid email or password');
   }
