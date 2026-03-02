@@ -182,47 +182,22 @@ const ReviewIncorrectMainContent = ({
 
                         {/* Explanation Section */}
                         <div className="mb-8 border border-[#D4D4D4] rounded-[16px] bg-[#FAFAFA] shadow-md shadow-[#0000000D] p-4 md:p-6">
-                            <div className={`grid ${currentQuestion.selectedAnswer && currentQuestion.selectedAnswer !== currentQuestion.correctAnswer ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'} gap-4 md:gap-5`}>
-                                <div className="min-w-0">
-                                    <div className="flex items-start justify-between gap-3 mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-10 h-10 rounded-[14px] bg-[#DCFCE7] text-[#02203A] flex items-center justify-center">
-                                                <BookIcon className="w-4 h-4" />
-                                            </div>
-                                            <h4 className="text-base font-bold text-[#171717] font-roboto">
-                                                {t('dashboard.reviewIncorrect.explanation.correctAnswerExplanation') || 'Correct Answer Explanation'}
-                                            </h4>
-                                        </div>
-                                        <span className="text-[12px] leading-[18px] font-bold text-[#16A34A] font-roboto whitespace-nowrap">
-                                            Answer: {currentQuestion.correctAnswer}
-                                        </span>
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-10 h-10 rounded-[14px] bg-[#DCFCE7] text-[#02203A] flex items-center justify-center">
+                                        <BookIcon className="w-4 h-4" />
                                     </div>
-                                    <p className="text-base font-normal text-[#525252] font-roboto">
-                                        {currentQuestion.explanation}
-                                    </p>
+                                    <h4 className="text-base font-bold text-[#171717] font-roboto">
+                                        {t('dashboard.reviewIncorrect.explanation.correctAnswerExplanation') || 'Correct Answer Explanation'}
+                                    </h4>
                                 </div>
-
-                                {currentQuestion.selectedAnswer && currentQuestion.selectedAnswer !== currentQuestion.correctAnswer && (
-                                    <div className="min-w-0 md:border-l md:border-[#D4D4D4] md:pl-5">
-                                        <div className="flex items-start justify-between gap-3 mb-2">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-10 h-10 rounded-[14px] bg-[#FDE5E0] text-oxford-blue flex items-center justify-center">
-                                                    <BookIcon className="w-4 h-4" />
-                                                </div>
-                                                <h4 className="text-base font-bold text-[#171717] font-roboto">
-                                                    Wrong Answer Explanation
-                                                </h4>
-                                            </div>
-                                            <span className="text-[12px] leading-[18px] font-bold text-[#DC2626] font-roboto whitespace-nowrap">
-                                                Answer: {currentQuestion.selectedAnswer}
-                                            </span>
-                                        </div>
-                                        <p className="text-base font-normal text-[#525252] font-roboto">
-                                            This was your selected answer, but it is incorrect. Please review the correct answer explanation above.
-                                        </p>
-                                    </div>
-                                )}
+                                <span className="text-[12px] leading-[18px] font-bold text-[#16A34A] font-roboto whitespace-nowrap">
+                                    Answer: {currentQuestion.correctAnswer}
+                                </span>
                             </div>
+                            <p className="text-base font-normal text-[#525252] font-roboto">
+                                {currentQuestion.explanation}
+                            </p>
                         </div>
                     </div>
                 </div>

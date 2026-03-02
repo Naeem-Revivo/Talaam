@@ -11,6 +11,7 @@ const StudyExplanationSidebar = ({
   currentState,
   onToggleExplanation,
   onToggleHint,
+  width = 390,
 }) => {
   const { t, language } = useLanguage();
   const dir = language === 'ar' ? 'rtl' : 'ltr'
@@ -25,7 +26,7 @@ const StudyExplanationSidebar = ({
   if (!showExplanation) {
     return (
       <div
-        className={`hidden lg:flex w-[48px] h-full bg-[#F9FAFB] border-[#E5E7EB] ${dir === 'rtl' ? 'border-r' : 'border-l'
+        className={`hidden lg:flex w-[48px] h-full bg-white border-[#E5E7EB] ${dir === 'rtl' ? 'border-r' : 'border-l'
           } items-center justify-center`}
       >
         <button
@@ -53,7 +54,10 @@ const StudyExplanationSidebar = ({
   }
 
   return (
-    <div className={`hidden lg:flex w-[390px] h-full border-l border-[#D4D4D4] ${dir === 'rtl' ? 'border-r' : 'border-l'}`}>
+    <div 
+      className={`hidden lg:flex bg-white h-full border-l border-[#D4D4D4] ${dir === 'rtl' ? 'border-r' : 'border-l'}`}
+      style={{ width: `${width}px` }}
+    >
       <div className="w-full flex flex-col">
         <div className="px-4 py-3 border-b border-[#E5E7EB] bg-[#FAFBFC] flex items-center justify-between">
           <h3 className="text-[15px] leading-[22px] font-bold text-oxford-blue font-archivo">
@@ -78,7 +82,7 @@ const StudyExplanationSidebar = ({
         <div className="p-4 overflow-y-auto bg-white [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {showReview ? (
             <div className="space-y-3">
-              <div className="w-full max-w-[465.1796875px] min-h-[65px] rounded-[14px] border border-[#BBF7D0] bg-[#F0FDF4] pl-4 pr-3 py-2.5">
+              <div className="w-full max-w-[465px] flex items-center min-h-[65px] rounded-[14px] border border-[#BBF7D0] bg-[#F0FDF4] pl-4 pr-3 py-2.5">
                 <div className="flex items-center gap-3 h-full">
                   <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#15803D] text-white">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,7 +101,7 @@ const StudyExplanationSidebar = ({
               </div>
 
               {selectedOption && selectedOption.id !== correctOption?.id && (
-                <div className="w-full max-w-[465.1796875px] min-h-[61px] rounded-[14px] border border-[#FECACA] bg-[#FEF2F2] pl-4 pr-3 py-2.5">
+                <div className="w-full max-w-[465px] flex items-center min-h-[61px] rounded-[14px] border border-[#FECACA] bg-[#FEF2F2] pl-4 pr-3 py-2.5">
                   <div className="flex items-center gap-3 h-full">
                     <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#EF4444] text-white">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

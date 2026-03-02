@@ -45,7 +45,8 @@ const QuestionSessionSummaryPage = () => {
 
   const sessionData = location.state?.sessionData;
   const incorrectQuestionsFromState = location.state?.incorrectQuestions || [];
-  const sessionId = location.state?.sessionId || sessionData?.sessionId;
+  // Get sessionId from multiple possible sources
+  const sessionId = location.state?.sessionId || sessionData?.sessionId || null;
 
   const summary = useMemo(
     () => ({
@@ -90,8 +91,13 @@ const QuestionSessionSummaryPage = () => {
   };
 
   const handleReviewIncorrect = () => {
-    if (incorrectQuestionsFromState.length > 0) {
-      navigate('/dashboard/review-incorrect', {
+    // Build URL with sessionId if available
+    const baseUrl = '/dashboard/review-incorrect';
+    const url = sessionId ? `${baseUrl}?sessionId=${sessionId}` : baseUrl;
+    
+    // If we have incorrectQuestions in state, pass them along with sessionId in URL
+    if (incorrectQuestionsFromState && incorrectQuestionsFromState.length > 0) {
+      navigate(url, {
         state: {
           incorrectQuestions: incorrectQuestionsFromState,
           fromCurrentSession: true,
@@ -99,19 +105,16 @@ const QuestionSessionSummaryPage = () => {
       });
       return;
     }
-    if (sessionId) {
-      navigate(`/dashboard/review-incorrect?sessionId=${sessionId}`);
-      return;
-    }
-    navigate('/dashboard/review');
+    
+    // Navigate with sessionId in URL if available
+    navigate(url);
   };
 
   const handleReviewAll = () => {
-    if (sessionId) {
-      navigate(`/dashboard/review-all?sessionId=${sessionId}`);
-      return;
-    }
-    navigate('/dashboard/review');
+    // Always include sessionId in URL when available
+    const baseUrl = '/dashboard/review-all';
+    const url = sessionId ? `${baseUrl}?sessionId=${sessionId}` : baseUrl;
+    navigate(url);
   };
 
   return (

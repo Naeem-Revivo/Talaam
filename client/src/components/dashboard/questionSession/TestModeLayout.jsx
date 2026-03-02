@@ -30,7 +30,7 @@ const TestModeLayout = ({
   const isMarked = currentState?.isMarked || false;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F8FAFC]">
       <TestModeHeader
         currentIndex={currentIndex}
         totalQuestions={totalQuestions}
@@ -55,7 +55,7 @@ const TestModeLayout = ({
           onCloseQuestionNav={onCloseQuestionNav}
         />
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:pl-6 lg:pr-[89px] lg:py-4">
           <TestQuestionContent
             currentQuestion={currentQuestion}
             currentState={currentState}
