@@ -73,7 +73,20 @@ const User = {
 
   // Compare password
   async comparePassword(hashedPassword, candidatePassword) {
-    return await bcrypt.compare(candidatePassword, hashedPassword);
+    // Ensure both arguments are strings (handle Prisma serialization issues in serverless)
+    const hashed = typeof hashedPassword === 'string' 
+      ? hashedPassword 
+      : String(hashedPassword || '');
+    const candidate = typeof candidatePassword === 'string' 
+      ? candidatePassword 
+      : String(candidatePassword || '');
+    
+    // Validate that we have valid strings before comparing
+    if (!hashed || !candidate) {
+      return false;
+    }
+    
+    return await bcrypt.compare(candidate, hashed);
   },
 };
 
