@@ -32,6 +32,7 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     dateOfBirth: '',
+    phoneNumber: '',
     country: 'United States',
     timeZone: '(GMT-08:00) Pacific Time',
     language: 'English'
@@ -55,6 +56,7 @@ const Profile = () => {
               ...prev,
               fullName: fetched.fullName || fetched.name || '',
               dateOfBirth: fetched.dateOfBirth ? fetched.dateOfBirth.substring(0, 10) : '',
+              phoneNumber: fetched.phoneNumber || fetched.phone || '',
               country: fetched.country || prev.country,
               timeZone: fetched.timezone || prev.timeZone,
               language: fetched.language || prev.language,
@@ -68,6 +70,7 @@ const Profile = () => {
           ...prev,
           fullName: user.fullName || user.name || '',
           dateOfBirth: user.dateOfBirth ? String(user.dateOfBirth).substring(0, 10) : '',
+          phoneNumber: user.phoneNumber || user.phone || '',
           country: user.country || prev.country,
           timeZone: user.timezone || prev.timeZone,
           language: user.language || prev.language,
@@ -175,6 +178,7 @@ const Profile = () => {
       const payload = {
         fullName: formData.fullName.trim(),
         ...(formData.dateOfBirth && { dateOfBirth: formData.dateOfBirth }),
+        ...(formData.phoneNumber && formData.phoneNumber.trim() && { phoneNumber: formData.phoneNumber.trim() }),
         country: formData.country,
         timezone: formData.timeZone,
         language: formData.language,
@@ -375,6 +379,18 @@ const Profile = () => {
               />
             </div>
           </div>
+
+          {/* Phone Number Field */}
+          <Input
+            type="tel"
+            name="phoneNumber"
+            value={formData.phoneNumber}
+            onChange={handleInputChange}
+            placeholder={t('profile.phoneNumberPlaceholder')}
+            label={`${t('profile.phoneNumber')} (${t('profile.optional')})`}
+            icon="phone"
+            className="w-full"
+          />
 
           {/* Language Dropdown */}
           <div className="flex flex-col gap-1">

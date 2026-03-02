@@ -14,13 +14,13 @@ const TestModeFooter = ({
   void isPauseDisabled;
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#D4D4D4] px-4 md:px-[89px] py-3 md:py-5 z-30 shadow-footer">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#D4D4D4] px-4 md:px-[89px] py-3 md:py-5 z-30 shadow-footer">
       <div className="md:hidden flex items-center justify-between gap-2 mb-3">
         <button
           onClick={() => onNavigate(-1)}
           disabled={currentIndex === 0}
           aria-label={t('dashboard.questionSession.actions.previousQuestion')}
-          className={`flex-1 h-12 rounded-[10px] flex items-center justify-center gap-2 text-[14px] font-bold font-roboto transition-colors ${
+          className={`flex-1 h-12 rounded-[14px] flex items-center justify-center gap-2 text-base font-bold font-roboto transition-colors ${
             currentIndex === 0 ? 'text-[#A3A3A3] cursor-not-allowed bg-[#F8FAFC]' : 'text-oxford-blue bg-[#F3F4F6] hover:bg-[#E5E7EB]'
           }`}
         >
@@ -75,7 +75,7 @@ const TestModeFooter = ({
           className={`px-8 h-12 py-2 rounded-[14px] flex gap-2 items-center text-base font-bold tracking-[-0.31px] font-roboto transition-colors shadow-sm shadow-[#0000000D] ${
             currentIndex === totalQuestions - 1
               ? 'text-[#A3A3A3] cursor-not-allowed bg-[#F8FAFC]'
-              : 'bg-[#EF4444] text-white hover:opacity-90'
+              : 'bg-gradient-to-r from-[#ED4122] to-[#DC2626] text-white hover:opacity-90'
           }`}
         >
           <span>{t('dashboard.questionSession.actions.nextQuestion')}</span>
@@ -88,12 +88,12 @@ const TestModeFooter = ({
       <div className="md:hidden flex justify-center mt-1">
         <button
           onClick={onExit}
-          className="text-[14px] leading-[21px] font-bold text-[#A3A3A3] font-roboto hover:text-[#737373] transition-colors"
+          className="text-base font-bold tracking-[-0.31px] text-[#A3A3A3] font-roboto hover:text-[#737373] transition-colors"
         >
           {t('dashboard.questionSession.actions.exitSession')}
         </button>
       </div>
-    </footer>
+    </div>
   );
 };
 

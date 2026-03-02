@@ -1362,6 +1362,11 @@ const QuestionSessionPage = () => {
               incorrectCount = summary.incorrectAnswers || 0;
               accuracyPercent = summary.percentage || 0;
 
+              // Update sessionId from API response if available (testId is the sessionId for test mode)
+              if (testResults.testId || testResults.sessionId) {
+                sessionIdRef.current = testResults.testId || testResults.sessionId;
+              }
+
               // Update questionState with isCorrect values from results
               if (testResults.results && Array.isArray(testResults.results)) {
                 updatedQuestionState = questionState.map((state, idx) => {
@@ -1405,7 +1410,7 @@ const QuestionSessionPage = () => {
               isCorrect: questionState[idx]?.isCorrect || false,
             }));
 
-            await studentQuestionsAPI.saveStudySessionResults({
+            const saveResponse = await studentQuestionsAPI.saveStudySessionResults({
               examId: sessionInfoRef.current.examId,
               subjectId: sessionInfoRef.current.subjectId,
               topicId: sessionInfoRef.current.topicId,
@@ -1415,6 +1420,11 @@ const QuestionSessionPage = () => {
 
             // Mark as saved
             sessionStorage.setItem(sessionKey, 'true');
+            
+            // Store sessionId from API response for navigation
+            if (saveResponse.success && saveResponse.data?.sessionId) {
+              sessionIdRef.current = saveResponse.data.sessionId;
+            }
           }
         } catch (error) {
           console.error('Error saving session results:', error);
@@ -1430,10 +1440,20 @@ const QuestionSessionPage = () => {
         : 0;
     }
 
-    // Clear session in test mode when viewing summary after completion
-    if (mode === 'test' && sessionComplete && sessionIdRef.current) {
-      clearSession(sessionIdRef.current);
-      sessionIdRef.current = null;
+    // Get sessionId - use from API response if available, otherwise keep current ref
+    let savedSessionId = null;
+    if (mode === 'test') {
+      // For test mode, check if response has testId (which is the sessionId)
+      if (testResults?.testId || testResults?.sessionId) {
+        savedSessionId = testResults.testId || testResults.sessionId;
+      } else if (sessionIdRef.current) {
+        // Use current sessionId ref if available
+        savedSessionId = sessionIdRef.current;
+      }
+      // Don't clear sessionId in test mode - we need it for review pages
+    } else {
+      // For study mode, use sessionId from API response or current ref
+      savedSessionId = sessionIdRef.current;
     }
 
     const sessionData = {
@@ -1448,9 +1468,15 @@ const QuestionSessionPage = () => {
         id: q.id || idx + 1,
         status: updatedQuestionState[idx]?.isCorrect === true ? 'correct' : 'incorrect',
       })),
+      sessionId: savedSessionId, // Include sessionId in sessionData
     };
 
-    navigate('/dashboard/session-summary', { state: { sessionData } });
+    navigate('/dashboard/session-summary', { 
+      state: { 
+        sessionData,
+        sessionId: savedSessionId, // Also pass as separate property for easy access
+      } 
+    });
   };
 
   const handleReviewAnswers = async () => {
@@ -1516,6 +1542,11 @@ const QuestionSessionPage = () => {
             const testResults = response.data;
             // Store results for later use
             sessionStorage.setItem(resultsKey, JSON.stringify(testResults));
+
+            // Update sessionId from API response if available (testId is the sessionId for test mode)
+            if (testResults.testId || testResults.sessionId) {
+              sessionIdRef.current = testResults.testId || testResults.sessionId;
+            }
 
             // Update questionState with isCorrect values from results
             if (testResults.results && Array.isArray(testResults.results)) {

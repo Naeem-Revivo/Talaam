@@ -235,12 +235,6 @@ const ReviewIncorrectPage = () => {
             <span>Previous Question</span>
           </button>
 
-          {/* Overall Progress */}
-          <div className="text-[14px] leading-[21px] font-normal text-[#525252] font-roboto flex flex-col items-center justify-center gap-1">
-            Overall Progress 
-            <span className="text-[24px] leading-[32px] text-[#171717] font-bold tracking-[0.07px] font-roboto">{overallProgress}%</span>
-          </div>
-
           {/* Next Button */}
           <button
             onClick={handleNext}

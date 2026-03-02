@@ -12,7 +12,7 @@ const AboutPage = () => {
       <WhoWeAre />
       <WhatMakesUsDifferent />
       <WhyWeStarted />
-      <JoinUsForm />
+      {/* <JoinUsForm /> */}
     </div>
   );
 };
