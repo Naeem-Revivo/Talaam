@@ -235,7 +235,7 @@ const DashboardPage = () => {
             ) : (
               <div className="flex flex-col items-center justify-center h-full">
                 <div className="text-center">
-                  <p className="font-roboto font-bold text-[72px] leading-[72px] text-white tracking-[0.12px]">
+                  <p className="font-roboto font-[900] text-[72px] leading-[72px] text-white tracking-[0.12px]">
                     {getAccuracy().toFixed(0)}%
                   </p>
                 </div>

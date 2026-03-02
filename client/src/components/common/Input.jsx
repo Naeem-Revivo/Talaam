@@ -14,7 +14,7 @@ import { eye, openeye } from '../../assets/svg/signup';
  * @param {boolean} required - Whether field is required
  * @param {string} error - Error message to display
  * @param {string} hint - Hint text to display below input
- * @param {string} icon - Icon type: 'email', 'password', 'person', 'calendar', 'location', 'clock', 'globe'
+ * @param {string} icon - Icon type: 'email', 'password', 'person', 'calendar', 'location', 'clock', 'globe', 'phone'
  * @param {number} maxLength - Maximum length
  * @param {string} className - Additional CSS classes
  * @param {boolean} showPasswordToggle - Show password toggle button (for password type)
@@ -132,6 +132,15 @@ const Input = ({
               </defs>
             </svg>
 
+          </div>
+        );
+      case 'phone':
+        return (
+          <div className={iconClass}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13.5 1.5H4.5C3.67157 1.5 3 2.17157 3 3V15C3 15.8284 3.67157 16.5 4.5 16.5H13.5C14.3284 16.5 15 15.8284 15 15V3C15 2.17157 14.3284 1.5 13.5 1.5Z" stroke="#6CA6C1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M7.5 13.5H10.5" stroke="#6CA6C1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </div>
         );
       default:

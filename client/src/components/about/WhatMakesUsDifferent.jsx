@@ -26,7 +26,7 @@ const WhatMakesUsDifferent = () => {
   const FeatureItem = ({ text }) => (
     <div className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse text-right' : ''}`}>
       <CheckIcon />
-      <span className="font-roboto font-normal text-[#64748B] text-[13px] md:text-[15px] leading-[150%]">
+      <span className="font-roboto font-normal text-[#64748B] text-[13px] md:text-[18px] leading-[27px]">
         {text}
       </span>
     </div>
@@ -36,12 +36,12 @@ const WhatMakesUsDifferent = () => {
     <section className="w-full bg-[#F9FAFB] py-12 md:py-16 lg:py-20">
       <div className="max-w-[1180px] mx-auto w-full px-4 md:px-8 lg:px-12 2xl:px-0">
         {/* Title */}
-        <h2 className="font-archivo font-bold text-[#0F172A] text-[32px] md:text-[44px] lg:text-[52px] leading-[110%] tracking-[0] text-center mb-8 md:mb-12">
+        <h2 className="font-archivo font-bold text-[#0F172A] text-[32px] md:text-[44px] lg:text-[48px] leading-[48px] tracking-[-0.96px] text-center mb-8 md:mb-12">
           {t('about.whatMakesUsDifferent.title')}
         </h2>
 
         {/* Features - 2 columns, 2 rows */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 lg:gap-x-16 gap-y-5 md:gap-y-6 max-w-[900px] mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 lg:gap-x-16 gap-y-5 md:gap-y-6 w-fit mx-auto">
           {/* Left column */}
           <div className="flex flex-col gap-5 md:gap-6">
             {leftFeatures.map((feature, index) => (

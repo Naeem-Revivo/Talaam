@@ -22,22 +22,6 @@ const FlagIcon = ({ isMarked = false }) => (
     </svg>
 );
 
-const DocumentIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M14.9999 1.66602H4.99992C4.07944 1.66602 3.33325 2.41221 3.33325 3.33268V16.666C3.33325 17.5865 4.07944 18.3327 4.99992 18.3327H14.9999C15.9204 18.3327 16.6666 17.5865 16.6666 16.666V3.33268C16.6666 2.41221 15.9204 1.66602 14.9999 1.66602Z" stroke="#525252" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M6.66675 5H13.3334" stroke="#525252" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M12.9531 12V15.3333" stroke="#525252" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M13.3333 8.33398H13.3416" stroke="#525252" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M10 8.33398H10.0083" stroke="#525252" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M6.66675 8.33398H6.67508" stroke="#525252" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M10 11.666H10.0083" stroke="#525252" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M6.66675 11.666H6.67508" stroke="#525252" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M10 15H10.0083" stroke="#525252" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M6.66675 15H6.67508" stroke="#525252" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round" />
-    </svg>
-
-);
-
 const ClockIcon = ({ className = "w-4 h-4" }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -108,15 +92,6 @@ const ReviewIncorrectHeader = ({
                             <span>Mark for Review</span>
                         </button>
                     )}
-
-                    {/* Formula Sheet Button */}
-                    <button
-                        onClick={onFormulaSheet}
-                        className="flex items-center gap-2 px-5 py-2 bg-white border border-[#D4D4D4] text-[#525252] rounded-[14px] text-[14px] font-medium font-roboto hover:bg-[#F3F4F6] transition-colors"
-                    >
-                        <DocumentIcon />
-                        <span>Formula Sheet</span>
-                    </button>
 
                     {/* Time Remaining Button */}
                     <div className="flex items-center gap-2.5 px-4 h-[64px] bg-gradient-to-r from-[#032746] to-[#173B50] text-white rounded-[14px] shadow-sm shadow-[#0000000D]">

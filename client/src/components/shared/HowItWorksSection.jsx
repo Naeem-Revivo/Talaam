@@ -68,12 +68,12 @@ const HowItWorksSection = ({
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-archivo font-bold text-text-dark text-[22px] md:text-[26px] leading-[32px]">
+                  <h3 className="font-archivo font-bold text-text-dark text-[22px] md:text-[30px] leading-[36px]">
                     {step.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="font-roboto font-normal text-text-gray text-[13px] md:text-[16px] leading-[26px] max-w-[380px]">
+                  <p className="font-roboto font-normal text-text-gray text-[13px] md:text-[18px] leading-[30px] max-w-[460px]">
                     {step.description}
                   </p>
                 </div>

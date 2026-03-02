@@ -177,7 +177,7 @@ const QuestionBankDashboard = () => {
         <div className="w-full max-w-[1280px] grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-6 lg:gap-8 xl:gap-x-[145px] xl:gap-y-[30px]">
           {loading ? (
             <div className="col-span-full flex justify-center py-10">
-              <Loader size="md" text={t("dashboard.loading") || "Loading..."} />
+              <Loader size="md" text={t("questionBanks.loading") || "Loading..."} />
             </div>
           ) : allItems.length === 0 ? (
             <div className="col-span-full text-center text-oxford-blue font-roboto text-sm sm:text-base md:text-lg">

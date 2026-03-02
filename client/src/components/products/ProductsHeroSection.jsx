@@ -42,7 +42,7 @@ const ProductsHeroSection = () => {
           </div>
 
           {/* Heading */}
-          <h1 className="font-archivo font-bold text-text-dark tracking-[-2.62px] leading-[90px] text-[36px] sm:text-[44px] lg:text-[72px]">
+          <h1 className="font-archivo font-[800] text-text-dark tracking-[-2.62px] leading-[90px] text-[36px] sm:text-[44px] lg:text-[72px]">
             {t("products.hero.title1")}{" "}
             <br className="hidden sm:block" />
             <span className="text-[#ED4122]">

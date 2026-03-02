@@ -1,8 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { logofooter } from '../../assets/svg';
 
 const AuthSidePanel = () => {
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const isRTL = language === 'ar';
 
@@ -28,11 +30,13 @@ const AuthSidePanel = () => {
       </div>
         {/* Top Section - Logo */}
         <div>
+          <button onClick={() => navigate('/')} className='cursor-pointer z-50 relative'>
           <img
             src={logofooter}
             alt="Taalam Logo"
             className="w-[120px] h-[72px] mb-10"
           />
+          </button>
 
           {/* Welcome Badge */}
           <div className="inline-flex items-center gap-2 bg-[#FDF0D526] rounded-full px-4 pt-3 pb-2 mb-6 border border-[#FDF0D533]">

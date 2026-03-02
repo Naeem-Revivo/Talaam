@@ -24,14 +24,14 @@ const TestQuestionContent = ({
   const promptWithoutInlineImages = promptHtml.replace(/<img[^>]*>/gi, '').trim();
 
   return (
-    <div dir={dir}>
+    <div className="" dir={dir}>
       <div className="mb-6 border bg-white border-[#E6EEF3] rounded-[16px] p-8">
-        <div className="flex items-start justify-between gap-3 mb-[30px]">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-[30px]">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-[11px] bg-gradient-to-r from-[#032746] to-[#173B50] flex items-center justify-center text-white font-medium text-[14px] leading-[21px] font-roboto">
               {currentQuestion.itemNumber}
             </div>
-            <span className="text-[14px] font-normal text-[#525252] font-roboto">
+            <span className="text-[14px] leading-[20px] font-normal text-[#525252] font-roboto">
               Question {currentQuestion.itemNumber}
             </span>
           </div>
@@ -65,6 +65,7 @@ const TestQuestionContent = ({
               className={`w-full min-h-[62px] rounded-[12px] border-[1.5px] flex items-center px-6 py-3 text-left transition-colors ${
                 isSelected ? 'border-[#75A9CC] bg-[#ECF4FA]' : 'border-[#D4D4D4] bg-white hover:bg-[#F8FAFC]'
               }`}
+              dir={dir}
             >
               <div className="flex items-center gap-3 w-full" dir="ltr">
                 <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[12px] leading-[28px] font-medium font-roboto ${
@@ -72,7 +73,9 @@ const TestQuestionContent = ({
                 }`}>
                   {option.id}
                 </span>
-                <span className={`text-base font-normal font-roboto flex-1 ${isSelected ? 'text-[#1F4E79]' : 'text-dashboard-dark'}`}>
+                <span className={`text-base font-normal font-roboto flex-1 ${
+                  isSelected ? 'text-[#1F4E79]' : 'text-dashboard-dark'
+                }`}>
                   {option.text}
                 </span>
               </div>
@@ -85,7 +88,7 @@ const TestQuestionContent = ({
         <button
           onClick={onSubmit}
           disabled={!hasSelectedOption}
-          className={`w-full h-[48px] md:h-[60px] rounded-[10px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] transition ${
+          className={`w-full h-[48px] md:h-[60px] rounded-[10px] text-base font-bold font-archivo transition ${
             hasSelectedOption
               ? 'bg-gradient-to-r from-[#032746] to-[#0B4A73] text-white hover:opacity-90'
               : 'bg-[#E5E7EB] text-[#A3A3A3] cursor-not-allowed'

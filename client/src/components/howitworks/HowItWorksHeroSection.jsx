@@ -49,7 +49,7 @@ const HowItWorksHeroSection = () => {
           </div>
 
           {/* Main Title */}
-          <h1 className="font-archivo font-bold text-[32px] leading-[120%] md:text-[48px] md:leading-[110%] lg:text-[72px] lg:leading-[leading-[92px]] tracking-[-2.16px] text-[#0F172A] mb-4 md:mb-6">
+          <h1 className="font-archivo font-[800] text-[32px] leading-[120%] md:text-[48px] md:leading-[110%] lg:text-[72px] lg:leading-[leading-[92px]] tracking-[-2.16px] text-[#0F172A] mb-4 md:mb-6">
             {t('howItWorks.hero.title')} {t('howItWorks.hero.titleHighlight')}
           </h1>
 

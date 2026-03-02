@@ -4,7 +4,7 @@ import { dashboardplayicon, dashboardstatsicon, dashboardhistoryicon } from "../
 const QuickActions = ({ onStartSession, onAnalytics, onReviewSessions, t }) => {
   return (
     <div className="">
-      <h2 className="font-archivo font-bold text-[26px] leading-[36px] text-dashboard-dark mb-1">
+      <h2 className="font-archivo font-[800] text-[26px] leading-[36px] text-dashboard-dark mb-1">
         {t("dashboard.quickActions.title") || "What Would You Like to Do?"}
       </h2>
       <p className="font-roboto font-normal text-base text-[#737373] mb-4 md:mb-6">

@@ -29,7 +29,7 @@ const TryItFreeBanner = () => {
 
           {/* Text + CTA */}
           <div
-            className={`w-full md:w-1/2 flex flex-col items-center text-center gap-2 ${
+            className={`w-full md:w-1/2 flex flex-col items-center text-center gap-2 pb-6 md:pb-0 px-4 md:px-0 ${
               isArabic ? "md:items-center" : "md:items-center"
             }`}
           >
@@ -41,7 +41,7 @@ const TryItFreeBanner = () => {
             </p>
             <button
               onClick={() => navigate("/create-account")}
-              className="mt-1 w-[411px] justify-center bg-gradient-to-b from-[#ED4122] to-[#FF6B47] hover:opacity-90 transition-opacity text-white rounded-[16px] h-[52px] md:h-[56px] px-10 md:px-12 font-archivo font-bold text-[15px] md:text-[18px] leading-[28px] tracking-[-0.44px] inline-flex items-center gap-2 shadow-[0_8px_24px_rgba(237,65,34,0.25)]"
+              className="mt-3 w-full max-w-[411px] md:w-auto justify-center bg-gradient-to-b from-[#ED4122] to-[#FF6B47] hover:opacity-90 transition-opacity text-white rounded-[16px] h-[48px] md:h-[56px] px-6 md:px-12 font-archivo font-bold text-[15px] md:text-[18px] leading-[24px] md:leading-[28px] tracking-[-0.44px] inline-flex items-center gap-2 shadow-[0_8px_24px_rgba(237,65,34,0.25)]"
             >
               {t("products.whatYouGet.getStartedFree")}
               <svg

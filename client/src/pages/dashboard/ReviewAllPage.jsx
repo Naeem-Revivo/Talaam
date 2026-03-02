@@ -31,6 +31,30 @@ const ClockIcon = () => (
   </svg>
 );
 
+const OptionStatusIcon = ({ type }) => {
+  if (type === 'correct') {
+    return (
+      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border-2 border-[#15803D] text-[#15803D]">
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+        </svg>
+      </span>
+    );
+  }
+
+  if (type === 'wrong') {
+    return (
+      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border-2 border-[#EF4444] text-[#EF4444]">
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </span>
+    );
+  }
+
+  return null;
+};
+
 const ReviewAllPage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -76,6 +100,8 @@ const ReviewAllPage = () => {
                 const options = ['A', 'B', 'C', 'D', 'E'].map((key) => ({
                   id: key,
                   text: optionsObj[key] || '',
+                  correct: key === result.correctAnswer,
+                  userSelected: key === result.selectedAnswer,
                 })).filter(opt => opt.text);
 
                 return {
@@ -95,6 +121,8 @@ const ReviewAllPage = () => {
             const options = ['A', 'B', 'C', 'D', 'E'].map((key) => ({
               id: key,
               text: optionsObj[key] || '',
+              correct: key === sessionData.question.correctAnswer,
+              userSelected: key === sessionData.selectedAnswer,
             })).filter(opt => opt.text);
 
             formattedQuestions = [{
@@ -210,10 +238,6 @@ const ReviewAllPage = () => {
 
           {/* Right: Action Buttons */}
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 px-5 py-2 bg-white border border-[#D4D4D4] text-[#525252] rounded-[14px] text-[14px] font-medium font-roboto hover:bg-[#F3F4F6] transition-colors">
-              <DocumentIcon />
-              <span>Formula Sheet</span>
-            </button>
             <div className="flex items-center gap-2.5 px-4 h-[64px] bg-gradient-to-r from-[#032746] to-[#173B50] text-white rounded-[14px] shadow-sm shadow-[#0000000D]">
               <ClockIcon />
               <div className="flex flex-col leading-none">
@@ -263,28 +287,29 @@ const ReviewAllPage = () => {
             {/* Answer Options */}
             <div className="space-y-3 mb-8">
               {currentQuestion.options.map((option) => {
-                const isSelected = option.id === currentQuestion.selectedAnswer;
-                
+                const isCorrect = option.id === currentQuestion.correctAnswer;
+                const isUserAnswer = option.id === currentQuestion.selectedAnswer;
+                const isWrongUserAnswer = isUserAnswer && !isCorrect;
+                const statusType = isCorrect ? 'correct' : isWrongUserAnswer ? 'wrong' : null;
+                const optionClass = isCorrect
+                  ? 'border-[#16A34A] bg-[#F0FDF4]'
+                  : isWrongUserAnswer
+                    ? 'border-[#EF4444] bg-[#FEF2F2]'
+                    : 'border-[#D4D4D4] bg-white border-[1px]';
+
                 return (
                   <div
                     key={option.id}
-                    className={`w-full min-h-[62px] rounded-[12px] border-[1.5px] flex items-center px-6 py-3 ${
-                      isSelected
-                        ? 'border-[#032746]'
-                        : 'border-[#D4D4D4] bg-white border-[1px]'
-                    }`}
+                    className={`w-full min-h-[62px] rounded-[12px] border-[1.5px] flex items-center px-6 py-3 ${optionClass}`}
                   >
                     <div className="flex items-center gap-3 w-full">
-                      <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-medium font-roboto ${
-                        isSelected ? 'bg-[#0B4A73] text-white' : 'bg-[#F5F5F5] border border-[#E6EEF3] text-[#737373]'
-                      }`}>
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-[#E6EEF3] text-[12px] leading-[28px] font-medium text-[#737373] font-roboto">
                         {option.id}
                       </span>
-                      <span className={`text-base font-normal font-roboto flex-1 ${
-                        isSelected ? 'text-[#032746]' : 'text-[#0A0A0A]'
-                      }`}>
+                      <span className="text-base font-normal text-dashboard-dark font-roboto flex-1">
                         {option.text}
                       </span>
+                      <OptionStatusIcon type={statusType} />
                     </div>
                   </div>
                 );
@@ -441,12 +466,6 @@ const ReviewAllPage = () => {
             </svg>
             <span>Previous Question</span>
           </button>
-
-          {/* Overall Progress */}
-          <div className="text-[14px] leading-[21px] font-normal text-[#525252] font-roboto flex flex-col items-center justify-center gap-1">
-            Overall Progress
-            <span className="text-[24px] leading-[32px] text-[#171717] font-bold tracking-[0.07px] font-roboto">{overallProgress}%</span>
-          </div>
 
           {/* Next Button */}
           <button

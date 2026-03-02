@@ -462,6 +462,7 @@
       "titleHighlight": "Banks",
       "subtitle": "Access the exams you're subscribed to, or upgrade to unlock more."
     },
+    "loading": "Loading...",
     "exams": {
       "subscribed": "Subscribed",
       "notSubscribed": "Not Subscribed",
@@ -577,6 +578,12 @@
         "q2": "What information should I include in my message?",
         "q3": "Do you offer phone support?",
         "q4": "Can I get support in Arabic?"
+      },
+      "answers": {
+        "a1": "We typically respond within 24 hours during business days. For urgent matters, please contact us via WhatsApp for faster response.",
+        "a2": "Please include your name, email address, and a detailed description of your question or issue. The more information you provide, the better we can assist you.",
+        "a3": "Currently, we offer support via email and WhatsApp. Phone support may be available for premium members - please contact us for more information.",
+        "a4": "Yes! We provide full support in both Arabic and English. You can contact us in whichever language you prefer, and our team will respond accordingly."
       }
     }
   },
@@ -710,6 +717,8 @@
     "timeZonePlaceholder": "(GMT-08:00) Pacific Time",
     "language": "Language",
     "languagePlaceholder": "English",
+    "phoneNumber": "Phone Number",
+    "phoneNumberPlaceholder": "Enter your phone number",
     "quickTip": "Quick Tip: Completing your profile helps us personalize your learning experience!",
     "validation": {
       "fullNameRequired": "Full name is required",

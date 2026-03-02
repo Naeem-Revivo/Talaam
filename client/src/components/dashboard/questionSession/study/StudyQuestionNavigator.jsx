@@ -31,34 +31,38 @@ const StudyQuestionNavigator = ({
   };
 
   const getButtonClass = (status) => {
+    const baseClasses = 'border font-roboto transition-colors';
+    const fontWeight = status === 'default' ? 'font-normal' : 'font-bold';
+
     switch (status) {
       case 'correct':
-        return 'border-[#22C55E] bg-[#F0FDF4] text-[#22C55E]';
+        return `${baseClasses} border-[#22C55E] bg-[#F0FDF4] text-[#22C55E] ${fontWeight}`;
       case 'incorrect':
-        return 'border-[#EF4444] bg-[#FEF2F0] text-[#EF4444]';
+        return `${baseClasses} border-[#EF4444] bg-[#FEF2F0] text-[#EF4444] ${fontWeight}`;
       case 'current':
-        return 'border-[#75A9CC] bg-[#ECF4FA] text-[#4285B5]';
+        return `${baseClasses} border-[#6697B7] bg-[#E6EEF3] text-[#6697B7] ${fontWeight}`;
       case 'marked':
-        return 'border-[#EAB308] bg-[#FEFCE8] text-[#EAB308]';
+        return `${baseClasses} border-[#EAB308] bg-[#FEFCE8] text-[#EAB308] ${fontWeight}`;
       case 'visited':
-        return 'border-[#D1D5DB] bg-[#F5F6F7] text-[#6B7280]';
+        return `${baseClasses} border-[#D1D5DB] bg-[#F5F6F7] text-[#6B7280] ${fontWeight}`;
       default:
-        return 'border-[#D1D5DB] bg-white text-[#9CA3AF]';
+        return `${baseClasses} border-[#D4D4D4] bg-[#F8FAFC] text-[#737373] ${fontWeight}`;
     }
   };
 
   const renderButtonContent = (status, index) => {
     if (status === 'correct') {
       return (
-        <svg className="w-8 h-8 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16.6667 5L7.50004 14.1667L3.33337 10" stroke="#22C55E" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
+
       );
     }
     if (status === 'incorrect') {
       return (
-        <svg className="w-8 h-8 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 6l12 12M18 6L6 18" />
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 5L5 15M5 5L15 15" stroke="#EF4444" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       );
     }
@@ -87,7 +91,7 @@ const StudyQuestionNavigator = ({
                     <button
                       key={index}
                       onClick={() => onGoToIndex(index)}
-                      className={`h-12 rounded-xl border text-[20px] font-semibold font-roboto transition-colors ${getButtonClass(status)}`}
+                      className={`h-12 rounded-[10px] text-[14px] leading-[21px] ${getButtonClass(status)}`}
                     >
                       {renderButtonContent(status, index)}
                     </button>
@@ -107,7 +111,7 @@ const StudyQuestionNavigator = ({
               <button
                 key={index}
                 onClick={() => onGoToIndex(index)}
-                className={`w-[46px] h-[46px] gap-2 rounded-[10px] pt-3 pr-4 pb-3 pl-4 border text-[20px] leading-none font-semibold font-roboto transition-colors flex items-center justify-center mx-auto ${getButtonClass(status)}`}
+                className={`w-[46px] h-[46px] gap-2 rounded-[10px] text-[14px] leading-[21px] flex items-center justify-center mx-auto ${getButtonClass(status)}`}
               >
                 {renderButtonContent(status, index)}
               </button>

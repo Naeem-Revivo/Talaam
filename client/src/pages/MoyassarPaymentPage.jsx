@@ -187,10 +187,18 @@ const MoyassarPaymentPage = () => {
             }
           }
         } else if (sub.paymentStatus === 'Paid' && sub.isActive) {
-          // User already has an active paid subscription
-          showSuccessToast('You already have an active subscription!');
-          navigate('/dashboard/subscription-billings');
-          return;
+          // Check if subscription is actually active (not expired)
+          const expiryDate = new Date(sub.expiryDate);
+          const currentDate = new Date();
+          const isExpired = expiryDate < currentDate;
+          
+          if (!isExpired) {
+            // User already has an active paid subscription that hasn't expired
+            showSuccessToast('You already have an active subscription!');
+            navigate('/dashboard/subscription-billings');
+            return;
+          }
+          // If expired, continue to create a new subscription
         }
       }
       // If no subscription found (404) or subscription doesn't match, continue to create new one

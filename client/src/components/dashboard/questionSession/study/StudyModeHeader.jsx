@@ -111,12 +111,6 @@ const StudyModeHeader = ({
             <span>{t('dashboard.questionSession.markForReview')}</span>
           </button>
 
-          <button
-            className="flex items-center gap-2 px-5 py-2 bg-white border border-[#D4D4D4] text-[#525252] rounded-[14px] text-[14px] font-medium font-roboto hover:bg-[#F3F4F6] transition-colors"
-          >
-            <DocumentIcon />
-            <span>{t('dashboard.questionSession.formulaSheet')}</span>
-          </button>
 
           <div className="flex items-center gap-2.5 px-4 h-[64px] bg-gradient-to-r from-[#032746] to-[#173B50] text-white rounded-[14px] shadow-sm shadow-[#0000000D]">
             <ClockIcon className="w-6 h-6" />

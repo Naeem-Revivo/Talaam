@@ -119,7 +119,7 @@ const StudyQuestionContent = ({
             <div className="w-8 h-8 rounded-[11px] bg-gradient-to-r from-[#032746] to-[#173B50] flex items-center justify-center text-white font-medium text-[14px] leading-[21px] font-roboto">
               {currentQuestion.itemNumber}
             </div>
-            <span className="text-[14px] font-normal text-[#525252] font-roboto">
+            <span className="text-[14px] leading-[20px] font-normal text-[#525252] font-roboto">
               Question {currentQuestion.itemNumber}
             </span>
           </div>
@@ -183,7 +183,7 @@ const StudyQuestionContent = ({
         <button
           onClick={onSubmit}
           disabled={!hasSelectedOption || showReview}
-          className={`w-full h-[48px] md:h-[60px] rounded-[10px] text-[16px] md:text-[20px] font-bold font-archivo leading-[28px] tracking-[0%] transition ${
+          className={`w-full h-[48px] md:h-[60px] rounded-[10px] text-base font-bold font-archivo transition ${
             hasSelectedOption && !showReview
               ? 'bg-gradient-to-r from-[#032746] to-[#0B4A73] text-white hover:opacity-90'
               : 'bg-[#E5E7EB] text-[#A3A3A3] cursor-not-allowed'

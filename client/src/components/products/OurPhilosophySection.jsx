@@ -47,7 +47,7 @@ const OurPhilosophySection = () => {
               <span className="text-[36px] md:text-[26px] leading-[40px] font-normal text-text-dark">{card.emoji}</span>
 
               {/* Text */}
-              <p className={`font-roboto font-normal text-text-dark text-[13px] md:text-[16px] leading-[26px] ${isArabic ? 'text-center' : 'text-center'}`}>
+              <p className={`font-roboto font-normal text-text-dark text-[13px] md:text-[14px] leading-[21px] ${isArabic ? 'text-center' : 'text-center'}`}>
                 {card.text}
               </p>
             </div>
