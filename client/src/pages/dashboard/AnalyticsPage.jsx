@@ -69,6 +69,7 @@ const AnalyticsPage = () => {
           }
           trend="↑ 5% vs last month"
           trendColor="text-[#00A63E]"
+          trendBgColor="bg-[#F0FDF4]"
           loading={loading}
         />
 
@@ -82,7 +83,8 @@ const AnalyticsPage = () => {
               : "0s"
           }
           trend="↓ 8s improvement"
-          trendColor="text-[#6697B7]"
+          trendColor="text-[#155DFC]"
+          trendBgColor="bg-[#EFF6FF]"
           loading={loading}
         />
 

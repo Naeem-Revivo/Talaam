@@ -83,7 +83,7 @@ const TopicAccuracyList = ({
                     bgClassName="bg-[#F3F4F6]"
                   />
                 </div>
-                <span className="text-[14px] md:text-[16px] font-bold text-[#111827] font-archivo leading-[20px] md:leading-[24px] tracking-[0%] text-right min-w-[40px]">
+                <span className="text-[14px] font-bold text-[#032746] font-archivo leading-[21px] tracking-[0%] text-right min-w-[40px]">
                   {Math.round(topic.accuracy || 0)}%
                 </span>
               </div>

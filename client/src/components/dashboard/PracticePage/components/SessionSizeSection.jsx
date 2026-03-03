@@ -32,7 +32,7 @@ const SessionSizeSection = ({
           max="50"
           className="w-full h-[48px] px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-cinnebar-red focus:border-transparent font-roboto font-medium text-[14px] leading-[20px] text-black placeholder:text-[14px] placeholder:text-black"
         />
-        <p className="font-roboto font-normal text-[12px] leading-[26px] tracking-[0%] text-dashboard-gray mt-2">
+        <p className="font-roboto font-normal text-[12px] leading-[16px] tracking-[0%] text-dashboard-gray mt-2">
           Enter between 1-50.
         </p>
       </div>

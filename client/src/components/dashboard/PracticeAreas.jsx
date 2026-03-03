@@ -70,7 +70,7 @@ const PracticeAreas = ({ practiceAreas, loading, onPracticeClick, t }) => {
                     {area.correct || 0}/{area.total || 0} correct
                   </span>
                 </div>
-                <p className="font-roboto font-normal text-xs text-[#737373]">
+                <p className="font-roboto font-normal text-[14px] leading-[21px] text-[#737373]">
                   {getRecommendation(area.accuracy || area.score)}
                 </p>
               </div>

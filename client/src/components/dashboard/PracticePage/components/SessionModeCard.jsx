@@ -20,7 +20,7 @@ const SessionModeCard = ({
       <h2 className="font-archivo font-bold text-lg md:text-[20px] leading-[28px] tracking-[0%] text-oxford-blue mb-2">
         {t('dashboard.practice.sessionMode.title')}
       </h2>
-      <p className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0%] text-gray-600 mb-5">
+      <p className="font-roboto font-normal text-base text-gray-600 mb-5">
         {t('dashboard.practice.sessionMode.subtitle')}
       </p>
       {!hasActiveSubscription && !checkingSubscription && (
@@ -45,7 +45,7 @@ const SessionModeCard = ({
             onClick={() => onModeChange('test')}
             disabled={!hasActiveSubscription || checkingSubscription}
             className={`rounded-lg transition-all duration-200 text-left w-full h-[82px] md:h-[93px] p-4 md:p-5 ${sessionMode === 'test'
-                ? 'bg-[#ED41220D] border border-[#ED4122] shadow-input'
+                ? 'bg-[#ED41220D] border-2 border-[#ED4122] shadow-input'
                 : hasActiveSubscription
                   ? 'bg-white border border-[#E5E7EB]'
                   : 'bg-gray-100 border border-gray-300 opacity-60 cursor-not-allowed'
@@ -88,7 +88,7 @@ const SessionModeCard = ({
             onClick={() => onModeChange('study')}
             disabled={!hasActiveSubscription || checkingSubscription}
             className={`rounded-lg transition-all duration-200 text-left w-full h-[82px] md:h-[93px] p-4 md:p-5 ${sessionMode === 'study'
-                ? 'bg-[#ED41220D] border border-[#ED4122] shadow-input'
+                ? 'bg-[#ED41220D] border-2 border-[#ED4122] shadow-input'
                 : hasActiveSubscription
                   ? 'bg-white border border-[#E5E7EB]'
                   : 'bg-gray-100 border border-gray-300 opacity-60 cursor-not-allowed'

@@ -8,10 +8,27 @@ const MetricCard = ({
   value,
   trend,
   trendColor = "text-green-600",
+  trendBgColor = "bg-green-50",
   loading = false,
   children,
   className = "",
 }) => {
+  // Parse trend to separate icon+value from description
+  const parseTrend = (trendText) => {
+    if (!trendText) return { badge: '', description: '' };
+    
+    // Match pattern like "↑ 5%" or "↓ 8s" followed by text
+    const match = trendText.match(/^([↑↓]\s*[\d.]+[%s]?)\s*(.*)$/);
+    if (match) {
+      return {
+        badge: match[1], // "↑ 5%" or "↓ 8s"
+        description: match[2] // "vs last month" or "improvement"
+      };
+    }
+    return { badge: trendText, description: '' };
+  };
+
+  const { badge, description } = parseTrend(trend);
   return (
     <div
       className={`bg-white border border-[#CCDCE7] rounded-[24px] p-4 md:p-6 relative w-full min-h-[120px] md:min-h-[180px] flex flex-col gap-4 ${className}`}
@@ -38,14 +55,23 @@ const MetricCard = ({
               {value}
             </p>
           )}
-          <p className="text-base font-normal text-dashboard-gray font-roboto leading-[20px]">
+          <p className="text-[12px] font-normal text-dashboard-gray font-roboto leading-[16px]">
             {label}
           </p>
           </div>
           {trend && (
-            <p className={`text-[12px] md:text-[14px] font-normal ${trendColor} font-roboto leading-[18px] md:leading-[20px] pt-1 md:pt-2 flex items-center gap-1`}>
-              {trend}
-            </p>
+            <div className="flex items-center gap-2 pt-1 md:pt-2">
+              {badge && (
+                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-[10px] ${trendBgColor} ${trendColor} text-[12px] leading-[16px] font-medium font-roboto`}>
+                  {badge}
+                </span>
+              )}
+              {description && (
+                <span className="text-[12px] font-normal text-[#6697B7] font-roboto leading-[18px]">
+                  {description}
+                </span>
+              )}
+            </div>
           )}
           {children}
         </>
