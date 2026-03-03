@@ -14,7 +14,10 @@ import { navlogo } from '../../assets/svg'
  * @param {function} customBackHandler - Custom back button handler function (optional)
  * @param {string} customBackText - Custom back button text (optional)
  * @param {boolean} showTips - Show tips section at bottom (default: false)
- * @param {string} tipText - Text to display in tips section
+ * @param {string} tipLabel - Label text for tip (e.g., "Quick Tip:")
+ * @param {string} tipText - Main text to display in tips section
+ * @param {string} tipBgColor - Background color for tip section (default: '#FEF3E2')
+ * @param {string} tipTextColor - Text color for tip section (default: '#D97706')
  * @param {string} className - Additional CSS classes for the card
  */
 const AuthCard = ({
@@ -26,7 +29,10 @@ const AuthCard = ({
   customBackHandler = null,
   customBackText = null,
   showTips = false,
+  tipLabel = '',
   tipText = '',
+  tipBgColor = '#FEF3E2',
+  tipTextColor = '#D97706',
   className = ''
 }) => {
   const { language, t } = useLanguage()
@@ -104,7 +110,7 @@ const AuthCard = ({
             )}
 
             {description && (
-              <p className="font-roboto font-normal text-center text-[16px] leading-[26px] text-[#6CA6C1] mb-6 w-full">
+              <p className="font-roboto font-normal text-center text-[16px] leading-[24px] text-[#6CA6C1] mb-8 w-full">
                 {description}
               </p>
             )}
@@ -114,14 +120,18 @@ const AuthCard = ({
           {children}
 
           {/* Tips Section */}
-          {showTips && tipText && (
-            <div className='bg-orange-50 rounded-[14px] pb-[13px] px-4 pt-4 text-dark-gray font-roboto text-[14px] leading-[140%] font-normal w-full flex items-start gap-3'>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-orange-500 flex-shrink-0 mt-0.5">
-                <path d="M10 2C5.58 2 2 5.58 2 10C2 14.42 5.58 18 10 18C14.42 18 18 14.42 18 10C18 5.58 14.42 2 10 2ZM10 14C9.45 14 9 13.55 9 13C9 12.45 9.45 12 10 12C10.55 12 11 12.45 11 13C11 13.55 10.55 14 10 14ZM11 10H9V6H11V10Z" fill="currentColor" />
-              </svg>
-              <p className="font-roboto font-normal text-[14px] leading-[140%] tracking-normal text-dark-gray">
-                {tipText}
-              </p>
+          {showTips && (tipLabel || tipText) && (
+            <div className='rounded-[14px] pb-[13px] p-4 text-dark-gray font-roboto w-full flex items-start' style={{ backgroundColor: tipBgColor }}>
+              {tipLabel && (
+                <span className="font-roboto font-semibold text-[12px] leading-[20px] tracking-normal" style={{ color: tipTextColor }}>
+                  {tipLabel}
+                </span>
+              )}
+              {tipText && (
+                <p className="font-roboto font-normal text-[12px] leading-[20px] tracking-normal" style={{ color: tipTextColor }}>
+                  {tipText}
+                </p>
+              )}
             </div>
           )}
         </div>

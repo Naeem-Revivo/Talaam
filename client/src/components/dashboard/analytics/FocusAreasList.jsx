@@ -34,13 +34,13 @@ const FocusAreasList = ({
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {/* Numbered badge */}
                 <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#032746] flex items-center justify-center">
-                  <span className="text-white text-[12px] md:text-[14px] font-medium font-archivo">
+                  <span className="text-white text-[12px] leading-[16px] font-bold font-archivo">
                     {index + 1}
                   </span>
                 </div>
                 
                 {/* Topic name */}
-                <span className="text-[14px] leading-[20px] font-normal text-oxford-blue font-roboto">
+                <span className="text-[14px] leading-[20px] font-medium text-oxford-blue font-roboto">
                   {area.name}
                 </span>
                 

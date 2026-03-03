@@ -271,7 +271,7 @@ const SignUp = () => {
     return (
         <div className="min-h-screen bg-white flex items-center justify-center p-4" dir={dir}>
             <div className="bg-white p-4 lg:p-8 2xl:p-0 w-full max-w-2xl">
-                <div className="w-full max-w-[448px] mx-auto pt-8 lg:pt-16">
+                <div className="w-full max-w-[448px] mx-auto pt-8 lg:pt-16 pb-2">
                     {/* Header */}
                     <h1 className="font-archivo font-bold mb-2 lg:mb-4 text-[26px] lg:text-[32px] leading-[45px] text-text-dark">
                         {t('createAccount.title')}
@@ -282,12 +282,11 @@ const SignUp = () => {
 
                     <div className="flex flex-col gap-6 lg:gap-8">
                         {/* Role Selection */}
-                        <div className="flex flex-col gap-1 mb-2">
+                        {/* <div className="flex flex-col gap-1 mb-2">
                             <label className="block font-roboto font-medium text-[14px] leading-[21px] text-text-dark mb-2">
                                 {t('createAccount.roleLabel') || 'I am a *'}
                             </label>
                             <div className="grid grid-cols-2 gap-4">
-                                {/* Student Card */}
                                 <button
                                     type="button"
                                     onClick={() => setSelectedRole('student')}
@@ -320,8 +319,6 @@ const SignUp = () => {
                                         </div>
                                     </div>
                                 </button>
-
-                                {/* Admin Card - Disabled for now */}
                                 <button
                                     type="button"
                                     onClick={() => { }}
@@ -356,7 +353,7 @@ const SignUp = () => {
                                     </div>
                                 </button>
                             </div>
-                        </div>
+                        </div> */}
 
                         {/* Email Field */}
                         <Input
@@ -424,7 +421,7 @@ const SignUp = () => {
                         <button
                             onClick={handleSignUp}
                             disabled={loading}
-                            className={`bg-gradient-to-b from-[#032746] to-[#0A4B6E] text-white font-archivo font-semibold text-[20px] leading-[100%] tracking-[0] rounded-[14px] transition-colors duration-200 py-3 w-full h-[57px] hover:bg-oxford-blue/90 flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''
+                            className={`bg-gradient-to-b from-[#032746] to-[#0A4B6E] text-white font-archivo font-bold text-base rounded-[14px] transition-colors duration-200 py-3 w-full h-[57px] hover:bg-oxford-blue/90 flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''
                                 }`}
                         >
                             {loading ? t('createAccount.buttonLoading') || 'Creating account...' : t('createAccount.buttonText') || 'Sign Up Free'}
@@ -449,10 +446,10 @@ const SignUp = () => {
                             <button
                                 type="button"
                                 onClick={handleGoogleSignup}
-                                className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-[14px] hover:bg-gray-50 transition-colors w-full h-[57px]"
+                                className="flex h-[48px] items-center justify-center gap-2 px-4 py-3 border-2 border-[#E5E7EB] rounded-[14px] hover:bg-gray-50 transition-colors w-full"
                             >
                                 <img src={google} alt="Google" className="w-5 h-5" />
-                                <span className="font-roboto font-medium text-[16px] leading-[100%] tracking-[0] text-gray-900">
+                                <span className="font-roboto font-semibold text-[14px] leading-[20px] tracking-[0] text-[#0F172A]">
                                     {t('login.continueWithGoogle')}
                                 </span>
                             </button>
@@ -460,10 +457,10 @@ const SignUp = () => {
                             <button
                                 type="button"
                                 onClick={handleLinkedInSignup}
-                                className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-[14px] hover:bg-gray-50 transition-colors w-full h-[57px]"
+                                className="flex h-[48px] items-center justify-center gap-2 px-4 py-3 border-2 border-[#E5E7EB] rounded-[14px] hover:bg-gray-50 transition-colors w-full"
                             >
                                 <img src={linkedin} alt="LinkedIn" className="w-5 h-5" />
-                                <span className="font-roboto font-medium text-[16px] leading-[100%] tracking-[0] text-gray-900">
+                                <span className="font-roboto font-semibold text-[14px] leading-[20px] tracking-[0] text-[#0F172A]">
                                     {t('login.continueWithLinkedIn')}
                                 </span>
                             </button>

@@ -69,7 +69,7 @@ const QuestionStatusCard = ({
             <span className="font-archivo font-medium text-[14px] leading-[21px] text-[#00040A] block">
               New
             </span>
-            <span className="font-roboto font-normal text-[12px] leading-[26px] text-dashboard-gray block">
+            <span className="font-roboto font-normal text-[12px] leading-[16px] text-dashboard-gray block">
               Never attempted.
             </span>
           </div>
@@ -87,7 +87,7 @@ const QuestionStatusCard = ({
             <span className="font-archivo font-medium text-[14px] leading-[21px] text-[#00040A] block">
               Solved
             </span>
-            <span className="font-roboto font-normal text-[12px] leading-[26px] text-dashboard-gray block mb-2">
+            <span className="font-roboto font-normal text-[12px] leading-[16px] text-dashboard-gray block mb-2">
               All solved questions.
             </span>
             {questionStatus === 'solved' && (

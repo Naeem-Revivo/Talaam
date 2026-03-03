@@ -170,12 +170,12 @@ const DashboardPage = () => {
               </h3>
               <img src={progress} alt="progress" className="w-10 h-10" />
             </div>
-            {loading ? (
-              <div className="flex-1 flex items-center justify-center">
-                <Loader size="lg" />
-              </div>
-            ) : (
-              <>
+            <div className="flex flex-col flex-1">
+              {loading ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <Loader size="lg" />
+                </div>
+              ) : (
                 <div className="flex items-center justify-center flex-1">
                   <div className="relative w-[128px] h-[128px]">
                     <svg
@@ -213,37 +213,39 @@ const DashboardPage = () => {
                     </div>
                   </div>
                 </div>
-                <p className="text-center font-roboto font-normal text-base text-dashboard-gray mt-4 md:mt-6">
-                  {`${getProgressData().completed}/${getProgressData().total} ${t("dashboard.overview.questionsCompleted") || "Questions Completed"}`}
-                </p>
-              </>
-            )}
+              )}
+              <p className="text-center font-roboto font-normal text-base text-dashboard-gray mt-4 md:mt-6">
+                {loading ? '' : `${getProgressData().completed}/${getProgressData().total} ${t("dashboard.overview.questionsCompleted") || "Questions Completed"}`}
+              </p>
+            </div>
           </div>
 
           {/* Accuracy Card with Dark Blue Gradient */}
-          <div className="bg-gradient-to-br from-[#032746] via-[#0A4B6E] to-[#173B50] rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full h-auto min-h-[200px] md:min-h-[251px] flex flex-col">
+          <div className="bg-gradient-to-br from-[#032746] via-[#0A4B6E] to-[#173B50] rounded-xl border border-[#E5E7EB] shadow-dashboard p-4 md:p-6 w-full h-auto min-h-[200px] md:min-h-[304px] flex flex-col">
             <div className="flex items-center justify-between mb-3 md:mb-4">
               <h3 className="font-archivo font-bold text-[18px] leading-[27px] text-white">
                 {t("dashboard.overview.accuracy") || "Overall Accuracy"}
               </h3>
               <img src={statsprogress} alt="accuracy" className="w-10 h-10" />
             </div>
-            {loading ? (
-              <div className="flex-1 mb-6 flex items-center justify-center">
-                <Loader size="lg" />
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full">
-                <div className="text-center">
-                  <p className="font-roboto font-[900] text-[72px] leading-[72px] text-white tracking-[0.12px]">
-                    {getAccuracy().toFixed(0)}%
-                  </p>
+            <div className="flex flex-col flex-1">
+              {loading ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <Loader size="lg" />
                 </div>
-                  <p className="font-roboto font-normal text-center text-base text-[#F5F5F5]">
-                    {t("dashboard.overview.overall") || "Based on all answered questions"}
-                  </p>
-              </div>
-            )}
+              ) : (
+                <div className="flex flex-col items-center justify-center flex-1 h-[128px]">
+                  <div className="text-center">
+                    <p className="font-roboto font-[900] text-[72px] leading-[72px] text-white tracking-[0.12px]">
+                      {getAccuracy().toFixed(0)}%
+                    </p>
+                  </div>
+                </div>
+              )}
+              <p className="text-center font-roboto font-normal text-base text-[#F5F5F5]">
+                {loading ? '' : t("dashboard.overview.overall") || "Based on all answered questions"}
+              </p>
+            </div>
           </div>
         </div>
       </div>

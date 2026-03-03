@@ -221,7 +221,10 @@ const VerifyEmail = () => {
       customBackHandler={() => navigate('/create-account')}
       customBackText={t('common.back') || 'Back'}
       showTips={true}
-      tipText={t('verifyEmail.tip') || "Tip: Check your spam folder if you don't see the email in your inbox."}
+      tipLabel={t('verifyEmail.tipLabel') || '💡 Tip:'}
+      tipText={t('verifyEmail.tipText') || "Check your spam folder if you don't see the email in your inbox."}
+      tipBgColor="#F0F9FF"
+      tipTextColor="#0369A1"
     >
       <p className="font-roboto font-semibold text-[16px] leading-[26px] tracking-[0px] text-oxford-blue text-center mb-3">
           {emailToDisplay}
@@ -292,14 +295,14 @@ const VerifyEmail = () => {
           <div className="flex gap-4">
             <button
               onClick={handleSkip}
-              className="font-roboto font-normal text-[14px] leading-[20px] tracking-[0px] text-[#6CA6C1] hover:text-gray-700 hover:underline"
+              className="font-roboto font-semibold text-[14px] leading-[20px] tracking-[0px] text-[#6CA6C1] hover:text-gray-700 hover:underline"
             >
               {t('verifyEmail.skipForNow') || 'Skip for now'}
             </button>
             <button
               onClick={handleResend}
               disabled={!canResend}
-              className={`font-roboto font-medium text-sm leading-none tracking-normal ${
+              className={`font-roboto font-semibold text-sm leading-none tracking-normal ${
                 canResend
                   ? 'text-cinnebar-red underline hover:no-underline cursor-pointer'
                   : 'cursor-not-allowed text-gray-400'
