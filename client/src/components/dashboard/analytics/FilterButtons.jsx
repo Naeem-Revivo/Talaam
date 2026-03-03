@@ -7,7 +7,7 @@ const FilterButtons = ({ options, selectedValue, onChange, className = "" }) => 
         <button
           key={option.value}
           onClick={() => onChange(option.value)}
-          className={`px-5 py-2 rounded-[10px] text-[14px] font-normal transition-colors font-roboto leading-[20px] tracking-[0%] text-center ${
+          className={`px-5 py-2 rounded-[10px] text-[14px] font-medium transition-colors font-roboto leading-[20px] tracking-[0%] text-center ${
             selectedValue === option.value
               ? "bg-oxford-blue text-white"
               : " text-[#6A7282]"

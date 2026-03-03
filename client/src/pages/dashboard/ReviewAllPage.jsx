@@ -296,7 +296,7 @@ const ReviewAllPage = () => {
                   : isWrongUserAnswer
                     ? 'border-[#EF4444] bg-[#FEF2F2]'
                     : 'border-[#D4D4D4] bg-white border-[1px]';
-
+                
                 return (
                   <div
                     key={option.id}

@@ -170,7 +170,7 @@ const Input = ({
           onBlur={onBlur}
           placeholder={placeholder}
           maxLength={maxLength}
-          className={`px-4 py-3 ${paddingLeft} ${paddingRight} border ${error ? 'border-[red-500]' : 'border-[#E5E7EB]'
+          className={`px-4 py-3 ${paddingLeft} ${paddingRight} border ${error ? 'border-orange-dark' : 'border-[#E5E7EB]'
             } rounded-[14px] border-2 outline-none w-full h-[56px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray focus:border-[#6CA6C1] transition-colors`}
           {...props}
         />
@@ -190,7 +190,7 @@ const Input = ({
         )}
       </div>
       {error && (
-        <p className="mt-1 text-xs font-normal text-[#6CA6C1] font-roboto">{error}</p>
+        <p className="mt-1 text-xs font-normal text-orange-dark font-roboto">{error}</p>
       )}
       {hint && !error && (
         <p className="mt-1 text-xs font-normal text-[#6CA6C1] font-roboto">{hint}</p>

@@ -212,20 +212,20 @@ const AccuracyTrendChart = ({
                         border: "1px solid #E5E7EB",
                         borderRadius: "8px",
                         boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                        padding: "10px 14px",
-                        minWidth: "110px",
+                        padding: "12px 16px",
+                        minWidth: "120px",
                         pointerEvents: "none",
                       }}
                     >
                       <p
                         style={{
                           margin: 0,
-                          marginBottom: "3px",
-                          fontSize: "13px",
+                          marginBottom: "4px",
+                          fontSize: "16px",
                           fontWeight: 700,
-                          color: "#111827",
+                          color: "#032746",
                           fontFamily: "Archivo, sans-serif",
-                          lineHeight: 1.4,
+                          lineHeight: 1.2,
                         }}
                       >
                         {pointData?.date || ""}
@@ -233,10 +233,10 @@ const AccuracyTrendChart = ({
                       <p
                         style={{
                           margin: 0,
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          color: "#6CA6C1",
-                          fontFamily: "Archivo, sans-serif",
+                          fontSize: "12px",
+                          fontWeight: 400,
+                          color: "#6697B7",
+                          fontFamily: "Roboto, sans-serif",
                           lineHeight: 1.4,
                         }}
                       >
@@ -252,15 +252,15 @@ const AccuracyTrendChart = ({
               ...dataSx,
               // Force all x-axis labels to be visible
               "& .MuiChartsAxis-bottom .MuiChartsAxis-tickLabel": {
-                fontSize: "11px",
-                fill: "#6B7280",
+                fontSize: "13px",
+                fill: "#9CA3AF",
                 fontFamily: "Archivo, sans-serif",
                 opacity: 1,
               },
               // Minimize left axis label spacing
               "& .MuiChartsAxis-left .MuiChartsAxis-tickLabel": {
-                fontSize: "11px",
-                fill: "#6B7280",
+                fontSize: "13px",
+                fill: "#9CA3AF",
                 fontFamily: "Archivo, sans-serif",
                 textAnchor: "end",
               },

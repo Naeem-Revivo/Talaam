@@ -639,7 +639,7 @@
       "confirmPasswordRequired": "Please confirm your password",
       "passwordsMismatch": "Passwords do not match"
     },
-    "buttonText": "Create account",
+    "buttonText": "Sign Up Free",
     "buttonLoading": "Creating account...",
     "success": "Account created successfully.",
     "successTitle": "Account Created",
@@ -677,7 +677,8 @@
     "resendCodeIn": "Resend code in",
     "verifyAccount": "Verify & Continue",
     "skipForNow": "Skip for now",
-    "tip": "Tip: Check your spam folder if you don't see the email in your inbox.",
+    "tipLabel": "💡 Tip:",
+    "tipText": "Check your spam folder if you don't see the email in your inbox.",
     "validation": {
       "codeRequired": "Please enter the complete 6-digit verification code"
     },
@@ -719,7 +720,8 @@
     "languagePlaceholder": "English",
     "phoneNumber": "Phone Number",
     "phoneNumberPlaceholder": "Enter your phone number",
-    "quickTip": "Quick Tip: Completing your profile helps us personalize your learning experience!",
+    "quickTipLabel": "⚡ Quick Tip:",
+    "quickTipText": "Completing your profile helps us personalize your learning experience!",
     "validation": {
       "fullNameRequired": "Full name is required",
       "fullNameMinLength": "Full name must be at least 2 characters",

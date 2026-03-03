@@ -122,14 +122,14 @@ const ProfileDropdown = ({
   const paddingLeft = hasIcon ? 'pl-12' : 'pl-4';
 
   return (
-    <div className={`relative w-full ${className || 'lg:w-[423px]'}`} ref={dropdownRef}>
+    <div className={`relative w-full max-w-full ${className || 'lg:w-[423px]'}`} ref={dropdownRef}>
       {/* Dropdown Box - Matches input field styling */}
       <div
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`relative flex h-[56px] cursor-pointer items-center justify-between rounded-[14px] border-2 ${selectedValue ? 'border-[#E5E7EB]' : 'border-[#E5E7EB]'} bg-white py-3 ${paddingLeft} pr-4 font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue outline-none focus-within:border-[#6CA6C1] transition-colors`}
+        className={`relative flex h-[56px] min-w-0 cursor-pointer items-center justify-between rounded-[14px] border-2 ${selectedValue ? 'border-[#E5E7EB]' : 'border-[#E5E7EB]'} bg-white py-3 ${paddingLeft} pr-4 font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue outline-none focus-within:border-[#6CA6C1] transition-colors`}
       >
         {renderIcon()}
-        <span className={`flex-1 ${!displayValue ? "text-dark-gray" : ""}`}>
+        <span className={`flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap pr-2 ${!displayValue ? "text-dark-gray" : ""}`}>
           {displayValue || placeholder}
         </span>
         <svg
@@ -138,7 +138,7 @@ const ProfileDropdown = ({
           viewBox="0 0 15 9"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          className={`flex-shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
         >
           <path
             d="M0.6875 0.726562L7.00848 6.71211L13.3295 0.726562"
@@ -157,7 +157,7 @@ const ProfileDropdown = ({
               <li
                 key={option.value}
                 onClick={(e) => handleOptionClick(option, e)}
-                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 font-roboto ${selectedValue === option.value
+                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 font-roboto overflow-hidden text-ellipsis whitespace-nowrap ${selectedValue === option.value
                   ? "font-semibold text-oxford-blue"
                   : "text-gray-700"
                   }`}

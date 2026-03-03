@@ -161,11 +161,11 @@ const QuestionBankDashboard = () => {
       <div className="w-full bg-gradient-to-b from-[#ED41220A] to-[#ED41220A] py-10 md:py-14 lg:py-[72px]">
         <div className="max-w-[1180px] mx-auto px-4 md:px-8 lg:px-12 2xl:px-0">
           <div className="flex flex-col justify-start w-fit mx-auto">
-          <h1 className="font-archivo font-black text-center text-[32px] md:text-[40px] lg:text-[72px] leading-[90px] tracking-[-2.96px]">
+          <h1 className="font-archivo font-[800] text-center text-[32px] md:text-[40px] lg:text-[72px] leading-[90px] tracking-[-2.96px]">
             <span className="text-[#0F172A]">{t("questionBanks.hero.title")} </span>
             <span className="text-[#ED4122]">{t("questionBanks.hero.titleHighlight")}</span>
           </h1>
-          <p className="font-roboto font-normal text-start text-[14px] md:text-[20px] leading-[32px] text-text-gray mt-3 max-w-[516px]">
+          <p className="font-roboto font-normal text-center text-[14px] md:text-[20px] leading-[32px] text-text-gray mt-6">
             {t("questionBanks.hero.subtitle")}
           </p>
           </div>
@@ -242,7 +242,7 @@ const QuestionBankDashboard = () => {
                           <img src={icon} alt={item.name} className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-auto xl:h-auto" />
                         </div>
                         <div className="flex flex-col min-w-0 flex-1">
-                          <h3 className="text-oxford-blue font-bold text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl truncate leading-tight">
+                          <h3 className="text-oxford-blue font-archivo font-semibold text-sm sm:text-base md:text-lg lg:text-[26px] leading-[36px] truncate">
                             {item.name}
                           </h3>
                           {/* <span className="text-dark-gray font-roboto text-xs sm:text-sm md:text-base mt-0.5 sm:mt-1 break-words">

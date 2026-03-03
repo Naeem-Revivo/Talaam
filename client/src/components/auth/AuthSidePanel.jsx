@@ -1,12 +1,14 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { logofooter } from '../../assets/svg';
 
 const AuthSidePanel = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t, language } = useLanguage();
   const isRTL = language === 'ar';
+  const isLoginPage = location.pathname === '/login';
 
   return (
     <div
@@ -23,31 +25,33 @@ const AuthSidePanel = () => {
       <div className='absolute bottom-24 -left-20 w-[450px] h-[450px] rounded-full bg-[radial-gradient(100%_85%_at_20%_50%,#6CA6C1_0%,transparent_60%)]
   mix-blend-screen opacity-70 blur-3xl' />
 
-      <div className="relative z-10 flex flex-col h-full max-w-[450px] mx-auto py-10">
-      <div className="absolute -top-16 -left-16 w-20 h-20 opacity-20">
-        <div className="w-[150px] h-[150px] bg-[#FDF0D5]/10 rounded-xl rotate-12 backdrop-blur-sm" />
-        {/* <div className="w-12 h-12 bg-white/10 rounded-xl -rotate-6 -mt-6 ml-8 backdrop-blur-sm border border-white/10" /> */}
-      </div>
+      <div className="relative z-10 flex flex-col justify-center h-full max-w-[450px] mx-auto py-10">
+        <div className="absolute -top-16 -left-16 w-20 h-20 opacity-20">
+          <div className="w-[150px] h-[150px] bg-[#FDF0D5]/10 rounded-xl rotate-12 backdrop-blur-sm" />
+          {/* <div className="w-12 h-12 bg-white/10 rounded-xl -rotate-6 -mt-6 ml-8 backdrop-blur-sm border border-white/10" /> */}
+        </div>
         {/* Top Section - Logo */}
         <div>
           <button onClick={() => navigate('/')} className='cursor-pointer z-50 relative'>
-          <img
-            src={logofooter}
-            alt="Taalam Logo"
-            className="w-[120px] h-[72px] mb-10"
-          />
+            <img
+              src={logofooter}
+              alt="Taalam Logo"
+              className="w-[120px] h-[72px] mb-10"
+            />
           </button>
 
-          {/* Welcome Badge */}
-          <div className="inline-flex items-center gap-2 bg-[#FDF0D526] rounded-full px-4 pt-3 pb-2 mb-6 border border-[#FDF0D533]">
-            {/* <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" /> */}
-            <span className="font-roboto text-[12px] font-medium tracking-wider text-white/90 uppercase">
-              {t('authSidePanel.welcomeBack')}
-            </span>
-          </div>
+          {/* Welcome Badge - Show only on login screen */}
+          {isLoginPage && (
+            <div className="w-fit gap-2 bg-[#FDF0D526] rounded-full px-4 py-2 mb-6 border border-[#FDF0D533]">
+              {/* <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" /> */}
+              <span className="font-roboto text-[12px] font-medium tracking-wider text-white/90 uppercase">
+                {t('authSidePanel.welcomeBack')}
+              </span>
+            </div>
+          )}
 
           {/* Heading */}
-          <h1 className="font-archivo font-bold text-[32px] xl:text-[48px] leading-[60px] tracking-[-1.44px] text-white mb-4">
+          <h1 className="font-archivo font-[800] text-[32px] xl:text-[48px] leading-[60px] tracking-[-1.44px] text-white mb-4">
             {t('authSidePanel.title')}
           </h1>
 
@@ -60,10 +64,10 @@ const AuthSidePanel = () => {
           <div className="flex flex-col gap-4">
             {/* Track Progress Card */}
             <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl px-5 py-4 border border-white/10 hover:bg-white/10 transition-colors duration-300">
-              <div className="w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M3 3V21H21" stroke="#34D399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M7 16L12 11L15 14L21 8" stroke="#34D399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <div className="w-12 h-12 bg-[#6CA6C14D] rounded-[14px] flex items-center justify-center flex-shrink-0">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M22 7L13.5 15.5L8.5 10.5L2 17" stroke="#FDF0D5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M16 7H22V13" stroke="#FDF0D5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </div>
               <div>
@@ -78,9 +82,10 @@ const AuthSidePanel = () => {
 
             {/* Earn Achievements Card */}
             <div className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-xl px-5 py-4 border border-white/10 hover:bg-white/10 transition-colors duration-300">
-              <div className="w-10 h-10 bg-amber-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#FBBF24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <div className="w-12 h-12 bg-[#ED41224D] rounded-[14px] flex items-center justify-center flex-shrink-0">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15.477 12.8896L16.992 21.4156C17.009 21.516 16.9949 21.6192 16.9516 21.7114C16.9084 21.8036 16.838 21.8803 16.7499 21.9314C16.6619 21.9825 16.5603 22.0055 16.4588 21.9974C16.3573 21.9892 16.2607 21.9502 16.182 21.8856L12.602 19.1986C12.4292 19.0695 12.2192 18.9998 12.0035 18.9998C11.7878 18.9998 11.5778 19.0695 11.405 19.1986L7.819 21.8846C7.74032 21.9491 7.64386 21.988 7.54249 21.9962C7.44112 22.0044 7.33967 21.9815 7.25166 21.9305C7.16365 21.8796 7.09327 21.803 7.04991 21.711C7.00656 21.619 6.99228 21.516 7.009 21.4156L8.523 12.8896" stroke="#FDF0D5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M12 14C15.3137 14 18 11.3137 18 8C18 4.68629 15.3137 2 12 2C8.68629 2 6 4.68629 6 8C6 11.3137 8.68629 14 12 14Z" stroke="#FDF0D5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </div>
               <div>
@@ -96,7 +101,7 @@ const AuthSidePanel = () => {
         </div>
 
         {/* Bottom Stats */}
-        <div className="flex items-center justify-between gap-6 xl:gap-8 mt-10">
+        <div className="flex items-center justify-between gap-6 xl:gap-8 mt-6">
           <div className="flex flex-col">
             <span className="ont-archivo font-bold text-[36px] leading-10 text-white">
               10K+

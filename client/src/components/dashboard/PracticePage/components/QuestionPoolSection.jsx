@@ -27,7 +27,8 @@ const QuestionPoolSection = ({
   const { t } = useLanguage();
 
   // Calculate total available questions
-  const displayTotalQuestions = totalAvailableQuestions !== null && totalAvailableQuestions !== undefined
+  // Always show total from allTopics when no selections are made or when totalAvailableQuestions is 0/null
+  const displayTotalQuestions = (totalAvailableQuestions !== null && totalAvailableQuestions !== undefined && totalAvailableQuestions > 0 && selectedSubtopicCount > 0)
     ? totalAvailableQuestions
     : allTopics.reduce((sum, topic) => sum + (topic.count || 0), 0);
 
