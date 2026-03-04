@@ -116,10 +116,12 @@ const ReviewIncorrectMainContent = ({
                                 </div>
 
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <div className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[10px] bg-[#FEF3C7] text-[#D97706]">
-                                        <TinyFlagIcon />
-                                        <span className="text-[14px] leading-[21px] font-medium font-roboto">Marked for Review</span>
-                                    </div>
+                                    {currentQuestion?.isMarked && (
+                                        <div className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[10px] bg-[#FEF3C7] text-[#D97706]">
+                                            <TinyFlagIcon />
+                                            <span className="text-[14px] leading-[21px] font-medium font-roboto">Marked for Review</span>
+                                        </div>
+                                    )}
                                     <div className="flex flex-col items-start gap-1 px-4 py-3 rounded-[14px] bg-[#F8EEEE] border-l-[6px] border-[#F04B2A] text-[#DC2626] max-w-[390px]">
                                         <div className="flex items-center gap-1">
                                             <div className="w-4 h-4 rounded-full bg-[#F04B2A] text-white flex items-center justify-center ">
@@ -257,12 +259,22 @@ const ReviewIncorrectMainContent = ({
                                 const question = questions[i];
                                 const isAnswered = isQuestionAnswered(question);
                                 const isCurrent = i === currentQuestionIndex;
+                                const isMarked = question?.isMarked || false;
+                                const isCorrect = question?.isCorrect === true;
 
                                 let buttonClass = '';
                                 if (isCurrent) {
                                     buttonClass = 'bg-[#E0F2F7] text-[#1F4E79] border-[#007BFF]';
+                                } else if (isMarked) {
+                                    // Marked for review styling
+                                    buttonClass = 'bg-[#FEFCE8] text-[#B45309] border-[#EAB308]';
                                 } else if (isAnswered) {
-                                    buttonClass = 'bg-gradient-to-r from-[#032746] to-[#0A4B6E] text-white border-[#1F4E79]';
+                                    // Correct/Incorrect styling matching option colors
+                                    if (isCorrect) {
+                                        buttonClass = 'bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]';
+                                    } else {
+                                        buttonClass = 'bg-[#FEF2F2] text-[#EF4444] border-[#EF4444]';
+                                    }
                                 } else {
                                     buttonClass = 'bg-[#E6EEF3] text-[#6697B7] border-[#6697B7]';
                                 }
@@ -281,8 +293,12 @@ const ReviewIncorrectMainContent = ({
 
                         <div className="border-t border-[#E5E7EB] pt-3 space-y-1 text-[12px] font-normal text-[#525252] font-roboto">
                             <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 bg-gradient-to-r from-[#032746] to-[#0A4B6E] border border-[#1F4E79] rounded" />
-                                <span>Answered</span>
+                                <div className="w-4 h-4 bg-[#F0FDF4] border border-[#16A34A] rounded" />
+                                <span>Correct</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-[#FEF2F2] border border-[#EF4444] rounded" />
+                                <span>Incorrect</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="w-4 h-4 bg-[#FEFCE8] border border-[#EAB308] rounded" />

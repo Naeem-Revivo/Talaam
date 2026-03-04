@@ -732,6 +732,7 @@ const QuestionSessionPage = () => {
               questionId: q.id,
               selectedAnswer: getSelectedAnswer(state), // Handles skipped questions
               isCorrect: isCorrect,
+              isMarked: state?.isMarked || false,
             };
           });
 
@@ -761,6 +762,7 @@ const QuestionSessionPage = () => {
                 questionId: q.id,
                 selectedAnswer: getSelectedAnswer(questionState[idx]), // Handles skipped questions
                 isCorrect: questionState[idx]?.isCorrect || false,
+                isMarked: questionState[idx]?.isMarked || false,
               }));
 
               await studentQuestionsAPI.saveStudySessionResults({
@@ -780,6 +782,7 @@ const QuestionSessionPage = () => {
               const answers = questions.map((q, idx) => ({
                 questionId: q.id,
                 selectedAnswer: getSelectedAnswer(questionState[idx]), // Handles skipped questions
+                isMarked: questionState[idx]?.isMarked || false,
               }));
 
               const response = await studentQuestionsAPI.submitTestAnswers(
@@ -1340,6 +1343,7 @@ const QuestionSessionPage = () => {
             const answers = questions.map((q, idx) => ({
               questionId: q.id,
               selectedAnswer: getSelectedAnswer(questionState[idx]), // Handles skipped questions
+              isMarked: questionState[idx]?.isMarked || false,
             }));
 
             const response = await studentQuestionsAPI.submitTestAnswers(
@@ -1408,6 +1412,7 @@ const QuestionSessionPage = () => {
               questionId: q.id,
               selectedAnswer: getSelectedAnswer(questionState[idx]), // Handles skipped questions
               isCorrect: questionState[idx]?.isCorrect || false,
+              isMarked: questionState[idx]?.isMarked || false,
             }));
 
             const saveResponse = await studentQuestionsAPI.saveStudySessionResults({
@@ -1526,6 +1531,7 @@ const QuestionSessionPage = () => {
           const answers = questions.map((q, idx) => ({
             questionId: q.id,
             selectedAnswer: getSelectedAnswer(questionState[idx]), // Handles skipped questions
+            isMarked: questionState[idx]?.isMarked || false,
           }));
 
           const response = await studentQuestionsAPI.submitTestAnswers(
@@ -1597,6 +1603,7 @@ const QuestionSessionPage = () => {
           correctAnswer: q.correctAnswer,
           selectedAnswer: getSelectedAnswer(state),
           explanation: q.explanation || '',
+          isMarked: state?.isMarked || false,
         };
       })
       .filter(Boolean);
@@ -1621,38 +1628,17 @@ const QuestionSessionPage = () => {
   const toggleExplanation = () => setShowExplanation((prev) => !prev);
   const toggleExplanationPanel = () => setShowExplanationPanel((prev) => !prev);
 
-  // Toggle mark status for a question (for later review)
+  // Toggle mark status for a question (session-specific, stored locally until session is saved)
   const toggleMark = async (index) => {
     const question = questions[index];
     if (!question || !question.id) return;
 
-    const currentState = questionState[index];
-    const isCurrentlyMarked = currentState?.isMarked || false;
-
-    // Optimistically update UI
+    // Just update local state - isMarked will be saved when session is saved
     setQuestionState((prev) =>
       prev.map((state, idx) =>
         idx === index ? { ...state, isMarked: !state.isMarked } : state
       )
     );
-
-    try {
-      if (isCurrentlyMarked) {
-        // Unmark question
-        await studentQuestionsAPI.unmarkQuestion(question.id);
-      } else {
-        // Mark question
-        await studentQuestionsAPI.markQuestion(question.id);
-      }
-    } catch (error) {
-      // Revert on error
-      setQuestionState((prev) =>
-        prev.map((state, idx) =>
-          idx === index ? { ...state, isMarked: isCurrentlyMarked } : state
-        )
-      );
-      showErrorToast(error.response?.data?.message || error.message || 'Failed to update mark status');
-    }
   };
 
   // Check if any question has been submitted (for disabling pause button)
