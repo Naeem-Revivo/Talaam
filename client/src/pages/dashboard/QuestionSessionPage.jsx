@@ -770,7 +770,7 @@ const QuestionSessionPage = () => {
                 subjectId: sessionInfoRef.current.subjectId,
                 topicId: sessionInfoRef.current.topicId,
                 questions: questionsData,
-                timeTaken: timeTakenMs,
+                timeTaken: totalTimeTakenMs,
               });
 
               // Mark as saved
@@ -788,7 +788,7 @@ const QuestionSessionPage = () => {
               const response = await studentQuestionsAPI.submitTestAnswers(
                 sessionInfoRef.current.examId,
                 answers,
-                timeTakenMs
+                totalTimeTakenMs
               );
 
               // Mark as saved
@@ -1375,6 +1375,27 @@ const QuestionSessionPage = () => {
     setShowExitConfirm(false);
   };
 
+  // Handle exit from completion modal - redirect directly without showing confirmation
+  const handleExitFromCompletion = async () => {
+    // Session should already be saved to database when sessionComplete becomes true
+    // But ensure it's saved by checking the saved flag, and wait a moment for async save to complete
+    const currentSessionId = sessionIdRef.current;
+    const sessionKey = `session_saved_${currentSessionId}`;
+    
+    // Wait a moment to ensure the async save has completed
+    // The useEffect saves the session when sessionComplete becomes true
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Clear local session storage but keep the saved flag
+    if (currentSessionId) {
+      clearSession(currentSessionId);
+      sessionIdRef.current = null;
+    }
+    
+    // Navigate directly to review page so user can see their completed session
+    navigate('/dashboard/review');
+  };
+
   const handleViewSummary = async () => {
     // Calculate session statistics
     // If resuming from paused session, add paused time + resumed time
@@ -1809,7 +1830,7 @@ const QuestionSessionPage = () => {
           mode={mode}
           onViewSummary={handleViewSummary}
           onReviewAnswers={handleReviewAnswers}
-          onExit={handleExitClick}
+          onExit={handleExitFromCompletion}
         />
       )}
 
