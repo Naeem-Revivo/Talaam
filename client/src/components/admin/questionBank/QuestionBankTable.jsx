@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
 import { cleanQuestionText } from "../../../utils/textUtils";
+import { Loader } from "../../common/Loader";
 
 const statusTone = {
   Active: {
@@ -292,24 +293,51 @@ const Pagination = ({ page, pageSize, total, onPageChange, t, dir }) => {
     if (page < safeTotalPages) onPageChange?.(page + 1);
   };
 
-  // Calculate which pages to show (sliding window of 3 pages)
+  // Calculate which pages to show with ellipsis
   const getVisiblePages = () => {
-    if (safeTotalPages <= 3) {
-      // If total pages is 3 or less, show all pages
+    if (safeTotalPages <= 7) {
+      // If total pages is 7 or less, show all pages
       return Array.from({ length: safeTotalPages }, (_, index) => index + 1);
     }
-    
-    // Start with pages 1, 2, 3
-    if (page <= 3) {
-      return [1, 2, 3];
+
+    const pages = [];
+    const showEllipsis = safeTotalPages > 7;
+
+    // Always show first page
+    pages.push(1);
+
+    if (page <= 4) {
+      // Near the beginning: show 1, 2, 3, 4, 5, ..., last
+      for (let i = 2; i <= 5; i++) {
+        pages.push(i);
+      }
+      if (showEllipsis) {
+        pages.push('ellipsis');
+      }
+      pages.push(safeTotalPages);
+    } else if (page >= safeTotalPages - 3) {
+      // Near the end: show 1, ..., last-4, last-3, last-2, last-1, last
+      if (showEllipsis) {
+        pages.push('ellipsis');
+      }
+      for (let i = safeTotalPages - 4; i <= safeTotalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // In the middle: show 1, ..., current-1, current, current+1, ..., last
+      if (showEllipsis) {
+        pages.push('ellipsis');
+      }
+      for (let i = page - 1; i <= page + 1; i++) {
+        pages.push(i);
+      }
+      if (showEllipsis) {
+        pages.push('ellipsis');
+      }
+      pages.push(safeTotalPages);
     }
-    
-    // When page is 4 or more, show a sliding window of 3 pages
-    // Show current page and 2 pages before it
-    const startPage = page - 2;
-    const endPage = Math.min(safeTotalPages, page);
-    
-    return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
+
+    return pages;
   };
 
   const pages = getVisiblePages();
@@ -338,20 +366,32 @@ const Pagination = ({ page, pageSize, total, onPageChange, t, dir }) => {
         >
           {t('admin.questionBank.table.pagination.previous')}
         </button>
-        {pages.map((pageNumber) => (
-          <button
-            key={pageNumber}
-            type="button"
-            onClick={() => onPageChange?.(pageNumber)}
-            className={`flex h-[30px] w-8 items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${
-              pageNumber === page
-                ? "border-[#ED4122] bg-[#ED4122] text-white"
-                : "border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
-            }`}
-          >
-            {pageNumber}
-          </button>
-        ))}
+        {pages.map((pageNumber, index) => {
+          if (pageNumber === 'ellipsis') {
+            return (
+              <span
+                key={`ellipsis-${index}`}
+                className="flex h-[30px] w-8 items-center justify-center text-[14px] font-archivo font-medium leading-[16px] text-oxford-blue md:text-white"
+              >
+                ...
+              </span>
+            );
+          }
+          return (
+            <button
+              key={pageNumber}
+              type="button"
+              onClick={() => onPageChange?.(pageNumber)}
+              className={`flex h-[30px] w-8 items-center justify-center rounded border text-[14px] font-archivo font-medium leading-[16px] transition-colors ${
+                pageNumber === page
+                  ? "border-[#ED4122] bg-[#ED4122] text-white"
+                  : "border-[#E5E7EB] bg-white text-oxford-blue hover:bg-[#F3F4F6] md:border-[#032746]"
+              }`}
+            >
+              {pageNumber}
+            </button>
+          );
+        })}
         <button
           type="button"
           onClick={handleNext}
@@ -376,6 +416,7 @@ const QuestionBankTable = ({
   total,
   onPageChange,
   onView,
+  loading = false,
 }) => {
   const { t, language } = useLanguage();
   const dir = language === 'ar' ? 'rtl' : 'ltr';
@@ -389,7 +430,18 @@ const QuestionBankTable = ({
         <table className="min-w-full border-collapse">
           <TableHeader t={t} dir={dir} />
           <tbody>
-            {questions.length ? (
+            {loading ? (
+              <tr>
+                <td
+                  colSpan={8}
+                  className="px-6 py-10 text-center text-sm text-dark-gray"
+                >
+                  <div className="flex items-center justify-center min-h-[200px]">
+                    <Loader size="lg" />
+                  </div>
+                </td>
+              </tr>
+            ) : questions.length ? (
               questions.map((question) => (
                 <TableRow key={question.id} question={question} onView={onView} t={t} dir={dir} />
               ))
@@ -407,7 +459,11 @@ const QuestionBankTable = ({
         </table>
       </div>
       <div className="flex flex-col gap-4 p-2 md:hidden">
-        {questions.length ? (
+        {loading ? (
+          <div className="rounded-[12px] border border-[#E5E7EB] bg-white p-6 text-center text-sm text-dark-gray shadow-empty min-h-[200px] flex items-center justify-center w-full">
+            <Loader size="lg" />
+          </div>
+        ) : questions.length ? (
           questions.map((question) => (
             <MobileQuestionCard
               key={question.id}

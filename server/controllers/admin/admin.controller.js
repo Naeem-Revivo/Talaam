@@ -1014,6 +1014,7 @@ const getTopicsBySubject = async (req, res, next) => {
           id: topic._id || topic.id,
           name: topic.name,
           description: topic.description || '',
+          count: topic.questionCount || 0, // Include question count
           date: topic.createdAt ? topic.createdAt.toISOString().split('T')[0] : null,
         })),
       },

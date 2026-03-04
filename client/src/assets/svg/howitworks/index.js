@@ -1,11 +1,15 @@
 import logoimg from './howitworks-logoimg.svg';
 import logoimg1 from './howitworks-logoimg1.svg';
-import loopscard1 from './howitworks-loopscard1.svg';
-import loopcard1 from './howitworks-loopcard1.svg';
-import loopcard2 from './howitworks-loopcard2.svg';
-import loopcard3 from './howitworks-loopcard3.svg';
-import loopcard4 from './howitworks-loopcard4.svg';
-import loopcard5 from './howitworks-loopcard5.svg';
+import loopscard1 from './howitwork-eyeicon.svg';
+import loopcard1 from './howitwork-eyeicon.svg';
+import loopcard2 from './howitwork-brainicon.svg';
+import loopcard3 from './howitwork-cardicon.svg';
+import loopcard4 from './howitwork-privacyicon.svg';
+import loopcard5 from './howitwork-searchdocicon.svg';
+import orangebrainicon from './howitwork-orangebrainicon.svg';
+import metericon from './howitwork-metericon.svg';
+import restoreicon from './howitwork-restoreicon.svg';
+import aimicon from './howitwork-aimicon.svg';
 import greaterthan from './howitworks-greaterthan.svg';
 import timinggraph from './howitworks-timinggraph.svg';
 import learningcard1 from './howitworks-learningcard1.svg';
@@ -42,5 +46,9 @@ export {
   mindyouget4,
   mindyouget5,
   downtick,
-  downarrow
+  downarrow,
+  orangebrainicon,
+  metericon,
+  restoreicon,
+  aimicon
 };

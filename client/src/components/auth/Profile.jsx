@@ -9,17 +9,29 @@ import { useNavigate } from 'react-router-dom'
 import ProfileDropdown from '../common/ProfileDropdown'
 import { getTranslatedAuthMessage } from '../../utils/authMessages'
 import languagesAPI from '../../api/languages'
+import AuthCard from './AuthCard'
+import AuthButton from './AuthButton'
+import Input from '../common/Input'
 
 const Profile = () => {
-  const { language, t } = useLanguage()
-  const dir = language === 'ar' ? 'rtl' : 'ltr'
+  const { t } = useLanguage()
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { user, loading } = useSelector((state) => state.auth)
 
+  // Profile icon component
+  const ProfileIcon = () => (
+    <div className="w-[80px] h-[80px] bg-gradient-to-r from-[#ED4122] to-[#DC2626] rounded-[20px] flex items-center justify-center">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M26.6666 35V31.6667C26.6666 29.8986 25.9642 28.2029 24.714 26.9526C23.4637 25.7024 21.768 25 19.9999 25H9.99992C8.23181 25 6.53612 25.7024 5.28587 26.9526C4.03563 28.2029 3.33325 29.8986 3.33325 31.6667V35M26.6666 18.3333L29.9999 21.6667L36.6666 15M21.6666 11.6667C21.6666 15.3486 18.6818 18.3333 14.9999 18.3333C11.318 18.3333 8.33325 15.3486 8.33325 11.6667C8.33325 7.98477 11.318 5 14.9999 5C18.6818 5 21.6666 7.98477 21.6666 11.6667Z" stroke="white" stroke-width="3.33333" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </div>
+  )
+
   const [formData, setFormData] = useState({
     fullName: '',
     dateOfBirth: '',
+    phoneNumber: '',
     country: 'United States',
     timeZone: '(GMT-08:00) Pacific Time',
     language: 'English'
@@ -43,6 +55,7 @@ const Profile = () => {
               ...prev,
               fullName: fetched.fullName || fetched.name || '',
               dateOfBirth: fetched.dateOfBirth ? fetched.dateOfBirth.substring(0, 10) : '',
+              phoneNumber: fetched.phoneNumber || fetched.phone || '',
               country: fetched.country || prev.country,
               timeZone: fetched.timezone || prev.timeZone,
               language: fetched.language || prev.language,
@@ -56,6 +69,7 @@ const Profile = () => {
           ...prev,
           fullName: user.fullName || user.name || '',
           dateOfBirth: user.dateOfBirth ? String(user.dateOfBirth).substring(0, 10) : '',
+          phoneNumber: user.phoneNumber || user.phone || '',
           country: user.country || prev.country,
           timeZone: user.timezone || prev.timeZone,
           language: user.language || prev.language,
@@ -81,25 +95,31 @@ const Profile = () => {
     if (!date) {
       return '' // Date of birth is optional, no error if empty
     }
-    
+
     const selectedDate = new Date(date)
     const today = new Date()
     today.setHours(0, 0, 0, 0) // Reset time to compare dates only
-    
+
     if (selectedDate > today) {
       return t('profile.validation.dateOfBirthFuture') || 'Date of birth cannot be in the future'
     }
-    
+
     return ''
   }
 
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    
+
+    // For phoneNumber, only allow numeric characters
+    let processedValue = value
+    if (name === 'phoneNumber') {
+      processedValue = value.replace(/\D/g, '') // Remove all non-digit characters
+    }
+
     // For dateOfBirth, validate immediately to prevent future dates
-    if (name === 'dateOfBirth' && value) {
-      const error = validateDateOfBirth(value)
+    if (name === 'dateOfBirth' && processedValue) {
+      const error = validateDateOfBirth(processedValue)
       if (error) {
         setErrors({
           ...errors,
@@ -108,14 +128,14 @@ const Profile = () => {
         return // Don't update formData if validation fails
       }
     }
-    
+
     setFormData({
       ...formData,
-      [name]: value
+      [name]: processedValue
     })
 
     // Clear error when user starts typing (if no validation error)
-    if (errors[name] && (name !== 'dateOfBirth' || !value || !validateDateOfBirth(value))) {
+    if (errors[name] && (name !== 'dateOfBirth' || !processedValue || !validateDateOfBirth(processedValue))) {
       setErrors({
         ...errors,
         [name]: ''
@@ -127,13 +147,13 @@ const Profile = () => {
   const handleBlur = (e) => {
     const { name, value } = e.target
     let error = ''
-    
+
     if (name === 'fullName') {
       error = validateFullName(value)
     } else if (name === 'dateOfBirth') {
       error = validateDateOfBirth(value)
     }
-    
+
     setErrors({
       ...errors,
       [name]: error
@@ -146,9 +166,9 @@ const Profile = () => {
       fullName: validateFullName(formData.fullName),
       dateOfBirth: validateDateOfBirth(formData.dateOfBirth)
     }
-    
+
     setErrors(newErrors)
-    
+
     // Check if any errors exist
     return !Object.values(newErrors).some(error => error !== '')
   }
@@ -163,6 +183,7 @@ const Profile = () => {
       const payload = {
         fullName: formData.fullName.trim(),
         ...(formData.dateOfBirth && { dateOfBirth: formData.dateOfBirth }),
+        ...(formData.phoneNumber && formData.phoneNumber.trim() && { phoneNumber: formData.phoneNumber.trim() }),
         country: formData.country,
         timezone: formData.timeZone,
         language: formData.language,
@@ -174,19 +195,19 @@ const Profile = () => {
         const backendMessage = resultAction.payload?.message || 'Profile completed successfully'
         const msg = getTranslatedAuthMessage(backendMessage, t, 'profile.success') || t('profile.success') || 'Profile completed successfully.'
         showSuccessToast(msg, { title: t('profile.successTitle') || 'Profile Saved', isAuth: true })
-        
+
         // Refresh user data to get updated profile
         await dispatch(fetchCurrentUser())
-        
+
         // Redirect to subscription bridge - it will check subscription and route accordingly
-        navigate('/subscription-bridge', { replace: true })
+        navigate('/question-banks', { replace: true })
       } else {
         // Extract error message from API response
-        const errorMessage = 
+        const errorMessage =
           (typeof resultAction.payload === 'string' ? resultAction.payload : null) ||
           resultAction.payload?.message ||
           ''
-        
+
         const msg =
           errorMessage ||
           t('profile.errors.generic') ||
@@ -202,7 +223,15 @@ const Profile = () => {
   }
 
   const countries = profileData.countries
-  const timeZones = profileData.timeZones
+  // Transform timezones to show simple text (without GMT) in dropdown but store full value
+  const timeZones = profileData.timeZones.map(tz => {
+    // Extract text after GMT part, e.g., "(GMT-08:00) Pacific Time" -> "Pacific Time"
+    const simpleText = tz.replace(/^\(GMT[^)]+\)\s*/, '')
+    return {
+      value: tz, // Store full value for backend
+      label: simpleText // Display simple text in dropdown
+    }
+  })
   const [languages, setLanguages] = useState(profileData.languages) // Fallback to static data
 
   // Fetch active languages from API
@@ -214,7 +243,7 @@ const Profile = () => {
           // Transform API languages to match ProfileDropdown format (array of strings)
           const transformedLanguages = response.data.languages.map(lang => lang.name)
           setLanguages(transformedLanguages)
-          
+
           // If current language is not in active languages, update to default or first active
           setFormData(prev => {
             const currentLang = prev.language
@@ -237,111 +266,179 @@ const Profile = () => {
     fetchActiveLanguages()
   }, [])
 
+  // Calculate profile completion percentage
+  const calculateProgress = () => {
+    let completed = 0;
+    const total = 5; // fullName, dateOfBirth, country, timeZone, language
+
+    if (formData.fullName.trim()) completed++;
+    if (formData.dateOfBirth) completed++;
+    if (formData.country) completed++;
+    if (formData.timeZone) completed++;
+    if (formData.language) completed++;
+
+    return Math.round((completed / total) * 100);
+  };
+
+  const progressPercentage = calculateProgress();
+
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4" dir={dir}>
-      <div className="bg-white rounded-lg border border-[#03274633] shadow-lg p-4 lg:p-8 w-full lg:h-[922px] lg:w-[505px] flex flex-col">
-        <div className="w-full lg:w-[430px] pt-8 lg:pt-14 lg:h-[770px] flex flex-col mx-auto">
-          {/* Main Heading */}
-          <h1 className="font-archivo font-semibold mb-2 lg:mb-4 text-[18px] lg:text-[30px] lg:leading-none tracking-normal text-oxford-blue">
-            {t('profile.title')}
-          </h1>
+    <AuthCard
+      icon={<ProfileIcon />}
+      title={t('profile.title') || 'Complete Your Profile'}
+      description={t('profile.subtitle') || 'Find interesting stuff across the web'}
+      showBackToLogin={false}
+      showTips={true}
+      tipLabel={t('profile.quickTipLabel') || '⚡ Quick Tip:'}
+      tipText={t('profile.quickTipText') || 'Completing your profile helps us personalize your learning experience!'}
+      className="lg:max-w-2xl"
+    >
+      <div className="w-full flex flex-col gap-6">
+        {/* Profile Completion Progress */}
+        <div className="mb-2 mt-8">
+          <div className="flex items-center justify-between mb-2">
+            <label className="block font-roboto font-semibold text-[12px] leading-[16px] tracking-[0] text-oxford-blue">
+              {t('profile.completion') || 'Profile Completion'}
+            </label>
+            <span className="font-roboto font-semibold text-[12px] leading-[16px] tracking-[0] text-oxford-blue">
+              {progressPercentage}%
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-oxford-blue h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progressPercentage}%` }}
+            ></div>
+          </div>
+        </div>
 
-          {/* Subtitle */}
-          <p className="font-roboto font-normal text-[16px] leading-none tracking-normal text-gray-500 mb-6 pt-2 lg:mb-8">
-            {t('profile.subtitle')}
-          </p>
+        <div className="flex flex-col gap-6 lg:gap-8">
+          {/* Full Name Field */}
+          <Input
+            type="text"
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleInputChange}
+            onBlur={handleBlur}
+            placeholder={t('profile.fullNamePlaceholder') || 'Enter your full name'}
+            label={t('profile.fullName')}
+            error={errors.fullName}
+            icon="person"
+            className="w-full"
+            required
+          />
 
-          <div className="flex flex-col gap-6 lg:gap-8">
-            {/* Full Name Field */}
-            <div className="flex flex-col gap-1">
-              <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
-                {t('profile.fullName')}
-              </label>
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                onBlur={handleBlur}
-                placeholder={t('profile.fullNamePlaceholder')}
-                className={`px-4 py-3 border ${errors.fullName ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input`}
-              />
-              {errors.fullName && (
-                <p className="mt-1 text-sm text-red-500 font-roboto">
-                  {errors.fullName}
-                </p>
-              )}
-            </div>
-
-            {/* Date of Birth Field */}
-            <div className="flex flex-col gap-1">
-              <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
-                {t('profile.dateOfBirth')}
-              </label>
+          {/* Date of Birth Field */}
+          <div className="flex flex-col gap-1">
+            <label className="block font-roboto font-medium text-[14px] leading-[21px] text-text-dark mb-2">
+              {t('profile.dateOfBirth')} <span className='text-[#6CA6C1] font-normal'>({t('profile.optional') || 'Optional'})</span>
+            </label>
+            <div className="relative">
               <input
                 type="date"
                 name="dateOfBirth"
                 value={formData.dateOfBirth}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                max={new Date().toISOString().split('T')[0]} // Prevent future dates in date picker
-                className={`px-4 py-3 border ${errors.dateOfBirth ? 'border-red-500' : 'border-[#03274633]'} rounded-lg outline-none w-full lg:w-[423px] h-[59px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray shadow-input`}
+                max={new Date().toISOString().split('T')[0]}
+                placeholder={t('profile.dateOfBirthPlaceholder') || 'Enter your date of birth'}
+                className={`px-4 py-3 pl-12 border-2 ${errors.dateOfBirth ? 'border-[red-500]' : 'border-[#E5E7EB]'} rounded-[14px] outline-none w-full h-[56px] font-roboto text-[14px] leading-[100%] tracking-[0] text-oxford-blue placeholder:text-[14px] placeholder:leading-[100%] placeholder:tracking-[0] placeholder:text-dark-gray focus:border-[#6CA6C1] transition-colors`}
               />
-              {errors.dateOfBirth && (
-                <p className="mt-1 text-sm text-red-500 font-roboto">
-                  {errors.dateOfBirth}
-                </p>
-              )}
-            </div>
+              <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6 1.5V4.5" stroke="#6CA6C1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M12 1.5V4.5" stroke="#6CA6C1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M14.25 3H3.75C2.92157 3 2.25 3.67157 2.25 4.5V15C2.25 15.8284 2.92157 16.5 3.75 16.5H14.25C15.0784 16.5 15.75 15.8284 15.75 15V4.5C15.75 3.67157 15.0784 3 14.25 3Z" stroke="#6CA6C1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M2.25 7.5H15.75" stroke="#6CA6C1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
 
+              </div>
+            </div>
+            {errors.dateOfBirth && (
+              <p className="mt-1 text-xs font-normal text-[#6CA6C1] font-roboto">
+                {errors.dateOfBirth}
+              </p>
+            )}
+          </div>
+
+          {/* Country and Time Zone in Same Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Country Dropdown */}
             <div className="flex flex-col gap-1">
-              <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
-                {t('profile.country')}
+              <label className="block font-roboto font-medium text-[14px] leading-[21px] text-text-dark mb-2">
+                {t('profile.country')} <span className="text-cinnebar-red">*</span>
               </label>
               <ProfileDropdown
                 value={formData.country}
                 options={countries}
                 onChange={(value) => setFormData({ ...formData, country: value })}
+                placeholder={t('profile.countryPlaceholder') || 'Select your country'}
+                icon="location"
+                className="w-full"
               />
             </div>
 
             {/* Time Zone Dropdown */}
             <div className="flex flex-col gap-1">
-              <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
-                {t('profile.timeZone')}
+              <label className="block font-roboto font-medium text-[14px] leading-[21px] text-text-dark mb-2">
+                {t('profile.timeZone')} <span className="text-cinnebar-red">*</span>
               </label>
               <ProfileDropdown
                 value={formData.timeZone}
                 options={timeZones}
                 onChange={(value) => setFormData({ ...formData, timeZone: value })}
+                placeholder={t('profile.timeZonePlaceholder') || 'Pacific Time'}
+                icon="clock"
+                className="w-full"
               />
             </div>
+          </div>
 
-            {/* Language Dropdown */}
-            <div className="flex flex-col gap-1">
-              <label className="block font-roboto font-normal text-base mb-2 leading-none tracking-normal text-oxford-blue">
-                {t('profile.language')}
-              </label>
-              <ProfileDropdown
-                value={formData.language}
-                options={languages}
-                onChange={(value) => setFormData({ ...formData, language: value })}
-              />
-            </div>
+          {/* Phone Number Field */}
+          <div className="flex flex-col gap-1">
+            <label className="block font-roboto font-medium text-[14px] leading-[21px] text-text-dark mb-2">
+              {t('profile.phoneNumber')} <span className='text-[#6CA6C1] font-normal'>({t('profile.optional') || 'Optional'})</span>
+            </label>
+            <Input
+              type="tel"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleInputChange}
+              placeholder={t('profile.phoneNumberPlaceholder')}
+              icon="phone"
+              className="w-full"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={15}
+            />
+          </div>
 
-            {/* Finish Setup Button */}
-            <button
-              onClick={handleFinishSetup}
-              disabled={loading}
-              className={`bg-cinnebar-red text-white font-archivo font-semibold text-[20px] leading-[100%] tracking-[0] rounded-lg transition-colors duration-200 py-3 w-full lg:w-[423px] h-[57px] hover:bg-cinnebar-red/90 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
-            >
-              {loading ? t('profile.buttonLoading') || 'Saving...' : t('profile.finishSetup')}
-            </button>
+          {/* Language Dropdown */}
+          <div className="flex flex-col gap-1">
+            <label className="block font-roboto font-medium text-[14px] leading-[21px] text-text-dark mb-2">
+              {t('profile.language')} <span className="text-cinnebar-red">*</span>
+            </label>
+            <ProfileDropdown
+              value={formData.language}
+              options={languages}
+              onChange={(value) => setFormData({ ...formData, language: value })}
+              placeholder={t('profile.languagePlaceholder') || 'English'}
+              icon="globe"
+              className="w-full"
+            />
           </div>
         </div>
+
+        {/* Finish Setup Button */}
+        <AuthButton
+          onClick={handleFinishSetup}
+          disabled={loading}
+          className="w-full mb-6"
+        >
+          {loading ? t('profile.buttonLoading') || 'Saving...' : t('profile.finishSetup') || 'Finish Setup'}
+        </AuthButton>
       </div>
-    </div>
+    </AuthCard>
   )
 }
 

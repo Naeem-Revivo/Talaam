@@ -3,6 +3,10 @@ const cors = require('cors');
 require('dotenv').config();
 
 const connectDB = require('../config/db');
+const session = require('express-session');
+const passport = require('passport');
+const sessionConfig = require('../config/session');
+require('../config/passport');
 
 // Create Express app
 const app = express();
@@ -11,6 +15,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
+app.use(session(sessionConfig));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

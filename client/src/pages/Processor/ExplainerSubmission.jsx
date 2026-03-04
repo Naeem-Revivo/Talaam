@@ -1,7 +1,7 @@
 
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import SearchFilter from "../../components/common/SearchFilter";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
@@ -18,22 +18,22 @@ const ExplainerSubmission = () => {
   const [subject, setSubject] = useState("");
   const [subtopic, setSubtopic] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [submissions, setSubmissions] = useState([]);
-  const [allSubmissions, setAllSubmissions] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(0);
   const [subjects, setSubjects] = useState([]);
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
   const [selectedFlagReason, setSelectedFlagReason] = useState("");
 
-  const explainerColumns = [
+  // Memoize columns to prevent rerenders
+  const explainerColumns = useMemo(() => [
     { key: 'questionTitle', label: t("processor.explainerSubmission.table.question") },
     { key: 'explainer', label: t("processor.explainerSubmission.table.explainer") },
     { key: 'processorStatus', label: t("processor.explainerSubmission.table.processorStatus") || "PROCESSOR STATUS" },
     { key: 'explainerStatus', label: t("processor.explainerSubmission.table.explainerStatus") || "EXPLAINER STATUS" },
     { key: 'submittedOn', label: t("processor.explainerSubmission.table.submittedOn") },
     { key: 'actions', label: t("processor.explainerSubmission.table.actions") }
-  ];
+  ], [t]);
 
   // Format date to "Today", "Yesterday", or formatted date
   const formatDate = (dateString) => {
@@ -62,8 +62,26 @@ const ExplainerSubmission = () => {
     }
   };
 
+  // Map display status to API status
+  const mapStatusToAPI = useCallback((displayStatus) => {
+    if (!displayStatus || displayStatus === "All Status") return null;
+    const statusMap = {
+      "Pending Review": "pending_processor",
+      "Approved": "approved", // Use "approved" as base, will filter for all approved statuses client-side
+      "Rejected": "rejected",
+      "Flag": "flagged",
+    };
+    return statusMap[displayStatus] || null;
+  }, []);
+
+  // Check if a status is considered "Approved"
+  const isApprovedStatus = useCallback((status) => {
+    const approvedStatuses = ['pending_creator', 'pending_explainer', 'completed', 'approved', 'accepted'];
+    return approvedStatuses.includes(status?.toLowerCase());
+  }, []);
+
   // Map API status to processor status
-  const mapProcessorStatus = (status) => {
+  const mapProcessorStatus = useCallback((status) => {
     const statusMap = {
       'pending_processor': 'Pending Review',
       'pending_creator': 'Approved',
@@ -77,7 +95,7 @@ const ExplainerSubmission = () => {
       'flag': 'Pending Review'
     };
     return statusMap[status?.toLowerCase()] || 'Pending Review';
-  };
+  }, []);
 
   // Map API status to explainer status
   const mapExplainerStatus = (status, isFlagged, hasExplanation) => {
@@ -106,260 +124,260 @@ const ExplainerSubmission = () => {
     return statusMap[status?.toLowerCase()] || 'Pending';
   };
 
-  // Fetch explainer submissions from API
-  useEffect(() => {
-    const fetchExplainerSubmissions = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch questions with multiple statuses to get all explainer submissions
-        // This includes: pending_explainer (assigned to explainer), pending_processor (submitted by explainer),
-        // flagged (flagged by explainer), completed, rejected (rejected after explainer submitted), etc.
-        const statusesToFetch = [
-          'pending_explainer', // Questions assigned to explainer (may or may not have explanation yet)
-          'pending_processor', // Questions submitted by explainer back to processor (with explanation)
-          'completed', // Completed questions
-          'rejected' // Questions rejected after explainer submitted explanation
-        ];
-
-        let allQuestions = [];
-
-        // Fetch questions for each status, filtered by explainer role
-        const promises = statusesToFetch.map(status => 
-          questionsAPI.getProcessorQuestions({ status, submittedBy: 'explainer' })
-        );
-        
-        const responses = await Promise.all(promises);
-        
-        // Combine all questions
-        responses.forEach(response => {
-          if (response.success && response.data?.questions) {
-            allQuestions = [...allQuestions, ...response.data.questions];
-          }
-        });
-        
-        // Remove duplicates based on question ID
-        const uniqueQuestions = [];
-        const seenIds = new Set();
-        allQuestions.forEach(q => {
-          if (!seenIds.has(q.id)) {
-            seenIds.add(q.id);
-            uniqueQuestions.push(q);
-          }
-        });
-        allQuestions = uniqueQuestions;
-          
-        // Fetch individual question details to get full information (flag reason, explanation, etc.)
-        const questionsWithDetails = await Promise.all(
-          allQuestions.map(async (question) => {
-            try {
-              const detailResponse = await questionsAPI.getProcessorQuestionById(question.id);
-              if (detailResponse.success && detailResponse.data) {
-                const detailedQuestion = detailResponse.data.question;
-                
-                // Check if this is a variant
-                const isVariant = detailedQuestion?.isVariant === true || 
-                                 detailedQuestion?.isVariant === 'true' ||
-                                 question?.isVariant === true || 
-                                 question?.isVariant === 'true';
-                const originalQuestionId = detailedQuestion?.originalQuestionId || 
-                                          detailedQuestion?.originalQuestion?.id ||
-                                          question?.originalQuestionId;
-                
-                // Get assignedExplainer from detailed question
-                let assignedExplainer = detailedQuestion?.assignedExplainer || question.assignedExplainer || null;
-                
-                // Check if assignedExplainer is properly populated (has name/fullName/username)
-                const hasExplainerInfo = assignedExplainer && 
-                                        (assignedExplainer.name || 
-                                         assignedExplainer.fullName || 
-                                         assignedExplainer.username);
-                
-                // If variant doesn't have assignedExplainer properly populated, try to get it from parent question
-                if (isVariant && originalQuestionId && !hasExplainerInfo) {
-                  try {
-                    const parentResponse = await questionsAPI.getProcessorQuestionById(originalQuestionId);
-                    if (parentResponse.success && parentResponse.data?.question) {
-                      const parentQuestion = parentResponse.data.question;
-                      // Use parent's assignedExplainer if it's properly populated
-                      if (parentQuestion.assignedExplainer && 
-                          (parentQuestion.assignedExplainer.name || 
-                           parentQuestion.assignedExplainer.fullName || 
-                           parentQuestion.assignedExplainer.username)) {
-                        assignedExplainer = parentQuestion.assignedExplainer;
-                      }
-                    }
-                  } catch (parentError) {
-                    console.warn(`Could not fetch parent question ${originalQuestionId} for variant ${question.id}:`, parentError);
-                    // Continue with variant's assignedExplainer (or null)
-                  }
-                }
-                
-                return {
-                  ...question,
-                  ...detailedQuestion, // Merge detailed question data
-                  flagReason: detailedQuestion?.flagReason || question.flagReason || null,
-                  flagStatus: detailedQuestion?.flagStatus || question.flagStatus || null,
-                  // Only mark as flagged if explicitly set to true AND flagStatus is pending
-                  // Don't use flagReason alone as it might be from history
-                  isFlagged: (detailedQuestion?.isFlagged === true || detailedQuestion?.isFlagged === 'true') &&
-                            (detailedQuestion?.flagStatus === 'pending' || detailedQuestion?.flagStatus === null || detailedQuestion?.flagStatus === undefined) &&
-                            (detailedQuestion?.status?.toLowerCase() !== 'completed' && detailedQuestion?.status?.toLowerCase() !== 'pending_creator'),
-                  explanation: detailedQuestion?.explanation || question.explanation || null,
-                  history: detailedQuestion?.history || question.history || [],
-                  assignedExplainer: assignedExplainer
-                };
-              }
-              return question;
-            } catch (error) {
-              console.error(`Error fetching details for question ${question.id}:`, error);
-              return question;
-            }
-          })
-        );
-
-        // Filter out questions that haven't been through explainer workflow yet
-        // A question should only appear in Explainer Submission if:
-        // 1. It's assigned to explainer (status pending_explainer) - explainer needs to work on it
-        // 2. OR it has explanation AND status is pending_processor/completed (explainer submitted it)
-        // 3. OR it's flagged by explainer
-        // 4. OR it's completed (went through explainer)
-        const filteredQuestions = questionsWithDetails.filter((question) => {
-          // Always include if status is pending_explainer (assigned to explainer, waiting for explainer to work)
-          if (question.status === 'pending_explainer') {
-            return true;
-          }
-          
-          // Always include if completed (went through explainer)
-          if (question.status === 'completed') {
-            return true;
-          }
-          
-          // Check if flagged by explainer
-          if (question.isFlagged && question.flagType === 'explainer') {
-            return true;
-          }
-          
-          // Check if question has explanation (explainer submitted it)
-          const hasExplanation = question.explanation !== null && 
-                                question.explanation !== undefined && 
-                                typeof question.explanation === 'string' &&
-                                question.explanation.trim() !== '';
-          
-          // For pending_processor status, only include if explainer has submitted explanation
-          // This ensures we don't show questions that are just in pending_processor but haven't been worked on by explainer
-          if (question.status === 'pending_processor') {
-            return hasExplanation; // Only include if explainer has added explanation
-          }
-          
-          // For rejected status, only include if explainer has submitted explanation
-          // This shows questions that were rejected after explainer submitted their explanation
-          if (question.status === 'rejected') {
-            return hasExplanation; // Only include if explainer has added explanation
-          }
-          
-          // Include all other questions (backend already filtered by explainer role)
-          return true;
-        });
-
-        // Transform API data to match table structure
-        const transformedData = filteredQuestions.map((question) => {
-          // Get explainer name (assignedExplainer or lastModifiedBy if explainer submitted)
-          // Also check for fullName field which might be used instead of name
-          const explainerName = question.assignedExplainer?.name || 
-                               question.assignedExplainer?.fullName ||
-                               question.assignedExplainer?.username ||
-                               question.lastModifiedBy?.name || 
-                               question.lastModifiedBy?.fullName ||
-                               question.lastModifiedBy?.username || 
-                               'Unknown';
-
-          // Check if question has explanation
-          const hasExplanation = question.explanation !== null && 
-                                question.explanation !== undefined && 
-                                typeof question.explanation === 'string' &&
-                                question.explanation.trim() !== '';
-
-          // Check if question is currently flagged by explainer
-          // A question is flagged ONLY if:
-          // 1. isFlagged property is explicitly true
-          // 2. flagStatus is 'pending' (or null/undefined for backward compatibility)
-          // 3. Status is not 'completed' or 'pending_creator' (flag has been resolved if moved forward)
-          // Note: Don't check history or flagReason alone, as these persist even after flag is cleared
-          const isFlagged = (question.isFlagged === true || question.isFlagged === 'true') &&
-                           (question.flagStatus === 'pending' || question.flagStatus === null || question.flagStatus === undefined) &&
-                           question.status?.toLowerCase() !== 'completed' &&
-                           question.status?.toLowerCase() !== 'pending_creator';
-          
-          // Check if explainer has submitted (has explanation and status is pending_processor or completed)
-          const isSubmittedByExplainer = hasExplanation && 
-                                        (question.status === 'pending_processor' || question.status === 'completed') &&
-                                        !isFlagged;
-
-          // Get processor status
-          const processorStatus = mapProcessorStatus(question.status);
-
-          // Get explainer status with proper mapping
-          const explainerStatus = mapExplainerStatus(question.status, isFlagged, hasExplanation);
-
-          // Get flag reason
-          const flagReason = question.flagReason || null;
-
-          // Get explanation summary (truncate if too long)
-          const explanationSummary = hasExplanation 
-            ? (question.explanation.length > 50 
-                ? question.explanation.substring(0, 50) + '...' 
-                : question.explanation)
-            : '—';
-
-          return {
-            id: question.id,
-            questionTitle: question.questionText || 'Untitled Question',
-            explainer: explainerName,
-            processorStatus: processorStatus,
-            explainerStatus: explainerStatus,
-            explanationSummary: explanationSummary,
-            submittedOn: formatDate(question.updatedAt || question.createdAt),
-            flagReason: flagReason,
-            indicators: {
-              approved: explainerStatus === 'Approved' || question.status === 'completed' || isSubmittedByExplainer,
-              flag: isFlagged,
-              reject: question.status === 'rejected'
-            },
-            actionType: 'review',
-            originalData: question // Store original data for navigation
-          };
-        });
-
-        // Sort: pending_processor questions first (newest first), then others (newest first)
-        transformedData.sort((a, b) => {
-          const isAPendingProcessor = a.originalData?.status === 'pending_processor';
-          const isBPendingProcessor = b.originalData?.status === 'pending_processor';
-          
-          // If one is pending_processor and the other isn't, pending_processor comes first
-          if (isAPendingProcessor && !isBPendingProcessor) return -1;
-          if (!isAPendingProcessor && isBPendingProcessor) return 1;
-          
-          // Both have same priority, sort by date (most recent first)
-          const dateA = new Date(a.originalData?.updatedAt || a.originalData?.createdAt);
-          const dateB = new Date(b.originalData?.updatedAt || b.originalData?.createdAt);
-          return dateB - dateA;
-        });
-
-        setAllSubmissions(transformedData);
-        setSubmissions(transformedData);
-        setTotal(transformedData.length);
-      } catch (error) {
-        console.error('Error fetching explainer submissions:', error);
-        setSubmissions([]);
-        setTotal(0);
-      } finally {
-        setLoading(false);
-      }
+  // Fetch explainer submissions from API with backend pagination
+// Fetch explainer submissions from API with backend pagination
+const fetchExplainerSubmissions = useCallback(async () => {
+  try {
+    setLoading(true);
+    
+    // Map status filter to API status
+    const apiStatus = mapStatusToAPI(subtopic);
+    const isApprovedFilter = subtopic === "Approved";
+    
+    // Build base params
+    const baseParams = {
+      submittedBy: 'explainer',
+      limit: 10,
     };
+    
+    // Add search and subject filters if provided
+    if (search && search.trim()) {
+      baseParams.search = search.trim();
+    }
+    if (subject && subject !== "All Subject") {
+      baseParams.subject = subject;
+    }
+    
+    let allQuestions = [];
+    let totalCount = 0;
+    
+    // If "Approved" filter is selected, fetch ALL pages to get all approved questions
+    if (isApprovedFilter) {
+      // Fetch all pages to get complete data for client-side filtering
+      const fetchLimit = 100;
+      let page = 1;
+      let hasMorePages = true;
+      
+      while (hasMorePages) {
+        const params = {
+          ...baseParams,
+          page: page,
+          limit: fetchLimit,
+        };
+        
+        const response = await questionsAPI.getProcessorQuestions(params);
+        
+        if (!response.success || !response.data) {
+          hasMorePages = false;
+          break;
+        }
+        
+        const questions = response.data.questions || [];
+        const pagination = response.data.pagination || {};
+        
+        // Filter for approved statuses
+        const approvedQuestions = questions.filter(q => isApprovedStatus(q.status));
+        allQuestions.push(...approvedQuestions);
+        
+        hasMorePages = pagination.hasNextPage === true && questions.length > 0;
+        page++;
+        
+        // Safety limit to prevent infinite loops
+        if (page > 100) {
+          hasMorePages = false;
+        }
+      }
+      
+      totalCount = allQuestions.length;
+    } else {
+      // For other statuses, use normal backend pagination
+      const params = {
+        ...baseParams,
+        page: currentPage,
+        limit: 10,
+      };
+      
+      if (apiStatus === 'flagged') {
+        params.flagType = 'flagged';
+      } else if (apiStatus) {
+        params.status = apiStatus;
+      }
+      
+      const response = await questionsAPI.getProcessorQuestions(params);
+      
+      if (!response.success || !response.data) {
+        setSubmissions([]);
+        setTotalQuestions(0);
+        return;
+      }
+      
+      allQuestions = response.data.questions || [];
+      const pagination = response.data.pagination || {};
+      totalCount = pagination.totalItems || pagination.total || 0;
+    }
+    
+    // Remove duplicates based on question ID
+    const uniqueQuestions = [];
+    const seenIds = new Set();
+    allQuestions.forEach(q => {
+      if (!seenIds.has(q.id)) {
+        seenIds.add(q.id);
+        uniqueQuestions.push(q);
+      }
+    });
+    allQuestions = uniqueQuestions;
+    
+    // IMPORTANT: REMOVE THE UNNECESSARY DETAILED API CALLS!
+    // The data is already complete from the list API
+    
+    // Filter out questions that haven't been through explainer workflow yet
+    const filteredQuestions = allQuestions.filter((question) => {
+      // Always include if status is pending_explainer (assigned to explainer, waiting for explainer to work)
+      if (question.status === 'pending_explainer') {
+        return true;
+      }
+      
+      // Always include if completed (went through explainer)
+      if (question.status === 'completed') {
+        return true;
+      }
+      
+      // Check if flagged by explainer
+      if (question.isFlagged && question.flagType === 'explainer') {
+        return true;
+      }
+      
+      // Check if question has explanation (explainer submitted it)
+      const hasExplanation = question.explanation !== null && 
+                            question.explanation !== undefined && 
+                            typeof question.explanation === 'string' &&
+                            question.explanation.trim() !== '';
+      
+      // For pending_processor status, only include if explainer has submitted explanation
+      if (question.status === 'pending_processor') {
+        return hasExplanation;
+      }
+      
+      // For rejected status, only include if explainer has submitted explanation
+      if (question.status === 'rejected') {
+        return hasExplanation;
+      }
+      
+      // Include all other questions (backend already filtered by explainer role)
+      return true;
+    });
 
+    // Transform API data to match table structure
+    const transformedData = filteredQuestions.map((question) => {
+      // Get explainer name (assignedExplainer or lastModifiedBy if explainer submitted)
+      const explainerName = question.assignedExplainer?.name || 
+                           question.assignedExplainer?.fullName ||
+                           question.assignedExplainer?.username ||
+                           question.lastModifiedBy?.name || 
+                           question.lastModifiedBy?.fullName ||
+                           question.lastModifiedBy?.username || 
+                           'Unknown';
+
+      // Check if question has explanation
+      const hasExplanation = question.explanation !== null && 
+                            question.explanation !== undefined && 
+                            typeof question.explanation === 'string' &&
+                            question.explanation.trim() !== '';
+
+      // Check if question is currently flagged by explainer
+      const isFlagged = (question.isFlagged === true || question.isFlagged === 'true') &&
+                       (question.flagStatus === 'pending' || question.flagStatus === null || question.flagStatus === undefined) &&
+                       question.status?.toLowerCase() !== 'completed' &&
+                       question.status?.toLowerCase() !== 'pending_creator';
+      
+      // Check if explainer has submitted (has explanation and status is pending_processor or completed)
+      const isSubmittedByExplainer = hasExplanation && 
+                                    (question.status === 'pending_processor' || question.status === 'completed') &&
+                                    !isFlagged;
+
+      // Get processor status
+      const processorStatus = mapProcessorStatus(question.status);
+
+      // Get explainer status with proper mapping
+      const explainerStatus = mapExplainerStatus(question.status, isFlagged, hasExplanation);
+
+      // Get flag reason
+      const flagReason = question.flagReason || null;
+
+      // Get explanation summary (truncate if too long)
+      const explanationSummary = hasExplanation 
+        ? (question.explanation.length > 50 
+            ? question.explanation.substring(0, 50) + '...' 
+            : question.explanation)
+        : '—';
+
+      return {
+        id: question.id,
+        questionTitle: question.questionText || 'Untitled Question',
+        explainer: explainerName,
+        processorStatus: processorStatus,
+        explainerStatus: explainerStatus,
+        explanationSummary: explanationSummary,
+        submittedOn: formatDate(question.updatedAt || question.createdAt),
+        flagReason: flagReason,
+        indicators: {
+          approved: explainerStatus === 'Approved' || question.status === 'completed' || isSubmittedByExplainer,
+          flag: isFlagged,
+          reject: question.status === 'rejected'
+        },
+        actionType: 'review',
+        originalData: question // Store original data for navigation
+      };
+    });
+
+    // For "Approved" filter, filter by explainerStatus after transformation
+    let finalTransformedData = transformedData;
+    if (isApprovedFilter) {
+      finalTransformedData = transformedData.filter(item => item.explainerStatus === 'Approved');
+    }
+
+    // Sort: pending_processor questions first (newest first), then others (newest first)
+    finalTransformedData.sort((a, b) => {
+      const isAPendingProcessor = a.originalData?.status === 'pending_processor';
+      const isBPendingProcessor = b.originalData?.status === 'pending_processor';
+      
+      if (isAPendingProcessor && !isBPendingProcessor) return -1;
+      if (!isAPendingProcessor && isBPendingProcessor) return 1;
+      
+      const dateA = new Date(a.originalData?.updatedAt || a.originalData?.createdAt);
+      const dateB = new Date(b.originalData?.updatedAt || b.originalData?.createdAt);
+      return dateB - dateA;
+    });
+
+    // For "Approved" filter, apply client-side pagination
+    let paginatedData = finalTransformedData;
+    if (isApprovedFilter) {
+      const startIndex = (currentPage - 1) * 10;
+      const endIndex = startIndex + 10;
+      paginatedData = finalTransformedData.slice(startIndex, endIndex);
+      totalCount = finalTransformedData.length;
+    }
+    
+    setSubmissions(paginatedData);
+    setTotalQuestions(totalCount);
+  } catch (error) {
+    console.error('Error fetching explainer submissions:', error);
+    setSubmissions([]);
+    setTotalQuestions(0);
+  } finally {
+    setLoading(false);
+  }
+}, [currentPage, subtopic, search, subject, mapStatusToAPI, mapProcessorStatus, isApprovedStatus, t]);
+
+  // Fetch data on component mount and when filters change
+  useEffect(() => {
     fetchExplainerSubmissions();
-  }, [currentPage]);
+  }, [fetchExplainerSubmissions]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, subject, subtopic]);
 
   // Fetch subjects for filter
   useEffect(() => {
@@ -385,98 +403,58 @@ const ExplainerSubmission = () => {
     fetchSubjects();
   }, []);
 
-  // Get unique subjects from submissions for filter
-  const getSubjectOptions = () => {
-    const subjectSet = new Set();
-    allSubmissions.forEach(item => {
-      const subjectName = item.originalData?.subject?.name;
-      if (subjectName) {
-        subjectSet.add(subjectName);
-      }
-    });
-    return ["All Subject", ...Array.from(subjectSet).sort()];
-  };
+  // Memoize status options
+  const subtopicOptions = useMemo(() => ["All Status", "Pending Review", "Approved", "Rejected", "Flag"], []);
 
-  const subjectOptions = getSubjectOptions();
-  const subtopicOptions = ["All Status", "Pending Review", "Approved", "Rejected", "Flag"];
+  // Get subject options from API
+  const subjectOptions = useMemo(() => {
+    return ["All Subject", ...subjects.map(s => s.name || s)];
+  }, [subjects]);
 
-  // Apply filters
-  const filteredSubmissions = useMemo(() => {
-    let filtered = [...allSubmissions];
-
-    // Filter by search
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filtered = filtered.filter((item) => {
-        return (
-          item.questionTitle?.toLowerCase().includes(searchLower) ||
-          item.explainer?.toLowerCase().includes(searchLower) ||
-          item.processorStatus?.toLowerCase().includes(searchLower) ||
-          item.explainerStatus?.toLowerCase().includes(searchLower)
-        );
-      });
-    }
-
-    // Filter by subject
-    if (subject && subject !== "All Subject") {
-      filtered = filtered.filter((item) => {
-        const questionSubject = item.originalData?.subject?.name || "";
-        return questionSubject.toLowerCase() === subject.toLowerCase();
-      });
-    }
-
-    // Filter by status (subtopic)
-    if (subtopic && subtopic !== "All Status") {
-      filtered = filtered.filter((item) => {
-        const itemStatus = item.processorStatus || item.explainerStatus || "";
-        return itemStatus.toLowerCase() === subtopic.toLowerCase();
-      });
-    }
-
-    return filtered;
-  }, [search, subject, subtopic, allSubmissions]);
-
-  // Update displayed submissions when filters change
-  useEffect(() => {
-    setSubmissions(filteredSubmissions);
-    setTotal(filteredSubmissions.length);
-    setCurrentPage(1); // Reset to first page when filters change
-  }, [filteredSubmissions]);
+  // Memoize loading component for table
+  const tableLoadingComponent = useMemo(() => (
+    <Loader 
+      size="lg" 
+      color="oxford-blue" 
+      text="Loading..."
+      className="py-10"
+    />
+  ), []);
 
   // Handler for review action
-  const handleReview = (item) => {
+  const handleReview = useCallback((item) => {
     if (item.originalData?.id) {
       navigate(`/processor/Processed-ViewQuestion?questionId=${item.originalData.id}&source=explainer-submission`);
     }
-  };
+  }, [navigate]);
 
   // Handler for view action
-  const handleView = (item) => {
+  const handleView = useCallback((item) => {
     if (item.originalData?.id) {
       navigate(`/processor/Processed-ViewQuestion?questionId=${item.originalData.id}&source=explainer-submission`);
     }
-  };
+  }, [navigate]);
 
   // Handler for edit action
-  const handleEdit = (item) => {
+  const handleEdit = useCallback((item) => {
     console.log('Edit item:', item);
-  };
+  }, []);
 
   // Handler for showing flag reason
-  const handleShowFlagReason = (flagReason) => {
+  const handleShowFlagReason = useCallback((flagReason) => {
     setSelectedFlagReason(flagReason || "");
     setIsFlagModalOpen(true);
-  };
+  }, []);
 
   // Handler for closing flag modal
-  const handleCloseFlagModal = () => {
+  const handleCloseFlagModal = useCallback(() => {
     setIsFlagModalOpen(false);
     setSelectedFlagReason("");
-  };
+  }, []);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     navigate("/processor/question-bank");
-  };
+  }, [navigate]);
 
 
   return (
@@ -505,28 +483,21 @@ const ExplainerSubmission = () => {
           searchPlaceholder={t("processor.explainerSubmission.searchPlaceholder")}
         />
 
-      {loading ? (
-        <Loader 
-          size="lg" 
-          color="oxford-blue" 
-          text="Loading..."
-          className="py-12"
-        />
-      ) : (
         <Table
           items={submissions}
           columns={explainerColumns}
           page={currentPage}
           pageSize={10}
-          total={total}
+          total={totalQuestions}
           onPageChange={setCurrentPage}
           onView={handleView}
           onEdit={handleEdit}
           onCustomAction={handleReview}
           onShowFlagReason={handleShowFlagReason}
           emptyMessage={t("processor.explainerSubmission.emptyMessage")}
+          loading={loading}
+          loadingComponent={tableLoadingComponent}
         />
-      )}
 
       {/* Flag Reason Modal */}
       {isFlagModalOpen && (

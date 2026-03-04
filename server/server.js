@@ -117,7 +117,7 @@ if (process.env.VERCEL !== '1' && process.env.ENABLE_SUBSCRIPTION_CRON !== 'fals
 
 // Only start server if not in serverless environment (Vercel)
 if (process.env.VERCEL !== '1') {
-  const startServer = async () => {
+   const startServer = async () => {
     try {
       await connectDBOnce();
       

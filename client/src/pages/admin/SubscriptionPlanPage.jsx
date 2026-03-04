@@ -37,7 +37,7 @@ const SubscriptionPlan = () => {
         const transformedPlans = response.data.plans.map((plan) => ({
           id: plan.id,
           planname: plan.name,
-          price: `$${parseFloat(plan.price).toFixed(2)}`,
+          price: `SAR ${parseFloat(plan.price).toFixed(0)}`,
           duration: plan.duration,
           subscriber: plan.subscriberCount || 0,
           status: plan.status.charAt(0).toUpperCase() + plan.status.slice(1), // Capitalize first letter

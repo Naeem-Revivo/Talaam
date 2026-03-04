@@ -65,7 +65,7 @@ const AdminDashboardPage = () => {
 
   // Format currency
   const formatCurrency = (amount) => {
-    return `$${amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}`;
+    return `SAR ${amount?.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || '0'}`;
   };
 
   // Calculate percentage change (placeholder - you may want to add this to the API)

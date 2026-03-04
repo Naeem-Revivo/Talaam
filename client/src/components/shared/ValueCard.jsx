@@ -29,12 +29,12 @@ const ValueCard = ({
       </p>
       
       {/* Action Link */}
-      <div className="flex justify-end gap-5 items-center mobile:mt-4 tablet:mt-4 laptop:mt-auto">
+      {/* <div className="flex justify-end gap-5 items-center mobile:mt-4 tablet:mt-4 laptop:mt-auto">
         <a href="#" className="font-inter font-medium mobile:text-[16px] mobile:leading-[140%] tablet:text-[17px] tablet:leading-[150%] laptop:text-[18px] laptop:leading-[150%] tracking-[-0.3px] align-middle">
           {actionText} 
         </a>
           <img src={rightarrow} alt="Right Arrow" className="mobile:pt-0 tablet:pt-1 laptop:pt-1 mobile:w-4 mobile:h-4 tablet:w-5 tablet:h-5 laptop:w-auto laptop:h-auto" />
-      </div>
+      </div> */}
     </div>
   );
 };

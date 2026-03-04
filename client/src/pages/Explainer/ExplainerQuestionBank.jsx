@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton, PrimaryButton } from "../../components/common/Button";
 import StatsCards from "../../components/common/StatsCards";
-import { useState, useEffect, useRef } from "react";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
 import questionsAPI from "../../api/questions";
@@ -10,23 +9,30 @@ import Loader from "../../components/common/Loader";
 
 const ExplainerQuestionBank = () => {
   const { t } = useLanguage();
-  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
   const [explanationRequestsData, setExplanationRequestsData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [totalQuestions, setTotalQuestions] = useState(0);
-  const pollingIntervalRef = useRef(null);
+  const [stats, setStats] = useState([
+    { label: t("explainer.questionBank.stats.questionsNeedingExplanation"), value: 0, color: "blue" },
+    { label: t("explainer.questionBank.stats.completedExplanations"), value: 0, color: "blue" },
+    { label: t("explainer.questionBank.stats.draftExplanations"), value: 0, color: "red" },
+    { label: t("explainer.questionBank.stats.sentBackForRevision"), value: 0, color: "red" },
+  ]);
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  const explanationRequestsColumns = [
+  // Memoize columns to prevent rerenders
+  const explanationRequestsColumns = useMemo(() => [
     { key: "questionTitle", label: t("explainer.questionBank.table.question") },
     { key: "fromProcessor", label: t("explainer.questionBank.table.fromProcessor") },
     { key: "finalUpdate", label: t("explainer.questionBank.table.finalUpdate") },
     { key: "actions", label: t("explainer.questionBank.table.actions") },
-  ];
+  ], [t]);
 
   // Format date to relative time (Today, Yesterday, or date)
-  const formatDate = (dateString) => {
+  const formatDate = useCallback((dateString) => {
     if (!dateString) return "—";
     
     const date = new Date(dateString);
@@ -43,10 +49,10 @@ const ExplainerQuestionBank = () => {
     } else {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
-  };
+  }, []);
 
   // Transform API response to table format
-  const transformQuestionData = (questions) => {
+  const transformQuestionData = useCallback((questions) => {
     return questions
       .filter(question => {
         // Exclude questions that have explanations (drafts) - they should only show in draft page
@@ -82,35 +88,71 @@ const ExplainerQuestionBank = () => {
           originalData: question // Store original data for navigation
         };
       });
-  };
+  }, [formatDate]);
 
-  // Fetch explainer questions from API
-  const fetchExplainerQuestions = async () => {
+  // Fetch stats separately - only once on mount, not affected by status filter
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
+        // Fetch questions with different statuses to calculate stats
+        const [pendingResponse, completedResponse, draftResponse, sentBackResponse] = await Promise.all([
+          questionsAPI.getExplainerQuestions({ status: 'pending_explainer', page: 1, limit: 10 }).catch(() => ({ success: false, data: { questions: [] } })),
+          questionsAPI.getExplainerQuestions({ status: 'completed', page: 1, limit: 10 }).catch(() => ({ success: false, data: { questions: [] } })),
+          questionsAPI.getExplainerQuestions({ status: 'draft', page: 1, limit: 10 }).catch(() => ({ success: false, data: { questions: [] } })),
+          questionsAPI.getExplainerQuestions({ status: 'revision', page: 1, limit: 10 }).catch(() => ({ success: false, data: { questions: [] } })),
+        ]);
+
+        const pendingCount = pendingResponse.success ? (pendingResponse.data?.pagination?.totalItems || pendingResponse.data?.total || pendingResponse.data?.questions?.length || 0) : 0;
+        const completedCount = completedResponse.success ? (completedResponse.data?.pagination?.totalItems || completedResponse.data?.total || completedResponse.data?.questions?.length || 0) : 0;
+        const draftCount = draftResponse.success ? (draftResponse.data?.pagination?.totalItems || draftResponse.data?.total || draftResponse.data?.questions?.length || 0) : 0;
+        const sentBackCount = sentBackResponse.success ? (sentBackResponse.data?.pagination?.totalItems || sentBackResponse.data?.total || sentBackResponse.data?.questions?.length || 0) : 0;
+
+        setStats([
+          { label: t("explainer.questionBank.stats.questionsNeedingExplanation"), value: pendingCount, color: "blue" },
+          { label: t("explainer.questionBank.stats.completedExplanations"), value: completedCount, color: "blue" },
+          { label: t("explainer.questionBank.stats.draftExplanations"), value: draftCount, color: "red" },
+          { label: t("explainer.questionBank.stats.sentBackForRevision"), value: sentBackCount, color: "red" },
+        ]);
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [t]); // Only fetch stats once on mount
+
+  // Fetch questions from API with backend pagination
+  const fetchQuestions = useCallback(async () => {
     try {
-      setError(null);
       setLoading(true);
+      setError(null);
       
-      // Fetch questions with pending_explainer status
-      const response = await questionsAPI.getExplainerQuestions({ status: 'pending_explainer' });
+      const params = {
+        page: currentPage,
+        limit: 10,
+        status: 'pending_explainer', // Explainer only sees pending_explainer questions
+      };
       
-      console.log("Explainer questions API response:", response);
+      const response = await questionsAPI.getExplainerQuestions(params);
       
       if (response && response.success && response.data) {
         const questions = response.data.questions || [];
-        console.log("Questions received:", questions.length, questions);
+        const pagination = response.data.pagination || {};
         
-        if (questions.length > 0) {
-          const transformedData = transformQuestionData(questions);
-          console.log("Transformed data:", transformedData);
-          setExplanationRequestsData(transformedData);
-          setTotalQuestions(response.data.total || transformedData.length);
-        } else {
-          console.log("No questions found in response");
-          setExplanationRequestsData([]);
-          setTotalQuestions(0);
-        }
+        // Filter out questions that have explanations (drafts) - they should only show in draft page
+        const questionsWithoutExplanation = questions.filter(question => {
+          const hasExplanation = question.explanation && question.explanation.trim().length > 0;
+          return !hasExplanation; // Only show questions without explanations in pending
+        });
+        
+        const transformedData = transformQuestionData(questionsWithoutExplanation);
+        
+        setExplanationRequestsData(transformedData);
+        setTotalQuestions(pagination.totalItems || pagination.total || transformedData.length);
       } else {
-        console.log("Response structure issue:", response);
         setExplanationRequestsData([]);
         setTotalQuestions(0);
       }
@@ -122,28 +164,15 @@ const ExplainerQuestionBank = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, transformQuestionData]);
 
-  // Set up polling for real-time updates
+  // Fetch data on component mount and when page changes
   useEffect(() => {
-    // Fetch immediately on mount
-    fetchExplainerQuestions();
-
-    // Set up polling every 30 seconds for real-time updates
-    pollingIntervalRef.current = setInterval(() => {
-      fetchExplainerQuestions();
-    }, 30000);
-
-    // Cleanup interval on unmount
-    return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-      }
-    };
-  }, []);
+    fetchQuestions();
+  }, [fetchQuestions]);
 
   // Handler for add explanation action
-  const handleAddExplanation = (item) => {
+  const handleAddExplanation = useCallback((item) => {
     // Navigate to add explanation page with question ID
     if (item.originalData) {
       navigate(`/explainer/question-bank/add-explanation`, { 
@@ -152,58 +181,25 @@ const ExplainerQuestionBank = () => {
     } else {
       navigate(`/explainer/question-bank/add-explanation`);
     }
-  };
+  }, [navigate]);
 
-  // Calculate stats from real-time data
-  const [stats, setStats] = useState([
-    { label: t("explainer.questionBank.stats.questionsNeedingExplanation"), value: 0, color: "blue" },
-    { label: t("explainer.questionBank.stats.completedExplanations"), value: 0, color: "blue" },
-    { label: t("explainer.questionBank.stats.draftExplanations"), value: 0, color: "red" },
-    { label: t("explainer.questionBank.stats.sentBackForRevision"), value: 0, color: "red" },
-  ]);
+  // Memoize loading component for table
+  const tableLoadingComponent = useMemo(() => (
+    <Loader 
+      size="lg" 
+      color="oxford-blue" 
+      text={t("common.loading") || "Loading..."}
+      className="py-10"
+    />
+  ), [t]);
 
-  // Fetch stats from API
-  const fetchStats = async () => {
-    try {
-      // Fetch questions with different statuses to calculate stats
-      const [pendingResponse, completedResponse, draftResponse, sentBackResponse] = await Promise.all([
-        questionsAPI.getExplainerQuestions({ status: 'pending_explainer' }).catch(() => ({ success: false, data: { questions: [] } })),
-        questionsAPI.getExplainerQuestions({ status: 'completed' }).catch(() => ({ success: false, data: { questions: [] } })),
-        questionsAPI.getExplainerQuestions({ status: 'draft' }).catch(() => ({ success: false, data: { questions: [] } })),
-        questionsAPI.getExplainerQuestions({ status: 'revision' }).catch(() => ({ success: false, data: { questions: [] } })),
-      ]);
-
-      const pendingCount = pendingResponse.success ? (pendingResponse.data?.total || pendingResponse.data?.questions?.length || 0) : 0;
-      const completedCount = completedResponse.success ? (completedResponse.data?.total || completedResponse.data?.questions?.length || 0) : 0;
-      const draftCount = draftResponse.success ? (draftResponse.data?.total || draftResponse.data?.questions?.length || 0) : 0;
-      const sentBackCount = sentBackResponse.success ? (sentBackResponse.data?.total || sentBackResponse.data?.questions?.length || 0) : 0;
-
-      setStats([
-        { label: t("explainer.questionBank.stats.questionsNeedingExplanation"), value: pendingCount, color: "blue" },
-        { label: t("explainer.questionBank.stats.completedExplanations"), value: completedCount, color: "blue" },
-        { label: t("explainer.questionBank.stats.draftExplanations"), value: draftCount, color: "red" },
-        { label: t("explainer.questionBank.stats.sentBackForRevision"), value: sentBackCount, color: "red" },
-      ]);
-    } catch (err) {
-      console.error("Error fetching stats:", err);
-    }
-  };
-
-  // Fetch stats when component mounts
-  useEffect(() => {
-    fetchStats();
-    // Refresh stats every 30 seconds
-    const statsInterval = setInterval(fetchStats, 30000);
-    return () => clearInterval(statsInterval);
-  }, []);
-
-  const handleCompletedExplanation = () => {
+  const handleCompletedExplanation = useCallback(() => {
     navigate("/explainer/question-bank/completed-explanation");
-  };
+  }, [navigate]);
 
-  const handleDraftExplanation = () => {
+  const handleDraftExplanation = useCallback(() => {
     navigate("/explainer/question-bank/draft-explanation");
-  };
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6">
@@ -244,18 +240,7 @@ const ExplainerQuestionBank = () => {
           <div className="text-[24px] leading-[32px] font-bold text-blue-dark font-archivo mb-5">
             {t("explainer.questionBank.pendingExplanations")}
           </div>
-          {loading ? (
-            <Loader 
-              size="lg" 
-              color="oxford-blue" 
-              text={t("common.loading") || "Loading..."}
-              className="py-10"
-            />
-          ) : error ? (
-            <div className="flex items-center justify-center py-10">
-              <p className="text-red-600">{error}</p>
-            </div>
-          ) : (
+          
             <Table
               items={explanationRequestsData}
               columns={explanationRequestsColumns}
@@ -265,8 +250,10 @@ const ExplainerQuestionBank = () => {
               onPageChange={setCurrentPage}
               onCustomAction={handleAddExplanation}
               emptyMessage={t("explainer.questionBank.emptyMessage")}
+              loading={loading}
+              loadingComponent={tableLoadingComponent}
             />
-          )}
+          
         </div>
 
       </div>

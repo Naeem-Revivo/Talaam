@@ -36,7 +36,7 @@ export const PublicRoute = () => {
       }
     } else if (role === 'student' || role === 'user') {
       // Redirect to subscription bridge - it will check subscription and route accordingly
-      return <Navigate to="/subscription-bridge" replace />;
+      return <Navigate to="/question-banks" replace />;
     } else if (role === 'gatherer') {
       return <Navigate to="/gatherer" replace />;
     } else if (role === 'creator') {

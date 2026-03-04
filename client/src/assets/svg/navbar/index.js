@@ -1,4 +1,4 @@
-import navlogo from './navbar-navlogo.svg';
+import navlogo from './navbar-logo.svg';
 import downarrow from './navbar-downarrow.svg';
 import hamburger from './navbar-hamburger.svg';
 

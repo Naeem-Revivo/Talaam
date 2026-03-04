@@ -115,6 +115,14 @@ router.get(
   questionController.getQuestions
 );
 
+// Optimized endpoint for fetching questions with variants
+router.get(
+  '/creator/variants',
+  authMiddleware,
+  creatorMiddleware,
+  questionController.getCreatorQuestionsWithVariants
+);
+
 router.get(
   '/creator/:questionId',
   authMiddleware,

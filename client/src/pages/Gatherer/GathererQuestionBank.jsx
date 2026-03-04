@@ -96,7 +96,7 @@ const GathererQuestionBank = () => {
       try {
         setStatsLoading(true);
         // Fetch stats without any status filter
-        const response = await questionsAPI.getGathererQuestions({ page: 1, limit: 1 });
+        const response = await questionsAPI.getGathererQuestions({ page: 1, limit: 10 });
         
         if (response.success && response.data) {
           const pagination = response.data.pagination || {};

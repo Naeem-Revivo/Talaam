@@ -12,5 +12,15 @@ import cross from './dashboard-cross.svg';
 import analytics from './dashboard-analytics.svg';
 import watch from './dashboard-watch.svg';
 import flag from './dashboard-flag.svg';
-import listcheck from './listcheck.svg'
-export { vedio, timer, setting, profile, logout, accuracy, time, target, trend, tick, cross, analytics, watch, flag, listcheck };
+import listcheck from './listcheck.svg';
+import progress from './dashboard-progress.svg';
+import statsprogress from './dashboard-statsprogress.svg';
+import stats from './dashboard-stats.svg';
+import streak from './dashboard-streak.svg';
+import completed from './dashboard-completed.svg';
+import question from './dashboard-question.svg';
+import notice from './dashboard-notice.svg';
+import dashboardplayicon from './dashboard-playicon.svg';
+import dashboardstatsicon from './dashboard-statsicon.svg';
+import dashboardhistoryicon from './dashboard-histroyicon.svg';
+export { vedio, timer, setting, profile, logout, accuracy, time, target, trend, tick, cross, analytics, watch, flag, listcheck, progress, statsprogress, stats, streak, completed, question, notice, dashboardplayicon, dashboardstatsicon, dashboardhistoryicon};

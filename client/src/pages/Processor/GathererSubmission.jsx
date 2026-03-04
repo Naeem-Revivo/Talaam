@@ -1,7 +1,7 @@
 
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import ProcessorFilter from "../../components/Processor/ProcessorFilter";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
@@ -20,19 +20,20 @@ const GathererSubmission = () => {
   const [subtopic, setSubtopic] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [gathererSubmissionData, setGathererSubmissionData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [totalQuestions, setTotalQuestions] = useState(0);
   const [pageSize] = useState(10);
   const [subjects, setSubjects] = useState([]);
 
-  const gathererSubmissionColumns = [
+  // Memoize columns to prevent rerenders
+  const gathererSubmissionColumns = useMemo(() => [
     { key: 'questionTitle', label: t("processor.gathererSubmission.table.question") },
     { key: 'subject', label: t("processor.gathererSubmission.table.subject") },
     { key: 'gatherer', label: t("processor.gathererSubmission.table.gatherer") },
     { key: 'uploadOn', label: t("processor.gathererSubmission.table.uploadOn") },
     { key: 'status', label: t("processor.gathererSubmission.table.status") },
     { key: 'actions', label: t("processor.gathererSubmission.table.actions") }
-  ];
+  ], [t]);
 
   // Format date to "Today", "Yesterday", or formatted date
   const formatDate = (dateString) => {
@@ -63,7 +64,8 @@ const GathererSubmission = () => {
   };
 
   // Map API status to display status
-  const mapStatus = (status) => {
+  const mapStatus = useCallback((status, isFlagged) => {
+    if (isFlagged) return 'Flag';
     const statusMap = {
       'pending_processor': 'Pending',
       'pending_creator': 'Approved', // Approved and moved to creator
@@ -80,164 +82,168 @@ const GathererSubmission = () => {
       'flag': 'Flag'
     };
     return statusMap[status?.toLowerCase()] || status || 'Pending';
-  };
+  }, []);
+
+  // Map display status to API status
+  const mapStatusToAPI = useCallback((displayStatus) => {
+    if (!displayStatus || displayStatus === t("filter.status")) return null;
+    const statusMap = {
+      "Pending": "pending_processor",
+      "Approved": "approved", // Use "approved" as base, will filter for all approved statuses client-side
+      "Reject": "rejected",
+      "Flag": "flagged",
+      "Flagged": "flagged",
+    };
+    return statusMap[displayStatus] || null;
+  }, [t]);
+
+  // Check if a status is considered "Approved"
+  const isApprovedStatus = useCallback((status) => {
+    const approvedStatuses = ['pending_creator', 'pending_explainer', 'completed', 'approved', 'accepted'];
+    return approvedStatuses.includes(status?.toLowerCase());
+  }, []);
 
   // Transform API data to table format
-  const transformQuestionData = (questions) => {
+  const transformQuestionData = useCallback((questions) => {
     return questions.map((question) => ({
       id: question.id,
       questionTitle: question.questionText || "—",
       subject: question.subject?.name || "—",
       gatherer: question.createdBy?.name || "—",
       uploadOn: formatDate(question.createdAt),
-      status: mapStatus(question.status),
+      status: mapStatus(question.status, question.isFlagged),
       actionType: 'view',
       originalData: question // Keep original data for navigation
     }));
-  };
+  }, []);
 
-  // Fetch gatherer submissions
+  // Fetch gatherer submissions with backend pagination
   const fetchGathererSubmissions = useCallback(async () => {
     try {
       setLoading(true);
       
-      // Fetch all questions by getting multiple statuses
-      // When no filter is selected, fetch all relevant statuses
-      let allQuestions = [];
+      // Map status filter to API status
+      const apiStatus = mapStatusToAPI(subtopic);
+      const isApprovedFilter = subtopic === "Approved";
       
-      if (subtopic && subtopic !== t("filter.status")) {
-        // Filter by specific status
-        const statusFilterMap = {
-          'Pending': ['pending_processor'],
-          'Approved': ['approved', 'pending_creator', 'pending_explainer', 'completed'],
-          'Reject': ['rejected'],
-          'Flag': ['flagged'],
-          'Fix Request': ['fix_request', 'fix_requested', 'revision'],
-          'pending_processor': ['pending_processor'],
-          'approved': ['approved', 'pending_creator', 'pending_explainer', 'completed'],
-          'rejected': ['rejected'],
-          'flagged': ['flagged'],
-          'fix_request': ['fix_request', 'fix_requested', 'revision']
+      // Build base params
+      const baseParams = {
+        submittedBy: 'gatherer',
+      };
+      
+      // Add search and subject filters if provided
+      if (search && search.trim()) {
+        baseParams.search = search.trim();
+      }
+      if (subject && subject !== t("filter.subject")) {
+        baseParams.subject = subject;
+      }
+      
+      let allQuestions = [];
+      let totalCount = 0;
+      
+      // If "Approved" filter is selected, fetch ALL pages to get all approved questions
+      // Then filter and paginate client-side
+      if (isApprovedFilter) {
+        const fetchLimit = 100;
+        let page = 1;
+        let hasMorePages = true;
+        
+        while (hasMorePages) {
+          const params = {
+            ...baseParams,
+            page: page,
+            limit: fetchLimit,
+          };
+          
+          const response = await questionsAPI.getProcessorQuestions(params);
+          if (response.success && response.data) {
+            const questions = response.data.questions || [];
+            const pagination = response.data.pagination || {};
+            
+            // IMPORTANT: Client-side filter to exclude superadmin-created questions
+            let filteredQuestions = questions.filter(q => {
+              const isSuperadminCreated = q.createdBy?.adminRole === 'superadmin' || 
+                                          (q.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
+              return !isSuperadminCreated;
+            });
+            
+            // Filter for approved statuses
+            const approvedQuestions = filteredQuestions.filter(q => isApprovedStatus(q.status));
+            allQuestions.push(...approvedQuestions);
+            
+            hasMorePages = pagination.hasNextPage === true && questions.length > 0;
+            page++;
+            
+            // Safety limit to prevent infinite loops
+            if (page > 100) hasMorePages = false;
+          } else {
+            hasMorePages = false;
+          }
+        }
+        
+        totalCount = allQuestions.length;
+      } else {
+        // For other statuses, use normal backend pagination
+        const params = {
+          ...baseParams,
+          page: currentPage,
+          limit: pageSize,
         };
         
-        const statusesToFetch = statusFilterMap[subtopic] || [subtopic.toLowerCase()];
+        if (apiStatus === 'flagged') {
+          // For flagged, use flagType parameter
+          params.flagType = 'flagged';
+        } else if (apiStatus) {
+          // For specific status, use status filter
+          params.status = apiStatus;
+        }
         
-        // Fetch questions for each status, filtered by gatherer role
-        const promises = statusesToFetch.map(status => 
-          questionsAPI.getProcessorQuestions({ status, submittedBy: 'gatherer' })
-        );
-        
-        const responses = await Promise.all(promises);
-        
-        // Combine all questions
-        responses.forEach(response => {
-          if (response.success && response.data?.questions) {
-            allQuestions = [...allQuestions, ...response.data.questions];
-          }
-        });
-        
-        // Remove duplicates based on question ID
-        const uniqueQuestions = [];
-        const seenIds = new Set();
-        allQuestions.forEach(q => {
-          if (!seenIds.has(q.id)) {
-            seenIds.add(q.id);
-            uniqueQuestions.push(q);
-          }
-        });
-        allQuestions = uniqueQuestions;
-      } else {
-        // No status filter - fetch all relevant statuses for gatherer submissions
-        const allStatuses = [
-          'pending_processor',
-          'pending_creator',
-          'pending_explainer',
-          'approved',
-          'rejected',
-          'flagged',
-          'fix_request',
-          'fix_requested',
-          'revision',
-          'completed'
-        ];
-        
-        const promises = allStatuses.map(status => 
-          questionsAPI.getProcessorQuestions({ status, submittedBy: 'gatherer' })
-        );
-        
-        const responses = await Promise.all(promises);
-        
-        // Combine all questions
-        responses.forEach(response => {
-          if (response.success && response.data?.questions) {
-            allQuestions = [...allQuestions, ...response.data.questions];
-          }
-        });
-        
-        // Remove duplicates based on question ID
-        const uniqueQuestions = [];
-        const seenIds = new Set();
-        allQuestions.forEach(q => {
-          if (!seenIds.has(q.id)) {
-            seenIds.add(q.id);
-            uniqueQuestions.push(q);
-          }
-        });
-        allQuestions = uniqueQuestions;
+        const response = await questionsAPI.getProcessorQuestions(params);
+
+        if (response.success && response.data) {
+          let questions = response.data.questions || [];
+          const pagination = response.data.pagination || {};
+          
+          // IMPORTANT: Client-side filter to exclude superadmin-created questions
+          // This is a backup in case backend filtering doesn't catch all cases
+          questions = questions.filter(q => {
+            const isSuperadminCreated = q.createdBy?.adminRole === 'superadmin' || 
+                                        (q.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
+            return !isSuperadminCreated;
+          });
+
+          allQuestions = questions;
+          totalCount = pagination.totalItems || pagination.total || 0;
+        } else {
+          allQuestions = [];
+          totalCount = 0;
+        }
       }
       
-      // Filter by search term
-      if (search) {
-        const searchLower = search.toLowerCase();
-        allQuestions = allQuestions.filter(q => 
-          q.questionText?.toLowerCase().includes(searchLower) ||
-          q.createdBy?.name?.toLowerCase().includes(searchLower)
-        );
-      }
-
-      // Filter by subject
-      if (subject && subject !== t("filter.subject")) {
-        allQuestions = allQuestions.filter(q => 
-          q.subject?.name === subject || 
-          q.subject?.id === subject
-        );
-      }
-
-      // IMPORTANT: Client-side filter to exclude superadmin-created questions
-      // This is a backup in case backend filtering doesn't catch all cases
-      allQuestions = allQuestions.filter(q => {
-        const isSuperadminCreated = q.createdBy?.adminRole === 'superadmin' || 
-                                    (q.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
-        return !isSuperadminCreated;
-      });
-
+      // Transform API data to table format
       const transformedData = transformQuestionData(allQuestions);
       
-      // Sort: pending_processor questions first (newest first), then others (newest first)
-      transformedData.sort((a, b) => {
-        const isAPendingProcessor = a.originalData?.status === 'pending_processor';
-        const isBPendingProcessor = b.originalData?.status === 'pending_processor';
-        
-        // If one is pending_processor and the other isn't, pending_processor comes first
-        if (isAPendingProcessor && !isBPendingProcessor) return -1;
-        if (!isAPendingProcessor && isBPendingProcessor) return 1;
-        
-        // Both have same priority, sort by date (most recent first)
-        const dateA = new Date(a.originalData?.updatedAt || a.originalData?.createdAt);
-        const dateB = new Date(b.originalData?.updatedAt || b.originalData?.createdAt);
-        return dateB - dateA;
-      });
+      // For "Approved" filter, apply client-side pagination
+      let paginatedData = transformedData;
+      if (isApprovedFilter) {
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        paginatedData = transformedData.slice(startIndex, endIndex);
+        // Use the filtered count for total
+        totalCount = transformedData.length;
+      }
       
-      setGathererSubmissionData(transformedData);
-      setTotal(transformedData.length);
+      setGathererSubmissionData(paginatedData);
+      setTotalQuestions(totalCount);
     } catch (error) {
       console.error('Error fetching gatherer submissions:', error);
       setGathererSubmissionData([]);
-      setTotal(0);
+      setTotalQuestions(0);
     } finally {
       setLoading(false);
     }
-  }, [search, subject, subtopic, t]);
+  }, [currentPage, subtopic, search, subject, pageSize, mapStatusToAPI, transformQuestionData, isApprovedStatus, t]);
 
   // Fetch subjects on component mount
   useEffect(() => {
@@ -286,33 +292,40 @@ const GathererSubmission = () => {
     return () => window.removeEventListener('focus', handleFocus);
   }, [fetchGathererSubmissions]);
 
-  // Status options for filter
-  const statusOptions = [
+  // Memoize status options
+  const statusOptions = useMemo(() => [
     t("filter.status"),
     "Pending",
     "Approved",
     "Flag",
     "Reject"
-  ];
+  ], [t]);
+
+  // Memoize loading component for table
+  const tableLoadingComponent = useMemo(() => (
+    <Loader 
+      size="lg" 
+      color="oxford-blue" 
+      text={t("processor.gathererSubmission.loading") || "Loading..."}
+      className="py-10"
+    />
+  ), [t]);
 
   // Handler for view action
-  const handleView = (item) => {
+  const handleView = useCallback((item) => {
     if (item.originalData?.id) {
       navigate(`/processor/Processed-ViewQuestion?questionId=${item.originalData.id}&source=gatherer-submission`);
     }
-  };
+  }, [navigate]);
 
   // Handler for edit action
-  const handleEdit = (item) => {
+  const handleEdit = useCallback((item) => {
     console.log('Edit item:', item);
-  };
+  }, []);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     navigate("/processor/question-bank");
-  };
-
-  console.log('Gatherer Submission Data:', gathererSubmissionData);
-
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] px-4 xl:px-6 py-6 2xl:px-6">
@@ -338,28 +351,22 @@ const GathererSubmission = () => {
         showRole={false}
         subjectOptions={subjects.length > 0 ? subjects : undefined}
         statusOptions={statusOptions}
+        searchPlaceholder={t("processor.gathererSubmission.searchPlaceholder")}
       />
 
-      {loading ? (
-        <Loader 
-          size="lg" 
-          color="oxford-blue" 
-          text={t("processor.gathererSubmission.loading") || "Loading..."}
-          className="py-20"
-        />
-      ) : (
         <Table
-          items={gathererSubmissionData.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+          items={gathererSubmissionData}
           columns={gathererSubmissionColumns}
           page={currentPage}
           pageSize={pageSize}
-          total={total}
+          total={totalQuestions}
           onPageChange={setCurrentPage}
           onView={handleView}
           onEdit={handleEdit}
           emptyMessage={t("processor.gathererSubmission.emptyMessage")}
+          loading={loading}
+          loadingComponent={tableLoadingComponent}
         />
-      )}
       </div>
     </div>
   );

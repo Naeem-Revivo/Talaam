@@ -27,6 +27,7 @@ const signup = async (req, res, next) => {
     // Build user object conditionally based on role
     const userResponse = {
       id: user.id,
+      shortId: user.shortId,
       email: user.email,
       role: user.role,
       isEmailVerified: user.isEmailVerified,
@@ -76,6 +77,7 @@ const login = async (req, res, next) => {
         token,
         user: {
           id: user.id,
+          shortId: user.shortId,
           name: user.name,
           email: user.email,
           role: user.role,
@@ -119,6 +121,7 @@ const verifyOTP = async (req, res, next) => {
         token,
         user: {
           id: user.id,
+          shortId: user.shortId,
           name: user.name,
           email: user.email,
           role: user.role,
@@ -300,6 +303,7 @@ const getCurrentUser = async (req, res, next) => {
       data: {
         user: {
           id: user.id,
+          shortId: user.shortId,
           name: user.name,
           email: user.email,
           role: user.role,

@@ -1,11 +1,12 @@
 
 import { useLanguage } from "../../context/LanguageContext";
 import { OutlineButton } from "../../components/common/Button";
-import { useState, useEffect } from "react";
-import ProcessorFilter from "../../components/Processor/ProcessorFilter";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import SearchFilter from "../../components/common/SearchFilter";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
 import questionsAPI from "../../api/questions";
+import subjectsAPI from "../../api/subjects";
 import Loader from "../../components/common/Loader";
 
 
@@ -15,23 +16,24 @@ const AdminSubmission = () => {
 
   const [search, setSearch] = useState("");
   const [subject, setSubject] = useState("");
-  const [topic, setTopic] = useState("");
   const [subtopic, setSubtopic] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [submissions, setSubmissions] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+  const [subjects, setSubjects] = useState([]);
   const [isFlagModalOpen, setIsFlagModalOpen] = useState(false);
   const [selectedFlagReason, setSelectedFlagReason] = useState("");
 
-  const adminColumns = [
+  // Memoize columns to prevent rerenders
+  const adminColumns = useMemo(() => [
     { key: 'questionTitle', label: t("processor.adminSubmission.table.question") },
     { key: 'student', label: t("processor.adminSubmission.table.role") || "Role" },
     { key: 'processorStatus', label: t("processor.adminSubmission.table.processorStatus") || "PROCESSOR STATUS" },
     { key: 'adminStatus', label: t("processor.adminSubmission.table.adminStatus") || "ADMIN STATUS" },
     { key: 'submittedOn', label: t("processor.adminSubmission.table.submittedOn") },
     { key: 'actions', label: t("processor.adminSubmission.table.actions") }
-  ];
+  ], [t]);
 
   // Format date to "Today", "Yesterday", or formatted date
   const formatDate = (dateString) => {
@@ -60,8 +62,25 @@ const AdminSubmission = () => {
     }
   };
 
+  // Map display status to API status
+  const mapStatusToAPI = useCallback((displayStatus) => {
+    if (!displayStatus || displayStatus === t("filter.status")) return null;
+    const statusMap = {
+      "Pending Review": "pending_processor",
+      "Approved": "approved", // Use "approved" as base, will filter for all approved statuses client-side
+      "Rejected": "rejected",
+    };
+    return statusMap[displayStatus] || null;
+  }, [t]);
+
+  // Check if a status is considered "Approved"
+  const isApprovedStatus = useCallback((status) => {
+    const approvedStatuses = ['pending_creator', 'pending_explainer', 'completed', 'approved', 'accepted'];
+    return approvedStatuses.includes(status?.toLowerCase());
+  }, []);
+
   // Map API status to processor status
-  const mapProcessorStatus = (status) => {
+  const mapProcessorStatus = useCallback((status) => {
     const statusMap = {
       'pending_processor': 'Pending Review',
       'pending_creator': 'Approved',
@@ -75,7 +94,7 @@ const AdminSubmission = () => {
       'flag': 'Pending Review'
     };
     return statusMap[status?.toLowerCase()] || 'Pending Review';
-  };
+  }, []);
 
   // Map API status to admin status
   const mapAdminStatus = (status, isFlagged) => {
@@ -99,218 +118,365 @@ const AdminSubmission = () => {
     return statusMap[status?.toLowerCase()] || 'Pending';
   };
 
-  // Fetch admin submissions from API - questions flagged by students AND questions created by superadmin
+  // Fetch admin submissions from API with backend pagination
+  // This fetches both student-flagged questions AND superadmin-created questions
+  // Fetch admin submissions from API with backend pagination
+const fetchAdminSubmissions = useCallback(async () => {
+  try {
+    setLoading(true);
+    
+    // Map status filter to API status
+    const apiStatus = mapStatusToAPI(subtopic);
+    const isApprovedFilter = subtopic === "Approved";
+    
+    // Build base params
+    const baseParams = {
+      limit: 10,
+    };
+    
+    // Add search and subject filters if provided
+    if (search && search.trim()) {
+      baseParams.search = search.trim();
+    }
+    if (subject && subject !== "All Subject" && subject !== t("filter.subject")) {
+      baseParams.subject = subject;
+    }
+    
+    let allQuestions = [];
+    let totalCount = 0;
+    
+    // If "Approved" filter is selected, fetch ALL pages to get all approved questions
+    if (isApprovedFilter) {
+      // Fetch all pages for student-flagged questions
+      const fetchLimit = 100;
+      let studentPage = 1;
+      let hasMoreStudentPages = true;
+      
+      while (hasMoreStudentPages) {
+        const studentFlagParams = {
+          ...baseParams,
+          page: studentPage,
+          limit: fetchLimit,
+          flagType: 'student',
+        };
+        
+        const studentFlagResponse = await questionsAPI.getProcessorQuestions(studentFlagParams);
+        if (studentFlagResponse.success && studentFlagResponse.data) {
+          const questions = studentFlagResponse.data.questions || [];
+          const pagination = studentFlagResponse.data.pagination || {};
+          
+          // Filter for approved statuses
+          const approvedQuestions = questions.filter(q => isApprovedStatus(q.status));
+          allQuestions.push(...approvedQuestions);
+          
+          hasMoreStudentPages = pagination.hasNextPage === true && questions.length > 0;
+          studentPage++;
+          
+          if (studentPage > 100) hasMoreStudentPages = false;
+        } else {
+          hasMoreStudentPages = false;
+        }
+      }
+      
+      // Fetch all pages for superadmin-created questions
+      let adminPage = 1;
+      let hasMoreAdminPages = true;
+      
+      while (hasMoreAdminPages) {
+        const adminParams = {
+          ...baseParams,
+          page: adminPage,
+          limit: fetchLimit,
+          submittedBy: 'admin',
+        };
+        
+        const adminResponse = await questionsAPI.getProcessorQuestions(adminParams);
+        if (adminResponse.success && adminResponse.data) {
+          const questions = adminResponse.data.questions || [];
+          const pagination = adminResponse.data.pagination || {};
+          
+          // Filter to only include superadmin-created
+          let superadminQuestions = questions.filter(q => {
+            const isSuperadminCreated = q.createdBy?.role === 'superadmin' ||
+                                        q.createdBy?.adminRole === 'superadmin' ||
+                                        (q.history?.find(h => h.action === 'created')?.performedBy?.role === 'superadmin') ||
+                                        (q.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
+            return isSuperadminCreated;
+          });
+          
+          // Filter for approved statuses
+          superadminQuestions = superadminQuestions.filter(q => isApprovedStatus(q.status));
+          allQuestions.push(...superadminQuestions);
+          
+          hasMoreAdminPages = pagination.hasNextPage === true && questions.length > 0;
+          adminPage++;
+          
+          if (adminPage > 100) hasMoreAdminPages = false;
+        } else {
+          hasMoreAdminPages = false;
+        }
+      }
+      
+      totalCount = allQuestions.length;
+    } else {
+      // For other statuses, use normal backend pagination
+      const params = {
+        ...baseParams,
+        page: currentPage,
+        limit: 10,
+      };
+      
+      if (apiStatus) {
+        params.status = apiStatus;
+      }
+      
+      // Fetch student-flagged questions
+      const studentFlagParams = {
+        ...params,
+        flagType: 'student',
+      };
+      const studentFlagResponse = await questionsAPI.getProcessorQuestions(studentFlagParams);
+      if (studentFlagResponse.success && studentFlagResponse.data) {
+        const studentQuestions = studentFlagResponse.data.questions || [];
+        allQuestions = [...allQuestions, ...studentQuestions];
+        totalCount += studentFlagResponse.data.pagination?.totalItems || 0;
+      }
+      
+      // Fetch superadmin-created questions
+      const adminParams = {
+        ...params,
+        submittedBy: 'admin',
+      };
+      const adminResponse = await questionsAPI.getProcessorQuestions(adminParams);
+      if (adminResponse.success && adminResponse.data) {
+        const adminQuestions = adminResponse.data.questions || [];
+        // Filter to only include superadmin-created (not regular admin)
+        const superadminQuestions = adminQuestions.filter(q => {
+          const isSuperadminCreated = q.createdBy?.role === 'superadmin' ||
+                                      q.createdBy?.adminRole === 'superadmin' ||
+                                      (q.history?.find(h => h.action === 'created')?.performedBy?.role === 'superadmin') ||
+                                      (q.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
+          return isSuperadminCreated;
+        });
+        allQuestions = [...allQuestions, ...superadminQuestions];
+        totalCount += adminResponse.data.pagination?.totalItems || 0;
+      }
+    }
+    
+    // Remove duplicates based on question ID
+    const uniqueQuestions = [];
+    const seenIds = new Set();
+    allQuestions.forEach(q => {
+      if (!seenIds.has(q.id)) {
+        seenIds.add(q.id);
+        uniqueQuestions.push(q);
+      }
+    });
+    allQuestions = uniqueQuestions;
+    
+    // IMPORTANT: REMOVE THE UNNECESSARY DETAILED API CALLS!
+    // The data is already complete from the list API
+    
+    // Filter to show ONLY:
+    // 1. Questions flagged by students AND approved by admin (flagStatus === 'approved')
+    // 2. Questions created by superadmin ONLY (not regular admin)
+    const filteredQuestions = allQuestions.filter((question) => {
+      // Check if student-flagged AND approved by admin
+      const isStudentFlaggedAndApproved = question.flagType === 'student';
+      
+      // Check if created by superadmin ONLY (not regular admin)
+      const isSuperadminCreated = question.createdBy?.role === 'superadmin' ||
+                                  question.createdBy?.adminRole === 'superadmin' ||
+                                  (question.history?.find(h => h.action === 'created')?.performedBy?.role === 'superadmin') ||
+                                  (question.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
+      
+      return isStudentFlaggedAndApproved || isSuperadminCreated;
+    });
+
+    // Transform API data to match table structure
+    const transformedData = filteredQuestions.map((question) => {
+      // Check if question is created by superadmin ONLY (not regular admin)
+      const isSuperadminCreated = question.createdBy?.role === 'superadmin' ||
+                                  question.createdBy?.adminRole === 'superadmin' ||
+                                  (question.history?.find(h => h.action === 'created')?.performedBy?.role === 'superadmin') ||
+                                  (question.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
+
+                                  console.log(question.createdBy, 'question.createdBy');
+                                  console.log(isSuperadminCreated, 'isSuperadminCreated');
+
+                                  console.log(question, 'question isSuperadminCreated');
+      
+      // Get name: superadmin name for superadmin-created questions, student name for student-flagged questions
+      const studentName = isSuperadminCreated
+        ? (question.createdBy?.role || 'Superadmin')
+        : (question.flaggedBy?.name || 
+                         question.flaggedBy?.fullName ||
+                         question.lastModifiedBy?.name || 
+                         question.lastModifiedBy?.fullName ||
+           'Unknown');
+
+        
+
+      // Check if question is flagged by student
+      const isFlagged = (question.isFlagged === true || question.isFlagged === 'true') &&
+                       (question.flagType === 'student');
+
+      // Get processor status
+      const processorStatus = mapProcessorStatus(question.status);
+
+      // Get admin status with proper mapping
+      const adminStatus = isFlagged ? 'Flagged' : mapAdminStatus(question.status, false);
+
+      // Get flag reason (only for student-flagged questions)
+      const flagReason = question.flagReason || null;
+
+      return {
+        id: question.id,
+        questionTitle: question.questionText || 'Untitled Question',
+        student: studentName,
+        processorStatus: processorStatus,
+        adminStatus: adminStatus,
+        submittedOn: formatDate(question.updatedAt || question.createdAt),
+        flagReason: flagReason,
+        isSuperadminCreated: isSuperadminCreated,
+        indicators: {
+          approved: adminStatus === 'Approved' || question.status === 'completed',
+          flag: isFlagged,
+          reject: question.status === 'rejected'
+        },
+        actionType: 'review',
+        originalData: question
+      };
+    });
+
+    // Sort: pending_processor questions first (newest first), then others (newest first)
+    transformedData.sort((a, b) => {
+      const isAPendingProcessor = a.originalData?.status === 'pending_processor';
+      const isBPendingProcessor = b.originalData?.status === 'pending_processor';
+      
+      if (isAPendingProcessor && !isBPendingProcessor) return -1;
+      if (!isAPendingProcessor && isBPendingProcessor) return 1;
+      
+      const dateA = new Date(a.originalData?.updatedAt || a.originalData?.createdAt);
+      const dateB = new Date(b.originalData?.updatedAt || b.originalData?.createdAt);
+      return dateB - dateA;
+    });
+
+    // For "Approved" filter, filter by approved statuses
+    let finalTransformedData = transformedData;
+    if (isApprovedFilter) {
+      finalTransformedData = transformedData.filter(item => {
+        const questionStatus = item.originalData?.status;
+        return isApprovedStatus(questionStatus);
+      });
+    }
+    
+    // For "Approved" filter, apply client-side pagination
+    let paginatedData = finalTransformedData;
+    if (isApprovedFilter) {
+      const startIndex = (currentPage - 1) * 10;
+      const endIndex = startIndex + 10;
+      paginatedData = finalTransformedData.slice(startIndex, endIndex);
+      totalCount = finalTransformedData.length;
+    }
+    
+    setSubmissions(paginatedData);
+    setTotalQuestions(totalCount);
+  } catch (error) {
+    console.error('Error fetching admin submissions:', error);
+    setSubmissions([]);
+    setTotalQuestions(0);
+  } finally {
+    setLoading(false);
+  }
+}, [currentPage, subtopic, search, subject, mapStatusToAPI, mapProcessorStatus, isApprovedStatus, t]);
+
+  // Fetch data on component mount and when filters change
   useEffect(() => {
-    const fetchAdminSubmissions = async () => {
+    fetchAdminSubmissions();
+  }, [fetchAdminSubmissions]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, subject, subtopic]);
+
+  // Fetch subjects for filter
+  useEffect(() => {
+    const fetchSubjects = async () => {
       try {
-        setLoading(true);
+        const response = await subjectsAPI.getAllSubjects();
+        let subjectsList = [];
         
-        // Fetch questions with flagType='student' AND questions created by superadmin/admin
-        const statusesToFetch = [
-          'pending_processor', // Questions with student flags or created by admin
-          'pending_creator',
-          'pending_explainer',
-          'completed',
-          'rejected'
-        ];
-
-        let allQuestions = [];
-
-        // Fetch ONLY student-flagged questions that are approved by admin
-        // The backend will filter to only return flagStatus='approved'
-        const studentFlagPromises = statusesToFetch.map(status => 
-          questionsAPI.getProcessorQuestions({ status, flagType: 'student' })
-        );
-        
-        // Fetch ONLY superadmin-created questions (not regular admin)
-        const superadminCreatedPromises = statusesToFetch.map(status => 
-          questionsAPI.getProcessorQuestions({ status, submittedBy: 'admin' })
-        );
-        
-        // Combine both promises
-        const promises = [...studentFlagPromises, ...superadminCreatedPromises];
-        
-        const responses = await Promise.all(promises);
-        
-        // Combine all questions
-        responses.forEach(response => {
-          if (response.success && response.data?.questions) {
-            allQuestions = [...allQuestions, ...response.data.questions];
+        if (response.success) {
+          if (response.data?.subjects && Array.isArray(response.data.subjects)) {
+            subjectsList = response.data.subjects;
+          } else if (Array.isArray(response.data)) {
+            subjectsList = response.data;
           }
-        });
+        }
         
-        // Remove duplicates based on question ID
-        const uniqueQuestions = [];
-        const seenIds = new Set();
-        allQuestions.forEach(q => {
-          if (!seenIds.has(q.id)) {
-            seenIds.add(q.id);
-            uniqueQuestions.push(q);
-          }
-        });
-        allQuestions = uniqueQuestions;
-          
-        // Fetch individual question details to get full information (flag reason, etc.)
-        const questionsWithDetails = await Promise.all(
-          allQuestions.map(async (question) => {
-            try {
-              const detailResponse = await questionsAPI.getProcessorQuestionById(question.id);
-              if (detailResponse.success && detailResponse.data) {
-                const detailedQuestion = detailResponse.data.question;
-                return {
-                  ...question,
-                  ...detailedQuestion, // Merge detailed question data
-                  flagReason: detailedQuestion?.flagReason || question.flagReason || null,
-                  flagStatus: detailedQuestion?.flagStatus || question.flagStatus || null,
-                  flagType: detailedQuestion?.flagType || question.flagType || null,
-                  // For admin submission page, show ALL student-flagged questions regardless of flagStatus
-                  // This allows viewing all student flags (pending, approved, rejected)
-                  isFlagged: (detailedQuestion?.isFlagged === true || detailedQuestion?.isFlagged === 'true') &&
-                            (detailedQuestion?.flagType === 'student'),
-                  history: detailedQuestion?.history || question.history || []
-                };
-              }
-              return question;
-            } catch (error) {
-              console.error(`Error fetching details for question ${question.id}:`, error);
-              return question;
-            }
-          })
-        );
-
-        // Filter to show ONLY:
-        // 1. Questions flagged by students AND approved by admin (flagStatus === 'approved')
-        // 2. Questions created by superadmin ONLY (not regular admin)
-        const filteredQuestions = questionsWithDetails.filter((question) => {
-          // Check if student-flagged AND approved by admin
-          const isStudentFlaggedAndApproved = question.flagType === 'student' && 
-                                              question.flagStatus === 'approved';
-          
-          // Check if created by superadmin ONLY (not regular admin)
-          const isSuperadminCreated = question.createdBy?.role === 'superadmin' ||
-                                      question.createdBy?.adminRole === 'superadmin' ||
-                                      (question.history?.find(h => h.action === 'created')?.performedBy?.role === 'superadmin') ||
-                                      (question.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
-          
-          return isStudentFlaggedAndApproved || isSuperadminCreated;
-        });
-
-        // Transform API data to match table structure
-        const transformedData = filteredQuestions.map((question) => {
-          // Check if question is created by superadmin ONLY (not regular admin)
-          const isSuperadminCreated = question.createdBy?.role === 'superadmin' ||
-                                      question.createdBy?.adminRole === 'superadmin' ||
-                                      (question.history?.find(h => h.action === 'created')?.performedBy?.role === 'superadmin') ||
-                                      (question.history?.find(h => h.action === 'created')?.performedBy?.adminRole === 'superadmin');
-          
-          // Get name: superadmin name for superadmin-created questions, student name for student-flagged questions
-          const studentName = isSuperadminCreated
-            ? (question.createdBy?.name || question.createdBy?.fullName || 'Superadmin')
-            : (question.flaggedBy?.name || 
-                             question.flaggedBy?.fullName ||
-                             question.lastModifiedBy?.name || 
-                             question.lastModifiedBy?.fullName ||
-               'Unknown');
-
-          // Check if question is flagged by student
-          // For admin submission page, show ALL student-flagged questions regardless of flagStatus
-          // This allows viewing all student flags (pending, approved, rejected)
-          const isFlagged = (question.isFlagged === true || question.isFlagged === 'true') &&
-                           (question.flagType === 'student');
-
-          // Get processor status
-          const processorStatus = mapProcessorStatus(question.status);
-
-          // Get admin status with proper mapping
-          // For admin submission page, always show "Flagged" for student-flagged questions
-          // For admin-created questions, show the actual status
-          const adminStatus = isFlagged ? 'Flagged' : mapAdminStatus(question.status, false);
-
-          // Get flag reason (only for student-flagged questions)
-          const flagReason = question.flagReason || null;
-
-          return {
-            id: question.id,
-            questionTitle: question.questionText || 'Untitled Question',
-            student: studentName,
-            processorStatus: processorStatus,
-            adminStatus: adminStatus,
-            submittedOn: formatDate(question.updatedAt || question.createdAt),
-            flagReason: flagReason,
-            isSuperadminCreated: isSuperadminCreated, // Track if this is superadmin-created
-            indicators: {
-              approved: adminStatus === 'Approved' || question.status === 'completed',
-              flag: isFlagged,
-              reject: question.status === 'rejected'
-            },
-            actionType: 'review',
-            originalData: question // Store original data for navigation
-          };
-        });
-
-        // Sort: pending_processor questions first (newest first), then others (newest first)
-        transformedData.sort((a, b) => {
-          const isAPendingProcessor = a.originalData?.status === 'pending_processor';
-          const isBPendingProcessor = b.originalData?.status === 'pending_processor';
-          
-          // If one is pending_processor and the other isn't, pending_processor comes first
-          if (isAPendingProcessor && !isBPendingProcessor) return -1;
-          if (!isAPendingProcessor && isBPendingProcessor) return 1;
-          
-          // Both have same priority, sort by date (most recent first)
-          const dateA = new Date(a.originalData?.updatedAt || a.originalData?.createdAt);
-          const dateB = new Date(b.originalData?.updatedAt || b.originalData?.createdAt);
-          return dateB - dateA;
-        });
-
-        setSubmissions(transformedData);
-        setTotal(transformedData.length);
+        setSubjects(subjectsList);
       } catch (error) {
-        console.error('Error fetching admin submissions:', error);
-        setSubmissions([]);
-        setTotal(0);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching subjects:', error);
+        setSubjects([]);
       }
     };
+    fetchSubjects();
+  }, []);
 
-    fetchAdminSubmissions();
-  }, [currentPage, search, subject, topic, subtopic]);
+  // Memoize status options
+  const subtopicOptions = useMemo(() => ["All Status", "Pending Review", "Approved", "Rejected"], []);
+
+  // Get subject options from API
+  const subjectOptions = useMemo(() => {
+    return ["All Subject", ...subjects.map(s => s.name || s)];
+  }, [subjects]);
+
+  // Memoize loading component for table
+  const tableLoadingComponent = useMemo(() => (
+    <Loader 
+      size="lg" 
+      color="oxford-blue" 
+      text="Loading..."
+      className="py-10"
+    />
+  ), []);
 
   // Handler for review action
-  const handleReview = (item) => {
+  const handleReview = useCallback((item) => {
     if (item.originalData?.id) {
       navigate(`/processor/Processed-ViewQuestion?questionId=${item.originalData.id}&source=admin-submission`);
     }
-  };
+  }, [navigate]);
 
   // Handler for view action
-  const handleView = (item) => {
+  const handleView = useCallback((item) => {
     if (item.originalData?.id) {
       navigate(`/processor/Processed-ViewQuestion?questionId=${item.originalData.id}&source=admin-submission`);
     }
-  };
+  }, [navigate]);
 
   // Handler for edit action
-  const handleEdit = (item) => {
+  const handleEdit = useCallback((item) => {
     console.log('Edit item:', item);
-  };
+  }, []);
 
   // Handler for showing flag reason
-  const handleShowFlagReason = (flagReason) => {
+  const handleShowFlagReason = useCallback((flagReason) => {
     setSelectedFlagReason(flagReason || "");
     setIsFlagModalOpen(true);
-  };
+  }, []);
 
   // Handler for closing flag modal
-  const handleCloseFlagModal = () => {
+  const handleCloseFlagModal = useCallback(() => {
     setIsFlagModalOpen(false);
     setSelectedFlagReason("");
-  };
+  }, []);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     navigate("/processor/question-bank");
-  };
+  }, [navigate]);
 
 
   return (
@@ -325,40 +491,35 @@ const AdminSubmission = () => {
             <OutlineButton text={t("processor.adminSubmission.back")} className="py-[10px] px-5" onClick={handleCancel}/>
         </header>
 
-        <ProcessorFilter
-        searchValue={search}
-        subjectValue={subject}
-        topicValue={topic}
-        subtopicValue={subtopic}
-        onSearchChange={setSearch}
-        onSubjectChange={setSubject}
-        onTopicChange={setTopic}
-        onSubtopicChange={setSubtopic}
-        showRole={false}
-      />
-
-      {loading ? (
-        <Loader 
-          size="lg" 
-          color="oxford-blue" 
-          text="Loading..."
-          className="py-12"
+        <SearchFilter
+          searchValue={search}
+          subjectValue={subject}
+          subtopicValue={subtopic}
+          onSearchChange={setSearch}
+          onSubjectChange={setSubject}
+          onSubtopicChange={setSubtopic}
+          subjectOptions={subjectOptions}
+          subtopicOptions={subtopicOptions}
+          subjectLabel="All Subject"
+          subtopicLabel="All Status"
+          searchPlaceholder={t("processor.adminSubmission.searchPlaceholder")}
         />
-      ) : (
+
         <Table
           items={submissions}
           columns={adminColumns}
           page={currentPage}
           pageSize={10}
-          total={total}
+          total={totalQuestions}
           onPageChange={setCurrentPage}
           onView={handleView}
           onEdit={handleEdit}
           onCustomAction={handleReview}
           onShowFlagReason={handleShowFlagReason}
           emptyMessage={t("processor.adminSubmission.emptyMessage")}
+          loading={loading}
+          loadingComponent={tableLoadingComponent}
         />
-      )}
 
       {/* Flag Reason Modal */}
       {isFlagModalOpen && (

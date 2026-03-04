@@ -133,6 +133,7 @@ const getAllTopics = async (req, res, next) => {
           } : null,
           name: topic.name,
           description: topic.description,
+          count: topic.questionCount || 0, // Include question count
           createdAt: topic.createdAt,
           updatedAt: topic.updatedAt,
         })),

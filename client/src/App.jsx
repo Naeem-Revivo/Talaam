@@ -21,11 +21,15 @@ function AppContent() {
   const isexplainer = location.pathname.startsWith('/explainer');
   const isQuestionBanks = location.pathname.startsWith('/question-banks');
   
+  // Auth pages that should NOT have header/footer (they use AuthLayout)
+  const authPaths = ['/login', '/create-account', '/forgot-password', '/forgot-modal', '/set-new-password', '/password-reset', '/verify-email', '/complete-profile'];
+  const isAuthPage = authPaths.includes(location.pathname);
+
   // Check if user is a student
   const isStudent = isAuthenticated && (user?.role === 'user' || user?.role === 'student');
 
-  // Don't wrap dashboard routes or question-banks (for students) with the global Layout
-  if (isDashboard || isAdmin || isgatherer || isprocessor || iscreator || isexplainer || (isQuestionBanks && isStudent)) {
+  // Don't wrap dashboard routes, auth pages, or question-banks (for students) with the global Layout
+  if (isDashboard || isAdmin || isgatherer || isprocessor || iscreator || isexplainer || isAuthPage || (isQuestionBanks && isStudent)) {
     return <AppRoutes />;
   }
 

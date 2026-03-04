@@ -6,6 +6,7 @@ import SearchFilter from "../../components/common/SearchFilter";
 import { Table } from "../../components/common/TableComponent";
 import { useNavigate } from "react-router-dom";
 import questionsAPI from "../../api/questions";
+import Loader from "../../components/common/Loader";
 
 
 const CompletedQuestionPage = () => {
@@ -56,7 +57,7 @@ const CompletedQuestionPage = () => {
   // Fetch all creator questions once to count variants (memoized to prevent re-fetching)
   const fetchAllCreatorQuestionsForVariants = useCallback(async () => {
     try {
-      const statusesToFetch = ['pending_creator', 'pending_processor', 'completed', 'rejected'];
+      const statusesToFetch = ['pending_creator', 'pending_processor', 'completed', 'rejected', 'flagged'];
       const allCreatorQuestions = [];
       
       for (const status of statusesToFetch) {
@@ -260,9 +261,7 @@ const CompletedQuestionPage = () => {
         />
 
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-oxford-blue text-lg font-roboto">Loading questions...</div>
-        </div>
+       <Loader fullScreen={false} size="lg" text={"Loading questions..."} className="py-10" />
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-12">
           <div className="text-cinnebar-red text-lg font-roboto mb-4">{error}</div>

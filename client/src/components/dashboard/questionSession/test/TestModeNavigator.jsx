@@ -4,12 +4,51 @@ import { useLanguage } from '../../../../context/LanguageContext';
 const TestQuestionNavigator = ({
   questions,
   currentIndex,
+  questionState = [],
   showQuestionNav,
   visitedIndices,
   onGoToIndex,
   onCloseQuestionNav,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const dir = language === 'ar' ? 'rtl' : 'ltr';
+
+  // Check if a question is submitted (cannot navigate to it)
+  const isQuestionSubmitted = (index) => {
+    return questionState[index]?.isSubmitted || questionState[index]?.status === 'submit';
+  };
+
+  const getQuestionStatus = (index) => {
+    const state = questionState[index] || {};
+    const isSubmitted = isQuestionSubmitted(index);
+    const isCurrent = index === currentIndex;
+    const isVisited = visitedIndices.has(index);
+
+    if (isCurrent) return 'current';
+    if (isSubmitted) return 'submitted';
+    if (isVisited) return 'visited';
+    return 'default';
+  };
+
+  const getButtonClass = (status) => {
+    const baseClasses = 'border font-roboto transition-colors';
+    const fontWeight = status === 'default' ? 'font-normal' : 'font-bold';
+
+    switch (status) {
+      case 'current':
+        return `${baseClasses} border-[#6697B7] bg-[#E6EEF3] text-[#6697B7] ${fontWeight}`;
+      case 'submitted':
+        return `${baseClasses} border-[#9BB5AD] bg-[#E8F0ED] text-[#2D4A42] cursor-not-allowed opacity-80 ${fontWeight}`;
+      case 'visited':
+        return `${baseClasses} border-[#D1D5DB] bg-[#F5F6F7] text-[#6B7280] ${fontWeight}`;
+      default:
+        return `${baseClasses} border-[#D4D4D4] bg-[#F8FAFC] text-[#737373] ${fontWeight}`;
+    }
+  };
+
+  const renderButtonContent = (status, index) => {
+    return index + 1;
+  };
 
   return (
     <>
@@ -25,46 +64,44 @@ const TestQuestionNavigator = ({
                 </svg>
               </button>
             </div>
-            <div className="p-2">
-              <div className="grid grid-cols-3 gap-2">
-                {questions.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => onGoToIndex(index)}
-                    className={`py-2 px-3 text-[14px] font-medium font-roboto transition-colors text-center border border-[#B9C9C5] rounded ${
-                      index === currentIndex
-                        ? 'bg-[#EF4444] text-white border-[#EF4444]'
-                        : visitedIndices.has(index)
-                        ? 'bg-[#C6D8D3] text-oxford-blue hover:opacity-80'
-                        : 'bg-white text-oxford-blue hover:opacity-80'
-                    }`}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
+            <div className="p-3">
+              <div className="grid grid-cols-3 gap-3">
+                {questions.map((_, index) => {
+                  const status = getQuestionStatus(index);
+                  const isDisabled = status === 'submitted';
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => !isDisabled && onGoToIndex(index)}
+                      disabled={isDisabled}
+                      className={`h-12 rounded-[10px] text-[14px] leading-[21px] ${getButtonClass(status)}`}
+                    >
+                      {renderButtonContent(status, index)}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
         </>
       )}
 
-      <div className="hidden lg:flex w-[110px] h-full bg-white overflow-y-auto flex-col border-r border-[#E5E7EB]">
-        <div className="flex-1 py-2">
-          {questions.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => onGoToIndex(index)}
-              className={`w-full py-2 text-[14px] font-medium font-roboto transition-colors text-center border border-[#B9C9C5] ${
-                index === currentIndex
-                  ? 'bg-[#EF4444] text-white border-[#EF4444]'
-                  : visitedIndices.has(index)
-                  ? 'bg-[#C6D8D3] text-oxford-blue hover:opacity-80'
-                  : 'bg-white text-oxford-blue hover:opacity-80'
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
+      <div className={`hidden lg:flex w-[72px] h-full bg-white flex-col ${dir === 'rtl' ? 'border-l' : 'border-r'} border-[#E5E7EB]`}>
+        <div className="flex-1 overflow-y-auto py-3 px-[12px] space-y-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {questions.map((_, index) => {
+            const status = getQuestionStatus(index);
+            const isDisabled = status === 'submitted';
+            return (
+              <button
+                key={index}
+                onClick={() => !isDisabled && onGoToIndex(index)}
+                disabled={isDisabled}
+                className={`w-[46px] h-[46px] gap-2 rounded-[10px] text-[14px] leading-[21px] flex items-center justify-center mx-auto ${getButtonClass(status)}`}
+              >
+                {renderButtonContent(status, index)}
+              </button>
+            );
+          })}
         </div>
       </div>
     </>

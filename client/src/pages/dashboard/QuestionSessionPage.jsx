@@ -3,9 +3,11 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import StudyModeLayout from '../../components/dashboard/questionSession/StudyModeLayout';
 import TestModeLayout from '../../components/dashboard/questionSession/TestModeLayout';
 import SessionCompletionModal from '../../components/dashboard/questionSession/SessionCompletionModal';
+import ExitConfirmationModal from '../../components/dashboard/questionSession/ExitConfirmationModal';
+import Loader from '../../components/common/Loader';
 import studentQuestionsAPI from '../../api/studentQuestions';
 import subscriptionAPI from '../../api/subscription';
-import { showErrorToast } from '../../utils/toastConfig';
+import { showErrorToast, showSuccessToast } from '../../utils/toastConfig';
 import {
   generateSessionId,
   findExistingSession,
@@ -15,12 +17,15 @@ import {
   clearExpiredSessions,
 } from '../../utils/sessionStorage';
 
-const buildInitialState = (questions) =>
-  questions.map(() => ({
+const buildInitialState = (questions, mode = 'study') =>
+  questions.map((_, index) => ({
     selectedOption: null,
     isCorrect: null,
     showFeedback: false,
     showHint: false,
+    isSubmitted: false, // Track if question has been submitted
+    isMarked: false, // Track if question is marked for review
+    status: mode === 'test' && index === 0 ? 'current' : null, // First question is current in test mode
   }));
 
 const QuestionSessionPage = () => {
@@ -32,6 +37,8 @@ const QuestionSessionPage = () => {
 
   // Get filters from navigation state (preferred) or URL params (fallback)
   const stateFilters = location.state?.filters || {};
+  // Check if resuming from a paused session
+  const pausedSessionId = location.state?.pausedSessionId || searchParams.get('resume');
 
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +46,11 @@ const QuestionSessionPage = () => {
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const sessionInfoRef = useRef({ examId: null, subjectId: null, topicId: null });
+  const pausedSessionIdRef = useRef(null); // Store paused session ID for updating on completion
+  const pausedTimeTakenRef = useRef(0); // Store original paused time for calculating total time
+  const resumeStartTimeRef = useRef(null); // Store when the session was resumed (for calculating resumed time)
+  const hasInteractedAfterResumeRef = useRef(false); // Track if user has interacted after resuming paused session
+  const timeLimitRef = useRef(null); // Store time limit in minutes from API response
 
   // Transform API question format to component format
   const transformQuestion = (apiQuestion, index) => {
@@ -50,6 +62,7 @@ const QuestionSessionPage = () => {
 
     return {
       id: apiQuestion._id || apiQuestion.id || `Q-${index + 1}`,
+      shortId: apiQuestion.shortId || null,
       itemNumber: index + 1,
       prompt: apiQuestion.questionText || '',
       options,
@@ -76,11 +89,11 @@ const QuestionSessionPage = () => {
         if (response.success && response.data?.subscription) {
           const subscription = response.data.subscription;
           // Check if subscription is active and not expired
-          const isActive = subscription.isActive === true && 
-                          subscription.paymentStatus === 'Paid' &&
-                          new Date(subscription.expiryDate) > new Date();
+          const isActive = subscription.isActive === true &&
+            subscription.paymentStatus === 'Paid' &&
+            new Date(subscription.expiryDate) > new Date();
           setHasActiveSubscription(isActive);
-          
+
           // If no active subscription, redirect to practice page
           if (!isActive) {
             showErrorToast('Please subscribe to access study mode and test mode');
@@ -121,28 +134,170 @@ const QuestionSessionPage = () => {
         setLoading(true);
         setError(null);
 
+        // If resuming from a paused session, fetch from DB
+        if (pausedSessionId) {
+          try {
+            const pausedResponse = await studentQuestionsAPI.getPausedSession(pausedSessionId);
+            if (pausedResponse.success && pausedResponse.data) {
+              const pausedData = pausedResponse.data;
+
+              // Store the paused session ID and time for later use when completing
+              pausedSessionIdRef.current = pausedSessionId;
+              pausedTimeTakenRef.current = pausedData.timeTaken || 0;
+
+              // Store timeLimit if available
+              if (pausedData.timeLimit) {
+                timeLimitRef.current = pausedData.timeLimit;
+              }
+
+              // Set session info
+              sessionInfoRef.current = {
+                examId: pausedData.examId,
+                subjectId: pausedData.subjectId,
+                topicId: pausedData.topicId,
+              };
+
+              // Set questions and state from paused session
+              setQuestions(pausedData.questions || []);
+              const restoredState = pausedData.questionState || [];
+              // Ensure status is set correctly for restored state
+              const restoredWithStatus = restoredState.map((state) => {
+                // If status is already set, use it; otherwise infer from isSubmitted
+                const baseState = state.status ? state : {
+                  ...state,
+                  status: state.isSubmitted ? 'submit' : null,
+                };
+                // Ensure isMarked is preserved
+                return {
+                  ...baseState,
+                  isMarked: baseState.isMarked || false,
+                };
+              });
+              setQuestionState(restoredWithStatus);
+              const restoredIndex = pausedData.currentIndex || 0;
+              setCurrentIndex(restoredIndex);
+
+              // Build visited indices from questions that have been answered, skipped, or submitted
+              const visited = new Set();
+              restoredWithStatus.forEach((state, idx) => {
+                if (state?.selectedOption || state?.status === 'skipped' || state?.status === 'submit') {
+                  visited.add(idx);
+                }
+              });
+              if (visited.size === 0) {
+                visited.add(restoredIndex);
+              }
+              setVisitedIndices(visited);
+
+              // Set current status for restored index if not submitted (for test mode)
+              // For study mode, we don't use status field, but we ensure the current question is properly set
+              if (pausedData.mode === 'test' && restoredWithStatus[restoredIndex] && !restoredWithStatus[restoredIndex].isSubmitted && restoredWithStatus[restoredIndex].status !== 'submit') {
+                setQuestionState((prev) =>
+                  prev.map((state, idx) =>
+                    idx === restoredIndex ? { ...state, status: 'current' } : state
+                  )
+                );
+              }
+
+              // Restore session start time: set it so that elapsed time calculation shows paused time initially
+              // We set it to (current time - paused time) so that Date.now() - sessionStartTime.current = pausedTime
+              // This way, when we resume, the timer shows the paused time and continues counting from there
+              const pausedTime = pausedData.timeTaken || 0;
+              sessionStartTime.current = Date.now() - pausedTime;
+              // Store the resume start time for calculating total time later
+              resumeStartTimeRef.current = Date.now();
+
+              // Restore timer for test mode (use remaining time from database)
+              if (pausedData.mode === 'test' && pausedData.questions?.length > 0) {
+                // Use remainingTime and timeLimit directly from database (most reliable)
+                const remaining = pausedData.remainingTime;
+                const timeLimit = pausedData.timeLimit;
+
+                // Store timeLimit if available
+                if (timeLimit) {
+                  timeLimitRef.current = timeLimit;
+                }
+
+                if (remaining !== null && remaining !== undefined && remaining > 0) {
+                  // Set timer end time to current time + remaining time
+                  // This ensures the timer continues from where it was paused
+                  timerEndTimeRef.current = Date.now() + remaining;
+                  setTimeRemaining(remaining);
+                } else {
+                  // Timer expired or no remaining time
+                  timerEndTimeRef.current = null;
+                  setTimeRemaining(0);
+                }
+              }
+
+              // Set session stats (only count correct/incorrect for study mode)
+              const correctCount = pausedData.mode === 'study'
+                ? (pausedData.questionState?.filter(q => q.isCorrect === true).length || 0)
+                : 0;
+              const incorrectCount = pausedData.mode === 'study'
+                ? (pausedData.questionState?.filter(q => q.isCorrect === false).length || 0)
+                : 0;
+              setSessionStats({
+                correctCount,
+                incorrectCount,
+                totalQuestions: pausedData.questions?.length || 0,
+              });
+
+              // Generate a new session ID for the resumed session (don't use paused session ID)
+              const filters = {
+                exam: pausedData.examId,
+                subject: pausedData.subjectId,
+                topic: pausedData.topicId,
+              };
+              sessionIdRef.current = generateSessionId(pausedData.mode, filters);
+
+              // Don't save resumed sessions to session storage
+              // Ensure session is not marked as complete when resuming (even if all questions have feedback)
+              setSessionComplete(false);
+              isInitialLoad.current = false;
+              setLoading(false);
+              return; // Exit early, don't fetch new questions
+            }
+          } catch (error) {
+            console.error('Error resuming paused session:', error);
+            showErrorToast('Failed to resume paused session. Starting fresh session.');
+            // Continue to fetch new questions
+          }
+        }
+
         // Get filters from navigation state (preferred) or URL params (fallback)
         const params = {};
         const filters = {};
-        
+
         // Use state filters first (from navigation state)
+        // If topics are provided, use only topics (they take precedence)
         if (stateFilters.topics && stateFilters.topics.length > 0) {
           // Multiple topics from state - join as comma-separated string
           params.topics = stateFilters.topics.join(',');
           filters.topics = stateFilters.topics;
-        }
-        if (stateFilters.subject) {
+        } else if (stateFilters.subject) {
+          // Only use subject if no topics are selected
           params.subject = stateFilters.subject;
           filters.subject = stateFilters.subject;
         }
-        
+
+        // Add size for both modes
+        if (stateFilters.size) {
+          params.size = stateFilters.size;
+        }
+
+        // Add timeLimit only for test mode
+        if (mode === 'test' && stateFilters.timeLimit) {
+          params.timeLimit = stateFilters.timeLimit;
+        }
+
         // If no state filters, fallback to URL params for backward compatibility
         if (!stateFilters.topics && !stateFilters.subject) {
           const exam = searchParams.get('exam');
           const subject = searchParams.get('subject');
           const topic = searchParams.get('topic');
           const topics = searchParams.get('topics');
-          
+
           if (exam) {
             params.exam = exam;
             filters.exam = exam;
@@ -161,7 +316,7 @@ const QuestionSessionPage = () => {
           }
         }
 
-        // Check for existing session
+        // Check for existing session (only if not resuming from paused session)
         const existingSession = findExistingSession(mode, filters);
         let sessionId;
         let restoredState = null;
@@ -188,14 +343,19 @@ const QuestionSessionPage = () => {
             transformQuestion(q, index)
           );
           setQuestions(transformedQuestions);
-          
+
+          // Store timeLimit from API response for test mode
+          if (mode === 'test' && response.data?.timeLimit) {
+            timeLimitRef.current = response.data.timeLimit;
+          }
+
           // Store session info from first question for saving results later
           if (transformedQuestions.length > 0 && rawQuestions.length > 0) {
             const firstQ = transformedQuestions[0];
             // Extract IDs properly - handle both object and string formats
             // Also check the raw API question data for examId, subjectId, topicId fields
             const rawQuestion = rawQuestions[0];
-            
+
             const getExamId = () => {
               // First try direct examId field from API response
               if (rawQuestion?.examId) return rawQuestion.examId;
@@ -226,21 +386,21 @@ const QuestionSessionPage = () => {
               if (filters.topic) return filters.topic;
               return null;
             };
-            
+
             sessionInfoRef.current = {
               examId: getExamId(),
               subjectId: getSubjectId(),
               topicId: getTopicId(),
             };
           }
-          
+
           // Restore state from session if available
           if (restoredState && restoredState.questions) {
             // Verify question IDs match (questions might have changed)
             const questionIdsMatch = restoredState.questions.every(
               (q, idx) => idx < transformedQuestions.length && q.id === transformedQuestions[idx].id
             );
-            
+
             if (questionIdsMatch && restoredState.questionState) {
               // Merge restored question data (explanations, correct answers) with fresh questions
               const mergedQuestions = transformedQuestions.map((q, idx) => {
@@ -255,10 +415,26 @@ const QuestionSessionPage = () => {
                 return q;
               });
               setQuestions(mergedQuestions);
-              
+
               // Restore all state
-              setQuestionState(restoredState.questionState);
-              setCurrentIndex(restoredState.currentIndex || 0);
+              const restoredStateData = restoredState.questionState || [];
+              // Ensure status field exists for restored state
+              const restoredWithStatus = restoredStateData.map((state) => ({
+                ...state,
+                status: state.status || (state.isSubmitted ? 'submit' : null),
+                isMarked: state.isMarked || false, // Preserve marked state
+              }));
+              setQuestionState(restoredWithStatus);
+              const restoredIndex = restoredState.currentIndex || 0;
+              setCurrentIndex(restoredIndex);
+              // Set current status for restored index if not submitted
+              if (mode === 'test' && restoredWithStatus[restoredIndex] && !restoredWithStatus[restoredIndex].isSubmitted && restoredWithStatus[restoredIndex].status !== 'submit') {
+                setQuestionState((prev) =>
+                  prev.map((state, idx) =>
+                    idx === restoredIndex ? { ...state, status: 'current' } : state
+                  )
+                );
+              }
               setVisitedIndices(new Set(restoredState.visitedIndices || [0]));
               setSessionStats(restoredState.sessionStats || {
                 correctCount: 0,
@@ -268,7 +444,7 @@ const QuestionSessionPage = () => {
               if (restoredState.sessionStartTime) {
                 sessionStartTime.current = restoredState.sessionStartTime;
               }
-              
+
               // Restore timer for test mode
               if (mode === 'test' && restoredState.timerEndTime) {
                 const now = Date.now();
@@ -283,14 +459,14 @@ const QuestionSessionPage = () => {
                   // Will trigger auto-submit in timer effect
                 }
               }
-              
+
               // Restore explanation visibility for current question
               const currentState = restoredState.questionState[restoredState.currentIndex || 0];
               if (currentState?.showFeedback) {
                 setShowExplanation(true);
                 setShowExplanationPanel(true);
               }
-              
+
               isInitialLoad.current = false;
             } else {
               // Questions don't match, start fresh
@@ -317,7 +493,7 @@ const QuestionSessionPage = () => {
     };
 
     fetchQuestions();
-  }, [mode, searchParams, navigate, location.state, checkingSubscription, hasActiveSubscription]);
+  }, [mode, searchParams, navigate, location.state, checkingSubscription, hasActiveSubscription, pausedSessionId]);
 
   const [questionState, setQuestionState] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -326,6 +502,7 @@ const QuestionSessionPage = () => {
   const [visitedIndices, setVisitedIndices] = useState(new Set([0]));
   const [showExplanation, setShowExplanation] = useState(false);
   const [showExplanationPanel, setShowExplanationPanel] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const isInitialLoad = useRef(true);
   const sessionStartTime = useRef(null);
   const sessionIdRef = useRef(null);
@@ -334,7 +511,7 @@ const QuestionSessionPage = () => {
     incorrectCount: 0,
     totalQuestions: 0,
   });
-  
+
   // Timer state for test mode
   const [timeRemaining, setTimeRemaining] = useState(null); // in milliseconds
   const timerEndTimeRef = useRef(null); // when the timer should end
@@ -344,7 +521,12 @@ const QuestionSessionPage = () => {
   // Initialize question state when questions are first loaded
   useEffect(() => {
     if (questions.length > 0 && isInitialLoad.current) {
-      setQuestionState(buildInitialState(questions));
+      const initialState = buildInitialState(questions, mode);
+      // Set first question as current in test mode
+      if (mode === 'test' && initialState.length > 0) {
+        initialState[0].status = 'current';
+      }
+      setQuestionState(initialState);
       setVisitedIndices(new Set([0]));
       // Hide explanation initially
       setShowExplanation(false);
@@ -357,73 +539,100 @@ const QuestionSessionPage = () => {
         ...prev,
         totalQuestions: questions.length,
       }));
-      
-      // Initialize timer for test mode (1 minute per question)
+
+      // Initialize timer for test mode
       if (mode === 'test' && questions.length > 0) {
-        const totalTimeMs = questions.length * 60 * 1000; // 1 minute per question in milliseconds
+        // Use timeLimit from API response if available, otherwise default to 1 minute per question
+        const timeLimitMinutes = timeLimitRef.current || questions.length;
+        const totalTimeMs = timeLimitMinutes * 60 * 1000; // Convert minutes to milliseconds
         timerEndTimeRef.current = Date.now() + totalTimeMs;
         setTimeRemaining(totalTimeMs);
       }
-      
+
       isInitialLoad.current = false;
     }
   }, [questions, mode]);
 
   const handleAutoSubmit = useCallback(async () => {
     if (sessionComplete || mode !== 'test') return;
-    
+
     // Mark session as complete
     setSessionComplete(true);
-    
+
     // Clear timer interval
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
     }
-    
-    // Submit all answers (including unanswered ones as empty string)
-    try {
-      const totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
-      const timeTakenMs = totalTime;
-      
-      if (sessionInfoRef.current.examId) {
-        // Prepare answers - include all questions, even unanswered ones (empty string for 0 points)
-        const answers = questions.map((q, idx) => ({
-          questionId: q.id,
-          selectedAnswer: questionState[idx]?.selectedOption || '', // Empty string for unanswered (0 points)
-        }));
 
-        const response = await studentQuestionsAPI.submitTestAnswers(
-          sessionInfoRef.current.examId,
-          answers,
-          timeTakenMs
-        );
-
-        // Store results
-        if (response.success && response.data) {
-          const resultsKey = `test_results_${sessionIdRef.current}`;
-          sessionStorage.setItem(resultsKey, JSON.stringify(response.data));
+    // Mark all unanswered questions as skipped, then submit
+    setQuestionState((prevState) => {
+      const updatedState = prevState.map((state) => {
+        if (!state.isSubmitted && state.status !== 'submit' && state.status !== 'skipped') {
+          return { ...state, status: 'skipped' };
         }
-        
-        const sessionKey = `session_saved_${sessionIdRef.current}`;
-        sessionStorage.setItem(sessionKey, 'true');
-      }
-    } catch (error) {
-      console.error('Error auto-submitting test:', error);
-      showErrorToast('Test time expired. Answers have been submitted.');
-    }
-  }, [sessionComplete, mode, questions, questionState]);
-  
+        return state;
+      });
+
+      // Submit answers after state update
+      (async () => {
+        try {
+          // If resuming from paused session, add paused time + resumed time
+          let totalTime;
+          if (pausedSessionIdRef.current) {
+            const resumedTime = resumeStartTimeRef.current ? Date.now() - resumeStartTimeRef.current : 0;
+            totalTime = pausedTimeTakenRef.current + resumedTime;
+          } else {
+            totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+          }
+          const timeTakenMs = totalTime;
+
+          if (sessionInfoRef.current.examId) {
+            // Prepare answers - include all questions
+            // Skipped questions should have empty string (counts as incorrect)
+            const answers = questions.map((q, idx) => {
+              const state = updatedState[idx];
+              return {
+                questionId: q.id,
+                selectedAnswer: state?.status === 'skipped' ? '' : (state?.selectedOption || ''),
+              };
+            });
+
+            const response = await studentQuestionsAPI.submitTestAnswers(
+              sessionInfoRef.current.examId,
+              answers,
+              timeTakenMs
+            );
+
+            // Store results
+            if (response.success && response.data) {
+              const resultsKey = `test_results_${sessionIdRef.current}`;
+              sessionStorage.setItem(resultsKey, JSON.stringify(response.data));
+            }
+
+            const sessionKey = `session_saved_${sessionIdRef.current}`;
+            sessionStorage.setItem(sessionKey, 'true');
+          }
+        } catch (error) {
+          console.error('Error auto-submitting test:', error);
+          showErrorToast('Test time expired. Answers have been submitted.');
+        }
+      })();
+
+      return updatedState;
+    });
+  }, [sessionComplete, mode, questions]);
+
   // Timer countdown for test mode
   useEffect(() => {
     if (mode !== 'test' || !timerEndTimeRef.current || sessionComplete) {
       return;
     }
-    
+
     const updateTimer = () => {
       const now = Date.now();
       const remaining = timerEndTimeRef.current - now;
-      
+
       if (remaining <= 0) {
         // Timer expired - auto-submit
         setTimeRemaining(0);
@@ -436,23 +645,28 @@ const QuestionSessionPage = () => {
         setTimeRemaining(remaining);
       }
     };
-    
+
     // Update immediately
     updateTimer();
-    
+
     // Update every second
     timerIntervalRef.current = setInterval(updateTimer, 1000);
-    
+
     return () => {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
       }
     };
-  }, [mode, sessionComplete, handleAutoSubmit]);
+  }, [mode, sessionComplete, questions, questionState]);
 
-  // Save session state whenever it changes
+  // Save session state whenever it changes (but not for resumed paused sessions)
   useEffect(() => {
+    // Don't save to session storage if resuming from a paused session
+    if (pausedSessionId) {
+      return;
+    }
+
     if (sessionIdRef.current && questions.length > 0 && questionState.length > 0) {
       const stateToSave = {
         mode,
@@ -474,7 +688,7 @@ const QuestionSessionPage = () => {
       };
       saveSessionState(sessionIdRef.current, stateToSave);
     }
-  }, [questionState, currentIndex, visitedIndices, sessionStats, mode, stateFilters, questions]);
+  }, [questionState, currentIndex, visitedIndices, sessionStats, mode, stateFilters, questions, pausedSessionId]);
 
   // Save session when it completes (for both test and study modes)
   useEffect(() => {
@@ -490,50 +704,101 @@ const QuestionSessionPage = () => {
       }
 
       try {
-        const totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
-        const timeTakenMs = totalTime;
+        // Calculate total time: if resuming from paused session, add paused time + resumed time
+        // Otherwise, calculate from session start time
+        let totalTimeTakenMs;
+        if (pausedSessionIdRef.current) {
+          // For resumed sessions: total time = paused time + resumed time
+          const resumedTime = resumeStartTimeRef.current ? Date.now() - resumeStartTimeRef.current : 0;
+          totalTimeTakenMs = pausedTimeTakenRef.current + resumedTime;
+        } else {
+          // For normal sessions: total time = current time - session start time
+          totalTimeTakenMs = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+        }
 
-        if (mode === 'study') {
-          // Save study mode session results
-          if (sessionInfoRef.current.examId) {
-            const questionsData = questions.map((q, idx) => ({
+        // Check if we're completing a paused session
+        if (pausedSessionIdRef.current) {
+          // Update the paused session to completed
+          const questionsData = questions.map((q, idx) => {
+            const state = questionState[idx];
+            const hasAnswer = state?.selectedOption !== null && state?.selectedOption !== undefined && state?.selectedOption !== '';
+            // For study mode: only set isCorrect if question was answered, otherwise null
+            // For test mode: isCorrect will be calculated when test is submitted
+            const isCorrect = mode === 'study'
+              ? (hasAnswer ? (state?.isCorrect ?? null) : null)
+              : (hasAnswer ? (state?.isCorrect ?? false) : false);
+
+            return {
               questionId: q.id,
-              selectedAnswer: questionState[idx]?.selectedOption || '',
-              isCorrect: questionState[idx]?.isCorrect || false,
-            }));
+              selectedAnswer: getSelectedAnswer(state), // Handles skipped questions
+              isCorrect: isCorrect,
+              isMarked: state?.isMarked || false,
+            };
+          });
 
-            await studentQuestionsAPI.saveStudySessionResults({
-              examId: sessionInfoRef.current.examId,
-              subjectId: sessionInfoRef.current.subjectId,
-              topicId: sessionInfoRef.current.topicId,
+          const response = await studentQuestionsAPI.completePausedSession(
+            pausedSessionIdRef.current,
+            {
+              mode,
               questions: questionsData,
-              timeTaken: timeTakenMs,
-            });
+              timeTaken: totalTimeTakenMs,
+            }
+          );
 
-            // Mark as saved
-            sessionStorage.setItem(sessionKey, 'true');
+          // Mark as saved
+          sessionStorage.setItem(sessionKey, 'true');
+
+          // Store test results for later use when viewing summary (test mode only)
+          if (mode === 'test' && response.success && response.data) {
+            const resultsKey = `test_results_${sessionIdRef.current}`;
+            sessionStorage.setItem(resultsKey, JSON.stringify(response.data));
           }
-        } else if (mode === 'test') {
-          // Save test mode session results
-          if (sessionInfoRef.current.examId) {
-            const answers = questions.map((q, idx) => ({
-              questionId: q.id,
-              selectedAnswer: questionState[idx]?.selectedOption || '',
-            }));
+        } else {
+          // Normal flow: create new session
+          if (mode === 'study') {
+            // Save study mode session results
+            if (sessionInfoRef.current.examId) {
+              const questionsData = questions.map((q, idx) => ({
+                questionId: q.id,
+                selectedAnswer: getSelectedAnswer(questionState[idx]), // Handles skipped questions
+                isCorrect: questionState[idx]?.isCorrect || false,
+                isMarked: questionState[idx]?.isMarked || false,
+              }));
 
-            const response = await studentQuestionsAPI.submitTestAnswers(
-              sessionInfoRef.current.examId,
-              answers,
-              timeTakenMs
-            );
+              await studentQuestionsAPI.saveStudySessionResults({
+                examId: sessionInfoRef.current.examId,
+                subjectId: sessionInfoRef.current.subjectId,
+                topicId: sessionInfoRef.current.topicId,
+                questions: questionsData,
+                timeTaken: timeTakenMs,
+              });
 
-            // Mark as saved
-            sessionStorage.setItem(sessionKey, 'true');
-            
-            // Store test results for later use when viewing summary
-            if (response.success && response.data) {
-              const resultsKey = `test_results_${sessionIdRef.current}`;
-              sessionStorage.setItem(resultsKey, JSON.stringify(response.data));
+              // Mark as saved
+              sessionStorage.setItem(sessionKey, 'true');
+            }
+          } else if (mode === 'test') {
+            // Save test mode session results
+            if (sessionInfoRef.current.examId) {
+              const answers = questions.map((q, idx) => ({
+                questionId: q.id,
+                selectedAnswer: getSelectedAnswer(questionState[idx]), // Handles skipped questions
+                isMarked: questionState[idx]?.isMarked || false,
+              }));
+
+              const response = await studentQuestionsAPI.submitTestAnswers(
+                sessionInfoRef.current.examId,
+                answers,
+                timeTakenMs
+              );
+
+              // Mark as saved
+              sessionStorage.setItem(sessionKey, 'true');
+
+              // Store test results for later use when viewing summary
+              if (response.success && response.data) {
+                const resultsKey = `test_results_${sessionIdRef.current}`;
+                sessionStorage.setItem(resultsKey, JSON.stringify(response.data));
+              }
             }
           }
         }
@@ -547,18 +812,32 @@ const QuestionSessionPage = () => {
     saveSessionOnComplete();
   }, [sessionComplete, mode, questions, questionState]);
 
-  // Check if all questions are completed (only for study mode)
-  // For test mode, completion is triggered when user submits the last question
+  // Check if all questions are completed
+  // For test mode: all questions must be attempted (either submitted or skipped)
+  // For study mode: all questions must have feedback
+  // Skip this check if we're resuming from a paused session and user hasn't interacted yet (to avoid auto-completing)
   useEffect(() => {
+    // Don't auto-complete if we're resuming from a paused session and user hasn't interacted yet
+    if (pausedSessionIdRef.current && !hasInteractedAfterResumeRef.current) {
+      return;
+    }
+
     if (questionState.length > 0 && questions.length > 0 && questionState.length === questions.length && !sessionComplete) {
       if (mode === 'study') {
         // Study mode: all questions must have feedback
-      const allAnswered = questionState.every((state) => state.showFeedback);
+        const allAnswered = questionState.every((state) => state.showFeedback);
         if (allAnswered) {
-        setSessionComplete(true);
+          setSessionComplete(true);
+        }
+      } else if (mode === 'test') {
+        // Test mode: all questions must be attempted (either submitted or skipped)
+        const allAttempted = questionState.every((state) =>
+          state.status === 'submit' || state.status === 'skipped' || state.isSubmitted
+        );
+        if (allAttempted) {
+          setSessionComplete(true);
         }
       }
-      // Test mode completion is handled in moveToNextQuestion when submitting the last question
     }
   }, [questionState, mode, questions.length, sessionComplete]);
 
@@ -578,20 +857,12 @@ const QuestionSessionPage = () => {
 
   // Show loading state while checking subscription
   if (checkingSubscription) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-oxford-blue text-lg">Checking subscription...</div>
-      </div>
-    );
+    return <Loader fullScreen={true} text="Checking subscription..." size="lg" />;
   }
 
   // Show loading state
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-oxford-blue text-lg">Loading questions...</div>
-      </div>
-    );
+    return <Loader fullScreen={true} text="Loading questions..." size="lg" />;
   }
 
   // If no active subscription, show message (will redirect)
@@ -630,15 +901,55 @@ const QuestionSessionPage = () => {
     );
   };
 
+  // Helper function to get selected answer for a question (handles skipped questions)
+  const getSelectedAnswer = (state) => {
+    if (state?.status === 'skipped') {
+      return ''; // Skipped questions count as empty/incorrect
+    }
+    return state?.selectedOption || '';
+  };
+
   const handleOptionChange = (optionId) => {
+    // In test mode, don't allow changing answer if question is already submitted
+    if (mode === 'test' && (currentState?.isSubmitted || currentState?.status === 'submit')) {
+      return; // Lock the answer once submitted
+    }
+
     updateQuestionState((state) => ({
       ...state,
       selectedOption: optionId,
+      // If question was skipped, clear the skipped status when user selects an option
+      status: mode === 'test' && state.status === 'skipped' ? 'current' : state.status,
     }));
   };
 
   const goToIndex = (index) => {
     if (index < 0 || index >= totalQuestions) return;
+
+    // In test mode, prevent navigation to submitted questions (anywhere, not just before current)
+    if (mode === 'test') {
+      const targetState = questionState[index];
+      if (targetState?.status === 'submit' || targetState?.isSubmitted) {
+        // Don't allow navigation to submitted questions in test mode
+        return;
+      }
+    }
+
+    // Update status: clear current from previous question, set current for new question
+    if (mode === 'test') {
+      setQuestionState((prev) =>
+        prev.map((state, idx) => {
+          if (idx === currentIndex && state.status === 'current') {
+            // Keep previous status if it was submit or skipped, otherwise clear
+            return { ...state, status: state.status === 'submit' ? 'submit' : (state.status === 'skipped' ? 'skipped' : null) };
+          }
+          if (idx === index && state.status !== 'submit') {
+            return { ...state, status: 'current' };
+          }
+          return state;
+        })
+      );
+    }
 
     setCurrentIndex(index);
     setVisitedIndices((prev) => {
@@ -647,7 +958,7 @@ const QuestionSessionPage = () => {
       return next;
     });
     setShowQuestionNav(false);
-    
+
     // Show explanation only if question has feedback, otherwise hide it completely
     const targetQuestionState = questionState[index];
     if (targetQuestionState?.showFeedback) {
@@ -655,34 +966,91 @@ const QuestionSessionPage = () => {
       setShowExplanationPanel(true);
     } else {
       setShowExplanation(false);
-    setShowExplanationPanel(false);
+      setShowExplanationPanel(false);
     }
   };
 
-  const moveToNextQuestion = () => {
-    if (isLastQuestion) {
-      setSessionComplete(true);
-      return;
+  // Find next non-submitted question (for test mode)
+  // This does a circular search: first from current index forward, then from start
+  const findNextUnsubmittedQuestion = (startIndex) => {
+    // Forward from the current index
+    for (let i = startIndex + 1; i < totalQuestions; i++) {
+      const state = questionState[i];
+      if (state?.status !== 'submit' && !state?.isSubmitted) {
+        return i;
+      }
     }
-    goToIndex(currentIndex + 1);
+
+    // Wrap around to the beginning
+    for (let i = 0; i < startIndex; i++) {
+      const state = questionState[i];
+      if (state?.status !== 'submit' && !state?.isSubmitted) {
+        return i;
+      }
+    }
+
+    return null; // No unsubmitted questions found
+  };
+
+  // Find previous skipped question (for test mode navigation)
+  const findPreviousSkippedQuestion = (startIndex) => {
+    for (let i = startIndex - 1; i >= 0; i--) {
+      const state = questionState[i];
+      if (state?.status === 'skipped') {
+        return i;
+      }
+    }
+    return null; // No skipped questions found
+  };
+
+  const moveToNextQuestion = () => {
+    if (mode === 'test') {
+      // In test mode, find next non-submitted question
+      const nextIndex = findNextUnsubmittedQuestion(currentIndex);
+      if (nextIndex !== null) {
+        goToIndex(nextIndex);
+      } else {
+        // All questions attempted, check if all are submitted or skipped
+        const allAttempted = questionState.every((state) =>
+          state.status === 'submit' || state.status === 'skipped' || state.isSubmitted
+        );
+        if (allAttempted) {
+          setSessionComplete(true);
+        }
+      }
+    } else {
+      // Study mode: normal navigation
+      if (isLastQuestion) {
+        setSessionComplete(true);
+        return;
+      }
+      goToIndex(currentIndex + 1);
+    }
   };
 
   const handleSubmit = async () => {
     if (!currentState?.selectedOption || !currentQuestion) return;
 
+    // Mark that user has interacted after resuming paused session
+    if (pausedSessionIdRef.current) {
+      hasInteractedAfterResumeRef.current = true;
+    }
+
     if (mode === 'test') {
-      // In test mode, just save the answer and move to next question
+      // In test mode, mark question as submitted and lock the answer
       // Correctness will be checked when the entire test is submitted
       updateQuestionState((state) => ({
         ...state,
         selectedOption: currentState.selectedOption,
+        isSubmitted: true, // Mark as submitted - cannot go back to this question
+        status: 'submit', // Mark status as submit
       }));
       moveToNextQuestion();
     } else {
       // Study mode: Hide explanation initially when submitting
       setShowExplanation(false);
       setShowExplanationPanel(false);
-      
+
       // Submit answer to API and get feedback
       try {
         const response = await studentQuestionsAPI.submitStudyAnswer(
@@ -693,16 +1061,16 @@ const QuestionSessionPage = () => {
         if (response.success && response.data) {
           const isCorrect = response.data.isCorrect;
           const explanation = response.data.explanation || '';
-          
+
           // Update question state with feedback
-      updateQuestionState((state) => ({
-        ...state,
-        isCorrect,
-        showFeedback: true,
+          updateQuestionState((state) => ({
+            ...state,
+            isCorrect,
+            showFeedback: true,
             correctAnswer: response.data.correctAnswer,
             explanation: explanation,
           }));
-          
+
           // Update the question object with the explanation
           setQuestions((prevQuestions) =>
             prevQuestions.map((q, idx) =>
@@ -711,14 +1079,14 @@ const QuestionSessionPage = () => {
                 : q
             )
           );
-          
+
           // Update session statistics
           setSessionStats((prev) => ({
             ...prev,
             correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
             incorrectCount: !isCorrect ? prev.incorrectCount + 1 : prev.incorrectCount,
           }));
-          
+
           // Show explanation after getting feedback
           setShowExplanation(true);
           setShowExplanationPanel(true);
@@ -734,8 +1102,56 @@ const QuestionSessionPage = () => {
   };
 
   const handleNavigate = (direction) => {
-    const nextIndex = currentIndex + direction;
-    goToIndex(nextIndex);
+    // Mark that user has interacted after resuming paused session
+    if (pausedSessionIdRef.current && direction !== 0) {
+      hasInteractedAfterResumeRef.current = true;
+    }
+
+    if (mode === 'test') {
+      if (direction === -1) {
+        // Previous: Check if there's a skipped question first
+        const skippedIndex = findPreviousSkippedQuestion(currentIndex);
+        if (skippedIndex !== null) {
+          goToIndex(skippedIndex);
+          return;
+        }
+        // Otherwise, go to previous non-submitted question
+        for (let i = currentIndex - 1; i >= 0; i--) {
+          const state = questionState[i];
+          if (state?.status !== 'submit' && !state?.isSubmitted) {
+            goToIndex(i);
+            return;
+          }
+        }
+        // If no non-submitted question found, don't navigate
+        return;
+      } else {
+        // Next: If current question has selection but not submitted, mark as skipped
+        if (currentState?.selectedOption && !currentState?.isSubmitted && currentState?.status !== 'submit') {
+          updateQuestionState((state) => ({
+            ...state,
+            status: 'skipped',
+          }));
+        }
+        // Find next non-submitted question
+        const nextIndex = findNextUnsubmittedQuestion(currentIndex);
+        if (nextIndex !== null) {
+          goToIndex(nextIndex);
+        } else {
+          // Check if all questions are attempted
+          const allAttempted = questionState.every((state) =>
+            state.status === 'submit' || state.status === 'skipped' || state.isSubmitted
+          );
+          if (allAttempted) {
+            setSessionComplete(true);
+          }
+        }
+      }
+    } else {
+      // Study mode: normal navigation
+      const nextIndex = currentIndex + direction;
+      goToIndex(nextIndex);
+    }
   };
 
   const toggleHint = () => {
@@ -745,40 +1161,146 @@ const QuestionSessionPage = () => {
     }));
   };
 
-  const handleExit = () => {
-    // Clear session in test mode when exiting after completion
-    if (mode === 'test' && sessionComplete && sessionIdRef.current) {
-      clearSession(sessionIdRef.current);
+  const handlePauseSession = async () => {
+    if (questions.length === 0 || questionState.length === 0) {
+      showErrorToast('No session to pause');
+      return;
+    }
+
+    // Check if any question has been submitted
+    // In test mode, check for isSubmitted or status === 'submit' or 'skipped'; in study mode, check for showFeedback
+    const hasSubmittedQuestions = mode === 'test'
+      ? questionState.some((state) => state.isSubmitted || state.status === 'submit' || state.status === 'skipped')
+      : questionState.some((state) => state.showFeedback);
+    if (!hasSubmittedQuestions) {
+      showErrorToast('Please submit at least one question before pausing');
+      return;
+    }
+
+    try {
+      // If resuming from paused session, add paused time + resumed time
+      let totalTime;
+      if (pausedSessionIdRef.current) {
+        const resumedTime = resumeStartTimeRef.current ? Date.now() - resumeStartTimeRef.current : 0;
+        totalTime = pausedTimeTakenRef.current + resumedTime;
+      } else {
+        totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+      }
+      const timeTakenMs = totalTime;
+
+      // Prepare questions data for pausing
+      const questionsData = questions.map((q, idx) => {
+        const state = questionState[idx];
+        const hasAnswer = state?.selectedOption !== null && state?.selectedOption !== undefined && state?.selectedOption !== '';
+        // For study mode: only set isCorrect if question was answered, otherwise null
+        // For test mode: isCorrect will be calculated when test is submitted
+        const isCorrect = mode === 'study'
+          ? (hasAnswer ? (state?.isCorrect ?? null) : null)
+          : null;
+
+        return {
+          questionId: q.id,
+          selectedAnswer: getSelectedAnswer(state), // Handles skipped questions
+          isCorrect: isCorrect,
+        };
+      });
+
+      // Pause the session
+      const response = await studentQuestionsAPI.pauseSession({
+        mode,
+        examId: sessionInfoRef.current.examId,
+        subjectId: sessionInfoRef.current.subjectId,
+        topicId: sessionInfoRef.current.topicId,
+        questions: questionsData,
+        currentIndex,
+        timeTaken: timeTakenMs,
+        timerEndTime: mode === 'test' ? timerEndTimeRef.current : null,
+        timeLimit: mode === 'test' ? timeLimitRef.current : null,
+      });
+
+      if (response.success) {
+        // Remaining time and timeLimit are now stored in database, no need for sessionStorage
+        // Clear session storage (don't save paused sessions in session storage)
+        if (sessionIdRef.current) {
+          clearSession(sessionIdRef.current);
+        }
+
+        // Show success message and navigate to review page
+        showSuccessToast('Session paused successfully');
+        setTimeout(() => {
+          navigate('/dashboard/review');
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Error pausing session:', error);
+      showErrorToast(error.message || 'Failed to pause session');
+    }
+  };
+
+  // Replace the current handleExit function with:
+  const handleExitClick = () => {
+    setShowExitConfirm(true);
+  };
+
+  // Keep the actual exit logic in a separate function:
+  const handleExitConfirmed = () => {
+    // Store session ID before clearing
+    const currentSessionId = sessionIdRef.current;
+
+    // Clear session from local storage for both study and test mode
+    if (currentSessionId) {
+      clearSession(currentSessionId);
+
+      // Clear any session-related data from sessionStorage
+      const sessionKey = `session_saved_${currentSessionId}`;
+      const resultsKey = `test_results_${currentSessionId}`;
+      sessionStorage.removeItem(sessionKey);
+      sessionStorage.removeItem(resultsKey);
+
       sessionIdRef.current = null;
     }
+
+    // Redirect to practice page
     navigate('/dashboard/practice');
+  };
+
+  // Add cancel handler for the modal:
+  const handleExitCanceled = () => {
+    setShowExitConfirm(false);
   };
 
   const handleViewSummary = async () => {
     // Calculate session statistics
-    const totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+    // If resuming from paused session, add paused time + resumed time
+    let totalTime;
+    if (pausedSessionIdRef.current) {
+      const resumedTime = resumeStartTimeRef.current ? Date.now() - resumeStartTimeRef.current : 0;
+      totalTime = pausedTimeTakenRef.current + resumedTime;
+    } else {
+      totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+    }
     const timeTakenMs = totalTime; // Time in milliseconds for database
     const totalSeconds = Math.floor(totalTime / 1000);
     const totalMinutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     const timeTaken = `${totalMinutes}m ${seconds}s`;
-    
+
     const averageSeconds = totalQuestions > 0 ? Math.floor(totalSeconds / totalQuestions) : 0;
     const avgMinutes = Math.floor(averageSeconds / 60);
     const avgSecs = averageSeconds % 60;
     const averagePace = `${avgMinutes}m ${avgSecs}s`;
-    
+
     let correctCount = 0;
     let incorrectCount = 0;
     let accuracyPercent = 0;
     let testResults = null;
     let updatedQuestionState = questionState;
-    
+
     // Check if session was already saved (to avoid duplicate saves)
     const sessionKey = `session_saved_${sessionIdRef.current}`;
     const resultsKey = `test_results_${sessionIdRef.current}`;
     const alreadySaved = sessionStorage.getItem(sessionKey);
-    
+
     // Check if we have stored test results
     let storedResults = null;
     try {
@@ -789,7 +1311,7 @@ const QuestionSessionPage = () => {
     } catch (e) {
       // Ignore parse errors
     }
-    
+
     // For test mode, always try to get results (either from storage or API)
     if (mode === 'test') {
       if (storedResults && storedResults.summary) {
@@ -798,7 +1320,7 @@ const QuestionSessionPage = () => {
         incorrectCount = storedResults.summary.incorrectAnswers || 0;
         accuracyPercent = storedResults.summary.percentage || 0;
         testResults = storedResults;
-        
+
         // Update questionState with isCorrect values from stored results
         if (storedResults.results && Array.isArray(storedResults.results)) {
           updatedQuestionState = questionState.map((state, idx) => {
@@ -820,7 +1342,8 @@ const QuestionSessionPage = () => {
           } else {
             const answers = questions.map((q, idx) => ({
               questionId: q.id,
-              selectedAnswer: questionState[idx]?.selectedOption || '',
+              selectedAnswer: getSelectedAnswer(questionState[idx]), // Handles skipped questions
+              isMarked: questionState[idx]?.isMarked || false,
             }));
 
             const response = await studentQuestionsAPI.submitTestAnswers(
@@ -831,18 +1354,23 @@ const QuestionSessionPage = () => {
 
             // Mark as saved
             sessionStorage.setItem(sessionKey, 'true');
-            
+
             // Extract results from API response
             if (response.success && response.data) {
               testResults = response.data;
               // Store results for later use
               sessionStorage.setItem(resultsKey, JSON.stringify(testResults));
-              
+
               const summary = testResults.summary || {};
               correctCount = summary.correctAnswers || 0;
               incorrectCount = summary.incorrectAnswers || 0;
               accuracyPercent = summary.percentage || 0;
-              
+
+              // Update sessionId from API response if available (testId is the sessionId for test mode)
+              if (testResults.testId || testResults.sessionId) {
+                sessionIdRef.current = testResults.testId || testResults.sessionId;
+              }
+
               // Update questionState with isCorrect values from results
               if (testResults.results && Array.isArray(testResults.results)) {
                 updatedQuestionState = questionState.map((state, idx) => {
@@ -875,48 +1403,64 @@ const QuestionSessionPage = () => {
       // Study mode
       if (!alreadySaved) {
         try {
-        // Save study mode session results
-        if (!sessionInfoRef.current.examId) {
-          console.warn('Cannot save study session: Exam ID is missing');
-          showErrorToast('Cannot save session results: Exam information is missing');
-        } else {
-          const questionsData = questions.map((q, idx) => ({
-            questionId: q.id,
-            selectedAnswer: questionState[idx]?.selectedOption || '',
-            isCorrect: questionState[idx]?.isCorrect || false,
-          }));
+          // Save study mode session results
+          if (!sessionInfoRef.current.examId) {
+            console.warn('Cannot save study session: Exam ID is missing');
+            showErrorToast('Cannot save session results: Exam information is missing');
+          } else {
+            const questionsData = questions.map((q, idx) => ({
+              questionId: q.id,
+              selectedAnswer: getSelectedAnswer(questionState[idx]), // Handles skipped questions
+              isCorrect: questionState[idx]?.isCorrect || false,
+              isMarked: questionState[idx]?.isMarked || false,
+            }));
 
-          await studentQuestionsAPI.saveStudySessionResults({
-            examId: sessionInfoRef.current.examId,
-            subjectId: sessionInfoRef.current.subjectId,
-            topicId: sessionInfoRef.current.topicId,
-            questions: questionsData,
-            timeTaken: timeTakenMs,
-          });
+            const saveResponse = await studentQuestionsAPI.saveStudySessionResults({
+              examId: sessionInfoRef.current.examId,
+              subjectId: sessionInfoRef.current.subjectId,
+              topicId: sessionInfoRef.current.topicId,
+              questions: questionsData,
+              timeTaken: timeTakenMs,
+            });
 
             // Mark as saved
             sessionStorage.setItem(sessionKey, 'true');
-        }
+            
+            // Store sessionId from API response for navigation
+            if (saveResponse.success && saveResponse.data?.sessionId) {
+              sessionIdRef.current = saveResponse.data.sessionId;
+            }
+          }
         } catch (error) {
           console.error('Error saving session results:', error);
           showErrorToast(error.message || 'Failed to save session results, but you can still view the summary');
         }
       }
-      
+
       // For study mode, calculate from current state
       correctCount = questionState.filter((state) => state.isCorrect === true).length;
       incorrectCount = questionState.filter((state) => state.isCorrect === false).length;
-      accuracyPercent = totalQuestions > 0 
-        ? Math.round((correctCount / totalQuestions) * 100) 
+      accuracyPercent = totalQuestions > 0
+        ? Math.round((correctCount / totalQuestions) * 100)
         : 0;
     }
-    
-    // Clear session in test mode when viewing summary after completion
-    if (mode === 'test' && sessionComplete && sessionIdRef.current) {
-      clearSession(sessionIdRef.current);
-      sessionIdRef.current = null;
+
+    // Get sessionId - use from API response if available, otherwise keep current ref
+    let savedSessionId = null;
+    if (mode === 'test') {
+      // For test mode, check if response has testId (which is the sessionId)
+      if (testResults?.testId || testResults?.sessionId) {
+        savedSessionId = testResults.testId || testResults.sessionId;
+      } else if (sessionIdRef.current) {
+        // Use current sessionId ref if available
+        savedSessionId = sessionIdRef.current;
+      }
+      // Don't clear sessionId in test mode - we need it for review pages
+    } else {
+      // For study mode, use sessionId from API response or current ref
+      savedSessionId = sessionIdRef.current;
     }
-    
+
     const sessionData = {
       mode: mode,
       questionsAnswered: totalQuestions,
@@ -929,20 +1473,26 @@ const QuestionSessionPage = () => {
         id: q.id || idx + 1,
         status: updatedQuestionState[idx]?.isCorrect === true ? 'correct' : 'incorrect',
       })),
+      sessionId: savedSessionId, // Include sessionId in sessionData
     };
-    
-    navigate('/dashboard/session-summary', { state: { sessionData } });
+
+    navigate('/dashboard/session-summary', { 
+      state: { 
+        sessionData,
+        sessionId: savedSessionId, // Also pass as separate property for easy access
+      } 
+    });
   };
 
   const handleReviewAnswers = async () => {
     let updatedQuestionState = questionState;
-    
+
     // For test mode, we need to get results first to know which questions are incorrect
     if (mode === 'test') {
       const sessionKey = `session_saved_${sessionIdRef.current}`;
       const resultsKey = `test_results_${sessionIdRef.current}`;
       const alreadySaved = sessionStorage.getItem(sessionKey);
-      
+
       // Check if we have stored test results
       let storedResults = null;
       try {
@@ -953,7 +1503,7 @@ const QuestionSessionPage = () => {
       } catch (e) {
         // Ignore parse errors
       }
-      
+
       if (storedResults && storedResults.results && Array.isArray(storedResults.results)) {
         // Use stored results to update questionState with isCorrect values
         updatedQuestionState = questionState.map((state, idx) => {
@@ -968,12 +1518,20 @@ const QuestionSessionPage = () => {
       } else if (!alreadySaved && sessionInfoRef.current.examId) {
         // Not saved yet, submit and get results
         try {
-          const totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+          // If resuming from paused session, add paused time + resumed time
+          let totalTime;
+          if (pausedSessionIdRef.current) {
+            const resumedTime = resumeStartTimeRef.current ? Date.now() - resumeStartTimeRef.current : 0;
+            totalTime = pausedTimeTakenRef.current + resumedTime;
+          } else {
+            totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+          }
           const timeTakenMs = totalTime;
-          
+
           const answers = questions.map((q, idx) => ({
             questionId: q.id,
-            selectedAnswer: questionState[idx]?.selectedOption || '',
+            selectedAnswer: getSelectedAnswer(questionState[idx]), // Handles skipped questions
+            isMarked: questionState[idx]?.isMarked || false,
           }));
 
           const response = await studentQuestionsAPI.submitTestAnswers(
@@ -984,13 +1542,18 @@ const QuestionSessionPage = () => {
 
           // Mark as saved
           sessionStorage.setItem(sessionKey, 'true');
-          
+
           // Extract results from API response
           if (response.success && response.data) {
             const testResults = response.data;
             // Store results for later use
             sessionStorage.setItem(resultsKey, JSON.stringify(testResults));
-            
+
+            // Update sessionId from API response if available (testId is the sessionId for test mode)
+            if (testResults.testId || testResults.sessionId) {
+              sessionIdRef.current = testResults.testId || testResults.sessionId;
+            }
+
             // Update questionState with isCorrect values from results
             if (testResults.results && Array.isArray(testResults.results)) {
               updatedQuestionState = questionState.map((state, idx) => {
@@ -1010,15 +1573,15 @@ const QuestionSessionPage = () => {
         }
       }
     }
-    
+
     // Prepare incorrect questions data from current session
     const incorrectQuestions = questions
       .map((q, idx) => {
         const state = updatedQuestionState[idx];
         const isIncorrect = state?.isCorrect === false;
-        
+
         if (!isIncorrect) return null;
-        
+
         // Handle options - q.options is an array of {id, text} objects
         let optionsObj = {};
         if (Array.isArray(q.options)) {
@@ -1032,30 +1595,31 @@ const QuestionSessionPage = () => {
           // Already an object
           optionsObj = q.options;
         }
-        
+
         return {
           questionId: q.id || idx + 1,
           questionText: q.prompt || '',
           options: optionsObj, // Pass as object for ReviewIncorrectPage to convert to array
           correctAnswer: q.correctAnswer,
-          selectedAnswer: state?.selectedOption || '',
+          selectedAnswer: getSelectedAnswer(state),
           explanation: q.explanation || '',
+          isMarked: state?.isMarked || false,
         };
       })
       .filter(Boolean);
-    
+
     // Clear session in test mode when reviewing answers after completion
     if (mode === 'test' && sessionComplete && sessionIdRef.current) {
       clearSession(sessionIdRef.current);
       sessionIdRef.current = null;
     }
-    
+
     // Navigate with incorrect questions data in state
-    navigate('/dashboard/review-incorrect', { 
-      state: { 
+    navigate('/dashboard/review-incorrect', {
+      state: {
         incorrectQuestions,
-        fromCurrentSession: true 
-      } 
+        fromCurrentSession: true
+      }
     });
   };
 
@@ -1064,6 +1628,26 @@ const QuestionSessionPage = () => {
   const toggleExplanation = () => setShowExplanation((prev) => !prev);
   const toggleExplanationPanel = () => setShowExplanationPanel((prev) => !prev);
 
+  // Toggle mark status for a question (session-specific, stored locally until session is saved)
+  const toggleMark = async (index) => {
+    const question = questions[index];
+    if (!question || !question.id) return;
+
+    // Just update local state - isMarked will be saved when session is saved
+    setQuestionState((prev) =>
+      prev.map((state, idx) =>
+        idx === index ? { ...state, isMarked: !state.isMarked } : state
+      )
+    );
+  };
+
+  // Check if any question has been submitted (for disabling pause button)
+  // In test mode, check for isSubmitted or status === 'submit' or 'skipped'; in study mode, check for showFeedback
+  const hasSubmittedQuestions = mode === 'test'
+    ? questionState.some((state) => state.isSubmitted || state.status === 'submit' || state.status === 'skipped')
+    : questionState.some((state) => state.showFeedback);
+  const isPauseDisabled = !hasSubmittedQuestions || questions.length === 0 || questionState.length === 0;
+
   return (
     <>
       {mode === 'test' ? (
@@ -1071,6 +1655,7 @@ const QuestionSessionPage = () => {
           questions={questions}
           currentIndex={currentIndex}
           currentState={currentState}
+          questionState={questionState}
           visitedIndices={visitedIndices}
           showQuestionNav={showQuestionNav}
           sessionStartTime={sessionStartTime.current}
@@ -1081,13 +1666,17 @@ const QuestionSessionPage = () => {
           onNavigate={handleNavigate}
           onOptionChange={handleOptionChange}
           onSubmit={handleSubmit}
-          onExit={handleExit}
+          onExit={handleExitClick}
+          onPause={handlePauseSession}
+          isPauseDisabled={isPauseDisabled}
+          onToggleMark={toggleMark}
         />
       ) : (
         <StudyModeLayout
           questions={questions}
           currentIndex={currentIndex}
           currentState={currentState}
+          questionState={questionState}
           visitedIndices={visitedIndices}
           showQuestionNav={showQuestionNav}
           showExplanation={showExplanation}
@@ -1100,9 +1689,12 @@ const QuestionSessionPage = () => {
           onOptionChange={handleOptionChange}
           onSubmit={handleSubmit}
           onToggleHint={toggleHint}
-          onExit={handleExit}
+          onExit={handleExitClick}
+          onPause={handlePauseSession}
+          isPauseDisabled={isPauseDisabled}
           onToggleExplanation={toggleExplanation}
           onToggleExplanationPanel={toggleExplanationPanel}
+          onToggleMark={toggleMark}
         />
       )}
 
@@ -1111,7 +1703,15 @@ const QuestionSessionPage = () => {
           mode={mode}
           onViewSummary={handleViewSummary}
           onReviewAnswers={handleReviewAnswers}
-          onExit={handleExit}
+          onExit={handleExitClick}
+        />
+      )}
+
+      {showExitConfirm && (
+        <ExitConfirmationModal
+          isOpen={showExitConfirm}
+          onConfirm={handleExitConfirmed}
+          onCancel={handleExitCanceled}
         />
       )}
     </>

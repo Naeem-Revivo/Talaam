@@ -1,5 +1,6 @@
 const { prisma } = require('../../config/db/prisma');
 const bcrypt = require('bcryptjs');
+const { generateShortId } = require('../../utils/shortId');
 
 /**
  * User Model using Prisma
@@ -15,6 +16,12 @@ const User = {
     if (data.email) {
       data.email = data.email.trim().toLowerCase();
     }
+    
+    // Generate short_id if not provided
+    if (!data.shortId) {
+      data.shortId = generateShortId();
+    }
+    
     return await prisma.user.create({ data });
   },
 

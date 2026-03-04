@@ -1,77 +1,64 @@
 import React from 'react';
-import ValueCard from '../shared/ValueCard';
-import { starvalue } from '../../assets/svg';
-import { boxcard } from '../../assets/svg';
-import { applecard } from '../../assets/svg';
-import { applecards2 } from '../../assets/svg';
+import HomepageValueCard from './HomepageValueCard';
+  import { flaskicon, bookicon2, brainicon, hearticon } from '../../assets/svg';
 import { useLanguage } from '../../context/LanguageContext';
 
 const ValuesSection = () => {
   const { t } = useLanguage();
-  return (
-    <div className="bg-soft-gradient flex items-center justify-center w-full mobile:h-auto tablet:h-auto laptop:h-[816px] mobile:py-12 tablet:py-16 laptop:py-0">
-      <div className="max-w-[1400px] mx-auto w-full mobile:h-auto tablet:h-auto laptop:h-[616px] flex flex-col items-center mobile:gap-8 tablet:gap-12 laptop:gap-16 px-4 md:px-8 lg:px-12">
+    return (
+      <div className="bg-white flex items-center justify-center w-full py-[64px] laptop:py-[96px]">
+      <div className="max-w-[1180px] mx-auto w-full flex flex-col items-center justify-center gap-[64px] px-4 md:px-8 lg:px-12">
         {/* Header */}
-        <div className="flex flex-col items-center gap-5 text-center">
-          <h2 className="font-archivo font-bold mobile:text-[32px] mobile:leading-[40px] tablet:text-[48px] tablet:leading-[56px] laptop:text-[60px] laptop:leading-[62.4px] tracking-[0] align-middle text-oxford-blue">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <h2 className="font-archivo font-bold text-text-dark text-[48px] leading-[48px] tracking-[-0.96px]">
             {t('homepage.values.title')}
           </h2>
-          <p className="font-roboto font-normal mobile:text-[14px] mobile:leading-[22px] tablet:text-[16px] tablet:leading-[25.6px] laptop:text-[16px] laptop:leading-[25.6px] tracking-[0] text-center text-oxford-blue">
+          <p className="font-roboto font-normal text-text-gray text-[18px] leading-[28px] tracking-[0] text-center">
             {t('homepage.values.subtitle')}
           </p>
         </div>
         
         {/* Values Grid */}
-        <div className="w-full">
-          <div className="flex flex-col gap-6 md:gap-8 w-full">
-            <div className="flex flex-col gap-6 md:gap-6 tablet:flex-row laptop:flex-row laptop:gap-[90px] w-full">
-              <ValueCard
-                title={t('homepage.values.evidenceBasedLearning.title')}
-                description={t('homepage.values.evidenceBasedLearning.description')}
-                actionText={t('homepage.values.evidenceBasedLearning.action')}
-                iconBgColor=""
-                gradientBg="bg-[linear-gradient(122.42deg,#FFFFFF_0%,#E5FFF5_98.81%)]"
-                icon={
-                 <img src={starvalue} alt="Star Value" />
-                }
-              />
-              
-              <ValueCard
-                title={t('homepage.values.effortOverHacks.title')}
-                description={t('homepage.values.effortOverHacks.description')}
-                actionText={t('homepage.values.effortOverHacks.action')}
-                iconBgColor=""
-                gradientBg="bg-[linear-gradient(122.42deg,#FFFFFF_0%,#E5F4FF_98.81%)]"
-                icon={
-                  <img src={boxcard} alt="Box Card" />
-                }
-              />
-            </div>
-            
-            <div className="flex flex-col gap-6 md:gap-6 tablet:flex-row laptop:flex-row laptop:gap-[90px] w-full">
-              <ValueCard
-                title={t('homepage.values.learnHowToLearn.title')}
-                description={t('homepage.values.learnHowToLearn.description')}
-                actionText={t('homepage.values.learnHowToLearn.action')}
-                iconBgColor=""
-                gradientBg="bg-[linear-gradient(122.42deg,#FFFFFF_0%,#FFF4E5_98.81%)]"
-                icon={
-                  <img src={applecard} alt="Apple Card" />
-                }
-              />
-              
-              <ValueCard
-                title={t('homepage.values.valueFirstAlways.title')}
-                description={t('homepage.values.valueFirstAlways.description')}
-                actionText={t('homepage.values.valueFirstAlways.action')}
-                iconBgColor=""
-                gradientBg="bg-[linear-gradient(122.42deg,#FFFFFF_0%,#FDF3FF_98.81%)]"
-                icon={
-                  <img src={applecards2} alt="Apple Card 2" />
-                }
-              />
-            </div>
-          </div>
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <HomepageValueCard
+            pillText={t('homepage.values.evidenceBasedLearning.pill')}
+            pillClassName="bg-[#FEE2E2] text-[#DC2626]"
+            iconBgClassName="bg-oxford-blue"
+            iconSrc={flaskicon}
+            title={t('homepage.values.evidenceBasedLearning.title')}
+            description={t('homepage.values.evidenceBasedLearning.description')}
+            actionText={t('homepage.values.evidenceBasedLearning.action')}
+          />
+
+          <HomepageValueCard
+            pillText={t('homepage.values.effortOverHacks.pill')}
+            pillClassName="bg-[#DCFCE7] text-[#22C55E]"
+            iconBgClassName="bg-cinnebar-red"
+            iconSrc={bookicon2}
+            title={t('homepage.values.effortOverHacks.title')}
+            description={t('homepage.values.effortOverHacks.description')}
+            actionText={t('homepage.values.effortOverHacks.action')}
+          />
+
+          <HomepageValueCard
+            pillText={t('homepage.values.learnHowToLearn.pill')}
+            pillClassName="bg-[#DBEAFE] text-[#2563EB]"
+            iconBgClassName="bg-cinnebar-red"
+            iconSrc={brainicon}
+            title={t('homepage.values.learnHowToLearn.title')}
+            description={t('homepage.values.learnHowToLearn.description')}
+            actionText={t('homepage.values.learnHowToLearn.action')}
+          />
+
+          <HomepageValueCard
+            pillText={t('homepage.values.valueFirstAlways.pill')}
+            pillClassName="bg-[#FEF3C7] text-[#D97706]"
+            iconBgClassName="bg-oxford-blue"
+            iconSrc={hearticon}
+            title={t('homepage.values.valueFirstAlways.title')}
+            description={t('homepage.values.valueFirstAlways.description')}
+            actionText={t('homepage.values.valueFirstAlways.action')}
+          />
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ const TestModeLayout = ({
   questions,
   currentIndex,
   currentState,
+  questionState,
   visitedIndices,
   showQuestionNav,
   sessionStartTime,
@@ -19,13 +20,17 @@ const TestModeLayout = ({
   onOptionChange,
   onSubmit,
   onExit,
+  onPause,
+  isPauseDisabled = false,
+  onToggleMark,
 }) => {
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
   const hasSelectedOption = Boolean(currentState?.selectedOption);
+  const isMarked = currentState?.isMarked || false;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F8FAFC]">
       <TestModeHeader
         currentIndex={currentIndex}
         totalQuestions={totalQuestions}
@@ -34,19 +39,23 @@ const TestModeLayout = ({
         timeRemaining={timeRemaining}
         onToggleQuestionNav={onToggleQuestionNav}
         onNavigate={onNavigate}
+        onToggleMark={onToggleMark}
+        isMarked={isMarked}
+        onExit={onExit}
       />
 
-      <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-145px)] pb-[180px] md:pb-0">
+      <div className="flex h-[calc(100vh-120px)] md:h-[calc(100vh-170px)] pb-[180px] md:pb-0">
         <TestQuestionNavigator
           questions={questions}
           currentIndex={currentIndex}
+          questionState={questionState}
           showQuestionNav={showQuestionNav}
           visitedIndices={visitedIndices}
           onGoToIndex={onGoToIndex}
           onCloseQuestionNav={onCloseQuestionNav}
         />
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:pl-6 lg:pr-[89px] lg:py-4">
           <TestQuestionContent
             currentQuestion={currentQuestion}
             currentState={currentState}
@@ -58,7 +67,12 @@ const TestModeLayout = ({
       </div>
 
       <TestModeFooter
+        currentIndex={currentIndex}
+        totalQuestions={totalQuestions}
+        onNavigate={onNavigate}
         onExit={onExit}
+        onPause={onPause}
+        isPauseDisabled={isPauseDisabled}
       />
     </div>
   );

@@ -11,6 +11,7 @@ datasource db {
 
 model User {
   id                    String    @id @default(uuid())
+  shortId               String?   @unique @map("short_id")
   name                  String?
   authProvider          String    @default("local") // local, google, linkedin
   googleId              String?   @unique @map("google_id")
@@ -50,10 +51,12 @@ model User {
   questionHistory       QuestionHistory[]
   questionComments      QuestionComment[]
   announcementReads     AnnouncementRead[]
+  markedQuestions       StudentMarkedQuestion[] @relation("StudentMarkedQuestions")
 
   @@index([googleId])
   @@index([linkedinId])
   @@index([email])
+  @@index([shortId])
   @@map("users")
 }
 
@@ -174,6 +177,7 @@ model Classification {
 
 model Question {
   id                String   @id @default(uuid())
+  shortId           String?  @unique @map("short_id")
   status            String   @default("pending_processor") // pending_gatherer, pending_processor, pending_creator, pending_explainer, completed, rejected
   examId            String   @map("exam_id")
   subjectId         String   @map("subject_id")
@@ -224,12 +228,14 @@ model Question {
   comments          QuestionComment[]
   studentAnswers    StudentAnswerQuestion[]
   studyModeAnswers  StudentAnswer[] @relation("QuestionStudyMode")
+  markedByStudents  StudentMarkedQuestion[] @relation("MarkedQuestions")
 
   @@index([examId, subjectId, topicId])
   @@index([status])
   @@index([createdById])
   @@index([originalQuestionId])
   @@index([isFlagged, flagStatus])
+  @@index([shortId])
   @@map("questions")
 }
 
@@ -282,6 +288,8 @@ model StudentAnswer {
   score           Float    @default(0)
   percentage      Float    @default(0)
   timeTaken       Int?     @map("time_taken") // Time taken in milliseconds
+  remainingTime   Int?     @map("remaining_time") // Remaining time in milliseconds (for test mode paused sessions)
+  timeLimit       Int?     @map("time_limit") // Time limit in minutes (for test mode)
   status          String   @default("completed") // in_progress, completed
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
@@ -305,6 +313,7 @@ model StudentAnswerQuestion {
   questionId      String        @map("question_id")
   selectedAnswer  String        @map("selected_answer")
   isCorrect       Boolean       @default(false) @map("is_correct")
+  isMarked        Boolean       @default(false) @map("is_marked")
 
   // Relations
   studentAnswer   StudentAnswer @relation(fields: [studentAnswerId], references: [id], onDelete: Cascade)
@@ -368,4 +377,21 @@ model AnnouncementRead {
   @@index([announcementId])
   @@index([isDeleted])
   @@map("announcement_reads")
+}
+
+model StudentMarkedQuestion {
+  id          String   @id @default(uuid())
+  studentId   String   @map("student_id")
+  questionId  String   @map("question_id")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  student     User     @relation("StudentMarkedQuestions", fields: [studentId], references: [id], onDelete: Cascade)
+  question    Question @relation("MarkedQuestions", fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, questionId])
+  @@index([studentId])
+  @@index([questionId])
+  @@map("student_marked_questions")
 }

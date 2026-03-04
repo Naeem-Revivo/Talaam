@@ -54,13 +54,13 @@ const EffortfulLearningSection = () => {
                         {strategy.title}
                       </h3>
                       </div>
-                      <div className="md:block hidden">
+                      {/* <div className="md:block hidden">
                         <img 
                           src={chevronDownSmall} 
                           alt=""
                           className="w-5 h-5 text-gray-500"
                         />
-                      </div>
+                      </div> */}
                     </div>
                     <p className="font-roboto px-3 font-normal text-[16px] md:text-[18px] leading-[100%] tracking-[0] text-oxford-blue">
                       {strategy.description}

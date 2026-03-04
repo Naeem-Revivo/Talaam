@@ -1,4 +1,5 @@
 const { prisma } = require('../../config/db/prisma');
+const { generateShortId } = require('../../utils/shortId');
 
 /**
  * Question Model using Prisma
@@ -8,6 +9,11 @@ const Question = {
   async create(data) {
     // Handle history and comments if provided
     const { history, comments, exam, subject, topic, createdBy, assignedProcessor, assignedCreator, assignedExplainer, originalQuestion, ...questionData } = data;
+    
+    // Generate short_id if not provided
+    if (!questionData.shortId) {
+      questionData.shortId = generateShortId();
+    }
     
     // Map relation fields to Prisma format (exam -> examId, etc.)
     const createData = {
