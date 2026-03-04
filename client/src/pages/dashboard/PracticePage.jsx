@@ -29,7 +29,7 @@ const PracticePage = () => {
   const [selectedSubtopics, setSelectedSubtopics] = useState({});
   const [allTopics, setAllTopics] = useState([]); // Store all topics for "select all" functionality
   const [sessionSize, setSessionSize] = useState('20');
-  const [timeLimit, setTimeLimit] = useState('2'); // Time limit in minutes for test mode
+  const [timeLimit, setTimeLimit] = useState('10'); // Time limit in minutes for test mode
   const [subjects, setSubjects] = useState([]);
   const [topics, setTopics] = useState([]);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
@@ -163,6 +163,15 @@ const PracticePage = () => {
       }
     };
     checkSubscription();
+  }, []);
+
+  // Ensure timeLimit defaults to '10' if invalid (only on mount)
+  useEffect(() => {
+    const validTimeLimits = ['10', '15', '20', '30'];
+    if (!validTimeLimits.includes(timeLimit)) {
+      setTimeLimit('10');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch summary based on current session mode

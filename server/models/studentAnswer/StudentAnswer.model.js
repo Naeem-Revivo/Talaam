@@ -77,6 +77,7 @@ const StudentAnswer = {
               questionId: questionId,
               selectedAnswer: answer.selectedAnswer || '', // Empty string for unanswered (not null)
               isCorrect: answer.isCorrect || false,
+              isMarked: answer.isMarked || false,
             }
           });
         }).filter(Boolean) // Remove any null values
@@ -301,6 +302,7 @@ const StudentAnswer = {
             questionId: answer.question || answer.questionId,
             selectedAnswer: answer.selectedAnswer,
             isCorrect: answer.isCorrect || false,
+            isMarked: answer.isMarked || false,
           }))
         }
       })

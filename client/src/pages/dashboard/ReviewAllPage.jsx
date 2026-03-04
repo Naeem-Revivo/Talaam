@@ -13,24 +13,6 @@ const HomeIcon = () => (
   </svg>
 );
 
-const BookmarkIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-  </svg>
-);
-
-const DocumentIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-  </svg>
-);
-
-const ClockIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
 const OptionStatusIcon = ({ type }) => {
   if (type === 'correct') {
     return (
@@ -60,10 +42,11 @@ const ReviewAllPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('sessionId');
+  const initialQuestionIndex = parseInt(searchParams.get('questionIndex') || '0', 10);
   
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(initialQuestionIndex);
   const [visitedQuestions, setVisitedQuestions] = useState(new Set([0]));
   const [showQuestionNav, setShowQuestionNav] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -113,6 +96,7 @@ const ReviewAllPage = () => {
                   selectedAnswer: result.selectedAnswer || '',
                   isCorrect: result.isCorrect,
                   explanation: result.explanation || '',
+                  isMarked: result.isMarked || false,
                 };
               });
           } else if (sessionData.mode === 'study' && sessionData.question) {
@@ -139,8 +123,12 @@ const ReviewAllPage = () => {
 
           setQuestions(formattedQuestions);
           if (formattedQuestions.length > 0) {
-            setCurrentQuestionIndex(0);
-            setVisitedQuestions(new Set([0]));
+            // Use initialQuestionIndex if valid, otherwise default to 0
+            const validIndex = initialQuestionIndex >= 0 && initialQuestionIndex < formattedQuestions.length 
+              ? initialQuestionIndex 
+              : 0;
+            setCurrentQuestionIndex(validIndex);
+            setVisitedQuestions(new Set([validIndex]));
           }
         }
       } catch (error) {
@@ -153,7 +141,7 @@ const ReviewAllPage = () => {
     };
 
     fetchSessionData();
-  }, [sessionId, navigate]);
+  }, [sessionId, navigate, initialQuestionIndex]);
 
   const totalQuestions = questions.length;
   const currentQuestion = questions[currentQuestionIndex] || null;
@@ -238,13 +226,6 @@ const ReviewAllPage = () => {
 
           {/* Right: Action Buttons */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2.5 px-4 h-[64px] bg-gradient-to-r from-[#032746] to-[#173B50] text-white rounded-[14px] shadow-sm shadow-[#0000000D]">
-              <ClockIcon />
-              <div className="flex flex-col leading-none">
-                <span className="text-xs font-normal font-roboto text-white">Time Remaining</span>
-                <span className="text-[24px] font-bold font-roboto leading-[32px] tracking-[0.07px]">42:50</span>
-              </div>
-            </div>
             <button
               onClick={() => navigate('/dashboard/review')}
               className="text-oxford-blue hover:opacity-70 transition-opacity"
@@ -264,11 +245,25 @@ const ReviewAllPage = () => {
           <div className="">
             <div className="mb-5 border border-[#E6EEF3] shadow-sm shadow-[#0000000D] bg-white rounded-[16px] p-8">
               {/* Question Number and Title */}
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 rounded-[11px] bg-gradient-to-r from-[#032746] to-[#173B50] flex items-center justify-center text-white font-medium text-[14px] leading-[21px] font-roboto">
-                  {currentQuestionIndex + 1}
+              <div className="flex items-center justify-between gap-3 mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-[11px] bg-gradient-to-r from-[#032746] to-[#173B50] flex items-center justify-center text-white font-medium text-[14px] leading-[21px] font-roboto">
+                    {currentQuestionIndex + 1}
+                  </div>
+                  <span className="text-[14px] font-normal text-[#525252] font-roboto">Question {currentQuestionIndex + 1}</span>
                 </div>
-                <span className="text-[14px] font-normal text-[#525252] font-roboto">Question {currentQuestionIndex + 1}</span>
+                {currentQuestion?.isMarked && (
+                  <div className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[10px] bg-[#FEF3C7] text-[#D97706]">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
+                      <path
+                        d="M7.44434 0.5L6.86719 1.29395L5.59863 3.03613L6.86719 4.7793L7.44434 5.57422H2.05566V7.65137C2.05566 8.07935 1.70533 8.42969 1.27734 8.42969C0.849549 8.42946 0.5 8.07921 0.5 7.65137V2.11133C0.5 1.6639 0.611812 1.23584 0.923828 0.923828C1.23584 0.611812 1.6639 0.5 2.11133 0.5H7.44434Z"
+                        stroke="currentColor"
+                        fill="currentColor"
+                      />
+                    </svg>
+                    <span className="text-[14px] leading-[21px] font-medium font-roboto">Marked for Review</span>
+                  </div>
+                )}
               </div>
 
               {/* Question Text */}
@@ -382,8 +377,9 @@ const ReviewAllPage = () => {
                   question?.isFlagged ||
                   question?.flagged
                 );
+                const isCorrect = question?.isCorrect === true;
                 
-                // Determine styling based on priority: Current > Answered > Unanswered
+                // Determine styling based on priority: Current > Marked > Correct/Incorrect > Unanswered
                 let buttonClass = '';
                 if (isCurrent) {
                   // Currently Selected/Active: Light blue background, blue border, dark blue text
@@ -392,8 +388,12 @@ const ReviewAllPage = () => {
                   // Marked for Review: Light yellow background, yellow border, amber text
                   buttonClass = 'bg-[#FEFCE8] text-[#B45309] border-[#EAB308]';
                 } else if (isAnswered) {
-                  // Answered: Dark blue background, white text, no visible border (border same as bg)
-                  buttonClass = 'bg-gradient-to-r from-[#032746] to-[#0A4B6E] text-white border-[#1F4E79]';
+                  // Correct/Incorrect styling matching option colors
+                  if (isCorrect) {
+                    buttonClass = 'bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]';
+                  } else {
+                    buttonClass = 'bg-[#FEF2F2] text-[#EF4444] border-[#EF4444]';
+                  }
                 } else {
                   // Unanswered: White background, light gray border, dark gray text
                   buttonClass = 'bg-[#E6EEF3] text-[#6697B7] border-[#6697B7]';
@@ -413,8 +413,12 @@ const ReviewAllPage = () => {
             {/* Legend */}
             <div className="border-t border-[#E5E7EB] pt-3 space-y-1 text-[12px] font-normal text-[#525252] font-roboto">
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-gradient-to-r from-[#032746] to-[#0A4B6E] border border-[#1F4E79] rounded"></div>
-                <span>Answered</span>
+                <div className="w-4 h-4 bg-[#F0FDF4] border border-[#16A34A] rounded"></div>
+                <span>Correct</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-[#FEF2F2] border border-[#EF4444] rounded"></div>
+                <span>Incorrect</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-[#FEFCE8] border border-[#EAB308] rounded"></div>

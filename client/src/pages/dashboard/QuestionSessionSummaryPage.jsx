@@ -10,21 +10,6 @@ const HomeIcon = () => (
   </svg>
 );
 
-const DocumentIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14.9999 1.66602H4.99992C4.07944 1.66602 3.33325 2.41221 3.33325 3.33268V16.666C3.33325 17.5865 4.07944 18.3327 4.99992 18.3327H14.9999C15.9204 18.3327 16.6666 17.5865 16.6666 16.666V3.33268C16.6666 2.41221 15.9204 1.66602 14.9999 1.66602Z" stroke="#525252" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M6.66675 5H13.3334" stroke="#525252" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M12.9531 12V15.3333" stroke="#525252" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M13.3333 8.33398H13.3416" stroke="#525252" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M10 8.33398H10.0083" stroke="#525252" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M6.66675 8.33398H6.67508" stroke="#525252" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M10 11.666H10.0083" stroke="#525252" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M6.66675 11.666H6.67508" stroke="#525252" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M10 15H10.0083" stroke="#525252" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M6.66675 15H6.67508" stroke="#525252" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
 const QuestionSessionSummaryPage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -110,10 +95,24 @@ const QuestionSessionSummaryPage = () => {
     navigate(url);
   };
 
-  const handleReviewAll = () => {
+  const handleReviewAll = (questionIndex = null) => {
     // Always include sessionId in URL when available
     const baseUrl = '/dashboard/review-all';
-    const url = sessionId ? `${baseUrl}?sessionId=${sessionId}` : baseUrl;
+    let url = baseUrl;
+    const params = new URLSearchParams();
+    
+    if (sessionId) {
+      params.append('sessionId', sessionId);
+    }
+    
+    if (questionIndex !== null && questionIndex >= 0) {
+      params.append('questionIndex', questionIndex.toString());
+    }
+    
+    if (params.toString()) {
+      url = `${baseUrl}?${params.toString()}`;
+    }
+    
     navigate(url);
   };
 
@@ -134,16 +133,14 @@ const QuestionSessionSummaryPage = () => {
                 {t('dashboard.sessionSummary.hero.title')}
               </h1>
               <p className="text-[14px] leading-[20px] font-normal text-[#525252] font-roboto tracking-[-0.15%]">
-                Question 3 of 3
+                {summary.questionsAnswered > 0 
+                  ? `${summary.questionsAnswered} Question${summary.questionsAnswered !== 1 ? 's' : ''}`
+                  : 'No questions'}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="hidden sm:flex items-center gap-2 px-5 py-2 bg-white border border-[#D4D4D4] text-[#525252] rounded-[14px] text-[14px] font-medium font-roboto hover:bg-[#F3F4F6] transition-colors">
-              <DocumentIcon />
-              {t('dashboard.sessionSummary.formulaSheet')}
-            </button>
             <button className="text-oxford-blue hover:opacity-70 transition-opacity" aria-label="Settings">
               <img src={setting} alt="settings" className="w-5 h-5" />
             </button>
@@ -159,13 +156,13 @@ const QuestionSessionSummaryPage = () => {
           </section>
 
           <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <div className="bg-gradient-to-br from-[#0A3A5A] to-[#0B577F] rounded-[24px] p-8 text-white shadow-sm">
-              <p className="text-[12px] leading-4 uppercase tracking-[0.6] text-white/70 font-roboto">Your score</p>
-              <div className="font-archivo font-bold text-[62px] leading-[87px]">{summary.accuracyPercent}%</div>
+            <div className="bg-gradient-to-br from-[#032746] via-[#0A4B6E] to-[#173B50] rounded-[24px] p-8 text-white shadow-sm space-y-2">
+              <p className="text-[12px] leading-4 font-normal uppercase tracking-[0.6] text-white/70 font-roboto">Your score</p>
+              <div className="font-archivo font-[800] text-[62px] leading-[87px]">{summary.accuracyPercent}%</div>
               <p className="text-sm font-medium text-white font-roboto">Accuracy Rate</p>
             </div>
 
-            <div className="bg-white rounded-[24px] p-8 border border-[#DCFCE7] shadow-sm min-h-[178px]">
+            <div className="bg-white rounded-[24px] p-8 border border-[#DCFCE7] shadow-sm min-h-[178px] space-y-2">
               <div className="flex justify-between items-start">
                 <div className="w-12 h-12 rounded-[16px] bg-[#F0FDF4] text-[#16A34A] flex items-center justify-center">
                   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -174,12 +171,12 @@ const QuestionSessionSummaryPage = () => {
                 </div>
                 <span className="bg-[#F0FDF4] text-[#008236] text-xs font-semibold px-3 py-1 rounded-full">{summary.accuracyPercent}%</span>
               </div>
-              <p className="text-[#6A7282] font-normal font-roboto text-sm mt-2">Correct Answers</p>
-              <p className="font-archivo text-[40px] leading-[56px] font-bold text-oxford-blue mt-2">{summary.correctCount}</p>
+              <p className="text-[#6A7282] font-normal font-roboto text-sm">Correct Answers</p>
+              <p className="font-archivo text-[40px] leading-[56px] font-[800] text-oxford-blue">{summary.correctCount}</p>
               <p className="text-[#99A1AF] text-sm font-medium font-roboto">{`out of ${summary.questionsAnswered} questions`}</p>
             </div>
 
-            <div className="bg-white rounded-[24px] p-8 border border-[#FEE2E2] shadow-sm min-h-[178px]">
+            <div className="bg-white rounded-[24px] p-8 border border-[#FEE2E2] shadow-sm min-h-[178px] space-y-2">
               <div className="flex justify-between items-start">
                 <div className="w-12 h-12 rounded-[16px] bg-[#FEE2E2] text-[#EF4444] flex items-center justify-center">
                   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -189,12 +186,12 @@ const QuestionSessionSummaryPage = () => {
                 </div>
                 <span className="bg-[#FEF2F2] text-[#ED4122] text-xs font-semibold px-3 py-1 rounded-full">{reviewPercent}%</span>
               </div>
-              <p className="text-[#6A7282] font-normal font-roboto text-sm mt-2">Need Review</p>
-              <p className="font-archivo text-[40px] leading-[56px] font-bold text-oxford-blue mt-2">{summary.incorrectCount}</p>
-              <p className="text-[#99A1AF] text-sm font-medium font-roboto mt-2">questions to improve</p>
+              <p className="text-[#6A7282] font-normal font-roboto text-sm">Need Review</p>
+              <p className="font-archivo text-[40px] leading-[56px] font-[800] text-oxford-blue">{summary.incorrectCount}</p>
+              <p className="text-[#99A1AF] text-sm font-medium font-roboto">questions to improve</p>
             </div>
 
-            <div className="bg-white rounded-[24px] p-8 border border-[#E5E7EB] shadow-sm min-h-[178px]">
+            <div className="bg-white rounded-[24px] p-8 border border-[#E5E7EB] shadow-sm min-h-[178px] space-y-2">
               <div className="w-12 h-12 rounded-[16px] bg-[#E0F2FE] text-[#0284C7] flex items-center justify-center">
                 <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M14 24.5C19.799 24.5 24.5 19.799 24.5 14C24.5 8.20101 19.799 3.5 14 3.5C8.20101 3.5 3.5 8.20101 3.5 14C3.5 19.799 8.20101 24.5 14 24.5Z" stroke="#6CA6C1" stroke-width="2.33333" />
@@ -202,9 +199,9 @@ const QuestionSessionSummaryPage = () => {
                 </svg>
 
               </div>
-              <p className="text-[#6A7282] font-normal font-roboto text-sm mt-2">Total Time</p>
-              <p className="font-archivo text-[40px] leading-[56px] font-bold text-oxford-blue mt-2">{summary.timeTaken}</p>
-              <p className="text-[#99A1AF] text-sm font-medium font-roboto mt-2">{avgPerQuestionLabel}</p>
+              <p className="text-[#6A7282] font-normal font-roboto text-sm">Total Time</p>
+              <p className="font-archivo text-[40px] leading-[56px] font-[800] text-oxford-blue">{summary.timeTaken}</p>
+              <p className="text-[#99A1AF] text-sm font-medium font-roboto">{avgPerQuestionLabel}</p>
             </div>
           </section>
 
@@ -274,14 +271,15 @@ const QuestionSessionSummaryPage = () => {
 
             <div className="flex flex-wrap gap-4">
               {questionTiles.map((question, index) => (
-                <div
+                <button
                   key={question.id || index}
-                  className={`w-[74px] h-[74px] rounded-[10px] flex flex-col items-center justify-center text-white shadow-sm ${question.status === 'correct' ? 'bg-[#22C55E]' : 'bg-[#EF4444]'
+                  onClick={() => handleReviewAll(index)}
+                  className={`w-[74px] h-[74px] rounded-[10px] flex flex-col items-center justify-center text-white shadow-sm cursor-pointer hover:opacity-90 transition-opacity ${question.status === 'correct' ? 'bg-[#22C55E]' : 'bg-[#EF4444]'
                     }`}
                 >
                   <span className="font-bold text-[18px] leading-[28px] font-archivo text-white">{index + 1}</span>
                   <span className="text-[10px] leading-[16px] font-bold font-roboto text-white">{question.timeLabel}</span>
-                </div>
+                </button>
               ))}
             </div>
           </section>
