@@ -1985,6 +1985,7 @@ const pauseSession = async (studentId, sessionData) => {
     timeTaken, // Time in milliseconds
     timerEndTime, // For test mode - when timer should end (absolute timestamp)
     timeLimit, // For test mode - time limit in minutes
+    sessionId, // Optional: existing paused session ID to update
   } = sessionData;
   
   // Calculate remaining time for test mode (to restore timer correctly on resume)
@@ -2076,25 +2077,92 @@ const pauseSession = async (studentId, sessionData) => {
   const score = correctAnswers;
   const percentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
 
-  // Always create a new paused session (allow multiple paused sessions for the same exam/subject/topic)
-  // This allows users to have multiple paused sessions and resume any of them
-  const studentAnswer = await StudentAnswer.create({
-    student: studentId,
-    mode: mode,
-    exam: examIdString,
-    subject: subjectId || null,
-    topic: topicId || null,
-    answers: processedAnswersForCreate,
-    totalQuestions,
-    correctAnswers,
-    incorrectAnswers,
-    score,
-    percentage,
-    timeTaken: timeTaken || null,
-    remainingTime: remainingTime || null, // Save remaining time to database
-    timeLimit: timeLimit || null, // Save time limit to database
-    status: 'paused', // Mark as paused
-  });
+  // Check if we're updating an existing paused session
+  const existingSessionId = sessionData.sessionId || null;
+  let studentAnswer;
+  let isUpdate = false;
+
+  if (existingSessionId) {
+    // Check if the session exists and belongs to the student
+    const existingSession = await prisma.studentAnswer.findFirst({
+      where: {
+        id: existingSessionId,
+        studentId: studentId,
+        status: 'paused',
+      },
+    });
+
+    if (existingSession) {
+      // Update existing paused session
+      // First, delete existing answers
+      await prisma.studentAnswerQuestion.deleteMany({
+        where: {
+          studentAnswerId: existingSessionId,
+        },
+      });
+
+      // Update the session with new data
+      studentAnswer = await prisma.studentAnswer.update({
+        where: {
+          id: existingSessionId,
+        },
+        data: {
+          answers: {
+            create: processedAnswersForUpdate, // Use update format for nested create
+          },
+          totalQuestions,
+          correctAnswers,
+          incorrectAnswers,
+          score,
+          percentage,
+          timeTaken: timeTaken || null,
+          remainingTime: remainingTime || null,
+          timeLimit: timeLimit || null,
+          updatedAt: new Date(),
+        },
+      });
+      isUpdate = true;
+    } else {
+      // Session not found or doesn't belong to student, create new one
+      studentAnswer = await StudentAnswer.create({
+        student: studentId,
+        mode: mode,
+        exam: examIdString,
+        subject: subjectId || null,
+        topic: topicId || null,
+        answers: processedAnswersForCreate,
+        totalQuestions,
+        correctAnswers,
+        incorrectAnswers,
+        score,
+        percentage,
+        timeTaken: timeTaken || null,
+        remainingTime: remainingTime || null,
+        timeLimit: timeLimit || null,
+        status: 'paused',
+      });
+    }
+  } else {
+    // Create a new paused session
+    // Use StudentAnswer.create() for consistency with other parts of the codebase
+    studentAnswer = await StudentAnswer.create({
+      student: studentId,
+      mode: mode,
+      exam: examIdString,
+      subject: subjectId || null,
+      topic: topicId || null,
+      answers: processedAnswersForCreate,
+      totalQuestions,
+      correctAnswers,
+      incorrectAnswers,
+      score,
+      percentage,
+      timeTaken: timeTaken || null,
+      remainingTime: remainingTime || null,
+      timeLimit: timeLimit || null,
+      status: 'paused',
+    });
+  }
 
   // Store additional pause metadata in a JSON field if needed
   // For now, we'll use the currentIndex from the questions array structure
@@ -2123,7 +2191,7 @@ const pauseSession = async (studentId, sessionData) => {
       timeTaken: timeTaken || null,
     },
     pausedAt: studentAnswer.createdAt,
-    updated: false, // Always creating a new session now
+    updated: isUpdate,
   };
 };
 

@@ -671,7 +671,7 @@ const getMarkedQuestionForReview = async (req, res, next) => {
  */
 const pauseSession = async (req, res, next) => {
   try {
-    const { mode, examId, subjectId, topicId, questions, currentIndex, timeTaken, timerEndTime, timeLimit } = req.body;
+    const { mode, examId, subjectId, topicId, questions, currentIndex, timeTaken, timerEndTime, timeLimit, sessionId } = req.body;
     const studentId = req.user.id;
 
     if (!mode || !['study', 'test'].includes(mode)) {
@@ -705,6 +705,7 @@ const pauseSession = async (req, res, next) => {
       timeTaken: timeTaken || null,
       timerEndTime: timerEndTime || null,
       timeLimit: timeLimit || null,
+      sessionId: sessionId || null, // Pass sessionId to update existing paused session
     });
 
     res.status(200).json({
