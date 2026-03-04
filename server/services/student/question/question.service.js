@@ -591,6 +591,7 @@ const submitTestAnswers = async (studentId, examId, answers, timeTaken = null) =
       question: question.id,
       selectedAnswer: answer.selectedAnswer || '', // Empty string for unanswered (not null)
       isCorrect: hasAnswer ? isCorrect : false, // false for unanswered
+      isMarked: answer.isMarked || false,
     });
   });
 
@@ -623,6 +624,7 @@ const submitTestAnswers = async (studentId, examId, answers, timeTaken = null) =
     const studentAnswerData = processedAnswers.find(
       (a) => a.question.toString() === question.id.toString()
     );
+    const originalAnswer = answers.find((a) => a.questionId === question.id);
 
     return {
       questionId: question.id,
@@ -632,6 +634,7 @@ const submitTestAnswers = async (studentId, examId, answers, timeTaken = null) =
       correctAnswer: question.correctAnswer,
       selectedAnswer: studentAnswerData ? studentAnswerData.selectedAnswer : null,
       isCorrect: studentAnswerData ? studentAnswerData.isCorrect : false,
+      isMarked: originalAnswer ? (originalAnswer.isMarked || false) : false,
       explanation: question.explanation,
     };
   });
@@ -780,6 +783,7 @@ const getTestResultById = async (studentId, testId) => {
       correctAnswer: question.correctAnswer,
       selectedAnswer: answer.selectedAnswer,
       isCorrect: answer.isCorrect,
+      isMarked: answer.isMarked || false,
       explanation: question.explanation,
     };
   }).filter(Boolean); // Remove null entries
@@ -1578,6 +1582,7 @@ const getSessionDetail = async (studentId, sessionId) => {
           correctAnswer: question.correctAnswer,
           selectedAnswer: answer.selectedAnswer,
           isCorrect: answer.isCorrect,
+          isMarked: answer.isMarked || false,
           explanation: question.explanation,
         };
       }).filter(Boolean);
@@ -1725,6 +1730,7 @@ const getSessionIncorrectItems = async (studentId, sessionId) => {
           options: question.options,
           correctAnswer: question.correctAnswer,
           selectedAnswer: answer.selectedAnswer,
+          isMarked: answer.isMarked || false,
           explanation: question.explanation,
         };
       }).filter(Boolean);
@@ -1926,6 +1932,7 @@ const saveStudySessionResults = async (studentId, sessionData) => {
     question: q.questionId,
     selectedAnswer: q.selectedAnswer,
     isCorrect: q.isCorrect || false,
+    isMarked: q.isMarked || false,
   }));
 
   // Save study session results
@@ -2023,6 +2030,7 @@ const pauseSession = async (studentId, sessionData) => {
       question: q.questionId, // StudentAnswer model expects 'question' key that maps to questionId
       selectedAnswer: q.selectedAnswer || '',
       isCorrect: isCorrect,
+      isMarked: q.isMarked || false,
     };
   });
   
@@ -2045,6 +2053,7 @@ const pauseSession = async (studentId, sessionData) => {
       },
       selectedAnswer: q.selectedAnswer || '',
       isCorrect: isCorrect,
+      isMarked: q.isMarked || false,
     };
   });
 
@@ -2267,6 +2276,7 @@ const completePausedSession = async (studentId, sessionId, sessionData) => {
         selectedAnswer: answer.selectedAnswer || '',
         correctAnswer: question.correctAnswer,
         isCorrect: hasAnswer ? isCorrect : false,
+        isMarked: answer.isMarked || false,
         explanation: question.explanation || '',
       };
     }).filter(Boolean);
@@ -2407,6 +2417,7 @@ const getPausedSession = async (studentId, sessionId) => {
       showFeedback: showFeedback,
       showHint: false,
       isSubmitted: isSubmitted,
+      isMarked: answer.isMarked || false,
       status: status,
     };
   });

@@ -14,6 +14,10 @@ const SessionModeCard = ({
 }) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  
+  // Normalize timeLimit to ensure it's a string and defaults to '10' if invalid
+  const validTimeLimits = ['10', '15', '20', '30'];
+  const normalizedTimeLimit = validTimeLimits.includes(String(timeLimit)) ? String(timeLimit) : '10';
 
   return (
     <div className="bg-white rounded-[15px] border border-[#E6EEF3] shadow-sm shadow-[#0000001A] p-4 md:p-6 w-full">
@@ -65,12 +69,12 @@ const SessionModeCard = ({
               {t('dashboard.practice.sessionMode.timeLimit')}
             </label>
             <div className="flex gap-2">
-              {['10', '15', '20', '30'].map((limit) => (
+              {validTimeLimits.map((limit) => (
                 <button
                   key={limit}
                   onClick={() => onTimeLimitChange(limit)}
                   disabled={!hasActiveSubscription || checkingSubscription}
-                  className={`flex-1 max-w-[69px] h-[34px] rounded-lg border transition-all duration-200 font-roboto font-medium text-[12px] leading-[18px] ${timeLimit === limit
+                  className={`flex-1 max-w-[69px] h-[34px] rounded-lg border transition-all duration-200 font-roboto font-medium text-[12px] leading-[18px] ${normalizedTimeLimit === limit
                       ? 'bg-[#E6EEF3] border-[#33749F] text-[#33749F]'
                       : hasActiveSubscription
                         ? 'bg-white border-[#E5E7EB] text-dashboard-gray hover:border-[#33749F]'

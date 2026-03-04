@@ -37,7 +37,7 @@ const SessionCard = ({ session }) => {
       <div className="flex items-center justify-between">
         {/* Session ID */}
         <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-b from-[#032746] to-[#173B50] text-white px-2 py-3 rounded-md text-[14px] font-roboto font-normal">
+          <div className="bg-gradient-to-b from-[#032746] to-[#173B50] text-white px-2 py-3 rounded-md text-[14px] leading-5 font-archivo font-bold">
             {session.sessionCode ? `#${session.sessionCode}` : `#${String(session.id).slice(-3).padStart(3, '0')}`}
           </div>
 
@@ -64,19 +64,19 @@ const SessionCard = ({ session }) => {
       <div className="flex items-center gap-2">
         {/* Questions */}
         <div className="bg-[#F5F5F5] rounded-[14px] px-3 pt-3 pb-2 text-center flex-1">
-          <div className="text-[12px] leading-[16px] font-roboto font-normal text-[#6A7282] mb-1">Questions</div>
+          <div className="text-[12px] leading-[16px] font-roboto font-normal text-[#737373] mb-1">Questions</div>
           <div className="text-[20px] leading-[28px] font-archivo font-bold text-[#010814]">{session.questions}</div>
         </div>
 
         {/* Avg Time */}
         <div className="bg-[#F5F5F5] rounded-[14px] px-3 pt-3 pb-2 text-center flex-1">
-          <div className="text-[12px] leading-[16px] font-roboto font-normal text-[#6A7282] mb-1">Avg Time</div>
-          <div className="text-[20px] leading-[28px] font-archivo font-bold text-oxford-blue">{session.avgTime}</div>
+          <div className="text-[12px] leading-[16px] font-roboto font-normal text-[#737373] mb-1">Avg Time</div>
+          <div className="text-[20px] leading-[28px] font-archivo font-bold text-[#010814]">{session.avgTime}</div>
         </div>
 
         {/* Incorrect */}
         <div className="bg-[#FEF2F0] rounded-[14px] px-3 pt-3 pb-2 text-center flex-1">
-          <div className="text-[12px] leading-[16px] font-roboto font-normal text-[#6A7282] mb-1">Incorrect</div>
+          <div className="text-[12px] leading-[16px] font-roboto font-normal text-[#737373] mb-1">Incorrect</div>
           <div className="text-[20px] leading-[28px] font-archivo font-bold text-[#ED4122]">{incorrect}</div>
         </div>
       </div>

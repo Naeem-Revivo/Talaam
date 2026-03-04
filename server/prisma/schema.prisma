@@ -313,6 +313,7 @@ model StudentAnswerQuestion {
   questionId      String        @map("question_id")
   selectedAnswer  String        @map("selected_answer")
   isCorrect       Boolean       @default(false) @map("is_correct")
+  isMarked        Boolean       @default(false) @map("is_marked")
 
   // Relations
   studentAnswer   StudentAnswer @relation(fields: [studentAnswerId], references: [id], onDelete: Cascade)

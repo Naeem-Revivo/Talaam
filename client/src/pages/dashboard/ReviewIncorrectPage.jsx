@@ -57,6 +57,7 @@ const ReviewIncorrectPage = () => {
               correctAnswer: item.correctAnswer,
               selectedAnswer: item.selectedAnswer,
               explanation: item.explanation || '',
+              isMarked: item.isMarked || false,
             };
           });
 
@@ -111,6 +112,7 @@ const ReviewIncorrectPage = () => {
                 correctAnswer: item.correctAnswer,
                 selectedAnswer: item.selectedAnswer,
                 explanation: item.explanation || '',
+                isMarked: item.isMarked || false,
               };
             });
           }
@@ -195,7 +197,8 @@ const ReviewIncorrectPage = () => {
         currentQuestionIndex={currentQuestionIndex}
         totalQuestions={totalQuestions}
         timeRemaining={timeRemaining}
-        showMarkForReview={false}
+        showMarkForReview={currentQuestion?.isMarked || false}
+        isMarked={currentQuestion?.isMarked || false}
         onHomeClick={() => navigate('/dashboard/review')}
         onFormulaSheet={handleFormulaSheet}
         onSettingsClick={() => navigate('/dashboard/review')}

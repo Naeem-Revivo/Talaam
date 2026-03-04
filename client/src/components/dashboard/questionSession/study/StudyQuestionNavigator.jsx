@@ -118,17 +118,6 @@ const StudyQuestionNavigator = ({
             );
           })}
         </div>
-
-        <div className="px-[12px] pt-3 pb-4 border-t border-[#E5E7EB] bg-white">
-          <div className="flex items-center gap-2 text-[24px] leading-none font-medium text-[#748AA1] font-roboto">
-            <span className="w-2 h-2 rounded-full bg-[#EAB308]" />
-            <span className="text-[12px] leading-[12px] text-[#94A3B8]">Flag</span>
-          </div>
-          <div className="mt-2 flex items-center gap-2 text-[24px] leading-none font-medium text-[#A9B4C2] font-roboto">
-            <span className="w-2 h-2 rounded-full border border-[#B7C2CF]" />
-            <span className="text-[12px] leading-[12px] text-[#94A3B8]">N/A</span>
-          </div>
-        </div>
       </div>
 
     </>

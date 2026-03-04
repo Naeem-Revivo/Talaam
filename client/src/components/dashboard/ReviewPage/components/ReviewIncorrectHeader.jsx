@@ -82,29 +82,6 @@ const ReviewIncorrectHeader = ({
 
                 {/* Right: Action Buttons */}
                 <div className="flex items-center gap-4">
-                    {showMarkForReview && (
-                        <button
-                            onClick={onMarkForReview}
-                            className={`flex items-center gap-2 px-5 py-2 bg-white border border-[#D4D4D4] text-oxford-blue rounded text-[14px] font-normal font-roboto hover:bg-[#F3F4F6] transition-colors ${isMarked ? 'border-[#ED4122] bg-[#FEF2F2] text-[#ED4122]' : ''
-                                }`}
-                        >
-                            <FlagIcon isMarked={isMarked} />
-                            <span>Mark for Review</span>
-                        </button>
-                    )}
-
-                    {/* Time Remaining Button */}
-                    <div className="flex items-center gap-2.5 px-4 h-[64px] bg-gradient-to-r from-[#032746] to-[#173B50] text-white rounded-[14px] shadow-sm shadow-[#0000000D]">
-                        <ClockIcon className="w-6 h-6" />
-                        <div className="flex flex-col leading-none">
-                            <span className="text-xs font-normal font-roboto text-white">
-                                Time Remaining
-                            </span>
-                            <span className="text-[24px] font-bold font-roboto leading-[32px] tracking-[0.07px]">
-                                {timeRemaining}
-                            </span>
-                        </div>
-                    </div>
 
                     {/* Settings Icon */}
                     <button
