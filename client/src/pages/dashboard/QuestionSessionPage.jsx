@@ -1206,6 +1206,7 @@ const QuestionSessionPage = () => {
       });
 
       // Pause the session
+      // If resuming from paused session, pass sessionId to update existing session instead of creating new one
       const response = await studentQuestionsAPI.pauseSession({
         mode,
         examId: sessionInfoRef.current.examId,
@@ -1216,6 +1217,7 @@ const QuestionSessionPage = () => {
         timeTaken: timeTakenMs,
         timerEndTime: mode === 'test' ? timerEndTimeRef.current : null,
         timeLimit: mode === 'test' ? timeLimitRef.current : null,
+        sessionId: pausedSessionIdRef.current || null, // Pass existing session ID to update instead of creating new
       });
 
       if (response.success) {
@@ -1238,30 +1240,134 @@ const QuestionSessionPage = () => {
   };
 
   // Replace the current handleExit function with:
+  // Only show exit confirmation modal if at least one question is solved
   const handleExitClick = () => {
-    setShowExitConfirm(true);
+    // Check if any question has been solved
+    // In test mode, check for isSubmitted or status === 'submit' or 'skipped'; in study mode, check for showFeedback
+    const hasSolvedQuestions = mode === 'test'
+      ? questionState.some((state) => state.isSubmitted || state.status === 'submit' || state.status === 'skipped')
+      : questionState.some((state) => state.showFeedback);
+    
+    if (hasSolvedQuestions) {
+      setShowExitConfirm(true);
+    } else {
+      // No solved questions, exit directly without saving
+      // Clear session and navigate away
+      const currentSessionId = sessionIdRef.current;
+      if (currentSessionId) {
+        clearSession(currentSessionId);
+        const sessionKey = `session_saved_${currentSessionId}`;
+        const resultsKey = `test_results_${currentSessionId}`;
+        sessionStorage.removeItem(sessionKey);
+        sessionStorage.removeItem(resultsKey);
+        sessionIdRef.current = null;
+      }
+      navigate('/dashboard/practice');
+    }
   };
 
   // Keep the actual exit logic in a separate function:
-  const handleExitConfirmed = () => {
-    // Store session ID before clearing
-    const currentSessionId = sessionIdRef.current;
+  const handleExitConfirmed = async () => {
+    // Close the modal first
+    setShowExitConfirm(false);
 
-    // Clear session from local storage for both study and test mode
-    if (currentSessionId) {
-      clearSession(currentSessionId);
-
-      // Clear any session-related data from sessionStorage
-      const sessionKey = `session_saved_${currentSessionId}`;
-      const resultsKey = `test_results_${currentSessionId}`;
-      sessionStorage.removeItem(sessionKey);
-      sessionStorage.removeItem(resultsKey);
-
-      sessionIdRef.current = null;
+    // If there are no questions or state, just navigate away
+    if (questions.length === 0 || questionState.length === 0) {
+      navigate('/dashboard/practice');
+      return;
     }
 
-    // Redirect to practice page
-    navigate('/dashboard/practice');
+    // Always save as paused session when exiting (if we have questions loaded)
+    // This allows users to resume their session later, even if they haven't answered any questions yet
+    if (questions.length > 0 && sessionInfoRef.current.examId) {
+      try {
+        // If resuming from paused session, add paused time + resumed time
+        let totalTime;
+        if (pausedSessionIdRef.current) {
+          const resumedTime = resumeStartTimeRef.current ? Date.now() - resumeStartTimeRef.current : 0;
+          totalTime = pausedTimeTakenRef.current + resumedTime;
+        } else {
+          totalTime = sessionStartTime.current ? Date.now() - sessionStartTime.current : 0;
+        }
+        const timeTakenMs = totalTime;
+
+        // Prepare questions data for pausing
+        const questionsData = questions.map((q, idx) => {
+          const state = questionState[idx];
+          const hasAnswer = state?.selectedOption !== null && state?.selectedOption !== undefined && state?.selectedOption !== '';
+          // For study mode: only set isCorrect if question was answered, otherwise null
+          // For test mode: isCorrect will be calculated when test is submitted
+          const isCorrect = mode === 'study'
+            ? (hasAnswer ? (state?.isCorrect ?? null) : null)
+            : null;
+
+          return {
+            questionId: q.id,
+            selectedAnswer: getSelectedAnswer(state), // Handles skipped questions
+            isCorrect: isCorrect,
+          };
+        });
+
+        // Pause the session
+        // If resuming from paused session, pass sessionId to update existing session instead of creating new one
+        const response = await studentQuestionsAPI.pauseSession({
+          mode,
+          examId: sessionInfoRef.current.examId,
+          subjectId: sessionInfoRef.current.subjectId,
+          topicId: sessionInfoRef.current.topicId,
+          questions: questionsData,
+          currentIndex,
+          timeTaken: timeTakenMs,
+          timerEndTime: mode === 'test' ? timerEndTimeRef.current : null,
+          timeLimit: mode === 'test' ? timeLimitRef.current : null,
+          sessionId: pausedSessionIdRef.current || null, // Pass existing session ID to update instead of creating new
+        });
+
+        if (response.success) {
+          // Clear session storage (don't save paused sessions in session storage)
+          if (sessionIdRef.current) {
+            clearSession(sessionIdRef.current);
+          }
+
+          // Clear any session-related data from sessionStorage
+          const sessionKey = `session_saved_${sessionIdRef.current}`;
+          const resultsKey = `test_results_${sessionIdRef.current}`;
+          sessionStorage.removeItem(sessionKey);
+          sessionStorage.removeItem(resultsKey);
+
+          sessionIdRef.current = null;
+
+          // Show success message and navigate to review page so user can see their paused session
+          showSuccessToast('Session saved. You can resume it later from the review page.');
+          setTimeout(() => {
+            navigate('/dashboard/review');
+          }, 1000);
+        } else {
+          // If pause fails, still navigate away
+          console.error('Failed to save paused session:', response);
+          navigate('/dashboard/practice');
+        }
+      } catch (error) {
+        console.error('Error saving session on exit:', error);
+        showErrorToast(error.message || 'Failed to save session, but you can still exit');
+        // Even if save fails, navigate away (don't block user from exiting)
+        setTimeout(() => {
+          navigate('/dashboard/practice');
+        }, 1500);
+      }
+    } else {
+      // No progress to save, just clear and navigate
+      const currentSessionId = sessionIdRef.current;
+      if (currentSessionId) {
+        clearSession(currentSessionId);
+        const sessionKey = `session_saved_${currentSessionId}`;
+        const resultsKey = `test_results_${currentSessionId}`;
+        sessionStorage.removeItem(sessionKey);
+        sessionStorage.removeItem(resultsKey);
+        sessionIdRef.current = null;
+      }
+      navigate('/dashboard/practice');
+    }
   };
 
   // Add cancel handler for the modal:
