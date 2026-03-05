@@ -262,10 +262,9 @@ const ReviewIncorrectMainContent = ({
                                 const isMarked = question?.isMarked || false;
                                 const isCorrect = question?.isCorrect === true;
 
+                                // Determine base styling based on status: Marked > Correct/Incorrect > Unanswered
                                 let buttonClass = '';
-                                if (isCurrent) {
-                                    buttonClass = 'bg-[#E0F2F7] text-[#1F4E79] border-[#007BFF]';
-                                } else if (isMarked) {
+                                if (isMarked) {
                                     // Marked for review styling
                                     buttonClass = 'bg-[#FEFCE8] text-[#B45309] border-[#EAB308]';
                                 } else if (isAnswered) {
@@ -276,14 +275,17 @@ const ReviewIncorrectMainContent = ({
                                         buttonClass = 'bg-[#FEF2F2] text-[#EF4444] border-[#EF4444]';
                                     }
                                 } else {
-                                    buttonClass = 'bg-[#E6EEF3] text-[#6697B7] border-[#6697B7]';
+                                    buttonClass = 'bg-[#F8FAFC] text-[#525252] border-[#D4D4D4]';
                                 }
+
+                                // Add highlight for current tab (thicker border and shadow)
+                                const currentHighlight = isCurrent ? 'shadow-md scale-105' : '';
 
                                 return (
                                     <button
                                         key={i}
                                         onClick={() => onQuestionClick(i)}
-                                        className={`w-11 h-11 flex items-center justify-center text-[14px] font-medium font-roboto transition-colors text-center border rounded-[8px] ${buttonClass} hover:opacity-80`}
+                                        className={`w-11 h-11 flex items-center justify-center text-[14px] font-medium font-roboto transition-colors text-center border rounded-[8px] ${buttonClass} ${currentHighlight} hover:opacity-80`}
                                     >
                                         {i + 1}
                                     </button>
