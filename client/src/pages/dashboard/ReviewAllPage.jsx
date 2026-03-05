@@ -379,12 +379,9 @@ const ReviewAllPage = () => {
                 );
                 const isCorrect = question?.isCorrect === true;
                 
-                // Determine styling based on priority: Current > Marked > Correct/Incorrect > Unanswered
+                // Determine base styling based on status: Marked > Correct/Incorrect > Unanswered
                 let buttonClass = '';
-                if (isCurrent) {
-                  // Currently Selected/Active: Light blue background, blue border, dark blue text
-                  buttonClass = 'bg-[#E0F2F7] text-[#1F4E79] border-[#007BFF]';
-                } else if (isMarkedForReview) {
+                if (isMarkedForReview) {
                   // Marked for Review: Light yellow background, yellow border, amber text
                   buttonClass = 'bg-[#FEFCE8] text-[#B45309] border-[#EAB308]';
                 } else if (isAnswered) {
@@ -396,14 +393,17 @@ const ReviewAllPage = () => {
                   }
                 } else {
                   // Unanswered: White background, light gray border, dark gray text
-                  buttonClass = 'bg-[#E6EEF3] text-[#6697B7] border-[#6697B7]';
+                  buttonClass = 'bg-[#F8FAFC] text-[#525252] border-[#D4D4D4]';
                 }
+                
+                // Add highlight for current tab (thicker border and shadow)
+                const currentHighlight = isCurrent ? 'shadow-md scale-105' : '';
                 
                 return (
                   <button
                     key={i}
                     onClick={() => handleQuestionClick(i)}
-                    className={`h-10 min-w-[40px] px-0 text-[14px] font-medium font-roboto transition-colors text-center border rounded-[8px] ${buttonClass} hover:opacity-80`}
+                    className={`h-10 min-w-[40px] px-0 text-[14px] font-medium font-roboto transition-colors text-center border rounded-[8px] ${buttonClass} ${currentHighlight} hover:opacity-80`}
                   >
                     {i + 1}
                   </button>
